@@ -44,6 +44,9 @@ jobs:
           # или спросить кого: может лучше использовать git pull, чтобы избежать возможных конфликтов: git pull origin main
           # команда php artisan migrate --force применяет миграции без подтверждения... может быть это опасным? Надо подумать, что это именно то, что нам нужно...
           # команда ssh-keyscan добавляет хост VPS в список известных хостов, чтобы избежать ошибки StrictHostKeyChecking...
+          # после деплоя очищаем кэш Laravel-я, чтобы изменения вступили в силу. Добавляем в скрипт команду: php artisan optimize:clear
+          # Git выдал ошибку: fatal: detected dubious ownership in repository at '/var/www/fastuser/data/www/zonefloorball.ru' To add an exception for this directory, call: git config --global --add safe.directory /var/www/fastuser/data/www/zonefloorball.ru
+          # Из-за ошибки выше добавляем исключение для директории (заносим директорию проекта в список "безопасных" для Git): git config --global --add safe.directory /var/www/fastuser/data/www/zonefloorball.ru перед выполнением команд git fetch и git reset:
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -52,8 +55,10 @@ jobs:
 
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "
             cd /var/www/fastuser/data/www/zonefloorball.ru &&
+            git config --global --add safe.directory /var/www/fastuser/data/www/zonefloorball.ru &&
             git fetch origin &&
             git reset --hard origin/main &&
             composer install --optimize-autoloader --no-dev &&
-            php artisan migrate --force
+            php artisan migrate --force &&
+            php artisan optimize:clear
           "
