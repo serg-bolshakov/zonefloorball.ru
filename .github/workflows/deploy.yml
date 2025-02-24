@@ -56,9 +56,9 @@ jobs:
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "
             cd /var/www/fastuser/data/www/zonefloorball.ru &&
             git config --global --add safe.directory /var/www/fastuser/data/www/zonefloorball.ru &&
-            git fetch origin &&
-            git reset --hard origin/main &&
-            composer install --optimize-autoloader --no-dev &&
-            php artisan migrate --force &&
-            php artisan optimize:clear
+            sudo -u fastuser git fetch origin &&
+            sudo -u fastuser git reset --hard origin/main &&
+            sudo -u fastuser composer install --optimize-autoloader --no-dev &&
+            sudo -u fastuser php artisan migrate --force &&
+            sudo -u fastuser php artisan optimize:clear
           "
