@@ -1,26 +1,29 @@
-<p>
-Интернет-магазин спортивных товаров (флорбольная экипировка) <strong>UnihocZoneRussia</strong>
-</p>
+# Интернет-магазин спортивных товаров (флорбольная экипировка) <strong>UnihocZoneRussia</strong>
 
-<a href="https://unihoczone.ru" target="_blank"  align="right">
-    <img src="https://unihoczone.ru/storage/icons/logo56.png" width="24px" alt="logo" title="Перейти на главную страницу сайта"  style="margin-right: 20px">
+<a href="https://zonefloorball.ru" target="_blank"  align="right">
+    <img src="https://zonefloorball.ru/storage/icons/logo56.png" width="24px" alt="logo" title="Перейти на главную страницу сайта"  style="margin-right: 20px">
 </a>
 
 ## О проекте
 
-Интернет-магазин UnihocZoneRussia специализируется на продаже флорбольной экипировки. Проект разработан на PHP с использованием фреймворка Laravel и JavaScript. База данных реализована на MySQL.
+Интернет-магазин UnihocZoneRussia специализируется на продаже флорбольной экипировки. Изначально проект был разработан на PHP с использованием фреймворка Laravel и JavaScript. В процессе изучения React и TypeScript, я переписываю приложение, чтобы закрепить полученные знания.
+
+### Основные особенности:
+- **Интеграция Laravel и React**: Используется Inertia.js, который позволяет использовать React как фронтенд без необходимости создания отдельного API. Laravel передает данные напрямую в React-компоненты, а React рендерит их на стороне клиента.
+- **База данных**: MySQL.
 
 ## Технологии
 
 - **Backend**: PHP, Laravel
-- **Frontend**: JavaScript
+- **Frontend**: JavaScript, React, TypeScript
+- **Интеграция**: Inertia.js 
 - **База данных**: MySQL
 
 ### Для посетителей сайта
 
 - **Просмотр товаров**: 
   - Возможность ознакомиться с ассортиментом товаров, просмотреть категории и детальную информацию о товаре, включая варианты исполнения (размер, цвет, модификация).
-  - Пример: [Карточка товара](https://www.unihoczone.ru/products/card/10374-klyushka-dlya-florbola-unihoc-sniper-white-blue-96cm-right).
+  - Пример: [Карточка товара](https://www.zonefloorball.ru/products/card/10374-klyushka-dlya-florbola-unihoc-sniper-white-blue-96cm-right).
 
 - **История просмотров**:
   - Отображение последних 6 просмотренных товаров (реализовано на JavaScript с использованием локального хранилища браузера).
