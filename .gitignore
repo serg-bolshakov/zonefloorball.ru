@@ -2,7 +2,6 @@
 /node_modules
 /public/build
 /public/hot
-/public/storage
 /storage/*.key
 /vendor
 .env
@@ -18,5 +17,6 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
-/public/js
-/public/css
+# пока комметируем - /public/js
+# пока комметируем - /public/css
+# пока комметируем - /public/storage
