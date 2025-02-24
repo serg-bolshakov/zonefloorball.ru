@@ -17,6 +17,7 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+*.odt
 # пока комметируем - /public/js
 # пока комметируем - /public/css
 # пока комметируем - /public/storage
