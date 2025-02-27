@@ -17,8 +17,8 @@ use App\Http\Controllers\SiteMapController;
 use App\Http\Controllers\IndexReactController;
 
 use Inertia\Inertia;
-use Illuminate\Http\Request; // подключим класс Request
-use Illuminate\Support\Facades\DB;  // подключаем фасад
+use Illuminate\Http\Request;                                        // подключим класс Request
+use Illuminate\Support\Facades\DB;                                  // подключаем фасад
 use App\Models\Order;
 
 
@@ -45,7 +45,9 @@ Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
 // Route::get('/products/catalog', ['App\\Http\\Controllers\\CatalogController', 'index']);
 Route::match(['get', 'post'], '/products/{category?}', ['App\\Http\\Controllers\\CatalogController', 'index']);
 
-Route::match(['get', 'post'], '/', ['App\\Http\\Controllers\\IndexController', 'index']);
+// Маршруты для Inertia.js
+Route::match(['get', 'post'],'/', [IndexReactController::class, 'index'])->name('home');
+// Route::match(['get', 'post'], '/', ['App\\Http\\Controllers\\IndexController', 'index']);
 
 Route::match(['get', 'post'], '/products', ['App\\Http\\Controllers\\ProductController', 'show']);
 Route::match(['get', 'post'], '/lk', [LkController::class, 'index']);
@@ -87,11 +89,6 @@ Route::get('/generate-sitemap', [SiteMapXmlController::class, 'generate']);
 
 // Маршрут для HTML-карты сайта:
 Route::get('/sitemap', [SiteMapController::class, 'index']);
-
-// Маршруты для Inertia.js
-Route::prefix('app')->group(function () {
-    Route::match(['get', 'post'],'/', [IndexReactController::class, 'index'])->name('home');
-});
 
 Route::post('/sync-orders-list', function (Request $request) {
     // Получаем данные из запроса

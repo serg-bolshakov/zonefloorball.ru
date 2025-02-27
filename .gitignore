@@ -2,7 +2,7 @@
 /node_modules
 /public/build
 /public/hot
-/public/invoices/**
+/public/storage/invoices/**
 /storage/*.key
 /vendor
 .env
