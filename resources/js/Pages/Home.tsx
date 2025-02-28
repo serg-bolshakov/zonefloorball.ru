@@ -2,7 +2,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import Footer from '../Components/Footer/Footer';
-import Header from '../Components/Header';  // Импортируем компонент Header
+import Header from '../Components/Header/Header';  // Импортируем компонент Header
 import { ModalProvider } from '../Contexts/ModalContext';
 
 // создаём базовый интерфейс для всех пользователей:
