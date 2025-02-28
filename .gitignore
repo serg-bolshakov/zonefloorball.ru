@@ -1,10 +1,14 @@
+# Косая черта перед именем файла соответствует файлу в корне репозитория:
 /.phpunit.cache
 /node_modules
 /public/build
 /public/hot
+# С косой чертой в конце будут игнорироваться только папки:
 /public/storage/invoices/**
+/public/storage
 /storage/*.key
 /vendor
+# Без косой черты в начале будут игнорироваться файлы и в подпапках:
 .env
 .env.backup
 .env.production
@@ -18,7 +22,10 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+/vite.config.js
+/resources/views/app.blade.php
+# Одна звездочка — это подстановочный знак, который может соответствовать как нескольким символам, так и ни одному: *.log 
+# Для примера будут проигнорированы следующие файлы: debug.log, foo.log, .log, logs/debug.log
 *.odt
 # пока комметируем - /public/js
 # пока комметируем - /public/css
-# пока комметируем - /public/storage
