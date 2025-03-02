@@ -24,18 +24,12 @@ jobs:
       - name: Checkout code                                 # Клонирует репозиторий на runner GitHub Actions
         uses: actions/checkout@v4
 
-      - name: Install Node.js                               # Устанавливает Node.js (нужен для сборки проекта).
+      - name: Install Node.js                               # Устанавливает Node.js (нужен для выполнения rsync и других команд).
         uses: actions/setup-node@v4
         with:
             node-version: '18.14.0'  
 
-      - name: Install dependencies                          # Устанавливает зависимости через npm install (нужны для сборки).
-        run: npm install
-
-      - name: Build project                                 # Собирает проект через npm run build
-        run: npm run build
-
-      - name: Deploy to VPS using rsync                     # Копирует собранные файлы на VPS
+      - name: Deploy to VPS using rsync                     # Копирует файлы на VPS и выполняет сборку
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}   # Приватный SSH-ключ
           SSH_HOST: ${{ secrets.SSH_HOST }}                 # IP 
@@ -63,6 +57,8 @@ jobs:
 
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "
             cd /var/www/fastuser/data/www/zonefloorball.ru &&
+            sudo -u fastuser npm install &&
+            sudo -u fastuser npm run build &&
             sudo -u fastuser composer install --optimize-autoloader --no-dev &&
             sudo -u fastuser php artisan migrate --force &&
             sudo -u fastuser php artisan optimize:clear
