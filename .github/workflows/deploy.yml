@@ -54,7 +54,7 @@ jobs:
               --exclude='node_modules' \
               --exclude='.env' \
               --exclude='vite.config.js' \
-              ./ $SSH_USERNAME@$SSH_HOST:/var/www/fastuser/data/www/zonefloorball.ru/
+              ./ /var/www/fastuser/data/www/zonefloorball.ru/
 
             cd /var/www/fastuser/data/www/zonefloorball.ru &&
             sudo -u fastuser npm install &&
