@@ -51,7 +51,7 @@ jobs:
           TEMP_DIR=$(ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "mktemp -d")
 
           # Копируем файлы с runner во временную директорию на VPS
-          rsync -avz --delete -e "ssh -p $SSH_PORT" \
+          rsync -avz -e "ssh -p $SSH_PORT" \
             --exclude='.git' \
             --exclude='.gitignore' \
             --exclude='.gitattributes' \
