@@ -69,6 +69,7 @@ jobs:
               --exclude='node_modules' \
               --exclude='.env' \
               --exclude='vite.config.js' \
+              --exclude='resources/views/app.blade.php' \
               $TEMP_DIR/ /var/www/fastuser/data/www/zonefloorball.ru/
 
             # Удаляем временную директорию
