@@ -41,21 +41,40 @@ jobs:
           # команда php artisan migrate --force применяет миграции без подтверждения... может быть это опасным? Надо подумать, что это именно то, что нам нужно...
           # после деплоя очищаем кэш Laravel-я, чтобы изменения вступили в силу. Добавляем в скрипт команду: php artisan optimize:clear
         run: |
+          run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
 
-          rsync -avz --delete --chown=fastuser:fastuser -e "ssh -p $SSH_PORT" \
+          # Создаём временную директорию на VPS
+          TEMP_DIR=$(ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "mktemp -d")
+
+          # Копируем файлы с runner во временную директорию на VPS
+          rsync -avz --delete -e "ssh -p $SSH_PORT" \
             --exclude='.git' \
             --exclude='.gitignore' \
             --exclude='.gitattributes' \
             --exclude='node_modules' \
             --exclude='.env' \
             --exclude='vite.config.js' \
-            ./ $SSH_USERNAME@$SSH_HOST:/var/www/fastuser/data/www/zonefloorball.ru/
-          
-            ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "
+            ./ $SSH_USERNAME@$SSH_HOST:$TEMP_DIR/
+
+          # Копируем файлы из временной директории в целевую от имени fastuser
+          ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "
+            sudo -u fastuser rsync -avz --delete \
+              --exclude='.git' \
+              --exclude='.gitignore' \
+              --exclude='.gitattributes' \
+              --exclude='node_modules' \
+              --exclude='.env' \
+              --exclude='vite.config.js' \
+              $TEMP_DIR/ /var/www/fastuser/data/www/zonefloorball.ru/
+
+            # Удаляем временную директорию
+            rm -rf $TEMP_DIR
+
+            # Выполняем сборку и настройку на VPS
             cd /var/www/fastuser/data/www/zonefloorball.ru &&
             sudo -u fastuser npm install &&
             sudo -u fastuser npm run build &&
