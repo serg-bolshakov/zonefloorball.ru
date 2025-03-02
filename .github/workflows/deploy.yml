@@ -1,7 +1,8 @@
 name: Deploy to VPS
+# предыдущий процесс деплоя предполагал использование Git на VPS (git fetch, git reset). После "радикального" обновления VPS с помощью FileZilla
+# мы удалили папку .git - теперь эти команды работать не будут... Сейчас для копирования файлов с GitHub будем использовать утилиту rsync, которая должна подойти нам для синхронизации файлов между локальной машиной и удалённым сервером.
 
 # Деплой запускается при пуше в ветку main
-# Checkout code: GitHub Actions клонирует репозиторий...
 # Set up SSH: Настраивает SSH-агент для подключения к серверу.
 
 # Deploy to server: Подключается к серверу по SSH и выполняет команды:
@@ -20,44 +21,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout code                                 # Клонирует репозиторий на runner GitHub Actions
         uses: actions/checkout@v4
 
-      - name: Install Node.js
+      - name: Install Node.js                               # Устанавливает Node.js (нужен для сборки проекта).
         uses: actions/setup-node@v4
         with:
             node-version: '18.14.0'  
 
-      - name: Install dependencies
+      - name: Install dependencies                          # Устанавливает зависимости через npm install (нужны для сборки).
         run: npm install
 
-      - name: Build project
+      - name: Build project                                 # Собирает проект через npm run build
         run: npm run build
 
-      - name: Deploy to VPS
+      - name: Deploy to VPS using rsync                     # Копирует собранные файлы на VPS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}   # Приватный SSH-ключ
           SSH_HOST: ${{ secrets.SSH_HOST }}                 # IP 
           SSH_USERNAME: 'bolsn'                             # Подключаемся как bolsn
           SSH_PORT: ${{ secrets.SSH_PORT }}                 # Порт SSH (обычно 22)
-          # вариант с git fetch и git reset --hard рабочий, но он может привести к потере локальных изменений на сервере, если они есть... надо подумать! 
-          # или спросить кого: может лучше использовать git pull, чтобы избежать возможных конфликтов: git pull origin main
-          # команда php artisan migrate --force применяет миграции без подтверждения... может быть это опасным? Надо подумать, что это именно то, что нам нужно...
           # команда ssh-keyscan добавляет хост VPS в список известных хостов, чтобы избежать ошибки StrictHostKeyChecking...
+          # Копируем файлы на VPS с помощью rsync: -avz --delete -e: -a: Архивный режим (сохраняет права доступа, временные метки и т.д.) / -v: Вывод подробной информации о процессе / -z: Сжатие данных при передаче / --delete: Удаляет файлы на VPS, которые отсутствуют в источнике 
+          # Здесь ./ указывает на текущую директорию (всё, что находится на runner), а целевая директория — /var/www/fastuser/data/www/zonefloorball.ru/.
+          # команда php artisan migrate --force применяет миграции без подтверждения... может быть это опасным? Надо подумать, что это именно то, что нам нужно...
           # после деплоя очищаем кэш Laravel-я, чтобы изменения вступили в силу. Добавляем в скрипт команду: php artisan optimize:clear
-          # Git выдал ошибку: fatal: detected dubious ownership in repository at '/var/www/fastuser/data/www/zonefloorball.ru' To add an exception for this directory, call: git config --global --add safe.directory /var/www/fastuser/data/www/zonefloorball.ru
-          # Из-за ошибки выше добавляем исключение для директории (заносим директорию проекта в список "безопасных" для Git): git config --global --add safe.directory /var/www/fastuser/data/www/zonefloorball.ru перед выполнением команд git fetch и git reset:
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
 
+          rsync -avz --delete -e "ssh -p $SSH_PORT" \
+            --exclude='.git' \
+            --exclude='.gitignore' \
+            --exclude='.gitattributes' \
+            --exclude='node_modules' \
+            --exclude='.env' \
+            --exclude='vite.config.js' \
+            ./ $SSH_USERNAME@$SSH_HOST:/var/www/fastuser/data/www/zonefloorball.ru/
+
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "
             cd /var/www/fastuser/data/www/zonefloorball.ru &&
-            git config --global --add safe.directory /var/www/fastuser/data/www/zonefloorball.ru &&
-            sudo -u fastuser git fetch origin &&
-            sudo -u fastuser git reset --hard origin/main &&
             sudo -u fastuser composer install --optimize-autoloader --no-dev &&
             sudo -u fastuser php artisan migrate --force &&
             sudo -u fastuser php artisan optimize:clear
