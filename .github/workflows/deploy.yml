@@ -62,7 +62,7 @@ jobs:
 
           # Копируем файлы из временной директории в целевую от имени fastuser
           ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "
-            sudo -u fastuser rsync -avz --delete \
+            sudo -u fastuser rsync -avz \ # Без --delete
               --exclude='.git' \
               --exclude='.gitignore' \
               --exclude='.gitattributes' \
