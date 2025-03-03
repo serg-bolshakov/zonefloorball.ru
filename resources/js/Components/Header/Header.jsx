@@ -36,7 +36,7 @@ const Header = ({
             <header>
                 <div className="header-top__line--welcome d-flex flex-sb flex-wrap">
                     <div className="header-top__line--left">
-                        <span className="welcome__text">Добро</span>&nbsp;
+                        <span className="welcome__text">Добро пожаловать к нам</span>&nbsp;
                         <span className="welcome__invitation">в <Link href="https://www.unihoc.com/teams" target="_blank">команду</Link> UNIHOC</span>
                     </div>
                     <div className="fs12">
