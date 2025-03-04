@@ -1,8 +1,15 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
+import { IIndividualUser, IOrgUser, User } from '../../Types/types';
+import { ICategoriesMenuArr } from '../../Types/types';
 
+interface IHeaderProps {
+    categoriesMenuArr: ICategoriesMenuArr;
+    user: User;
+    authBlockContentFinal: string;
+}
 
-const Header = ({ 
+const Header: React.FC<IHeaderProps> = ({ 
     categoriesMenuArr,
     authBlockContentFinal,
     user, 
@@ -15,18 +22,6 @@ const Header = ({
     if (!Array.isArray(unihocZoneRussiaArray)) {
         return <div>Данные unihocZoneRussiaArray не загружены или имеют неверный формат.</div>;
     }
-
-    // Проверка наличия данных
-    /*
-        if (!categoriesMenuArr || !categoriesMenuArr.UnihocZoneRussia || !Array.isArray(categoriesMenuArr.UnihocZoneRussia)) {
-            return (
-                <div>
-                    Ошибка: данные не загружены или имеют неверный формат.
-                    <pre>{JSON.stringify(categoriesMenuArr, null, 2)}</pre>
-                </div>
-            );
-        }
-    */
     
     const unihoc = Object.values(categoriesMenuArr.unihoc);
     const zone = Object.values(categoriesMenuArr.zone);

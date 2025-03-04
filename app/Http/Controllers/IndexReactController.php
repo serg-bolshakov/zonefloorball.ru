@@ -72,7 +72,7 @@
             }
                 
             $categoriesMenuArr = $this->getCategoriesMenu();
-            // dd($user);
+            // dd($categoriesMenuArr);
             return Inertia::render('Home', [
                 'categoriesMenuArr' => $categoriesMenuArr,
                 'authBlockContentFinal' => $authBlockContentFinal,

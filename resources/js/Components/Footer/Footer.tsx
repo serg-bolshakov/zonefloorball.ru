@@ -5,9 +5,10 @@ import Info from './Info';
 // добавляем компонент Modal
 import Modal from '../Modal';
 import { useModal } from '../../Contexts/ModalContext';
+import { ICategoriesMenuArr } from '../../Types/types';
 
 interface IFooterProps {
-    categoriesMenuArr: string[]; // Пример типизации пропсов
+    categoriesMenuArr: ICategoriesMenuArr;
 }
 
 const Footer: React.FC<IFooterProps> = ({ categoriesMenuArr }) => {
