@@ -36,7 +36,8 @@ jobs:
           SSH_USERNAME: 'bolsn'                             # Подключаемся как bolsn
           SSH_PORT: ${{ secrets.SSH_PORT }}                 # Порт SSH (обычно 22)
           # команда ssh-keyscan добавляет хост VPS в список известных хостов, чтобы избежать ошибки StrictHostKeyChecking...
-          # Копируем файлы на VPS с помощью rsync: -avz --delete -e: -a: Архивный режим (сохраняет права доступа, временные метки и т.д.) / -v: Вывод подробной информации о процессе / -z: Сжатие данных при передаче / --delete: Удаляет файлы на VPS, которые отсутствуют в источнике 
+          # Копируем файлы на VPS с помощью rsync: -avz --delete -e: -a: Архивный режим (сохраняет права доступа, временные метки и т.д.) 
+          #/ -v: Вывод подробной информации о процессе / -z: Сжатие данных при передаче / --delete: Удаляет файлы на VPS, которые отсутствуют в источнике 
           # Здесь ./ указывает на текущую директорию (всё, что находится на runner), а целевая директория — /var/www/fastuser/data/www/zonefloorball.ru/.
           # команда php artisan migrate --force применяет миграции без подтверждения... может быть это опасным? Надо подумать, что это именно то, что нам нужно...
           # после деплоя очищаем кэш Laravel-я, чтобы изменения вступили в силу. Добавляем в скрипт команду: php artisan optimize:clear
@@ -69,6 +70,7 @@ jobs:
               --exclude='node_modules' \
               --exclude='.env' \
               --exclude='vite.config.js' \
+              --exclude='/public/storage' \
               --exclude='resources/views/app.blade.php' \
               $TEMP_DIR/ /var/www/fastuser/data/www/zonefloorball.ru/
 
