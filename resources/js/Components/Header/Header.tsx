@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
-import { IIndividualUser, IOrgUser, User } from '../../Types/types';
-import { ICategoriesMenuArr } from '../../Types/types';
+import { ICategoriesMenuArr, User } from '../../Types/types';
+import axios from 'axios'; // можно использовать Inertia.js для запросов
 
 interface IHeaderProps {
     categoriesMenuArr: ICategoriesMenuArr;
@@ -9,22 +9,119 @@ interface IHeaderProps {
     authBlockContentFinal: string;
 }
 
+interface OrderResponse {
+    ordersCount: number;
+}
+
 const Header: React.FC<IHeaderProps> = ({ 
     categoriesMenuArr,
     authBlockContentFinal,
     user, 
 }) => {
+    // Стейты для счётчиков - данных, которые хранятся внутри компонента. TypeScript автоматически определяет тип состояния на основе начального значения. 
+    // Однако, если начальное значение не соответствует ожидаемому типу (например, null или данные из localStorage), нужно явно указать тип.
+    const [ordersCount, setOrdersCount] = useState<number>(0);
+    const [favoritesCount, setFavoritesCount] = useState<number>(0);
+    const [cartCount, setCartCount] = useState<number>(0);
+
+    /**
+     * Данные из localStorage возвращаются в виде строки (string) или null, если ключ отсутствует. Поэтому нужно:
+
+        Проверить, что данные не null.
+        Преобразовать строку в нужный тип (например, массив или объект).
+        Указать тип для переменной.
+
+        Как вариант:
+        
+        const favorites = localStorage.getItem('favorites');
+        const cart = localStorage.getItem('cart');
+
+        if (favorites) {
+        const parsedFavorites: Array<{ id: number; name: string }> = JSON.parse(favorites);
+        setFavoritesCount(parsedFavorites.length);
+        }
+
+        if (cart) {
+        const parsedCart: Array<{ id: number; quantity: number }> = JSON.parse(cart);
+        setCartCount(parsedCart.length);
+        }
+
+        Здесь:
+        localStorage.getItem возвращает string | null.
+        JSON.parse преобразует строку в объект или массив.
+        Мы явно указываем тип для parsedFavorites и parsedCart, чтобы TypeScript знал, как работать с этими данными.
+
+        Типизация данных для авторизованных пользователей
+        Если мы делаем запрос к API для получения данных, то нужно типизировать ответ. Мы используем axios:
+
+        interface OrderResponse {
+            ordersCount: number;
+        }
+
+        useEffect(() => {
+        if (user) {
+            axios.get<OrderResponse>('/api/orders')
+            .then((response) => {
+                setOrdersCount(response.data.ordersCount);
+            })
+            .catch((error) => {
+                console.error('Ошибка при загрузке данных:', error);
+            });
+        }
+        }, [user]);
+        
+        Здесь:
+        axios.get<OrderResponse> указывает, что ответ будет соответствовать типу OrderResponse.
+        response.data.ordersCount будет типом number, как указано в интерфейсе.
+     */
+
+    // Эффект для инициализации стейтов
+    useEffect(() => {
+        // Загрузка данных из локального хранилища для избранного и корзины
+        const favorites = localStorage.getItem('favorites');
+        const cart = localStorage.getItem('cart');
+        const orders = localStorage.getItem('orders');
+
+        // Загрузка данных для авторизованных пользователей
+        if (user) {
+            // Создаём маршрут и контроллер для получения данных (создаём API-эндпойнт в Laravel - сказал "своими словами" - не уверен, что применил правильную формулировку) в routes/api.php:
+            axios.get<OrderResponse>('/api/user-orders-count')
+            .then((response) => {
+                setOrdersCount(response.data.ordersCount);
+            })
+            .catch((error) => {
+                console.error('Ошибка при загрузке данных:', error);
+                // Можно добавить уведомление об ошибке - надо подумать как...
+            });
+        } else {
+            if (orders) {
+                setOrdersCount(JSON.parse(orders).length);
+            }
+        }
+
+        if (favorites) {
+            setFavoritesCount(JSON.parse(favorites).length);
+        }
+
+        if (cart) {
+            setCartCount(JSON.parse(cart).length);
+        }
+    }, [user]);
+
     // console.table(user); // Вывод в консоль
     // Преобразуем объект в массив
     const unihocZoneRussiaArray = Object.values(categoriesMenuArr.UnihocZoneRussia);
-
-    // Проверка, что данные являются массивом
-    if (!Array.isArray(unihocZoneRussiaArray)) {
-        return <div>Данные unihocZoneRussiaArray не загружены или имеют неверный формат.</div>;
-    }
-    
     const unihoc = Object.values(categoriesMenuArr.unihoc);
     const zone = Object.values(categoriesMenuArr.zone);
+
+    // Проверка, что полученные данные являются массивом:
+    if (!Array.isArray(unihocZoneRussiaArray)) {
+        return <div>Данные unihocZoneRussiaArray не загружены или имеют неверный формат.</div>;
+    } else if (!Array.isArray(unihoc)) {
+        return <div>Данные unihoc не загружены или имеют неверный формат.</div>;
+    } else if (!Array.isArray(zone)) {
+        return <div>Данные zone не загружены или имеют неверный формат.</div>;
+    }
 
     return (
         <>
@@ -255,7 +352,21 @@ const Header: React.FC<IHeaderProps> = ({
                     </span>
 
                     <div className="header-icon__block">
-                    
+                        {ordersCount > 0 && ( <div className="header-orders__counter header-logo__counter color-blue">{ ordersCount }</div> )}
+                        <Link className="" href="/profile?getorders=all"><img src="/storage/icons/orders-in-blue.png" alt="orders-icon" title="Покупки / Заказы" /></Link>
+                        <p><Link className="header-icon" href="/profile?getorders=all">Заказы</Link></p>
+                    </div>
+
+                    <div className="header-icon__block">
+                        {favoritesCount > 0 && ( <div className="header-favorites__counter header-logo__counter color-red">{favoritesCount}</div>)}
+                        <Link  className="" href="/products/favorites"><img src="/storage/icons/favorite.png" alt="favorite" title="Посмотреть избранное" /></Link>
+                        <p><Link className="header-icon" href="/products/favorites">Избранное</Link></p>
+                    </div>
+
+                    <div className="header-icon__block basket-logo__div">
+                        {cartCount > 0 && ( <div className="header-basket__counter header-logo__counter color-red">{ cartCount }</div> )}
+                        <Link className="" href="/products/basket"><img src="/storage/icons/icon-shopping-cart.png" alt="basket" title="Посмотреть корзину" /></Link>
+                        <p><Link className="header-icon" href="/products/basket">Корзина</Link></p>
                     </div>
                 </div>
 
