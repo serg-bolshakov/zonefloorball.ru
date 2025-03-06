@@ -1,10 +1,12 @@
+// resources/js/Components/Footer/Footer.tsx
+
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import RangeOfProducts from './RangeOfProducts';
 import Info from './Info';
 // добавляем компонент Modal
 import Modal from '../Modal';
-import { useModal } from '../../Contexts/ModalContext';
+import useModal from '../../Hooks/useModal'; // Новый путь к хуку
 import { ICategoriesMenuArr } from '../../Types/types';
 
 interface IFooterProps {

@@ -1,3 +1,5 @@
+// resources/js/Components/Modal.tsx
+
 import React, { ReactNode, useEffect } from 'react';
 
 // Компонент Modal принимает пропсы isOpen, onClose и children, и отображает модальное окно, если isOpen равно true.

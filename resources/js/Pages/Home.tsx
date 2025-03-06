@@ -3,7 +3,7 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import Footer from '../Components/Footer/Footer';
 import Header from '../Components/Header/Header';  // Импортируем компонент Header
-import { ModalProvider } from '../Contexts/ModalContext';
+import { ModalProvider } from '../Contexts/ModalProvider';
 import { ICategoriesMenuArr, User } from '../Types/types';
 
 interface IHomeProps {

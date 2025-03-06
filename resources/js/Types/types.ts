@@ -1,4 +1,5 @@
 // resources/js/Types/types.ts
+import { ReactNode } from 'react';
 
 // создаём базовый интерфейс для всех пользователей:
 export interface IUserBase {
@@ -139,3 +140,8 @@ export interface ICategoriesMenuArr {
     UnihocZoneRussia: TSecondLevel;
 }
 
+// Интерфейс для состояния модального окна
+export interface IModalState {
+    isOpen: boolean;
+    content: ReactNode | null; // ReactNode — это тип для любого React-элемента (компонент, строка, число и т.д.)
+}
