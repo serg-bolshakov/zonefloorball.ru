@@ -4,10 +4,11 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import RangeOfProducts from './RangeOfProducts';
 import Info from './Info';
-// добавляем компонент Modal
-import Modal from '../Modal';
-import useModal from '../../Hooks/useModal'; // Новый путь к хуку
+import Articles from './Articles';
+import Modal from '../Modal';                   // добавляем компонент Modal
+import useModal from '../../Hooks/useModal';    // Новый путь к хуку
 import { ICategoriesMenuArr } from '../../Types/types';
+import CustomersCares from "./CustomersCares";
 
 interface IFooterProps {
     categoriesMenuArr: ICategoriesMenuArr;
@@ -33,9 +34,11 @@ const Footer: React.FC<IFooterProps> = ({ categoriesMenuArr }) => {
                 </div>
                 <div className="footer-block">
                     <h2>СТАТЬИ И ЗАМЕТКИ</h2>
+                    <Articles />
                 </div>
                 <div className="footer-block">
                     <h2>ПОДДЕРЖКА ПОКУПАТЕЛЕЙ</h2>
+                    <CustomersCares />
                 </div>
             </footer>
 
