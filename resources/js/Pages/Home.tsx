@@ -2,7 +2,8 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import Footer from '../Components/Footer/Footer';
-import Header from '../Components/Header/Header';  // Импортируем компонент Header
+import Header from '../Components/Header/Header';
+import NavBarBreadCrumb from '../Components/NavBarBreadCrumb';
 import { ModalProvider } from '../Contexts/ModalProvider';
 import { ICategoriesMenuArr, User } from '../Types/types';
 
@@ -31,6 +32,10 @@ const Home: React.FC<IHomeProps> = ({title, robots, description, keywords, categ
                 user={user} 
                 categoriesMenuArr={categoriesMenuArr} 
                 authBlockContentFinal={authBlockContentFinal} 
+            />
+
+            <NavBarBreadCrumb
+                categoriesMenuArr={categoriesMenuArr} 
             />
             
             {/* и обернём всё в ModalProvider, чтобы контекст был доступен всем дочерним компонентам: */}

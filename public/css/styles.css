@@ -659,7 +659,6 @@ footer a:active {
     overflow-x: scroll;
     -ms-overflow-style: none;
     scrollbar-width: none;
-    /* align-items: center; */
     margin: 0 0 14px 0;
     font-family: 'Inter';
 }
@@ -667,28 +666,15 @@ footer a:active {
 /* Style the list */
 ul.breadcrumb {
     display: flex;
-    align-items: center;
     flex-direction: row;
     flex-wrap: nowrap;
-    /* padding: 5px 8px; */
     list-style: none;
     margin-top: 12px;
 }
   
 /* Display list items side by side */
 ul.breadcrumb li {
-    display: inline-block;
-    font-size: 14px;
     white-space:nowrap;
-    text-align: center;
-}
-
-ul.breadcrumb li:not(:first-child) {
-    padding: 5px 5px 5px 5px;
-}
-
-ul.breadcrumb li:first-child {
-    padding: 5px 5px 5px 0;
 }
 
 /* Стиль активной/текущей ссылки */
@@ -703,7 +689,8 @@ ul.breadcrumb li a.activeBreadcrumb:hover {
 
 /* Add a color to all links inside the list */
 ul.breadcrumb li a {
-    color: #0275d8;
+    font-size: 14px;
+    color: #6f7376;
     text-decoration: none;
 }
 
@@ -715,6 +702,7 @@ ul.breadcrumb li a:hover {
 
 .nav-bar__ul-li {
     display: inline-block;
+    margin-left: 16px;
     vertical-align: middle;
     height: 2px;
     border: 6px solid transparent;
