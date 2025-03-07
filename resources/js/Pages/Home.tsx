@@ -3,9 +3,11 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import Footer from '../Components/Footer/Footer';
 import Header from '../Components/Header/Header';
+import Video from '../Components/Video/Video';
 import NavBarBreadCrumb from '../Components/NavBarBreadCrumb';
 import { ModalProvider } from '../Contexts/ModalProvider';
 import { ICategoriesMenuArr, User } from '../Types/types';
+import MainShowcase from '../Components/Main/Showcase';
 
 interface IHomeProps {
     title: string;
@@ -37,6 +39,16 @@ const Home: React.FC<IHomeProps> = ({title, robots, description, keywords, categ
             <NavBarBreadCrumb
                 categoriesMenuArr={categoriesMenuArr} 
             />
+
+            <div className="container-main d-flex flex-sb flex-wrap">
+                <main>
+                    <MainShowcase />
+                </main>
+
+                <aside className="aside-right">
+                    <Video />
+                </aside>
+            </div>
             
             {/* и обернём всё в ModalProvider, чтобы контекст был доступен всем дочерним компонентам: */}
             <ModalProvider>
@@ -49,6 +61,7 @@ const Home: React.FC<IHomeProps> = ({title, robots, description, keywords, categ
 };
 
 export default Home;
+
 
 //В компоненте Home мы уже передаём user как пропс. Далее передаём юзера в компонент Header...
 /*
