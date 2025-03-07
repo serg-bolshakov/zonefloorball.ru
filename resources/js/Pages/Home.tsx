@@ -1,3 +1,4 @@
+// resources/js/Pages/Home.tsx
 // import '../../../public/css/styles.css'; // Сделали импорт css в app.blade.php
 import React from 'react';
 import { Helmet } from 'react-helmet';
@@ -8,6 +9,7 @@ import NavBarBreadCrumb from '../Components/NavBarBreadCrumb';
 import { ModalProvider } from '../Contexts/ModalProvider';
 import { ICategoriesMenuArr, User } from '../Types/types';
 import MainShowcase from '../Components/Main/Showcase';
+import { ToastContainer, Slide, Zoom, Flip, Bounce } from 'react-toastify'; // Для начала установил библиотеку react-toastify для создания Toast-уведомлений в React.: npm install react-toastify
 
 interface IHomeProps {
     title: string;
@@ -56,6 +58,7 @@ const Home: React.FC<IHomeProps> = ({title, robots, description, keywords, categ
                     categoriesMenuArr={categoriesMenuArr}
                 />
             </ModalProvider>
+            <ToastContainer transition={Slide} />
         </>
     );
 };

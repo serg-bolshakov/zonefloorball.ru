@@ -1,7 +1,7 @@
 import './bootstrap';                                       // это нам досталось "из коробки" Laravel
 import { createInertiaApp } from '@inertiajs/react';        // клиентская часть — это функция из библиотеки @inertiajs/react, которая помогает создать Inertia-приложение. 
 import { createRoot } from 'react-dom/client';              // это функция из react-dom/client, которая используется для создания корневого элемента, в который будет рендериться React-приложение. 
-
+import 'react-toastify/dist/ReactToastify.css';
 
 const element = document.querySelector('#app');
 if(element) {
