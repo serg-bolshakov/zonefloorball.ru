@@ -207,10 +207,11 @@
                             }
                         }
                     }
-                    //dump($res);
+                    // dd($res);
                 return $res;
             }
         
+            /* походу мы не используем здесь эту функцию...
             private function getBrandedCategories($brandId = 0) {
                 $brandedCategoriesArr = [];
                 
@@ -370,7 +371,8 @@
                 }
                 return $brandedCategoriesArr;
             }
-            
+            */
+
             private function getCategoriesMenu() {
                 $categoriesMenuArr = [];
         

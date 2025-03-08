@@ -42,7 +42,6 @@ Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [CardControlle
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
 Route::match(['get', 'post'], '/products/favorites', [PackageController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
-// Route::get('/products/catalog', ['App\\Http\\Controllers\\CatalogController', 'index']);
 Route::match(['get', 'post'], '/products/{category?}', ['App\\Http\\Controllers\\CatalogController', 'index']);
 
 // Маршруты для Inertia.js

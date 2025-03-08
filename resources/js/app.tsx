@@ -1,22 +1,26 @@
 import './bootstrap';                                       // это нам досталось "из коробки" Laravel
 import { createInertiaApp } from '@inertiajs/react';        // клиентская часть — это функция из библиотеки @inertiajs/react, которая помогает создать Inertia-приложение. 
+import { ReactElement } from 'react';
 import { createRoot } from 'react-dom/client';              // это функция из react-dom/client, которая используется для создания корневого элемента, в который будет рендериться React-приложение. 
-import 'react-toastify/dist/ReactToastify.css';
+import 'react-toastify/dist/ReactToastify.css';             // подключает стили для библиотеки react-toastify (уведомления).
 
-const element = document.querySelector('#app');
+const element = document.querySelector('#app');             // ищет элемент с id app, в который будет монтироваться React-приложение.
 if(element) {
     // создается Inertia-приложение, которое принимает данные от Laravel и будет предавать их в React-компонент, а React рендерит их на стороне клиента (странице)
-    createInertiaApp({
-        resolve: name => {
+    createInertiaApp({                                      // функция, которая инициализирует Inertia-приложение...
+        resolve: (name: string): Promise<ReactElement> => { // функция для динамического импорта компонентов...
             // Пробуем загрузить .tsx, если не получится — загружаем .jsx
             return import(`./Pages/${name}.tsx`).
             then(module => module.default)
             .catch(() => import(`./Pages/${name}.jsx`))
-            .catch(() => import('./Pages/NotFound')); // Добавим обработку ошибок для динамического импорта: запасной компонент,
+            .catch((error) => {                             // Добавим обработку ошибок для динамического импорта: запасной компонент...
+                console.error(`Ошибка при загрузке компонента ${name}:`, error);
+                return import('./Pages/NotFound');
+            });       
         },
         setup({ el, App, props }) {
             const root = createRoot(el);
-            root.render(<App {...props} />);    // рендерит корневой компонент App в созданный корневой элемент, передавая ему все свойства (props), которые были получены из серверной части
+            root.render(<App {...props} />);                // рендерит корневой компонент App в созданный корневой элемент, передавая ему все свойства (props), которые были получены из серверной части
         },
     });
 }
