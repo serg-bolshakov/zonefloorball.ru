@@ -1,15 +1,11 @@
 // resources/js/Pages/Home.tsx
-// import '../../../public/css/styles.css'; // Сделали импорт css в app.blade.php
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import Footer from '../Components/Footer/Footer';
-import Header from '../Components/Header/Header';
 import Video from '../Components/Video/Video';
 import NavBarBreadCrumb from '../Components/NavBarBreadCrumb';
-import { ModalProvider } from '../Contexts/ModalProvider';
 import { ICategoriesMenuArr, User } from '../Types/types';
 import MainShowcase from '../Components/Main/Showcase';
-import { ToastContainer, Slide, Zoom, Flip, Bounce } from 'react-toastify'; // Для начала установил библиотеку react-toastify для создания Toast-уведомлений в React.: npm install react-toastify
+import MainLayout from '../Layouts/MainLayout';
 
 interface IHomeProps {
     title: string;
@@ -25,40 +21,32 @@ const Home: React.FC<IHomeProps> = ({title, robots, description, keywords, categ
     
     return (
         <>
-            <Helmet>
-                <title>{title}</title>
-                <meta name="description" content={description} />
-                <meta name="keywords" content={keywords} />
-                <meta name="robots" content={robots} />
-            </Helmet>
-            
-            <Header 
-                user={user} 
-                categoriesMenuArr={categoriesMenuArr} 
-                authBlockContentFinal={authBlockContentFinal} 
-            />
+            <MainLayout 
+                user={user}
+                categoriesMenuArr={categoriesMenuArr}
+                authBlockContentFinal={authBlockContentFinal}
+            >
+                <Helmet>
+                    <title>{title}</title>
+                    <meta name="description" content={description} />
+                    <meta name="keywords" content={keywords} />
+                    <meta name="robots" content={robots} />
+                </Helmet>
 
-            <NavBarBreadCrumb
-                categoriesMenuArr={categoriesMenuArr} 
-            />
-
-            <div className="container-main d-flex flex-sb flex-wrap">
-                <main>
-                    <MainShowcase />
-                </main>
-
-                <aside className="aside-right">
-                    <Video />
-                </aside>
-            </div>
-            
-            {/* и обернём всё в ModalProvider, чтобы контекст был доступен всем дочерним компонентам: */}
-            <ModalProvider>
-                <Footer 
-                    categoriesMenuArr={categoriesMenuArr}
+                <NavBarBreadCrumb
+                    categoriesMenuArr={categoriesMenuArr} 
                 />
-            </ModalProvider>
-            <ToastContainer transition={Slide} />
+
+                <div className="container-main d-flex flex-sb flex-wrap">
+                    <main>
+                        <MainShowcase />
+                    </main>
+
+                    <aside className="aside-right">
+                        <Video />
+                    </aside>
+                </div>
+            </MainLayout>    
         </>
     );
 };
