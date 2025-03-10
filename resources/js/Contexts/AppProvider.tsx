@@ -19,13 +19,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
 
     // Загрузка данных при монтировании компонента
     useEffect(() => {
-        axios.get('/api/initial-data', {
-            withCredentials: true,
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-            }
-        })
+        axios.get('/api/initial-data')
             .then(response => {
                 setUser(response.data.user);
                 setCategoriesMenuArr(response.data.categoriesMenuArr);
