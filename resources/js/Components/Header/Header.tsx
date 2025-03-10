@@ -1,28 +1,26 @@
+// resources/js/Components/Header/Header.tsx
 import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
-import { ICategoriesMenuArr, User } from '../../Types/types';
 import axios from 'axios'; // можно использовать Inertia.js для запросов
-
-interface IHeaderProps {
-    categoriesMenuArr: ICategoriesMenuArr;
-    user: User;
-    authBlockContentFinal: string;
-}
+import useAppContext from '../../Hooks/useAppContext';
 
 interface OrderResponse {
     ordersCount: number;
 }
 
-const Header: React.FC<IHeaderProps> = ({ 
-    categoriesMenuArr,
-    authBlockContentFinal,
-    user, 
-}) => {
+const Header: React.FC = () => {
+    const { user, categoriesMenuArr, authBlockContentFinal } = useAppContext();
+    
     // Стейты для счётчиков - данных, которые хранятся внутри компонента. TypeScript автоматически определяет тип состояния на основе начального значения. 
     // Однако, если начальное значение не соответствует ожидаемому типу (например, null или данные из localStorage), нужно явно указать тип.
     const [ordersCount, setOrdersCount] = useState<number>(0);
     const [favoritesCount, setFavoritesCount] = useState<number>(0);
     const [cartCount, setCartCount] = useState<number>(0);
+
+    // Если categoriesMenuArr ещё не загружено, показываем заглушку
+    if (!categoriesMenuArr) {
+        return <div>Загрузка данных...</div>;
+    }
 
     /**
      * Данные из localStorage возвращаются в виде строки (string) или null, если ключ отсутствует. Поэтому нужно:

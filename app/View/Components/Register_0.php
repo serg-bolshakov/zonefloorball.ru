@@ -13,7 +13,7 @@ use Illuminate\View\Component;
 
 use Illuminate\Auth\Events\Registered;      // должны убедиться, что запускаем событие Illuminate\Auth\Events\Registered после успешной регистрации пользователя...
 
-class Register extends Component
+class Register_0 extends Component
 {
     use TestInputTrait;
     /**

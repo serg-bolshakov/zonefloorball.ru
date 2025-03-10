@@ -1,8 +1,7 @@
-// resources/js/Components/Footer/RangeOfProducts.tsx
 import { Link } from '@inertiajs/react';
 import useAppContext from '../../Hooks/useAppContext';
 
-const RangeOfProducts = () => {
+const RangeOfProducts: React.FC = () => {
 
     const { categoriesMenuArr } = useAppContext();
     

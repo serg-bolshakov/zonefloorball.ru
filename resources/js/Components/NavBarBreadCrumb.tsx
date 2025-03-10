@@ -2,14 +2,18 @@
 
 import { ICategoriesMenuArr } from '../Types/types';
 import { Link } from '@inertiajs/react';
-
-interface INavBarBreadCrumbProps {
-    categoriesMenuArr: ICategoriesMenuArr;
-}
+import useAppContext from '../Hooks/useAppContext';
 
 // React.FC — это тип, предоставляемый React. Он расшифровывается как React Function Component (функциональный компонент React).
 // Это сокращение для React.FunctionComponent. Автоматически типизирует children как ReactNode. Упрощает типизацию пропсов по умолчанию.
-const NavBarBreadCrumb: React.FC<INavBarBreadCrumbProps> = ({ categoriesMenuArr }) => {
+const NavBarBreadCrumb: React.FC = () => {
+    const { categoriesMenuArr } = useAppContext();
+    
+    // Если categoriesMenuArr ещё не загружено, показываем заглушку
+    if (!categoriesMenuArr) {
+        return <div>Загрузка данных...</div>;
+    }
+    
     // Преобразуем объект в массив
     const categories = Object.values(categoriesMenuArr.UnihocZoneRussia);
 

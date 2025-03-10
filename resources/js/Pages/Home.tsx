@@ -3,7 +3,6 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import Video from '../Components/Video/Video';
 import NavBarBreadCrumb from '../Components/NavBarBreadCrumb';
-import { ICategoriesMenuArr, User } from '../Types/types';
 import MainShowcase from '../Components/Main/Showcase';
 import MainLayout from '../Layouts/MainLayout';
 
@@ -12,20 +11,13 @@ interface IHomeProps {
     robots: string;
     description: string;
     keywords: string;
-    categoriesMenuArr: ICategoriesMenuArr;
-    authBlockContentFinal: string;
-    user: User;
 }
 
-const Home: React.FC<IHomeProps> = ({title, robots, description, keywords, categoriesMenuArr, authBlockContentFinal, user}) => {
+const Home: React.FC<IHomeProps> = ({title, robots, description, keywords}) => {
     
     return (
         <>
-            <MainLayout 
-                user={user}
-                categoriesMenuArr={categoriesMenuArr}
-                authBlockContentFinal={authBlockContentFinal}
-            >
+            <MainLayout>
                 <Helmet>
                     <title>{title}</title>
                     <meta name="description" content={description} />
@@ -33,9 +25,7 @@ const Home: React.FC<IHomeProps> = ({title, robots, description, keywords, categ
                     <meta name="robots" content={robots} />
                 </Helmet>
 
-                <NavBarBreadCrumb
-                    categoriesMenuArr={categoriesMenuArr} 
-                />
+                <NavBarBreadCrumb />
 
                 <div className="container-main d-flex flex-sb flex-wrap">
                     <main>

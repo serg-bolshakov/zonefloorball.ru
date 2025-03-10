@@ -13,7 +13,7 @@ use Illuminate\Queue\SerializesModels;
 
 use Illuminate\Mail\Mailables\Address;          // 28.12.2024 https://github.com/russsiq/laravel-docs-ru/blob/9.x/docs/mail.md#configuring-the-sender
 
-class NewOrder extends Mailable
+class NewOrder1 extends Mailable
 {
     use Queueable, SerializesModels;
 

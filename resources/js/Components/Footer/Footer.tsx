@@ -9,12 +9,14 @@ import Modal from '../Modal';                   // добавляем компо
 import useModal from '../../Hooks/useModal';    // Новый путь к хуку
 import { ICategoriesMenuArr } from '../../Types/types';
 import CustomersCares from "./CustomersCares";
+import useAppContext from '../../Hooks/useAppContext';
 
-interface IFooterProps {
-    categoriesMenuArr: ICategoriesMenuArr;
-}
+// interface IFooterProps {
+//     categoriesMenuArr: ICategoriesMenuArr;
+// }
 
-const Footer: React.FC<IFooterProps> = ({ categoriesMenuArr }) => {
+const Footer: React.FC = () => {
+    const { categoriesMenuArr } = useAppContext();
 
     // Отображение модального окна в Footer. В к. Footer мы используем состояние модального окна:
     const { modal, closeModal } = useModal();
@@ -26,7 +28,7 @@ const Footer: React.FC<IFooterProps> = ({ categoriesMenuArr }) => {
             <footer className="footer">
                 <div className="footer-block">
                     <h2>АССОРТИМЕНТ</h2>
-                    <RangeOfProducts categoriesMenuArr={categoriesMenuArr} />
+                    <RangeOfProducts />
                 </div>
                 <div className="footer-block">
                     <h2>ИНФОРМАЦИЯ</h2>
