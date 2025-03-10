@@ -1,3 +1,4 @@
+// resources/js/Components/Footer/RangeOfProducts.tsx
 import { Link } from '@inertiajs/react';
 import useAppContext from '../../Hooks/useAppContext';
 

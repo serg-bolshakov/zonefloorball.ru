@@ -17,11 +17,6 @@ const Header: React.FC = () => {
     const [favoritesCount, setFavoritesCount] = useState<number>(0);
     const [cartCount, setCartCount] = useState<number>(0);
 
-    // Если categoriesMenuArr ещё не загружено, показываем заглушку
-    if (!categoriesMenuArr) {
-        return <div>Загрузка данных...</div>;
-    }
-
     /**
      * Данные из localStorage возвращаются в виде строки (string) или null, если ключ отсутствует. Поэтому нужно:
 
@@ -105,6 +100,11 @@ const Header: React.FC = () => {
             setCartCount(JSON.parse(cart).length);
         }
     }, [user]);
+
+    // Если categoriesMenuArr ещё не загружено, показываем заглушку
+    if (!categoriesMenuArr) {
+        return <div>Загрузка данных...</div>;
+    }
 
     // console.table(user); // Вывод в консоль
     // Преобразуем объект в массив

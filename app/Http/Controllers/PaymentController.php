@@ -42,39 +42,3 @@ class PaymentController extends Controller
         }
     }
 }
-
-// Так попробовать!
-public function handleResult(Request $request) {
-    if ($this->isValidSignature($request)) {
-        $this->updateOrderStatus($request->input('InvId'));
-        return $this->successResponse($request->input('InvId'));
-    }
-    return $this->errorResponse();
-}
-
-private function isValidSignature(Request $request): bool {
-    $password2 = "password_2";
-    $outSum = $request->input('OutSum');
-    $invId = $request->input('InvId');
-    $signatureValue = $request->input('SignatureValue');
-    $mySignatureValue = strtoupper(md5("$outSum:$invId:$password2"));
-    return $mySignatureValue === strtoupper($signatureValue);
-}
-
-private function updateOrderStatus(int $invId): void {
-    DB::transaction(function () use ($invId) {
-        $order = Order::lockForUpdate()->find($invId);
-        if ($order && $order->status !== 'paid') {
-            $order->update(['status' => 'paid']);
-        }
-    });
-}
-
-private function successResponse(int $invId): Response {
-    return response("OK$invId", 200);
-}
-
-private function errorResponse(): Response {
-    return response("ERROR: Invalid signature", 400);
-}
-

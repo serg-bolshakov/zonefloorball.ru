@@ -17,7 +17,6 @@
     class InitialDataController extends Controller {
         public function index(Request $request) {
             try {
-                dd('!');
                 # Метод url вернет URL без строки запроса, а метод fullUrl, включая строку запроса:
                 $locationString = $request->url();
                 $authBlockContentFinal = '';
@@ -73,7 +72,7 @@
                 }
                     
                 $categoriesMenuArr = $this->getCategoriesMenu();
-                dd($categoriesMenuArr);
+                // dd($categoriesMenuArr);
                 /* return Inertia::render('Home', [
                     'categoriesMenuArr' => $categoriesMenuArr,
                     'authBlockContentFinal' => $authBlockContentFinal,
