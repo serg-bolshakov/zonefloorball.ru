@@ -159,19 +159,19 @@ const Header: React.FC = () => {
                                                                 // Each child in a list should have a unique "key" prop...
                                                                 <div key={key}> 
                                                                     {value.prop_url_semantic && (
-                                                                        <a key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
+                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
                                                                             {value.prop_value_view}
-                                                                        </a>
+                                                                        </Link>
                                                                     )}
                                                                     {value.model && (
-                                                                        <a key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
+                                                                        <Link key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
                                                                             {value.model}
-                                                                        </a>
+                                                                        </Link>
                                                                     )}
                                                                     {value.url_semantic && (
-                                                                        <a key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
+                                                                        <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
                                                                             {value.category_view_2}
-                                                                        </a>
+                                                                        </Link>
                                                                     )}
                                                                     
                                                                     {/* {console.table(value[0])} */}
@@ -223,19 +223,19 @@ const Header: React.FC = () => {
                                                                 // Each child in a list should have a unique "key" prop...
                                                                 <div key={key}> 
                                                                     {value.prop_url_semantic && (
-                                                                        <a key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
+                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
                                                                             {value.prop_value_view}
-                                                                        </a>
+                                                                        </Link>
                                                                     )}
                                                                     {value.model && (
-                                                                        <a key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
+                                                                        <Link key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
                                                                             {value.model}
-                                                                        </a>
+                                                                        </Link>
                                                                     )}
                                                                     {value.url_semantic && (
-                                                                        <a key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
+                                                                        <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
                                                                             {value.category_view_2}
-                                                                        </a>
+                                                                        </Link>
                                                                     )}
                                                                     
                                                                     {/* {console.table(value[0])} */}
@@ -287,19 +287,19 @@ const Header: React.FC = () => {
                                                                 // Each child in a list should have a unique "key" prop...
                                                                 <div key={key}> 
                                                                     {value.prop_url_semantic && (
-                                                                        <a key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
+                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
                                                                             {value.prop_value_view}
-                                                                        </a>
+                                                                        </Link>
                                                                     )}
                                                                     {value.model && (
-                                                                        <a key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
+                                                                        <Link key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
                                                                             {value.model}
-                                                                        </a>
+                                                                        </Link>
                                                                     )}
                                                                     {value.url_semantic && (
-                                                                        <a key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
+                                                                        <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
                                                                             {value.category_view_2}
-                                                                        </a>
+                                                                        </Link>
                                                                     )}
                                                                     
                                                                     {/* {console.table(value[0])} */}

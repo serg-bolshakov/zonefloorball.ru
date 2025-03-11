@@ -15,6 +15,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SiteMapXmlController;
 use App\Http\Controllers\SiteMapController;
 use App\Http\Controllers\IndexReactController;
+use App\Http\Controllers\CatalogReactController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -33,9 +34,10 @@ use App\Models\Order;
 |
 */
 
-Route::get('/posts/{year}/{month}/{day}', function ($year, $month, $day) {
-    return 'Пост №: ' . $year;
-})->where('year', '2024')->where('month', '0[1-9]|1[012]')->where('day', '0[1-9]|1[0-9]|2[0-9]|3[01]');
+// Маршруты для Inertia.js
+Route::match(['get', 'post'],'/', [IndexReactController::class, 'index'])->name('home');
+Route::match(['get', 'post'],'/products/catalog', [CatalogReactController::class, 'index'])->name('home');
+// Route::match(['get', 'post'], '/', ['App\\Http\\Controllers\\IndexController', 'index']);
 
 
 Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [CardController::class, 'index']);
@@ -43,11 +45,6 @@ Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'sho
 Route::match(['get', 'post'], '/products/favorites', [PackageController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
 Route::match(['get', 'post'], '/products/{category?}', ['App\\Http\\Controllers\\CatalogController', 'index']);
-
-// Маршруты для Inertia.js
-Route::match(['get', 'post'],'/', [IndexReactController::class, 'index'])->name('home');
-// Route::match(['get', 'post'], '/', ['App\\Http\\Controllers\\IndexController', 'index']);
-
 Route::match(['get', 'post'], '/products', ['App\\Http\\Controllers\\ProductController', 'show']);
 Route::match(['get', 'post'], '/lk', [LkController::class, 'index']);
 Route::match(['get', 'post'], '/profile', [ProfileController::class, 'index'])->middleware(['verified']);
