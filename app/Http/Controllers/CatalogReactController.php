@@ -15,9 +15,7 @@
     use Inertia\Inertia;
 
     class CatalogReactController extends Controller {
-        use ArrayTrait;
-        use CategoryTrait;
-        use FilterTrait;
+        use ArrayTrait, CategoryTrait, FilterTrait;
 
         public $requestWithFilters;
         public function __construct(Request $request)

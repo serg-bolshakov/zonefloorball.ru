@@ -1,66 +1,91 @@
 <?php
+// app/Services/Catalog/UrlParserService.php - сервис, который будет заниматься "парсингом" URL и обработкой параметров запроса.
+namespace App\Services\Catalog;
 
-namespace App\View\Components;
-use Illuminate\Http\Request; // подключим класс Request
-use Illuminate\Support\Facades\DB;  // подключаем фасад DB - Построитель запросов позволяет отправлять запросы к базе, используя PHP команды
-
-use App\Models\Product;
 use App\Traits\CategoryTrait;
 use App\Traits\ArrayTrait;
 
-use Closure;
-use Illuminate\Contracts\View\View;
-use Illuminate\View\Component;
+use Illuminate\Support\Facades\DB; // подключаем фасад DB - Построитель запросов позволяет отправлять запросы к базе, используя PHP команды
+use Illuminate\Http\Request;
+/* class UrlParserService - как можно было сделать по науке (подумать на досуге - сейчас пока берём тот вариант, который работает)
+    class UrlParserService
+    {
+        protected $request;
 
-class AssortimentCards extends Component {
+        public function __construct(Request $request)
+        {
+            
+            $this->request = $request;
+        }
 
-    use CategoryTrait;
-    use ArrayTrait;
-  
-    # для получения данных в классе компонента, для начала объявим атрибут свойством класса компонента:
-    public $requestWithFilters;     // a  работает и без записи свойства класса!!!
+        public function getCategoryId(): ?int
+        {
+            $category = $this->request->segment(2); // Получаем часть URL, например, "sticks"
+            return $this->resolveCategoryId($category); // Преобразуем в ID категории
+        }
 
-    # Теперь получим данные атрибута в конструкторе, указав объект запроса параметром действия, используя контроль типов:
+        public function getFilters(): array
+        {
+            return $this->request->except(['perPage', 'page', 'sortBy', 'sortOrder']);
+        }
+
+        protected function resolveCategoryId(?string $category): ?int
+        {
+            // Пример логики преобразования категории в ID
+            switch ($category) {
+                case 'sticks':
+                    return 1; // ID для клюшек
+                case 'balls':
+                    return 2; // ID для мячей
+                default:
+                    return null; // Общий каталог
+            }
+        }
+    }
+*/
+
+class UrlParserService
+{
+    use CategoryTrait, ArrayTrait;
+    
+    protected $request;
+
     public function __construct(Request $request)
     {
         # у нас будет доступна переменная $request, содержащая нужный нам объект запроса. Получаем GET-запрос из адресной строки и записываем его в свойство:
-        $this->requestWithFilters = $request->all();
-        // dd($this->requestWithFilters);
+        // $this->requestWithFilters = $request->all();
+        $this->requestWithFilters = $request->except(['perPage', 'page', 'sortBy', 'sortOrder']);
+        //dd($this->requestWithFilters);
         
-        # если идёт запрос товаром основной категории, то мы получаем массив всех подкатегорий:
+        # если идёт запрос товаров основной категории, то мы получаем массив всех подкатегорий:
         $this->requestMainCategoryWithSubCats = [];
-        if(empty($request->all())) { // в этом случае мы получаем запрос на ТОЛЬКО НА ОСНОВНУЮ категорию товаров, можем определить id  
+        if(empty($request->except(['perPage', 'page', 'sortBy', 'sortOrder']))) { // в этом случае мы получаем запрос на ТОЛЬКО НА ОСНОВНУЮ категорию товаров, можем определить id  
             $this->requestMainCategoryWithSubCats = $this->getCategoryProducts($this->getCategoryIdViaUrl()); 
         }
     }
 
-
-    public function render(): View|Closure|string
+    public function getCategoryId(): ?int
     {
+        return $this->getCategoryIdViaUrl();
+    }
+
+    public function getFilters(): array
+    {
+        $categoryId       = $this->getCategoryId();
         $categoriesIdsArr = [];
         $categoriesIdsStr = '';
-
-        $categoryId = $this->getCategoryIdViaUrl();
-        $filtersArr = $this->requestWithFilters;
-        
+        $filtersArr       = $this->requestWithFilters;
         $whereFromCategoryList = $whereFromProdModel = '1';
-        
-        // dump($categoryId);
 
         if(!empty($categoryId)) { 
             if(array_key_exists('category', $filtersArr)) {
-            //dd($categoryId);    
                 $categoriesIdsStr = '';
-                //dd($filtersArr);
                 foreach($filtersArr['category'] as $key=>$categorySlug) {
                     //dd($category);
                     $categoryId = $this->getCategoryIdViaSlug($categorySlug);
                     $categoriesIdsStr .= $categoryId . ','; 
                 }
-
                 $categoriesIdsStr = trim($categoriesIdsStr, ',');
-
-                //dd($categoriesIdsStr);
             } else {
                 $categoriesIdsArr = $this->getCategoryProducts($this->getCategoryIdViaUrl());
                 $whereFromCategoryList = '1';
@@ -75,7 +100,7 @@ class AssortimentCards extends Component {
         $filterBladeStiffnessProdIds = $filterBladeStiffnessPropIds = $filterHookStickProdIds = 
         $filterStickSizesSet = $filterStickShaftFlexProdIds = $filterProdPropIds = [];
         
-        // dd($this->requestWithFilters);
+        //dd($this->requestWithFilters);
         if(!empty($this->requestWithFilters)) {
             // dd($this->requestWithFilters);
             # сюда так же попадают запросы не из категорий (categoryId == null), а из каталога типа :
@@ -152,8 +177,7 @@ class AssortimentCards extends Component {
                 }
 
             } else {
-                //dd('!!!');
-                //dd($filtersArr);
+                // dd($filtersArr);
                 foreach($filtersArr as $key => $filterArr) {
                     if($key == 'brand') {
                         foreach($filterArr as $filter) {
@@ -223,71 +247,7 @@ class AssortimentCards extends Component {
         // dump($categoriesIdsArr);
         // dd($whereFromCategoryList);
 
-
-        $products = Product::with(['actualPrice', 'regularPrice', 'category', 'brand', 'properties'])
-            ->where('product_status_id', '=', 1)
-            ->when($filterBrandSet, function ($query, $filterBrandSet) {
-                $query->whereIn('brand_id', $filterBrandSet);
-            })
-            ->when($filterSizeSet, function ($query, $filterSizeSet) {
-                $query->whereIn('size_id', $filterSizeSet);
-            })
-            ->when($filterHookBladeProdIds, function ($query, $filterHookBladeProdIds) {
-                $query->whereIn('id', $filterHookBladeProdIds);
-            })
-            ->when($filterBladeStiffnessProdIds, function ($query, $filterBladeStiffnessProdIds) {
-                $query->whereIn('id', $filterBladeStiffnessProdIds);
-            })
-            ->when($filterHookStickProdIds, function ($query, $filterHookStickProdIds) {
-                $query->whereIn('id', $filterHookStickProdIds);
-            })
-            ->when($filterStickSizesSet, function ($query, $filterStickSizesSet) {
-                $query->whereIn('size_id', $filterStickSizesSet);
-            })
-            ->when($filterStickShaftFlexProdIds, function ($query, $filterStickShaftFlexProdIds) {
-                $query->whereIn('id', $filterStickShaftFlexProdIds);
-            })
-            ->when($filterProdPropIds, function ($query, $filterProdPropIds) {
-                $query->whereIn('id', $filterProdPropIds);
-            })
-            ->when($categoriesIdsArr, function ($query, $categoriesIdsArr) {
-                $query->whereIn('category_id', $categoriesIdsArr);
-            })
-            ->whereRaw($whereFromCategoryList) 
-            ->whereRaw($whereFromProdModel)
-        ->get();
-        //dd($products);
-        $productsArr = [];
-        $i = 0;
-
-        if(!empty($products)) {    
-            foreach($products as $product) {
-                $productsArr[$i]['title'] = $product->title;
-                $productsArr[$i]['prod_url_semantic'] = $product->prod_url_semantic;
-                $productsArr[$i]['img_link'] = $product->productShowCaseImage->img_link;
-                $productsArr[$i]['category'] = $product->category->category;
-                $productsArr[$i]['brand'] = $product->brand->brand ?? NULL;
-                $productsArr[$i]['model'] = $product->model  ?? NULL;
-                $productsArr[$i]['marka'] = $product->marka  ?? NULL;
-                $productsArr[$i]['price_actual'] = $product->actualPrice->price_value  ?? NULL;
-                $productsArr[$i]['price_regular'] = $product->regularPrice->price_value  ?? NULL;
-                $productsArr[$i]['prod_status'] = $product->product_status_id;
-                $i++;
-            }
-
-            # сортируем массив по цене товара: 
-            $key = 'price_actual'; 
-            $orderSort = SORT_ASC;
-            $productsArr = $this->array_multisort_value($productsArr, $key, $orderSort);
-            //dump($productsArr);
-            $prodQuantity = count($productsArr);
-        }
-         dd($productsArr);
-        // dd($prodQuantity);
-        
-        return view('components.assortiment-cards', [
-            'productsArr' => $productsArr,
-            'prodQuantity' => $prodQuantity,
-        ]);
+        //dd('finish');
+        return $this->requestWithFilters;
     }
 }

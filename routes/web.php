@@ -16,6 +16,7 @@ use App\Http\Controllers\SiteMapXmlController;
 use App\Http\Controllers\SiteMapController;
 use App\Http\Controllers\IndexReactController;
 use App\Http\Controllers\CatalogReactController;
+use App\Http\Controllers\ProductController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -36,7 +37,8 @@ use App\Models\Order;
 
 // Маршруты для Inertia.js
 Route::match(['get', 'post'],'/', [IndexReactController::class, 'index'])->name('home');
-Route::match(['get', 'post'],'/products/catalog', [CatalogReactController::class, 'index'])->name('home');
+Route::match(['get', 'post'],'/products/{category?}', [ProductController::class, 'index']);
+// Route::match(['get', 'post'],'/products/catalog', [CatalogReactController::class, 'index']);
 // Route::match(['get', 'post'], '/', ['App\\Http\\Controllers\\IndexController', 'index']);
 
 
@@ -44,8 +46,7 @@ Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [CardControlle
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
 Route::match(['get', 'post'], '/products/favorites', [PackageController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
-Route::match(['get', 'post'], '/products/{category?}', ['App\\Http\\Controllers\\CatalogController', 'index']);
-Route::match(['get', 'post'], '/products', ['App\\Http\\Controllers\\ProductController', 'show']);
+//Route::match(['get', 'post'], '/products/{category?}', ['App\\Http\\Controllers\\CatalogController', 'index']);
 Route::match(['get', 'post'], '/lk', [LkController::class, 'index']);
 Route::match(['get', 'post'], '/profile', [ProfileController::class, 'index'])->middleware(['verified']);
 

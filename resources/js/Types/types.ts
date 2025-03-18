@@ -145,3 +145,50 @@ export interface IModalState {
     isOpen: boolean;
     content: ReactNode | null; // ReactNode — это тип для любого React-элемента (компонент, строка, число и т.д.)
 }
+
+export interface IProduct {
+    id: number;                                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    article?: number | null;
+    title: string;                                  // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    category?: string | null;                       // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    category_id?: number | null;
+    brand?: string | null;                          // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    brand_id?: number | null;
+    model?: string | null;                          // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    marka?: string | null;                          // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    size_id?: number | null;
+    product_unit_id?: number | null;
+    colour?: string | null;
+    material?: string | null;   
+    weight?: number | null;
+    prod_desc?: string | null;
+    prod_url_semantic?: string;                      // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    iff_id?: number | null;
+    product_ean?: number | null;
+    actual_price?: number | null;
+    price_actual?: number | null;                    // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    regular_price?: number | null;
+    price_regular?: number | null;                   // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    product_status_id?: number | null;
+    prod_status?: number | null;                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    img_link?: string | null;                        // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+}
+
+export interface IProductsResponse {
+    data: IProduct[]; // Массив товаров
+    links: {
+        first: string | null;
+        last: string | null;
+        prev: string | null;
+        next: string | null;
+    };
+    meta: {
+        current_page: number;
+        from: number;
+        last_page: number;
+        path: string;
+        per_page: number;
+        to: number;
+        total: number;
+    };
+}

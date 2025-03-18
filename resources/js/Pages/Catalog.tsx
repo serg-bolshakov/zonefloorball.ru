@@ -3,7 +3,9 @@ import React from 'react';
 import { Helmet } from 'react-helmet';
 import NavBarBreadCrumb from '../Components/NavBarBreadCrumb';
 import MainLayout from '../Layouts/MainLayout';
+import { IProductsResponse } from '../Types/types';
 import AsideAccordionAll from '../Components/Catalog/AsideAccordionAll';
+import AssortimentCards from '../Components/AssortimentCards';
 
 interface ICatalogProps {
     title: string;
@@ -12,10 +14,42 @@ interface ICatalogProps {
     keywords: string;
     catalogCategoryName: string;
     catalogCategoryTitleImg: string;
+    catName: string;
     catDescription: string;
+    filtersSetComponent: string;
+    products: IProductsResponse;       // Добавляем продукты - products обязателен — это не просто массив, а объект с пагинацией...
+    filters?: Record<string, string>;   // Добавляем фильтры
+    sortBy?: string;
+    sortOrder?: string;
+    categoryId?: number;
 }
 
-const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords, catalogCategoryName, catalogCategoryTitleImg, catDescription}) => {
+const defaultProducts: IProductsResponse = {
+    data: [],
+    links: {
+        first: null,
+        last: null,
+        prev: null,
+        next: null,
+    },
+    meta: {
+        current_page: 1,
+        from: 1,
+        last_page: 1,
+        path: '',
+        per_page: 6,
+        to: 1,
+        total: 0,
+    },
+};
+
+const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords, catalogCategoryName, catalogCategoryTitleImg, catDescription,
+    products = defaultProducts, // Используем значение по умолчанию
+    filters  = {},              // Значение по умолчанию
+    sortBy,
+    sortOrder,
+    categoryId,
+}) => {
     return (
         <>
             <MainLayout>
@@ -41,7 +75,9 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                         </div>
                         <AsideAccordionAll />
                         </aside>   
-                        {/* <x-assortiment-cards /> */}
+                        <section className="assortiment-cards">
+                            <AssortimentCards products={products} />
+                        </section>
                     </div>
                 </main>
 

@@ -4067,3 +4067,7 @@ modal-button:hover {
 .sitemap-content a:hover {
     color: #0056b3;
 }
+
+.nobr {
+    white-space: nowrap;
+}
