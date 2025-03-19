@@ -35,11 +35,11 @@ class ProductController extends Controller
         $filters    = $this->urlParser->getFilters();
         $filtersArr = $this->urlParser->getFilters();
         // dump($filters);
-        $perPage    = $request->input('perPage', 6);
-        $page       = $request->input('page', 1);
+        $perPage    = (int)$request->input('perPage', 6);
+        $page       = (int)$request->input('page', 1);
         $sortBy     = $request->input('sortBy', 'actual_price');
         $sortOrder  = $request->input('sortOrder', 'asc');
-
+        
         // Создаём базовый запрос
         $query = Product::query()
             ->with(['category', 'brand', 'properties', 'productShowCaseImage',])
@@ -162,17 +162,19 @@ class ProductController extends Controller
                 Бренд ZONE вошёл в историю в 2011-м году, произведя революцию в самом понимании и представлении игры в флорбол. 
                 Это, пожалуй, лучшее, что есть на сегодня в мире.',
             'filtersSetComponent' => $categoryInfo ? $categoryUrlSemantic : '',
-            'products' => new ProductCollection($products),
+            'products' => new ProductCollection($products),  // Inertia.js использует JSON для передачи данных между Laravel и React. Когда мы передаём объект ProductCollection, он сериализуется в JSON. В процессе сериализации некоторые свойства объекта LengthAwarePaginator (например, lastPage, total, perPage и т.д.) могут быть преобразованы в массивы, если они имеют сложную структуру или если в процессе сериализации происходит дублирование данных - это проблема: в react мы получаем не значения, а массиивы значений (дублирование), что приводит к проблемам при рендеринге данных
+            // 'products' => (new ProductCollection($products))->response()->getData(true),
             'filters' => $filters,
             'sortBy' => $sortBy,
             'sortOrder' => $sortOrder,
             'categoryId' => $categoryId,
         ];
-
+        //dd($responseData);
         // Возвращаем ответ
-        return $categoryInfo
-            ? view('catalog.category', $responseData)
-            : Inertia::render('Catalog', $responseData);
+        // return $categoryInfo
+        //     ? view('catalog.category', $responseData)
+        //     : Inertia::render('Catalog', $responseData);
+        return Inertia::render('Catalog', $responseData);
         
     }
 

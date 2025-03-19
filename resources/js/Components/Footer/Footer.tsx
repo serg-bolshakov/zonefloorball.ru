@@ -4,8 +4,8 @@ import React from 'react';
 import RangeOfProducts from './RangeOfProducts';
 import Info from './Info';
 import Articles from './Articles';
-import Modal from '../Modal';                   // добавляем компонент Modal
-import useModal from '../../Hooks/useModal';    // Новый путь к хуку
+import Modal from '../Modal';                   
+import useModal from '../../Hooks/useModal';    
 import CustomersCares from "./CustomersCares";
 
 const Footer: React.FC = () => {

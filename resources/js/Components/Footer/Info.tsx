@@ -1,7 +1,7 @@
 // resources/js/Components/Footer/Info.tsx
 
 import React from 'react';
-import useModal from '../../Hooks/useModal'; // Новый путь к хуку
+import useModal from '../../Hooks/useModal';
 import AboutUs from '../Articles/AboutUs';
 import PaymentAndDelivery from '../Articles/PaymentAndDelivery';
 import ReturnRules from '../Articles/ReturnRules';

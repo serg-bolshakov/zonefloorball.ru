@@ -20,8 +20,8 @@ class ProductCollection extends ResourceCollection
         return [
             'data' => ProductResource::collection($this->collection),   // возвращает коллекцию ресурсов ? список товаров
             // Добавляем ссылки для пагинации: 
-            'links' => $this->getPaginationLinks(),
-            'meta' => $this->getMeta(),
+            // 'links' => $this->getPaginationLinks(),                  // Inertia.js использует JSON для передачи данных между Laravel и React. Когда мы передаём объект ProductCollection, он сериализуется в JSON. В процессе сериализации некоторые свойства объекта LengthAwarePaginator (например, lastPage, total, perPage и т.д.) могут быть преобразованы в массивы, если они имеют сложную структуру или если в процессе сериализации происходит дублирование данных - это проблема: в react мы получаем не значения, а массиивы значений (дублирование), что приводит к проблемам при рендеринге данных
+            // 'meta' => $this->getMeta(),
         ];
     }
 
