@@ -2,19 +2,25 @@
 import React from "react";
 import { Link } from '@inertiajs/react';
 import { IProductsResponse } from "../Types/types";
-import { useId } from 'react';      // useId доступен только в React 18 и выше
+// import { useId } from 'react';      // useId доступен только в React 18 и выше
 
 interface AssortimentCardsProps {
     products: IProductsResponse;
 }
 
 const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
-    const generateId = useId(); // Используем useId
-    console.log('Products:', products.meta); // Выводим продукты в консоль
+    // const generateId = useId(); // Используем useId
+    // console.log('Products:', products.meta); // Выводим продукты в консоль
     
     const totalPages = products.meta.last_page;
     const currentPage = products.meta.current_page;
     const maxPagesToShow = 3; // Максимальное количество отображаемых страниц
+    console.log('currentPage', currentPage);
+    console.log(Math.floor(maxPagesToShow / 2));
+    console.log(Math.max(2, currentPage - Math.floor(maxPagesToShow / 2)));
+    console.log('startPage: ', Math.max(2, currentPage - Math.floor(maxPagesToShow / 2)));
+    console.log('endPage', Math.min(totalPages - 1, (Math.max(2, currentPage - Math.floor(maxPagesToShow / 2))) + maxPagesToShow - 1));
+
 
     const getPageNumbers = () => {
         const pages = [];
@@ -24,9 +30,13 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
         // Добавляем первую страницу
         pages.push(1);
 
-        // Добавляем многоточие, если текущий блок страниц не начинается с 2
+        // Добавляем многоточие, если текущий блок страниц не начинается с 3
         if (startPage > 2) {
-            pages.push('...');
+            if(startPage === 3) {
+                pages.push(2);    
+            } else {
+                pages.push('...');
+            }
         }
 
         // Добавляем страницы вокруг текущей
@@ -141,9 +151,9 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                         </Link>
                     ))} */}
 
-                        {getPageNumbers().map(page => (
+                        {getPageNumbers().map((page, index) => (
                             page === '...' ? (
-                                <span key={'page-span' + page} className="pagination-link">...</span>
+                                <span key={index + 'page-span' + page} className="pagination-link">...</span>
                             ) : (
                                 <Link
                                     key={'page' + page}

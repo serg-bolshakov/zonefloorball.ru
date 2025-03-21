@@ -7,9 +7,12 @@ body {
 .d-block   { display: block; }
 .d-greed   { display: grid; }
 .d-none    { display: none; }
-.flex-sb   { justify-content: space-between; }
+.flex-sb   { justify-content: space-between;}
 .flex-sa   { justify-content: space-around; }
+.flex-jc-center    {justify-content: center;}
 .flex-wrap { flex-wrap: wrap; }
+.aline-items-center {align-items: center;}
+.aline-items-flex-start {align-items: flex-start;}
 
 .fs11 { font-size: 0.6875rem; }
 .fs12 { font-size: 0.75rem;   }
@@ -23,6 +26,10 @@ body {
 .bg-test {
     background-color: yellow;
 }
+
+.flex-test {
+    gap: 10px; /* Добавляем отступ между чекбоксом и текстом */
+} 
 
 .text-align-center {
     text-align: center;
@@ -1044,6 +1051,13 @@ ul.breadcrumb li a:hover {
     visibility: visible;
     opacity: 1;
 }
+
+.checkbox-label {
+    font-weight: 400;
+    font-style: normal;
+    font-size: 12px;
+    margin: 0; /* Убираем лишние отступы */
+}
   
 .pop-up__checkbox-block-prop-hint {
     position: relative;
@@ -1101,14 +1115,7 @@ ul.breadcrumb li a:hover {
     font-size: 0.75rem;
 }
 
-  /* Задумано, чтобы убрать квадратики у чекбоксов, но функцию чекбоксов не выполняют переключатели, хотя должны... нужно разобраться */
-  /* input[type="checkbox"],
-    input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    } */
-  
-  /* Для начала увеличим высоту строк и отодвинем label'ы от левого края, чтобы там поместились наши новые элементы: */
+/* Для начала увеличим высоту строк и отодвинем label'ы от левого края, чтобы там поместились наши новые элементы: */
 input[type="checkbox"] + label,
 input[type="radio"] + label {
     position: relative;
@@ -1117,8 +1124,10 @@ input[type="radio"] + label {
 }
   
 input[type="checkbox"] + label {
-    padding: 0 0 0 50px;
-    /* margin: 0 28px 0 0; */
+    padding: 0 0 0 50px; /* Уменьшим отступ слева для label */
+    margin: 0; /* Убираем лишние отступы */
+    display: flex;
+    align-items: center; /* Выравниваем текст по центру */
 }
   
 /* Дальше начинаем рисовать сами элементы. 
@@ -1126,27 +1135,29 @@ input[type="checkbox"] + label {
 input[type="checkbox"] + label:before {
     content: '';
     position: absolute;
-    top: -2px;
-    left:10px;
+    top: 50%; /* Центрируем псевдоэлемент по вертикали */
+    left: 10px;
     width: 30px;
     height: 15px;
     border-radius: 13px;
-    background:  rgb(248, 248, 228);
-    box-shadow: inset 0 2px 3px rgba(0,0,0,.2);
+    background: rgb(248, 248, 228);
+    box-shadow: inset 0 2px 3px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%); /* Сдвигаем псевдоэлемент на половину своей высоты вверх */
 }
     
 /* Дальше пропишем стили для элементов в статусе "включено": */
 input[type="checkbox"] + label:after {
     content: '';
     position: absolute;
-    top: 1px;
+    top: 50%; /* Центрируем псевдоэлемент по вертикали */
     left: 13px;
     width: 10px;
     height: 10px;
     border-radius: 10px;
-    background: #FFF;
-    box-shadow: 0 2px 5px rgba(0,0,0,.3);
-    transition: .2s;
+    background: #fff;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    transition: 0.2s;
+    transform: translateY(-50%); /* Сдвигаем псевдоэлемент на половину своей высоты вверх */
 }
 
 input[type="checkbox"]:checked + label:before {
@@ -1154,8 +1165,8 @@ input[type="checkbox"]:checked + label:before {
 }
   
 input[type="checkbox"]:checked + label:after {
-    left: 27px;
-}
+    left: 27px; /* Сдвигаем кружок вправо при активации чекбокса */
+  }
      
 .submit {
     cursor: pointer;
@@ -4076,7 +4087,7 @@ modal-button:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 20px 0;
+    margin: 20px auto;
 }
 
 .pagination-link {
@@ -4136,11 +4147,11 @@ select:hover {
 }
 
 .sorting {
-	display: inline-flex;
+    grid-column: 79 / -1; 
+    display: inline-flex;
     align-items: center;
     gap: 10px;
     border-radius: 5px;
-    border: 1px solid #cecece;
     background-color: transparent;
     text-decoration: none;
     max-width: 285px;
@@ -4148,10 +4159,26 @@ select:hover {
     color: #110f0f;
     font-family: Inter;
     font-size: 12px;
-    /* обрезаем текст, чтобы не вылезал за рамку */
     overflow: hidden;
-    white-space:nowrap;
+    white-space: nowrap;
     text-overflow: ellipsis;
-    -o-text-overflow: ellipsis;	
-    margin-bottom: 8px;
+    -o-text-overflow: ellipsis;
+}
+
+.sorting-container {
+    display: grid;
+    grid-template-columns: repeat(100, 1fr); 
+    gap: 10px; 
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .sorting-container {
+        grid-template-columns: 1fr;
+    }
+
+    .sorting {
+        grid-column: 1 / -1; /* Занимает всю ширину */
+        justify-self:end; 
+    }
 }

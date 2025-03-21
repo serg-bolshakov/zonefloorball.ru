@@ -8,6 +8,9 @@ class StickFilterCatalogService extends BaseFilterCatalogService
 {
     public function applyFilters(array $filters): Builder
     {
+        // Категория товаров
+        $this->query->where('category_id', '=', 1);
+        
         // Фильтры для клюшек
         if (isset($filters['hook'])) {
             $this->query->whereIn('hook', (array)$filters['hook']);

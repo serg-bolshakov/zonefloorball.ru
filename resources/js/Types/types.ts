@@ -78,7 +78,7 @@ export interface ICategoryMenuItem {
     /**
      * category_id - уникальный идентификатор категории.
      */
-    category_id?: number
+    category_id?: number;
     parent_id?: number;
     brand_id?: number;
     url_semantic?: string;

@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\InitialDataController  ;
 use App\Http\Controllers\UserOrdersCountController;
+use App\Http\Controllers\SticksAsideFiltersController;
 
 
 /*
@@ -25,8 +26,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('/user-orders-count', [UserOrdersCountController::class, 'index']);
 Route::get('/initial-data', [InitialDataController::class, 'index']);
-Route::get('/api/products', [ProductController::class, 'index']);
-
+Route::get('/sticks-aside-filters', [SticksAsideFiltersController::class, 'index']);
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);
 });

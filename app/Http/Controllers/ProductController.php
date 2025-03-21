@@ -34,7 +34,15 @@ class ProductController extends Controller
        
         $filters    = $this->urlParser->getFilters();
         $filtersArr = $this->urlParser->getFilters();
+
+        // Получаем информацию о категории
+        $categoryUrlSemantic = $this->getCategoryUrlSemantic();
+        $categoryInfo = $this->categoryService->getCategoryInfo($categoryUrlSemantic);
+        
         // dump($filters);
+        // dump($categoryUrlSemantic);
+        // dd($categoryId);
+
         $perPage    = (int)$request->input('perPage', 6);
         $page       = (int)$request->input('page', 1);
         $sortBy     = $request->input('sortBy', 'actual_price');
@@ -98,7 +106,7 @@ class ProductController extends Controller
         $this->applyPriceSubqueries($query);
        
         // Выбираем сервис для фильтрации
-        $filterService = CatalogServiceFactory::create($categoryId, $query);
+        $filterService = CatalogServiceFactory::create($categoryUrlSemantic, $query);
 
         // Применяем фильтры
         $filteredQuery = $filterService->applyFilters($filters);
@@ -141,10 +149,6 @@ class ProductController extends Controller
                 'prodQuantity' => $prodQuantity,
             ]);   
         */
-        
-        // Получаем информацию о категории
-        $categoryUrlSemantic = $this->getCategoryUrlSemantic();
-        $categoryInfo = $this->categoryService->getCategoryInfo($categoryUrlSemantic);
 
         // dd($products);
         // Формируем данные для ответа

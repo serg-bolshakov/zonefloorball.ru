@@ -5,6 +5,7 @@ import NavBarBreadCrumb from '../Components/NavBarBreadCrumb';
 import MainLayout from '../Layouts/MainLayout';
 import { IProductsResponse } from '../Types/types';
 import AsideAccordionAll from '../Components/Catalog/AsideAccordionAll';
+import AsideSticksWithFilters from '@/Components/Catalog/AsideSticksWithFilters';
 import AssortimentCards from '../Components/AssortimentCards';
 import { Inertia, Method } from '@inertiajs/inertia';
 // import { usePage } from '@inertiajs/react';
@@ -46,7 +47,7 @@ const defaultProducts: IProductsResponse = {
 };
 
 
-const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords, catalogCategoryName, catalogCategoryTitleImg, catDescription,
+const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords, catalogCategoryName, catalogCategoryTitleImg, catDescription, filtersSetComponent,
     products = defaultProducts, // Используем значение по умолчанию
     filters  = {},              // Значение по умолчанию
     sortBy = 'actual_price',
@@ -87,6 +88,19 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
         });
     };
 
+    const getAsideComponent = () => {
+        switch (filtersSetComponent) {
+            case 'sticks':
+                return <AsideSticksWithFilters />;
+            // case 'balls':
+            //     return <AsideBallsWithFilters filters={filters} />;
+            case '':
+                return <AsideAccordionAll />;
+            default:
+                return <AsideAccordionAll />;
+        }
+    };
+
     return (
         <>
             <MainLayout>
@@ -106,23 +120,24 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                     </section>
                     <NavBarBreadCrumb sortBy={sortBy} sortOrder={sortOrder} />
                     {/* Сортировка */}
-                    <div className="sorting">
-                        <span>Сортировано по: </span>
-                        <select value={currentSortBy} onChange={handleSortChange}>
-                            <option value="actual_price">цене</option>
-                            <option value="title">наименованию</option>
-                        </select>
-                        <select value={currentSortOrder} onChange={handleOrderChange}>
-                            <option value="asc">▲</option> 
-                            <option value="desc">▼</option>
-                        </select>
+                    <div className="sorting-container">
+                        <div className="sorting">
+                            <select value={currentSortOrder} onChange={handleOrderChange}>
+                                <option value="asc">▲</option> 
+                                <option value="desc">▼</option>
+                            </select>
+                            <span>отсортированы по: </span>
+                            <select value={currentSortBy} onChange={handleSortChange}>
+                                <option value="actual_price">цене</option>
+                            </select>
+                        </div>
                     </div>
                     <div className="products-content">
                         <aside className="aside-with-filters">
                         <div className="category-description">
                             <p>{ catDescription }</p>
                         </div>
-                        <AsideAccordionAll />
+                            {getAsideComponent()}
                         </aside>   
                         <section className="assortiment-cards">
                             <AssortimentCards products={products} />
