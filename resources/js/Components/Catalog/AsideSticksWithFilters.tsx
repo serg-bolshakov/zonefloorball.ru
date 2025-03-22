@@ -90,8 +90,16 @@ const AsideSticksWithFilters: React.FC = () => {
             <div className="prop-list">
                 {filterStickSizes.map((filterStickSize: IProductFilterItem) => (
                 <div key={filterStickSize.size_title + '-' + filterStickSize.size_value}>
-                    <input type="checkbox" checked={!!filterStickSize.isPropChecked} id={`size_${filterStickSize.size_value}`} 
-                    name="size[]" value={filterStickSize.size_value} />
+                    <input type="checkbox" checked={!!filterStickSize.isPropChecked} id={`size_${filterStickSize.size_value}`} name="size[]" value={filterStickSize.size_value} 
+                        onChange={(e) => {
+                            const updatedSizes = filterStickSizes.map(size => 
+                                size.size_value === filterStickSize.size_value
+                                ? {...size, isPropChecked: e.target.checked}
+                                : size
+                            );
+                            setFilterStickSizes(updatedSizes);
+                        }}
+                    />
                     <label htmlFor={`size_${filterStickSize.size_value}`}>
                         <div className="pop-up__checkbox-block-prop-hint">{filterStickSize.size_value}
                             <div className="pop-up__checkbox-block-prop-hint-text">
@@ -112,7 +120,16 @@ const AsideSticksWithFilters: React.FC = () => {
             <div className="prop-list">
                 {filterShaftFlexes.map((filterShaftFlex: IProductFilterItem) => (
                 <div key={filterShaftFlex.prop_title + '-' + filterShaftFlex.prop_value}  className="d-flex aline-items-center flex-test">
-                    <input type="checkbox" checked={!!filterShaftFlex.isPropChecked} id={`shaft_flex_${filterShaftFlex.prop_value}`} name="shaft_flex[]" value={filterShaftFlex.prop_value} />
+                    <input type="checkbox" checked={!!filterShaftFlex.isPropChecked} id={`shaft_flex_${filterShaftFlex.prop_value}`} name="shaft_flex[]" value={filterShaftFlex.prop_value} 
+                        onChange={(e) => {
+                            const updatedFlexes = filterShaftFlexes.map(flex => 
+                              flex.prop_value === filterShaftFlex.prop_value
+                              ? {...flex, isPropChecked: e.target.checked}
+                              : flex  
+                            );
+                            setFilterShaftFlexes(updatedFlexes);
+                        }}
+                    />
                     <label htmlFor={`shaft_flex_${filterShaftFlex.prop_value}`}><div className="checkbox-label">{filterShaftFlex.prop_value_view}</div></label>
                 </div>
                 ))}
@@ -126,7 +143,15 @@ const AsideSticksWithFilters: React.FC = () => {
             <div className="prop-list">
                 {brands.map((filterBrand: IProductFilterItem) => (
                     <div key={filterBrand.id}>
-                        <input type="checkbox" checked={!!filterBrand.isBrandChecked} id={`brand_${filterBrand.brand}`} name="brand[]" value={filterBrand.brand} 
+                        <input type="checkbox" checked={!!filterBrand.isBrandChecked} id={`brand_${filterBrand.brand}`} name="brand[]" value={filterBrand.brand}
+                            onChange={(e) => {
+                                const updatedBrands = brands.map(brand => 
+                                    brand.brand === filterBrand.brand
+                                    ? {...brand, isBrandChecked: e.target.checked}
+                                    : brand
+                                );
+                                setBrands(updatedBrands);
+                            }} 
                         />
                         <label htmlFor={`brand_${filterBrand.brand}`} className="checkbox-label">{filterBrand.brand_view}</label>
                     </div>

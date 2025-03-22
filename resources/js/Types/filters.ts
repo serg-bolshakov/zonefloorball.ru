@@ -16,7 +16,7 @@ export interface IProductFilterItem {
     brand_view?: string;
     description?: string;
     url?: string;
-    isBrandChecked?: string;
+    isBrandChecked?: boolean| string;
     prop_title?: string;
     prop_value?: string | number;
     prop_value_view?: string | number;
