@@ -1,5 +1,5 @@
 <?php
-
+// config/cors.php
 return [
 
     /*
@@ -16,7 +16,7 @@ return [
     */
 
     // 'paths' => ['api/*', 'sanctum/csrf-cookie'],
-
+    'paths' => ['api/*'], // Разрешить CORS для всех API-маршрутов
     'allowed_methods' => ['*'],
 
     'allowed_origins' => ['*'],

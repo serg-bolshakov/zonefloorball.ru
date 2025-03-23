@@ -29,6 +29,22 @@ class ProductController extends Controller
     }
     
     public function index(Request $request) {
+        $responseData = $this->getResponseData($request);
+        return Inertia::render('Catalog', $responseData);
+    }
+
+    public function catalogApi(Request $request) {
+        try {
+            $responseData = $this->getResponseData($request);
+            return $responseData;
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    protected function getResponseData(Request $request) {
         // Получаем данные из URL
         $categoryId = $this->urlParser->getCategoryId();
        
@@ -38,15 +54,19 @@ class ProductController extends Controller
         // Получаем информацию о категории
         $categoryUrlSemantic = $this->getCategoryUrlSemantic();
         $categoryInfo = $this->categoryService->getCategoryInfo($categoryUrlSemantic);
-        
-        // dump($filters);
-        // dump($categoryUrlSemantic);
-        // dd($categoryId);
 
         $perPage    = (int)$request->input('perPage', 6);
         $page       = (int)$request->input('page', 1);
         $sortBy     = $request->input('sortBy', 'actual_price');
         $sortOrder  = $request->input('sortOrder', 'asc');
+
+        //dump($perPage);
+        //dump($page);
+        //dump($sortBy);
+        //dump($sortOrder);
+        //dump($filters);
+        
+        //dd($categoryId);
         
         // Создаём базовый запрос
         $query = Product::query()
@@ -110,7 +130,7 @@ class ProductController extends Controller
 
         // Применяем фильтры
         $filteredQuery = $filterService->applyFilters($filters);
-
+        // dd($filteredQuery);
         // Пагинация
         $products = $filteredQuery->paginate($perPage, ['*'], 'page', $page);
         
@@ -174,12 +194,7 @@ class ProductController extends Controller
             'categoryId' => $categoryId,
         ];
         //dd($responseData);
-        // Возвращаем ответ
-        // return $categoryInfo
-        //     ? view('catalog.category', $responseData)
-        //     : Inertia::render('Catalog', $responseData);
-        return Inertia::render('Catalog', $responseData);
-        
+        return $responseData;
     }
 
     protected function applyPriceSubqueries($query) {

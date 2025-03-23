@@ -23,7 +23,7 @@ class StickFilterCatalogService extends BaseFilterCatalogService
         if (isset($filters['shaft_flex'])) {
             $this->query->whereIn('shaft_flex_id', (array)$filters['shaft_flex']);
         }
-
+        //dd($this->query);
         return $this->query;
     }
 }

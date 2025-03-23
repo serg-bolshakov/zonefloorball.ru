@@ -1,6 +1,6 @@
 // resources/js/Components/AssortimentCards.tsx
 import React from "react";
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import { IProductsResponse } from "../Types/types";
 // import { useId } from 'react';      // useId доступен только в React 18 и выше
 
@@ -16,12 +16,24 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
     const currentPage = products.meta.current_page;
     const maxPagesToShow = 3; // Максимальное количество отображаемых страниц
     console.log('currentPage', currentPage);
-    console.log(Math.floor(maxPagesToShow / 2));
-    console.log(Math.max(2, currentPage - Math.floor(maxPagesToShow / 2)));
-    console.log('startPage: ', Math.max(2, currentPage - Math.floor(maxPagesToShow / 2)));
-    console.log('endPage', Math.min(totalPages - 1, (Math.max(2, currentPage - Math.floor(maxPagesToShow / 2))) + maxPagesToShow - 1));
+    //console.log(Math.floor(maxPagesToShow / 2));
+    //console.log(Math.max(2, currentPage - Math.floor(maxPagesToShow / 2)));
+    //console.log('startPage: ', Math.max(2, currentPage - Math.floor(maxPagesToShow / 2)));
+    //console.log('endPage', Math.min(totalPages - 1, (Math.max(2, currentPage - Math.floor(maxPagesToShow / 2))) + maxPagesToShow - 1));
 
+    // Получаем текущие query-параметры из URL
+    const { url } = usePage();
+    // console.log('url:', url); // Отладочное сообщение: url: /products/sticks?page=9&sortBy=actual_price&sortOrder=desc
 
+    // Создаем абсолютный URL на основе текущего местоположения
+    const absoluteUrl = new URL(window.location.origin + url);
+    // console.log('absoluteUrl:', absoluteUrl); // Отладочное сообщение: absoluteUrl: объект: URL {origin: 'http://127.0.0.1:8000', protocol: 'http:', username: '', password: '', host: '127.0.0.1:8000', …}
+
+    const searchParams = new URLSearchParams(absoluteUrl.search);
+
+    // const sortBy = searchParams.get('sortBy') || 'actual_price';
+    // const sortOrder = searchParams.get('sortOrder') || 'asc';
+    
     const getPageNumbers = () => {
         const pages = [];
         let startPage = Math.max(2, currentPage - Math.floor(maxPagesToShow / 2));
@@ -67,6 +79,30 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
         });
     };
 
+    // Функция для формирования URL с учетом параметров сортировки
+    /*const getPageUrl = (page: number | string) => {
+        const params = new URLSearchParams({
+            page: page.toString(),
+            sortBy,
+            sortOrder,
+        });
+        return `?${params.toString()}`;
+    };
+    */
+    const getPageUrl = (page: number | string) => {
+        console.log('page:', page); // Отладочное сообщение
+        console.log('Search Params:', Object.fromEntries(searchParams.entries()));
+        const params = new URLSearchParams({
+            ...Object.fromEntries(searchParams.entries()), // Передаем все существующие параметры 
+            page: page.toString(),
+            // sortBy,
+            // sortOrder,
+        });
+
+         console.log('params:', params); // Отладочное сообщение
+         console.log('Generated URL:', `?${params.toString()}`); // Отладочное сообщение
+         return `?${params.toString()}`;
+    };
 
     return (
         <>
@@ -135,12 +171,23 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                 
                     {/* Пагинация */}
                     <div className="pagination-products">
-                        {products.links.prev && (
-                            <Link href={products.links.prev} className="pagination-link">
-                                &lt;&lt;
-                            </Link>
-                        )}
-
+                    {products.links.prev && (
+                        <Link href={getPageUrl(currentPage - 1)} className="pagination-link">
+                            &lt;&lt;
+                        </Link>
+                    )}
+                    {/* {products.links.prev && (
+                        <a
+                            href={getPageUrl(currentPage - 1)}
+                            className="pagination-link"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                window.location.href = getPageUrl(currentPage - 1);
+                            }}
+                        >
+                            &lt;&lt;
+                        </a>
+                    )} */}
                     {/* {Array.from({ length: products.meta.last_page }, (_, i) => i + 1).map(page => (
                         <Link
                             key={page}
@@ -151,25 +198,53 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                         </Link>
                     ))} */}
 
-                        {getPageNumbers().map((page, index) => (
-                            page === '...' ? (
-                                <span key={index + 'page-span' + page} className="pagination-link">...</span>
-                            ) : (
-                                <Link
-                                    key={'page' + page}
-                                    href={`?page=${page}`}
-                                    className={`pagination-link ${currentPage === page ? 'activeProduct' : ''}`}
-                                >
-                                    {page}
-                                </Link>
-                            )
-                        ))}
-
-                        {products.links.next && (
-                            <Link href={products.links.next} className="pagination-link">
-                                &gt;&gt;
+                    {getPageNumbers().map((page, index) => (
+                        page === '...' ? (
+                            <span key={index + 'page-span' + page} className="pagination-link">...</span>
+                        ) : (
+                            <Link
+                                key={'page' + page}
+                                href={getPageUrl(page)}
+                                className={`pagination-link ${currentPage === page ? 'activeProduct' : ''}`}
+                                preserveScroll // Сохраняет позицию скролла
+                                preserveState // Сохраняет состояние компонента
+                            >
+                                {page}
                             </Link>
-                        )}
+                        )
+
+                        // page === '...' ? (
+                        //     <span key={index + 'page-span' + page} className="pagination-link">...</span>
+                        // ) : (
+                        //     <a
+                        //         key={'page' + page}
+                        //         href={getPageUrl(page)}
+                        //         className={`pagination-link ${currentPage === page ? 'activeProduct' : ''}`}
+                        //         onClick={(e) => {
+                        //             e.preventDefault();
+                        //             window.location.href = getPageUrl(page);
+                        //         }}
+                        //     >
+                        //         {page}
+                        //     </a>
+                        // )
+                    ))}
+
+                    {products.links.next && (
+                        <Link href={getPageUrl(currentPage + 1)} className="pagination-link">
+                            &gt;&gt;
+                        </Link>
+                        // <a
+                        //     href={getPageUrl(currentPage + 1)}
+                        //     className="pagination-link"
+                        //     onClick={(e) => {
+                        //         e.preventDefault();
+                        //         window.location.href = getPageUrl(currentPage + 1);
+                        //     }}
+                        // >
+                        //     &gt;&gt;
+                        // </a>
+                    )}
                     </div>
                 </>
             ) : (

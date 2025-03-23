@@ -1,5 +1,5 @@
 // resources/js/Pages/Catalog.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import NavBarBreadCrumb from '../Components/NavBarBreadCrumb';
 import MainLayout from '../Layouts/MainLayout';
@@ -9,6 +9,7 @@ import AsideSticksWithFilters from '@/Components/Catalog/AsideSticksWithFilters'
 import AssortimentCards from '../Components/AssortimentCards';
 import { Inertia, Method } from '@inertiajs/inertia';
 // import { usePage } from '@inertiajs/react';
+// import axios from 'axios';
 
 interface ICatalogProps {
     title: string;
@@ -55,10 +56,17 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     categoryId,
 }) => {
     console.log(products);
-
     const [currentSortBy, setCurrentSortBy] = useState(sortBy);
     const [currentSortOrder, setCurrentSortOrder] = useState(sortOrder);
 
+    // Чтение параметров из URL при загрузке страницы
+    useEffect(() => {
+        const url = new URL(window.location.href);
+        const sortOrder = url.searchParams.get('sortOrder') || 'asc'; // По умолчанию 'asc'
+        setCurrentSortOrder(sortOrder);
+    }, [window.location.search]); // Во втором параметре передается массив зависимостей. В них входят значения, используемые функциями компонента. Отслеживаем изменения в query-параметрах
+
+    
     const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newSortBy = e.target.value;
         setCurrentSortBy(newSortBy);
@@ -74,19 +82,34 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
             replace: false,
         });
     };
+    
 
+/*
     const handleOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newSortOrder = e.target.value;
         setCurrentSortOrder(newSortOrder);
         console.log('Sort Order:', newSortOrder); // Отладка
-        Inertia.get(window.location.pathname, {
-            sortBy: currentSortBy,
-            sortOrder: newSortOrder,
-        }, {
-            preserveState: true,
-            replace: true,      // опция replace: true, Inertia.js заменяет текущую запись в истории браузера вместо добавления новой. Это может привести к тому, что URL не обновляется визуально, хотя состояние страницы меняется.
-        });
-    };
+        
+            console.log('Sort Order:', newSortOrder); // Отладка
+            Inertia.get('/products/catalog', {
+                sortOrder: newSortOrder,
+            }, {
+                onError: (errors) => {
+                    console.error('Ошибка Inertia.js:', errors);
+                }
+            });
+       
+*/
+const handleOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newSortOrder = e.target.value;
+    setCurrentSortOrder(newSortOrder);
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('sortOrder', newSortOrder);
+    url.searchParams.set('page', products.meta.current_page.toString()); // Добавляем текущую страницу
+
+    window.location.href = url.toString();
+};
 
     const getAsideComponent = () => {
         switch (filtersSetComponent) {
