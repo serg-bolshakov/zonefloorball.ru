@@ -75,36 +75,14 @@ const AsideSticksWithFilters: React.FC = () => {
 
     // Функция для обновления URL: Эта функция будет обновлять URL в зависимости от выбранных фильтров:
     const updateURL = (filterType: string, filterValue: string, isChecked: boolean) => {
-        /*const url = new URL(window.location.href);
-        const searchParams = new URLSearchParams(url.search);
-
-        // Удаляем индексы из параметров (например, hook[0] -> hook[])
-        const cleanFilterType = filterType.replace(/\[\d+\]/, '[]');
-
-        if (isChecked) {
-            searchParams.append(cleanFilterType, filterValue);
-        } else {
-            const values = searchParams.getAll(cleanFilterType);
-            searchParams.delete(cleanFilterType);
-            values.forEach(value => {
-                if (value !== filterValue) {
-                    searchParams.append(cleanFilterType, value);
-                }
-            });
-        }
-
-        url.search = searchParams.toString();
-        console.log('Новый URL:', url.toString());
-        window.location.href = url.toString();
-        */
-
-        console.log('Аргумент updateURL(filterType):', filterType);
-        console.log('Аргумент updateURL(filterValue):', filterValue);
-        console.log('Аргумент updateURL(isChecked):', isChecked);
-
+        
         const url = new URL(window.location.href);
         const searchParams = new URLSearchParams(url.search);
         console.log('searchParams:', searchParams);
+
+        // Удаляем параметр пагинации при изменении фильтров
+        searchParams.delete('page'); // Сбрасываем на первую страницу
+
         // Удаляем индексы из параметров (например, hook[0] -> hook[])
         const cleanFilterType = filterType.replace(/\[\d+\]/, '[]');
         console.log('cleanFilterType:', cleanFilterType);

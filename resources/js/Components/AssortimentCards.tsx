@@ -30,10 +30,9 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
     // console.log('absoluteUrl:', absoluteUrl); // Отладочное сообщение: absoluteUrl: объект: URL {origin: 'http://127.0.0.1:8000', protocol: 'http:', username: '', password: '', host: '127.0.0.1:8000', …}
 
     const searchParams = new URLSearchParams(absoluteUrl.search);
+    // console.log('Object.fromEntries(searchParams.entries()):', Object.fromEntries(searchParams.entries())); // Отладочное сообщение: Object.fromEntries(searchParams.entries()): {hook[0]: 'neutral'}
 
-    // const sortBy = searchParams.get('sortBy') || 'actual_price';
-    // const sortOrder = searchParams.get('sortOrder') || 'asc';
-    
+    // Функция для формирования пагинации страниц
     const getPageNumbers = () => {
         const pages = [];
         let startPage = Math.max(2, currentPage - Math.floor(maxPagesToShow / 2));
@@ -66,7 +65,7 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
             pages.push(totalPages);
         }
 
-        return pages;
+        return (totalPages > 1) ? pages : [];   // пагинацию возвращаем, если количество страниц больше одной...
     };
 
 
@@ -80,28 +79,13 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
     };
 
     // Функция для формирования URL с учетом параметров сортировки
-    /*const getPageUrl = (page: number | string) => {
-        const params = new URLSearchParams({
-            page: page.toString(),
-            sortBy,
-            sortOrder,
-        });
-        return `?${params.toString()}`;
-    };
-    */
     const getPageUrl = (page: number | string) => {
-        console.log('page:', page); // Отладочное сообщение
-        console.log('Search Params:', Object.fromEntries(searchParams.entries()));
         const params = new URLSearchParams({
             ...Object.fromEntries(searchParams.entries()), // Передаем все существующие параметры 
             page: page.toString(),
-            // sortBy,
-            // sortOrder,
         });
 
-         console.log('params:', params); // Отладочное сообщение
-         console.log('Generated URL:', `?${params.toString()}`); // Отладочное сообщение
-         return `?${params.toString()}`;
+        return `?${params.toString()}`;
     };
 
     return (
@@ -176,28 +160,7 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                             &lt;&lt;
                         </Link>
                     )}
-                    {/* {products.links.prev && (
-                        <a
-                            href={getPageUrl(currentPage - 1)}
-                            className="pagination-link"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                window.location.href = getPageUrl(currentPage - 1);
-                            }}
-                        >
-                            &lt;&lt;
-                        </a>
-                    )} */}
-                    {/* {Array.from({ length: products.meta.last_page }, (_, i) => i + 1).map(page => (
-                        <Link
-                            key={page}
-                            href={`?page=${page}`}
-                            className={`pagination-link ${products.meta.current_page === page ? 'activeProduct' : ''}`}
-                        >
-                            {page}
-                        </Link>
-                    ))} */}
-
+                    
                     {getPageNumbers().map((page, index) => (
                         page === '...' ? (
                             <span key={index + 'page-span' + page} className="pagination-link">...</span>
@@ -212,38 +175,12 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                                 {page}
                             </Link>
                         )
-
-                        // page === '...' ? (
-                        //     <span key={index + 'page-span' + page} className="pagination-link">...</span>
-                        // ) : (
-                        //     <a
-                        //         key={'page' + page}
-                        //         href={getPageUrl(page)}
-                        //         className={`pagination-link ${currentPage === page ? 'activeProduct' : ''}`}
-                        //         onClick={(e) => {
-                        //             e.preventDefault();
-                        //             window.location.href = getPageUrl(page);
-                        //         }}
-                        //     >
-                        //         {page}
-                        //     </a>
-                        // )
                     ))}
 
                     {products.links.next && (
                         <Link href={getPageUrl(currentPage + 1)} className="pagination-link">
                             &gt;&gt;
                         </Link>
-                        // <a
-                        //     href={getPageUrl(currentPage + 1)}
-                        //     className="pagination-link"
-                        //     onClick={(e) => {
-                        //         e.preventDefault();
-                        //         window.location.href = getPageUrl(currentPage + 1);
-                        //     }}
-                        // >
-                        //     &gt;&gt;
-                        // </a>
                     )}
                     </div>
                 </>
@@ -255,36 +192,3 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
 };
 
 export default AssortimentCards;
-
-// @for ($i = 0; $i < $prodQuantity; $i++)
-//     <div class="assortiment-card__block">
-//         <div class="assortiment-card__block-productImg">
-//             <a href = "/products/card/{{ $productsArr[$i]['prod_url_semantic'] }}"><img src="/storage/{{ $productsArr[$i]['img_link'] }}" alt="{{ $productsArr[$i]['category'] }} {{ $productsArr[$i]['brand'] }}
-//             {{ $productsArr[$i]['model'] }} {{ $productsArr[$i]['marka'] }}" title="{{ $productsArr[$i]['category'] }} {{ $productsArr[$i]['brand'] }} {{ $productsArr[$i]['model'] }} {{ $productsArr[$i]['marka'] }}"></a>
-//         </div>
-//         <div class="assortiment-card__block-productInfo">   
-//             <div class="assortiment-card_productName"><a href = "/products/card/{{ $productsArr[$i]['prod_url_semantic'] }}">{{ $productsArr[$i]['title'] }}</a></div>
-//             <div class="assortiment-card_productPrice">
-            
-//             <?php
-//                 /* 
-//                 если товар в архиве - цену не показываем
-                
-//                 если не назначена акция (специальная цена,       
-//                 то полный блок цен не выводится, его пропускаем - 
-//                 выводится только актуальная цена (следующий блок)*/
-//             ?>
-            
-//             @if($productsArr[$i]['prod_status'] != '2')
-//                 @if($productsArr[$i]['price_actual'] != $productsArr[$i]['price_regular'])
-//                 <p class="priceCurrentSale"><nobr><?= number_format($price= $productsArr[$i]['price_actual'], 0,",", " " ); ?> <sup>&#8381;</sup></nobr></p>
-//                 <p class="priceBeforSale"><nobr><?= number_format($price= $productsArr[$i]['price_regular'], 0,",", " " ); ?> <sup>&#8381;</sup></nobr></p>
-//                 <p class="priceDiscountInPercentage"><nobr>- <?= $discount = ceil(100 - ($price= $productsArr[$i]['price_actual']) / ($price= $productsArr[$i]['price_regular']) * 100); ?>&#37;</nobr></p>
-//                 @else
-//                 <p class="priceCurrent"><nobr><?= number_format($price= $productsArr[$i]['price_regular'], 0,",", " " ); ?> <sup>&#8381;</sup></nobr></p>
-//                 @endif
-//             @endif
-//             </div>
-//         </div>
-//     </div>
-// @endfor

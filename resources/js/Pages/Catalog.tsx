@@ -70,11 +70,10 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
 
     }, [window.location.search]); // Во втором параметре передается массив зависимостей. В них входят значения, используемые функциями компонента. Отслеживаем изменения в query-параметрах
 
-    
+    // Этот вариант не работает! Пока оставил, мы сортируем только по цене...
     const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newSortBy = e.target.value;
         setCurrentSortBy(newSortBy);
-        console.log('Sort By:', newSortBy); // Отладка
     
         Inertia.visit(window.location.pathname, {
             method: 'get' as Method,
@@ -87,33 +86,16 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
         });
     };
     
-
-/*
     const handleOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const newSortOrder = e.target.value;
         setCurrentSortOrder(newSortOrder);
-        console.log('Sort Order:', newSortOrder); // Отладка
-        
-            console.log('Sort Order:', newSortOrder); // Отладка
-            Inertia.get('/products/catalog', {
-                sortOrder: newSortOrder,
-            }, {
-                onError: (errors) => {
-                    console.error('Ошибка Inertia.js:', errors);
-                }
-            });
-       
-*/
-const handleOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newSortOrder = e.target.value;
-    setCurrentSortOrder(newSortOrder);
 
-    const url = new URL(window.location.href);
-    url.searchParams.set('sortOrder', newSortOrder);
-    url.searchParams.set('page', products.meta.current_page.toString()); // Добавляем текущую страницу
+        const url = new URL(window.location.href);
+        url.searchParams.set('sortOrder', newSortOrder);
+        url.searchParams.set('page', products.meta.current_page.toString()); // Добавляем текущую страницу
 
-    window.location.href = url.toString();
-};
+        window.location.href = url.toString();
+    };
 
     const getAsideComponent = () => {
         switch (filtersSetComponent) {
