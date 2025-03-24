@@ -20,16 +20,155 @@ const AsideSticksWithFilters: React.FC = () => {
     const [filterStickSizes, setFilterStickSizes] = useState<IProductFilterItem[]>([]);
     const [filterHooks, setFilterHooks] = useState<IProductFilterItem[]>([]);
 
+    // Функция для чтения параметров из URL
+    /**
+        В URL параметры выглядят так: http://127.0.0.1:8000/products/sticks?brand%5B0%5D=zone&hook%5B0%5D=left
+                    Это эквивалентно: http://127.0.0.1:8000/products/sticks?brand[0]=zone&hook[0]=left
+        метод searchParams.getAll('hook[]') ищет параметры в формате hook[]=left, а не hook[0]=left. Поэтому он возвращает пустой массив.
+        Нужно изменить формат параметров в URL, чтобы они соответствовали ожидаемому формату (hook[]=left вместо hook[0]=left). Это можно сделать на этапе обновления URL.
+     */
+    const getFiltersFromURL = () => {
+        /*const url = new URL(window.location.href);
+            const searchParams = new URLSearchParams(url.search);
+            console.log('Параметры из getFiltersFromURL: url', url);
+            console.log('Параметры из URL getFiltersFromURL: hooks', searchParams.getAll('hook[]'));
+
+            // Удаляем индексы из параметров (например, hook[0] -> hook[])
+            const cleanSearchParams = new URLSearchParams();
+            searchParams.forEach((value, key) => {
+                const cleanKey = key.replace(/\[\d+\]/, '[]');
+                cleanSearchParams.append(cleanKey, value);
+            });
+
+            return {
+                hooks: cleanSearchParams.getAll('hook[]'),
+                sizes: cleanSearchParams.getAll('size[]'),
+                flexes: cleanSearchParams.getAll('shaft_flex[]'),
+                brands: cleanSearchParams.getAll('brand[]'),
+            };
+        */
+
+        const url = new URL(window.location.href);
+        const searchParams = new URLSearchParams(url.search);
+
+        console.log('Текущий URL:', url.toString());
+        console.log('Все параметры:', Array.from(searchParams.entries()));
+
+        const cleanSearchParams = new URLSearchParams();
+        searchParams.forEach((value, key) => {
+            const cleanKey = key.replace(/\[\d+\]/, '[]');
+            cleanSearchParams.append(cleanKey, value);
+        });
+
+        const result = {
+            hooks: cleanSearchParams.getAll('hook[]'),
+            sizes: cleanSearchParams.getAll('size[]'),
+            flexes: cleanSearchParams.getAll('shaft_flex[]'),
+            brands: cleanSearchParams.getAll('brand[]'),
+        };
+
+        console.log('Считанные параметры:', result);
+        return result;
+    };
+
+    console.log('Параметры из URL:', getFiltersFromURL());
+
+    // Функция для обновления URL: Эта функция будет обновлять URL в зависимости от выбранных фильтров:
+    const updateURL = (filterType: string, filterValue: string, isChecked: boolean) => {
+        /*const url = new URL(window.location.href);
+        const searchParams = new URLSearchParams(url.search);
+
+        // Удаляем индексы из параметров (например, hook[0] -> hook[])
+        const cleanFilterType = filterType.replace(/\[\d+\]/, '[]');
+
+        if (isChecked) {
+            searchParams.append(cleanFilterType, filterValue);
+        } else {
+            const values = searchParams.getAll(cleanFilterType);
+            searchParams.delete(cleanFilterType);
+            values.forEach(value => {
+                if (value !== filterValue) {
+                    searchParams.append(cleanFilterType, value);
+                }
+            });
+        }
+
+        url.search = searchParams.toString();
+        console.log('Новый URL:', url.toString());
+        window.location.href = url.toString();
+        */
+
+        console.log('Аргумент updateURL(filterType):', filterType);
+        console.log('Аргумент updateURL(filterValue):', filterValue);
+        console.log('Аргумент updateURL(isChecked):', isChecked);
+
+        const url = new URL(window.location.href);
+        const searchParams = new URLSearchParams(url.search);
+        console.log('searchParams:', searchParams);
+        // Удаляем индексы из параметров (например, hook[0] -> hook[])
+        const cleanFilterType = filterType.replace(/\[\d+\]/, '[]');
+        console.log('cleanFilterType:', cleanFilterType);
+        if (isChecked) {
+            searchParams.append(cleanFilterType, filterValue);
+            console.log('UpdatedsearchParams:', searchParams);
+            url.search = searchParams.toString();
+            console.log('Новый URL:', url.toString());
+        } else {
+            // Полностью удаляем параметр с данным значением
+            const newParams = new URLSearchParams();
+            searchParams.forEach((value, key) => {
+                const cleanKey = key.replace(/\[\d+\]/, '[]');
+                if (cleanKey !== cleanFilterType || value !== filterValue) {
+                    newParams.append(cleanKey, value);
+                }
+            });
+            url.search = newParams.toString();
+        }
+
+        console.log('Обновлённый URL:', url.toString());
+        window.location.href = url.toString();
+    };
 
     // Загрузка данных при монтировании компонента
     useEffect(() => {
         axios.get('/api/sticks-aside-filters')
             .then(response => {
+                const { brands, filterShaftFlexes, filterStickSizes, filterHooks } = response.data.asideWithSticksFilters;
                 // setAsideWithSticksFilters(response.data.asideWithSticksFilters);
-                setBrands(response.data.asideWithSticksFilters.brands);
-                setFilterShaftFlexes(response.data.asideWithSticksFilters.filterShaftFlexes);
-                setFilterStickSizes(response.data.asideWithSticksFilters.filterStickSizes);
-                setFilterHooks(response.data.asideWithSticksFilters.filterHooks);
+                // setBrands(response.data.asideWithSticksFilters.brands);
+                // setFilterShaftFlexes(response.data.asideWithSticksFilters.filterShaftFlexes);
+                // setFilterStickSizes(response.data.asideWithSticksFilters.filterStickSizes);
+                // setFilterHooks(response.data.asideWithSticksFilters.filterHooks);
+
+                // Чтение параметров из URL
+                const { hooks, sizes, flexes, brands: urlBrands } = getFiltersFromURL(); // brands: urlBrands - переименование при деструктуризации. В объекте, возвращаемом функцией getFiltersFromURL, есть свойство brands.
+                // Теперь: brands — это состояние компонента. urlBrands — это параметры из URL.
+                if(hooks && hooks.length > 0 || sizes && sizes.length > 0 || flexes && flexes.length > 0 || urlBrands && urlBrands.length > 0)  {
+                    toast.success('Применяем фильтрацию...');
+                }
+                // Установка состояния с учётом параметров из URL
+                setBrands(brands.map((brand: IProductFilterItem) => ({
+                    ...brand,
+                    //isBrandChecked: urlBrands.includes(brand.brand),
+                    isBrandChecked: brand.brand ? urlBrands.includes(brand.brand) : false,
+                })));
+                setFilterShaftFlexes(filterShaftFlexes.map((flex: IProductFilterItem) => ({
+                    ...flex,
+                    // flex.prop_value может быть string | number | undefined, поэтому используется toString() для приведения к строке (если prop_value — число).
+                    isPropChecked: flex.prop_value ? flexes.includes(flex.prop_value.toString()) : false,
+                })));
+                setFilterStickSizes(filterStickSizes.map((size: IProductFilterItem) => ({
+                    ...size,
+                    isPropChecked: size.size_value ? sizes.includes(size.size_value.toString()) : false,
+                })));
+                // setFilterHooks(filterHooks.map((hook: IProductFilterItem) => ({
+                //     ...hook,
+                //     isPropChecked: hook.prop_value ?  hooks.includes(hook.prop_value.toString()) : false,
+                // })));
+                setFilterHooks(filterHooks.map((hook: IProductFilterItem) => ({
+                    ...hook,
+                    isPropChecked: hooks.includes(hook.prop_value?.toString() || ''),
+                })));
             })
             .catch(error => {
                 console.error('Ошибка при загрузке данных: ', error);
@@ -37,6 +176,44 @@ const AsideSticksWithFilters: React.FC = () => {
                 toast.error('Произошла ошибка при загрузке данных. Пожалуйста, попробуйте позже.');
             });
     }, []);
+
+    // Обработчик изменения состояния фильтров
+    const handleFilterChange = (filterType: string, filterValue: string, isChecked: boolean) => {
+        console.log('Аргумент handleFilterChange(filterType):', filterType);
+        console.log('Аргумент handleFilterChange(filterValue):', filterValue);
+        console.log('Аргумент handleFilterChange(isChecked):', isChecked);
+        // Сначала обновляем состояние в React в зависимости от типа фильтра
+        switch (filterType) {
+            case 'hook[]':
+                setFilterHooks(prev => prev.map(hook =>
+                    hook.prop_value === filterValue ? { ...hook, isPropChecked: isChecked } : hook
+                ));
+                break;
+            case 'size[]':
+                setFilterStickSizes(prev => prev.map(size =>
+                    size.size_value === filterValue ? { ...size, isPropChecked: isChecked } : size
+                ));
+                break;
+            case 'shaft_flex[]':
+                setFilterShaftFlexes(prev => prev.map(flex =>
+                    flex.prop_value === filterValue ? { ...flex, isPropChecked: isChecked } : flex
+                ));
+                break;
+            case 'brand[]':
+                setBrands(prev => prev.map(brand =>
+                    brand.brand === filterValue ? { ...brand, isBrandChecked: isChecked } : brand
+                ));
+                break;
+            default:
+                break;
+        }
+
+        console.log('retutn handleFilterChange(filterType):', filterType);
+        console.log('retutn handleFilterChange(filterValue):', filterValue);
+        console.log('retutn handleFilterChange(isChecked):', isChecked);
+        // Затем обновляем URL
+        updateURL(filterType, filterValue, isChecked);
+    };
 
     // if (!asideWithSticksFilters) {
     if (!brands || !filterShaftFlexes || !filterStickSizes || !filterHooks) {
@@ -66,7 +243,7 @@ const AsideSticksWithFilters: React.FC = () => {
                             //     };
                             //     setAsideWithSticksFilters(updateFilters);
                             // }}
-                            onChange={(e) => {      // аргумент e — это объект события, который содержит информацию о произошедшем изменении. -  e.target.checked — это булево значение (true или false), которое указывает, выбран ли чекбокс.
+                            /*onChange={(e) => {      // аргумент e — это объект события, который содержит информацию о произошедшем изменении. -  e.target.checked — это булево значение (true или false), которое указывает, выбран ли чекбокс.
                                     // ...filterHooks,  //  здесь мы пытаемся создать новый объект, но filterHooks — это массив, а не объект! - это не работаепт в этом случае...
                                     const updatedHooks = filterHooks.map(hook =>    // метод map проходит по каждому элементу массива filterHooks и возвращает новый массив, в котором каждый элемент преобразован согласно логике, указанной в функции-колбэке.
                                         hook.prop_value === filterHook.prop_value
@@ -75,6 +252,14 @@ const AsideSticksWithFilters: React.FC = () => {
                                     );
                                 setFilterHooks(updatedHooks); // updatedHooks — это новый массив, который был создан с помощью map.
                                 // после вызова setFilterHooks React перерисовывает компонент, чтобы отразить изменения в интерфейсе.
+                                toast.success('работает...');
+                                updateURL('hook[]', filterHook.prop_value, e.target.checked);
+                            }}*/
+                            onChange={(e) => {
+                                // Приводим prop_value к строке и проверяем, что оно не undefined
+                                if (filterHook.prop_value !== undefined) {
+                                    handleFilterChange('hook[]', filterHook.prop_value.toString(), e.target.checked);
+                                }
                             }}
                         />
                         <label htmlFor={`hook_${filterHook.prop_value}`} className="checkbox-label">{filterHook.prop_value_view}</label>

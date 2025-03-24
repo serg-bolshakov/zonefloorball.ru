@@ -62,8 +62,12 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     // Чтение параметров из URL при загрузке страницы
     useEffect(() => {
         const url = new URL(window.location.href);
+        
+        const sortBy = url.searchParams.get('sortBy') || 'actual_price'; // По умолчанию 'actual_price'
+        setCurrentSortBy(sortBy);
         const sortOrder = url.searchParams.get('sortOrder') || 'asc'; // По умолчанию 'asc'
         setCurrentSortOrder(sortOrder);
+
     }, [window.location.search]); // Во втором параметре передается массив зависимостей. В них входят значения, используемые функциями компонента. Отслеживаем изменения в query-параметрах
 
     
@@ -141,7 +145,7 @@ const handleOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
                             <h1>{ catalogCategoryName }</h1>
                         </div>
                     </section>
-                    <NavBarBreadCrumb sortBy={sortBy} sortOrder={sortOrder} />
+                    <NavBarBreadCrumb />
                     {/* Сортировка */}
                     <div className="sorting-container">
                         <div className="sorting">

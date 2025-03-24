@@ -17,6 +17,7 @@
 
 namespace App\Services\Catalog;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 
 abstract class BaseFilterCatalogService
@@ -46,7 +47,7 @@ abstract class BaseFilterCatalogService
         if(!isset($this->filters['show_archived'])) {
             $this->query->where('product_status_id', '=', 1);
         }
-        // Теперь все сервисы, которые наследуются от BaseFilterCatalogService, будут автоматически применять фильтр по статусу товара.
+        // Теперь все сервисы, которые наследуются от BaseFilterCatalogService, будут автоматически применять фильтр по статусу товара.            
     }
 
     abstract public function applyFilters(array $filters): Builder;

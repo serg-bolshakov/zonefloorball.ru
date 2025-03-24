@@ -4,16 +4,9 @@ import { Link, usePage } from '@inertiajs/react';
 import useAppContext from '../Hooks/useAppContext';
 import React from 'react';
 
-interface ISortingFiltersProps {
-    filters?: Record<string, string>;
-    sortBy?: string;
-    sortOrder?: string;
-    categoryId?: number;
-}
-
 // React.FC — это тип, предоставляемый React. Он расшифровывается как React Function Component (функциональный компонент React).
 // Это сокращение для React.FunctionComponent. Автоматически типизирует children как ReactNode. Упрощает типизацию пропсов по умолчанию.
-const NavBarBreadCrumb: React.FC<ISortingFiltersProps> = () => {
+const NavBarBreadCrumb: React.FC = () => {
 
     const { categoriesMenuArr } = useAppContext();
     const { url } = usePage();
