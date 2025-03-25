@@ -40,17 +40,23 @@ class StickFilterCatalogService extends BaseFilterCatalogService
         }
 
         if (isset($filters['shaft_flex'])) {
+            
             $filterStickShaftFlexProdIds = [];
             foreach($filters['shaft_flex'] as $filter) {
                 $propId = DB::table('properties')->where('prop_title', '=', 'shaft_flex')->where('prop_value', '=', $filter)->value('id'); 
-                $filterStickShaftFlexPropIds[] = $propId;
+                $filterStickShaftFlexProdIds[] = $propId;
             }
-            if(!isset($filterStickShaftFlexPropIds) && (!empty($filterStickShaftFlexPropIds)))
-            $prodIds = DB::table('product_property')->select('product_id')->whereIn('property_id',  $filterStickShaftFlexPropIds)->get();
-            foreach ($prodIds as $prodId) {
-                $filterStickShaftFlexProdIds[] = $prodId->product_id;
+            
+            if(!empty($filterStickShaftFlexProdIds)) {
+                $prodIds = DB::table('product_property')->select('product_id')->whereIn('property_id',  $filterStickShaftFlexProdIds)->get();
+                if(!empty($prodIds)) {
+                    $filterStickShaftFlexIdsSet = [];
+                    foreach($prodIds as $prodId) {
+                        $filterStickShaftFlexIdsSet[] = $prodId->product_id;
+                    }
+                    $this->query->whereIn('id', (array)$filterStickShaftFlexIdsSet);
+                }
             }
-            $this->query->whereIn('id', (array)$filterStickShaftFlexProdIds);
         }
         
         if(isset($filters['brand'])) {

@@ -6,6 +6,7 @@ import HowChooseStick from '../Articles/HowChooseStick';
 import AboutFlex from '../Articles/AboutFlex';
 import AboutBrands from '../Articles/AboutBrands';
 import { toast } from 'react-toastify';
+import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { IProductsFilters, IProductFilterItem } from "../../Types/filters";
 
@@ -28,31 +29,9 @@ const AsideSticksWithFilters: React.FC = () => {
         Нужно изменить формат параметров в URL, чтобы они соответствовали ожидаемому формату (hook[]=left вместо hook[0]=left). Это можно сделать на этапе обновления URL.
      */
     const getFiltersFromURL = () => {
-        /*const url = new URL(window.location.href);
-            const searchParams = new URLSearchParams(url.search);
-            console.log('Параметры из getFiltersFromURL: url', url);
-            console.log('Параметры из URL getFiltersFromURL: hooks', searchParams.getAll('hook[]'));
-
-            // Удаляем индексы из параметров (например, hook[0] -> hook[])
-            const cleanSearchParams = new URLSearchParams();
-            searchParams.forEach((value, key) => {
-                const cleanKey = key.replace(/\[\d+\]/, '[]');
-                cleanSearchParams.append(cleanKey, value);
-            });
-
-            return {
-                hooks: cleanSearchParams.getAll('hook[]'),
-                sizes: cleanSearchParams.getAll('size[]'),
-                flexes: cleanSearchParams.getAll('shaft_flex[]'),
-                brands: cleanSearchParams.getAll('brand[]'),
-            };
-        */
 
         const url = new URL(window.location.href);
         const searchParams = new URLSearchParams(url.search);
-
-        console.log('Текущий URL:', url.toString());
-        console.log('Все параметры:', Array.from(searchParams.entries()));
 
         const cleanSearchParams = new URLSearchParams();
         searchParams.forEach((value, key) => {
@@ -67,7 +46,7 @@ const AsideSticksWithFilters: React.FC = () => {
             brands: cleanSearchParams.getAll('brand[]'),
         };
 
-        console.log('Считанные параметры:', result);
+        // console.log('Считанные параметры:', result);
         return result;
     };
 
@@ -78,19 +57,17 @@ const AsideSticksWithFilters: React.FC = () => {
         
         const url = new URL(window.location.href);
         const searchParams = new URLSearchParams(url.search);
-        console.log('searchParams:', searchParams);
 
-        // Удаляем параметр пагинации. Проблема: при изменении фильтров ыявил побочный эффект: если, например, смотрим 10-ю страницу каталога, а затем выбираем какой либо фильтр, после применения которого, нет такого количества страниц (а в строке запроса осталось &page=10), то нам выходит <p>Товары не найдены.</p>
+        // Удаляем параметр пагинации. Проблема: при изменении фильтров выявил побочный эффект: если, например, смотрим 10-ю страницу каталога, а затем выбираем какой либо фильтр, после применения которого, нет такого количества страниц (а в строке запроса осталось &page=10), то нам выходит <p>Товары не найдены.</p>
         searchParams.delete('page'); // Сбрасываем на первую страницу
 
         // Удаляем индексы из параметров (например, hook[0] -> hook[])
         const cleanFilterType = filterType.replace(/\[\d+\]/, '[]');
-        console.log('cleanFilterType:', cleanFilterType);
+        // console.log('cleanFilterType:', cleanFilterType);
+
         if (isChecked) {
             searchParams.append(cleanFilterType, filterValue);
-            console.log('UpdatedsearchParams:', searchParams);
             url.search = searchParams.toString();
-            console.log('Новый URL:', url.toString());
         } else {
             // Полностью удаляем параметр с данным значением
             const newParams = new URLSearchParams();
@@ -103,7 +80,6 @@ const AsideSticksWithFilters: React.FC = () => {
             url.search = newParams.toString();
         }
 
-        console.log('Обновлённый URL:', url.toString());
         window.location.href = url.toString();
     };
 
@@ -112,32 +88,37 @@ const AsideSticksWithFilters: React.FC = () => {
         axios.get('/api/sticks-aside-filters')
             .then(response => {
                 const { brands, filterShaftFlexes, filterStickSizes, filterHooks } = response.data.asideWithSticksFilters;
-                // setAsideWithSticksFilters(response.data.asideWithSticksFilters);
-                // setBrands(response.data.asideWithSticksFilters.brands);
-                // setFilterShaftFlexes(response.data.asideWithSticksFilters.filterShaftFlexes);
-                // setFilterStickSizes(response.data.asideWithSticksFilters.filterStickSizes);
-                // setFilterHooks(response.data.asideWithSticksFilters.filterHooks);
 
                 // Чтение параметров из URL
                 const { hooks, sizes, flexes, brands: urlBrands } = getFiltersFromURL(); // brands: urlBrands - переименование при деструктуризации. В объекте, возвращаемом функцией getFiltersFromURL, есть свойство brands.
                 // Теперь: brands — это состояние компонента. urlBrands — это параметры из URL.
+                             
                 if(hooks && hooks.length > 0 || sizes && sizes.length > 0 || flexes && flexes.length > 0 || urlBrands && urlBrands.length > 0)  {
-                    toast.success('Применяем фильтрацию...');
+                    toast.success('Фильтры применены...', {
+                        position: "top-right",
+                        autoClose: 1000, // Уведомление закроется через полсекунды
+                        hideProgressBar: true,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        transition: Flip, // Используем Slide, Zoom, Flip, Bounce для этого тоста
+                    });
                 }
+
                 // Установка состояния с учётом параметров из URL
                 setBrands(brands.map((brand: IProductFilterItem) => ({
                     ...brand,
-                    //isBrandChecked: urlBrands.includes(brand.brand),
-                    isBrandChecked: brand.brand ? urlBrands.includes(brand.brand) : false,
+                    // isBrandChecked: brand.brand ? urlBrands.includes(brand.brand) : false,
+                    isBrandChecked: urlBrands.includes(brand.brand?.toString() || ''),
                 })));
                 setFilterShaftFlexes(filterShaftFlexes.map((flex: IProductFilterItem) => ({
                     ...flex,
                     // flex.prop_value может быть string | number | undefined, поэтому используется toString() для приведения к строке (если prop_value — число).
-                    isPropChecked: flex.prop_value ? flexes.includes(flex.prop_value.toString()) : false,
+                    isPropChecked: flexes.includes(flex.prop_value?.toString() || ''),
                 })));
                 setFilterStickSizes(filterStickSizes.map((size: IProductFilterItem) => ({
                     ...size,
-                    isPropChecked: size.size_value ? sizes.includes(size.size_value.toString()) : false,
+                    isPropChecked: sizes.includes(size.size_value?.toString() || ''),
                 })));
                 // setFilterHooks(filterHooks.map((hook: IProductFilterItem) => ({
                 //     ...hook,
@@ -157,9 +138,7 @@ const AsideSticksWithFilters: React.FC = () => {
 
     // Обработчик изменения состояния фильтров
     const handleFilterChange = (filterType: string, filterValue: string, isChecked: boolean) => {
-        console.log('Аргумент handleFilterChange(filterType):', filterType);
-        console.log('Аргумент handleFilterChange(filterValue):', filterValue);
-        console.log('Аргумент handleFilterChange(isChecked):', isChecked);
+        
         // Сначала обновляем состояние в React в зависимости от типа фильтра
         switch (filterType) {
             case 'hook[]':
@@ -186,9 +165,6 @@ const AsideSticksWithFilters: React.FC = () => {
                 break;
         }
 
-        console.log('retutn handleFilterChange(filterType):', filterType);
-        console.log('retutn handleFilterChange(filterValue):', filterValue);
-        console.log('retutn handleFilterChange(isChecked):', isChecked);
         // Затем обновляем URL
         updateURL(filterType, filterValue, isChecked);
     };
@@ -255,12 +231,9 @@ const AsideSticksWithFilters: React.FC = () => {
                 <div key={filterStickSize.size_title + '-' + filterStickSize.size_value}>
                     <input type="checkbox" checked={!!filterStickSize.isPropChecked} id={`size_${filterStickSize.size_value}`} name="size[]" value={filterStickSize.size_value} 
                         onChange={(e) => {
-                            const updatedSizes = filterStickSizes.map(size => 
-                                size.size_value === filterStickSize.size_value
-                                ? {...size, isPropChecked: e.target.checked}
-                                : size
-                            );
-                            setFilterStickSizes(updatedSizes);
+                            if(filterStickSize.size_value !== undefined) {
+                                handleFilterChange('size[]', filterStickSize.size_value.toString(), e.target.checked);
+                            }
                         }}
                     />
                     <label htmlFor={`size_${filterStickSize.size_value}`}>
@@ -285,12 +258,17 @@ const AsideSticksWithFilters: React.FC = () => {
                 <div key={filterShaftFlex.prop_title + '-' + filterShaftFlex.prop_value}  className="d-flex aline-items-center flex-test">
                     <input type="checkbox" checked={!!filterShaftFlex.isPropChecked} id={`shaft_flex_${filterShaftFlex.prop_value}`} name="shaft_flex[]" value={filterShaftFlex.prop_value} 
                         onChange={(e) => {
-                            const updatedFlexes = filterShaftFlexes.map(flex => 
-                              flex.prop_value === filterShaftFlex.prop_value
-                              ? {...flex, isPropChecked: e.target.checked}
-                              : flex  
-                            );
-                            setFilterShaftFlexes(updatedFlexes);
+                            // Этот вариант (прежний) просто отслеживает состояние чекбокса: отмечен / не отмечен, нам нужно просто запустить отбаботчик - там всё сделаем, в обработчике...
+                            // const updatedFlexes = filterShaftFlexes.map(flex => 
+                            //   flex.prop_value === filterShaftFlex.prop_value
+                            //   ? {...flex, isPropChecked: e.target.checked}
+                            //   : flex  
+                            // );
+                            // setFilterShaftFlexes(updatedFlexes);
+                        
+                            if(filterShaftFlex.prop_value !== undefined) {
+                                handleFilterChange('shaft_flex[]', filterShaftFlex.prop_value.toString(), e.target.checked);
+                            }
                         }}
                     />
                     <label htmlFor={`shaft_flex_${filterShaftFlex.prop_value}`}><div className="checkbox-label">{filterShaftFlex.prop_value_view}</div></label>
@@ -308,12 +286,9 @@ const AsideSticksWithFilters: React.FC = () => {
                     <div key={filterBrand.id}>
                         <input type="checkbox" checked={!!filterBrand.isBrandChecked} id={`brand_${filterBrand.brand}`} name="brand[]" value={filterBrand.brand}
                             onChange={(e) => {
-                                const updatedBrands = brands.map(brand => 
-                                    brand.brand === filterBrand.brand
-                                    ? {...brand, isBrandChecked: e.target.checked}
-                                    : brand
-                                );
-                                setBrands(updatedBrands);
+                                if(filterBrand.brand !== undefined) {
+                                    handleFilterChange('brand[]', filterBrand.brand.toString(), e.target.checked);
+                                }
                             }} 
                         />
                         <label htmlFor={`brand_${filterBrand.brand}`} className="checkbox-label">{filterBrand.brand_view}</label>

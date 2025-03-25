@@ -131,14 +131,14 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                     {/* Сортировка */}
                     <div className="sorting-container">
                         <div className="sorting">
-                            <select value={currentSortOrder} onChange={handleOrderChange}>
-                                <option value="asc">▲</option> 
-                                <option value="desc">▼</option>
+                            <span>Товары </span>
+                            <select className="text-align-left" value={currentSortOrder} onChange={handleOrderChange}>
+                                <option value="asc"> ▲ по возрастанию цены</option> 
+                                <option value="desc">  ▼ начиная с самых дорогих по цене</option>
                             </select>
-                            <span>отсортированы по: </span>
-                            <select value={currentSortBy} onChange={handleSortChange}>
+                            {/* <select value={currentSortBy} onChange={handleSortChange}>
                                 <option value="actual_price">цене</option>
-                            </select>
+                            </select> */}
                         </div>
                     </div>
                     <div className="products-content">

@@ -20,7 +20,18 @@ const MainLayout: React.FC<IMainLayoutsProps> = ({ children }) => {
                 <ModalProvider>
                     <Footer />
                 </ModalProvider>
-                <ToastContainer transition={Slide} />
+                <ToastContainer 
+                    transition={Slide} // или Zoom, Flip, Bounce - это будет анимация по умолчанию
+                    position="top-right"
+                    autoClose={3000}
+                    hideProgressBar={false}
+                    newestOnTop={false}
+                    closeOnClick
+                    rtl={false}
+                    pauseOnFocusLoss
+                    draggable
+                    pauseOnHover
+                />
             </AppProvider>
         </>
     );
