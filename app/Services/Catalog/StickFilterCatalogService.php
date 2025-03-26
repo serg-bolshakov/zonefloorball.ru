@@ -2,7 +2,7 @@
 // app/Services/Catalog/StickFilterCatalogService.php - Сервис для клюшек
 namespace App\Services\Catalog;
 
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder;               // Builder в Laravel - это реализация шаблона "строитель" (Builder pattern), который позволяет постепенно строить SQL-запрос, добавляя к нему условия.
 use Illuminate\Support\Facades\DB;
 
 class StickFilterCatalogService extends BaseFilterCatalogService
@@ -10,7 +10,11 @@ class StickFilterCatalogService extends BaseFilterCatalogService
     public function applyFilters(array $filters): Builder
     {
         // Категория товаров клюшек для флорбола
-        $this->query->where('category_id', '=', 1);
+        $this->query->where('category_id', '=', 1);     // добавляем условие WHERE к запросу (но сам запрос ещё не выполняется)...
+        // Каждый такой метод возвращает модифицированный экземпляр Builder'а, что позволяет объединять методы в цепочку: $query->where(...)->whereIn(...)->orderBy(...);
+
+        // вызываем родительский метод для фильтрации категории товаров по бренду:
+        $this->applyBrandFilter($filters);
 
         // Фильтры для клюшек
         if (isset($filters['hook'])) {
@@ -59,15 +63,6 @@ class StickFilterCatalogService extends BaseFilterCatalogService
             }
         }
         
-        if(isset($filters['brand'])) {
-            $filterBrandSet = [];
-            foreach($filters['brand'] as $filter) {
-                $brandId = DB::table('brands')->where('brand', 'LIKE', $filter)->value('id'); 
-                $filterBrandSet[] = $brandId;
-            }
-            $this->query->whereIn('brand_id', (array)$filterBrandSet);
-        } 
-        
-        return $this->query;
+        return $this->query;    // возвращаем построенный объект запроса, который может быть: дальше модифицирован или исполнен (например, при вызове ->get(), ->first(), ->paginate() и т.д.)
     }
 }

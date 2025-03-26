@@ -6,6 +6,7 @@ import MainLayout from '../Layouts/MainLayout';
 import { IProductsResponse } from '../Types/types';
 import AsideAccordionAll from '../Components/Catalog/AsideAccordionAll';
 import AsideSticksWithFilters from '@/Components/Catalog/AsideSticksWithFilters';
+import AsideBladesWithFilters from '@/Components/Catalog/AsideBladesWithFilters';
 import AssortimentCards from '../Components/AssortimentCards';
 import { Inertia, Method } from '@inertiajs/inertia';
 // import { usePage } from '@inertiajs/react';
@@ -101,6 +102,8 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
         switch (filtersSetComponent) {
             case 'sticks':
                 return <AsideSticksWithFilters />;
+            case 'blades':
+                return <AsideBladesWithFilters />;
             // case 'balls':
             //     return <AsideBallsWithFilters filters={filters} />;
             case '':
