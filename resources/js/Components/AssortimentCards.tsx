@@ -96,8 +96,9 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                     {products.data.map(product => (
                         <div key={product.id} className="assortiment-card__block">
                             <div className="assortiment-card__block-productImg">
-                                <Link href={`/products/card/${product.prod_url_semantic}`}><img src={`/storage/${product.img_link}`} alt={`${product.category} ${product.brand} 
-                                ${product.model} ${product.marka}`} title={`${product.category} ${product.brand} ${product.model} ${product.marka}`} /></Link>
+                                <Link href={`/products/card/${product.prod_url_semantic}`}><img src={`/storage/${product.img_link}`} 
+                                alt={[product.category, product.brand, product.model, product.marka].filter(Boolean).join(' ')} 
+                                title={[product.category, product.brand, product.model, product.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} /></Link>
                             </div>
                             <div className="assortiment-card__block-productInfo">
                                 <div className="assortiment-card_productName">
