@@ -1,18 +1,18 @@
 <?php
-// app/Http/Controllers/BladesAsideFiltersController.php
+// app/Http/Controllers/BallsAsideFiltersController.php
 
     namespace App\Http\Controllers;
     
     use App\Traits\FilterTrait;
     use Inertia\Inertia;
 
-    class BladesAsideFiltersController extends Controller {
+    class BallsAsideFiltersController extends Controller {
         use FilterTrait;
         public function index() {
             try {
-                $asideWithBladesFilters = $this->getAsideWithFilters($categoryId = 2, $prodStatus = 1);
+                $asideWithBallsFilters = $this->getAsideWithFilters($categoryId = 3, $prodStatus = 1);
                 return response()->json([
-                    'asideWithBladesFilters' => $asideWithBladesFilters,
+                    'asideWithBallsFilters' => $asideWithBallsFilters,
                 ]);
             } catch (\Exception $e) {
                 return response()->json([

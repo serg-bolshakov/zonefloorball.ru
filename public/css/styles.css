@@ -700,7 +700,7 @@ ul.breadcrumb li a.activeBreadcrumb:hover {
 
 /* Add a color to all links inside the list */
 ul.breadcrumb li a {
-    font-size: 14px;
+    font-size: 12px;
     color: #188fea;
     text-decoration: none;
 }
