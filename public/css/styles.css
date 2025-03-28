@@ -1886,6 +1886,7 @@ input[type="checkbox"]:checked + label:after {
 .subnav{
     height: 30px;
     margin-bottom: 8px;
+    margin-left: 12px;
 }
 
 .subnav-elem {

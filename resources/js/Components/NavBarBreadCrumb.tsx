@@ -12,6 +12,18 @@ const NavBarBreadCrumb: React.FC = () => {
     const { url } = usePage();
     // const currentPath = url.split('?')[0]; // Отбрасываем строку запроса - метод split позволяет разделить строку по символу ? и взять только первую часть (путь)
     const currentPath = new URL(url, window.location.origin).pathname; // Получаем только путь - можно использовать встроенный URL API
+    
+    // это добавляем для реализации подменю Каталога:
+    const searchParams = new URL(url, window.location.origin).searchParams;
+    // Получаем GET-параметры
+    const categoryParam = searchParams.get('category');
+    const brandParam    = searchParams.get('brand');
+    const serieParam    = searchParams.get('serie');
+    const modelParam    = searchParams.get('model');
+
+    // Проверяем, есть ли активная фильтрация
+    const hasFilter = categoryParam && (serieParam || brandParam || modelParam);
+
 
     // Если categoriesMenuArr ещё не загружено, показываем заглушку
     if (!categoriesMenuArr) {
@@ -35,8 +47,18 @@ const NavBarBreadCrumb: React.FC = () => {
         })),
     ];
 
-    // console.log('currentSortBy', currentSortBy);
-    // console.log('currentSortOrder', currentSortOrder);
+    // Функция для получения человекочитаемого названия категории
+    const getCategoryLabel = (category: string | null) => {
+        if (!category) return '';
+        
+        // Здесь можно добавить маппинг технических названий на читаемые, а можно загружать данные через контекст: надо будет завтра утром "допилить" api-запрос...
+        const categoryMap: Record<string, string> = {
+            'sticks': 'Клюшки',
+            'blades': 'Крюки',
+        };
+        // Если category есть в маппинге — возвращаем читаемое название, иначе — исходное значение
+        return categoryMap[category] || category;
+    };
 
     return (
         <>
@@ -60,7 +82,42 @@ const NavBarBreadCrumb: React.FC = () => {
                     }
                 </ul>
             </nav>
+
+            {/* Блок поднавигации с фильтрами */}
+            {hasFilter && (
+                <div className="subnav d-flex">
+                    <div className="subnav-elem d-flex">Каталог</div>
+                    
+                    <div className="subnav-arrow">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    
+                    <div className="subnav-elem d-flex">
+                        {getCategoryLabel(categoryParam)}
+                        {brandParam && `: ${brandParam.toUpperCase()}`}
+                    </div>
+                    
+                    {(serieParam || modelParam) && (
+                        <>
+                            <div className="subnav-arrow">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                            
+                            <div className="subnav-elem d-flex">
+                                {serieParam ? `Серия: ${serieParam.toUpperCase()}` : ''}
+                                {modelParam ? `Модель: ${modelParam.toUpperCase()}` : ''}
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
         </>
+
+        
     );
 
     /* выше попробовал упростить структуру даннных: собрал все "крошки" в один массив... а было так:
