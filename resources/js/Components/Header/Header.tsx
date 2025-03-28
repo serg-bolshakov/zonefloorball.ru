@@ -149,7 +149,7 @@ const Header: React.FC = () => {
                                         if (category[0]) {
                                             return (
                                                 <div key={category[0].url_semantic} className="menu--element">
-                                                    <Link key={category[0].category_view} href={`/products/catalog?${category[0].url_semantic}`}>
+                                                    <Link key={category[0].category_view} href={`/products/catalog?category=${category[0].url_semantic}`}>
                                                         <h2>{category[0].category_view}</h2>
                                                     </Link>
                                                     {Object.values(category).map((value, key) => {
@@ -159,12 +159,12 @@ const Header: React.FC = () => {
                                                                 // Each child in a list should have a unique "key" prop...
                                                                 <div key={key}> 
                                                                     {value.prop_url_semantic && (
-                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
+                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?category=${category[0].url_semantic}&${value.prop_title}=${value.prop_url_semantic}`}>
                                                                             {value.prop_value_view}
                                                                         </Link>
                                                                     )}
                                                                     {value.model && (
-                                                                        <Link key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
+                                                                        <Link key={value.model} href={`/products/catalog?category=${value.url_semantic}&model=${value.model}`}>
                                                                             {value.model}
                                                                         </Link>
                                                                     )}
@@ -183,7 +183,7 @@ const Header: React.FC = () => {
                                                                                 {Object.values(value).map((subCatValue, subCatKey) => (
                                                                                     subCatKey !== 0 && subCatValue.url_semantic && (
                                                                                         <li key={subCatKey}>
-                                                                                            <Link key={subCatValue.url_semantic} href={`/products/catalog?${subCatValue.url_semantic}`}>
+                                                                                            <Link key={subCatValue.url_semantic} href={`/products/catalog?category=${subCatValue.url_semantic}`}>
                                                                                                 {subCatValue.category_view_2}
                                                                                             </Link>
                                                                                         </li>
@@ -213,7 +213,7 @@ const Header: React.FC = () => {
                                         if (category[0]) {
                                             return (
                                                 <div key={category[0].url_semantic} className="menu--element">
-                                                    <Link key={category[0].category_view} href={`/products/catalog?${category[0].url_semantic}`}>
+                                                    <Link key={category[0].category_view} href={`/products/catalog?category=${category[0].url_semantic}&brand=unihoc`}>
                                                         <h2>{category[0].category_view}</h2>
                                                     </Link>
                                                     {Object.values(category).map((value, key) => {
@@ -223,17 +223,17 @@ const Header: React.FC = () => {
                                                                 // Each child in a list should have a unique "key" prop...
                                                                 <div key={key}> 
                                                                     {value.prop_url_semantic && (
-                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
+                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?category=${category[0].url_semantic}&${value.prop_title}=${value.prop_url_semantic}&brand=unihoc`}>
                                                                             {value.prop_value_view}
                                                                         </Link>
                                                                     )}
                                                                     {value.model && (
-                                                                        <Link key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
+                                                                        <Link key={value.model} href={`/products/catalog?category=${value.url_semantic}&model=${value.model}&brand=unihoc`}>
                                                                             {value.model}
                                                                         </Link>
                                                                     )}
                                                                     {value.url_semantic && (
-                                                                        <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
+                                                                        <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}&brand%5B0%5D=unihoc`}>
                                                                             {value.category_view_2}
                                                                         </Link>
                                                                     )}
@@ -247,7 +247,7 @@ const Header: React.FC = () => {
                                                                                 {Object.values(value).map((subCatValue, subCatKey) => (
                                                                                     subCatKey !== 0 && subCatValue.url_semantic && (
                                                                                         <li key={subCatKey}>
-                                                                                            <Link key={subCatValue.url_semantic} href={`/products/catalog?${subCatValue.url_semantic}`}>
+                                                                                            <Link key={subCatValue.url_semantic} href={`/products/catalog?category=${subCatValue.url_semantic}&brand=unihoc`}>
                                                                                                 {subCatValue.category_view_2}
                                                                                             </Link>
                                                                                         </li>
@@ -277,7 +277,7 @@ const Header: React.FC = () => {
                                         if (category[0]) {
                                             return (
                                                 <div key={category[0].url_semantic} className="menu--element">
-                                                    <Link key={category[0].category_view} href={`/products/catalog?${category[0].url_semantic}`}>
+                                                    <Link key={category[0].category_view} href={`/products/catalog?category=${category[0].url_semantic}&brand=zone`}>
                                                         <h2>{category[0].category_view}</h2>
                                                     </Link>
                                                     {Object.values(category).map((value, key) => {
@@ -287,17 +287,17 @@ const Header: React.FC = () => {
                                                                 // Each child in a list should have a unique "key" prop...
                                                                 <div key={key}> 
                                                                     {value.prop_url_semantic && (
-                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
+                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?category=${category[0].url_semantic}&${value.prop_title}=${value.prop_url_semantic}`}>
                                                                             {value.prop_value_view}
                                                                         </Link>
                                                                     )}
                                                                     {value.model && (
-                                                                        <Link key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
+                                                                        <Link key={value.model} href={`/products/catalog?category=${value.url_semantic}&model=${value.model}&brand=zone`}>
                                                                             {value.model}
                                                                         </Link>
                                                                     )}
                                                                     {value.url_semantic && (
-                                                                        <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
+                                                                        <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}&brand%5B0%5D=zone`}>
                                                                             {value.category_view_2}
                                                                         </Link>
                                                                     )}
@@ -311,7 +311,7 @@ const Header: React.FC = () => {
                                                                                 {Object.values(value).map((subCatValue, subCatKey) => (
                                                                                     subCatKey !== 0 && subCatValue.url_semantic && (
                                                                                         <li key={subCatKey}>
-                                                                                            <Link key={subCatValue.url_semantic} href={`/products/catalog?${subCatValue.url_semantic}`}>
+                                                                                            <Link key={subCatValue.url_semantic} href={`/products/catalog?category=${subCatValue.url_semantic}`}>
                                                                                                 {subCatValue.category_view_2}
                                                                                             </Link>
                                                                                         </li>

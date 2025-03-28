@@ -26,7 +26,7 @@ class GoalieFilterCatalogService extends BaseFilterCatalogService
             }
             $this->query->whereIn('category_id', (array)$filtersGoalieCategoriesSet);
         } elseif (!empty($requestMainCategoryWithSubCats)) {
-            $this->query->whereIn('category_id', $requestMainCategoryWithSubCats);
+            $this->query->whereIn('category_id', (array)$requestMainCategoryWithSubCats);
         } 
 
         // вызываем родительский метод для фильтрации категории товаров по бренду:

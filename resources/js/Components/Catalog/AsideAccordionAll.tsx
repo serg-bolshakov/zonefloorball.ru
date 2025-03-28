@@ -64,6 +64,23 @@ const AsideAccordionAll: React.FC = () => {
     */
     // Преобразуем объект в массив
     const unihocZoneRussiaArray = Object.values(categoriesMenuArr.UnihocZoneRussia);
+
+    // для того, чтобы порядок праметров не нарушался при выводе в URL - браузера (важно для обработки строки запроса на сервере), нужно, чтобы
+    // этот порядок применялся ко всем ссылкам в компоненте - выносим логику в отдельную функцию:
+    /* Интересная реализация, но не сработало: наверное... это особенности React, которые я не могу понять своим умом... 
+        если оставить жёсткий порядок вывода параметров запроса в URL, который мы прописали при создании ссылки, то теперь получаем в ответ 404. А если ссылка в URL на условиях React, т.е. "смешанная", то всё отрабатывается корректно, хотя логика на сервере и заточена на то, что категория sticks будет первым параметром:  $categoryUrlSemantic = array_key_first($filters);   ...
+        т.е. сервер корректно "разбирает": /products/catalog?serie=evolab-sticks-series&sticks=serie 
+        ... вот такие пироги... комментируем на память... потом - удалим...
+
+        const buildCatalogUrlParams = (params: Record<string, string>) => {
+            const searchParams = new URLSearchParams();
+            Object.entries(params).forEach(([key, value]) => {
+                searchParams.set(key, value);
+            });
+            return `products/catalog?${searchParams.toString()}`;
+        }
+    */
+
     return (
         <>
             {unihocZoneRussiaArray.map((category, index) => {
@@ -84,24 +101,32 @@ const AsideAccordionAll: React.FC = () => {
                                 className="panel"
                                 style={{ display: openSections[index] ? 'block' : 'none'}}
                             >
-                                <p><Link key={category[0].url_semantic} href={`/products/catalog?${ category[0].url_semantic }`}>Смотреть все</Link></p>
+                                <p><Link key={category[0].url_semantic} href={`/products/catalog?category=${ category[0].url_semantic }`}>Смотреть все</Link></p>
                                 {Object.values(category).map((value, key) => {
                                     return (
                                         key !== 0 && (
                                             // Each child in a list should have a unique "key" prop...
                                             <div key={key}> 
-                                                {value.prop_url_semantic && (
-                                                    <Link key={value.prop_url_semantic} href={`/products/catalog?${category[0].url_semantic}=${value.prop_title}&${value.prop_title}=${value.prop_url_semantic}`}>
+                                                {value.prop_url_semantic && category[0]?.url_semantic && value.prop_title && (
+                                                    <Link 
+                                                        key={value.prop_url_semantic} 
+                                                        href={`/products/catalog?category=${category[0].url_semantic }&${value.prop_title}=${value.prop_url_semantic}`}
+                                                    >
                                                         {value.prop_value_view}
                                                     </Link>
                                                 )}
-                                                {value.model && (
-                                                    <Link key={value.model} href={`/products/catalog?${value.url_semantic}=model&model=${value.model}`}>
+                                                {value.model && value.url_semantic && (
+                                                    <Link key={value.model} 
+                                                        href={`/products/catalog?category=${value.url_semantic}&model=${value.model}`}
+                                                    >
                                                         {value.model}
                                                     </Link>
                                                 )}
                                                 {value.url_semantic && (
-                                                    <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
+                                                    <Link 
+                                                        key={value.url_semantic} 
+                                                        href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}
+                                                    >
                                                         {value.category_view_2}
                                                     </Link>
                                                 )}
@@ -115,7 +140,10 @@ const AsideAccordionAll: React.FC = () => {
                                                             {Object.values(value).map((subCatValue, subCatKey) => (
                                                                 subCatKey !== 0 && subCatValue.url_semantic && (
                                                                     <li key={subCatKey}>
-                                                                        <Link key={subCatValue.url_semantic} href={`/products/catalog?${subCatValue.url_semantic}`}>
+                                                                        <Link 
+                                                                            key={subCatValue.url_semantic} 
+                                                                            href={`/products/catalog?${subCatValue.url_semantic}=all`}
+                                                                        >
                                                                             {subCatValue.category_view_2}
                                                                         </Link>
                                                                     </li>
