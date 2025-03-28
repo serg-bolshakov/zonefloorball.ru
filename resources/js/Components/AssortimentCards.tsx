@@ -10,7 +10,7 @@ interface AssortimentCardsProps {
 
 const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
     // const generateId = useId(); // Используем useId
-    // console.log('Products:', products.meta); // Выводим продукты в консоль
+     console.log('Products:', products); // Выводим продукты в консоль
     
     const totalPages = products.meta.last_page;
     const currentPage = products.meta.current_page;

@@ -60,44 +60,12 @@ class ProductController extends Controller
         $sortBy     = $request->input('sortBy', 'actual_price');
         $sortOrder  = $request->input('sortOrder', 'asc');
 
-        //dump($perPage);
-        //dump($page);
-        //dump($sortBy);
-        //dump($sortOrder);
-        //dump($filters);
-        
-        //dd($categoryId);
-        
         // Создаём базовый запрос
         $query = Product::query()
             ->with(['category', 'brand', 'properties', 'productShowCaseImage',])
-            // ->where('product_status_id', '=', 1) - перенес! Фильтр по статусу уже применяется в BaseFilterService
-
+           
             /*  набор фильтров, который был изначально... 
-                ->when($filterBrandSet, function ($query, $filterBrandSet) {
-                    $query->whereIn('brand_id', $filterBrandSet);
-                })
-                ->when($filterSizeSet, function ($query, $filterSizeSet) {
-                    $query->whereIn('size_id', $filterSizeSet);
-                })
-                ->when($filterHookBladeProdIds, function ($query, $filterHookBladeProdIds) {
-                    $query->whereIn('id', $filterHookBladeProdIds);
-                })
-                ->when($filterBladeStiffnessProdIds, function ($query, $filterBladeStiffnessProdIds) {
-                    $query->whereIn('id', $filterBladeStiffnessProdIds);
-                })
-                ->when($filterHookStickProdIds, function ($query, $filterHookStickProdIds) {
-                    $query->whereIn('id', $filterHookStickProdIds);
-                })
-                ->when($filterStickSizesSet, function ($query, $filterStickSizesSet) {
-                    $query->whereIn('size_id', $filterStickSizesSet);
-                })
-                ->when($filterStickShaftFlexProdIds, function ($query, $filterStickShaftFlexProdIds) {
-                    $query->whereIn('id', $filterStickShaftFlexProdIds);
-                })
-                ->when($filterProdPropIds, function ($query, $filterProdPropIds) {
-                    $query->whereIn('id', $filterProdPropIds);
-                })
+                ...
                 ->when($categoriesIdsArr, function ($query, $categoriesIdsArr) {
                     $query->whereIn('category_id', $categoriesIdsArr);
                 })
@@ -105,20 +73,6 @@ class ProductController extends Controller
                 ->whereRaw($whereFromProdModel)
             */
             
-            /* Теперь мы можем присоединить этот подзапрос к основному запросу через joinSub: https://github.com/russsiq/laravel-docs-ru/blob/9.x/docs/queries.md#full-text-where-clauses
-               Вы можете использовать методы joinSub, leftJoinSub и rightJoinSub, чтобы присоединить запрос к подзапросу. 
-               Каждый из этих методов получает три аргумента: подзапрос, псевдоним таблицы и замыкание, определяющее связанные столбцы. 
-               В нашем случае мы получим коллекцию продуктов, где каждая запись продукта также содержит временную метку created_at последней занесённой в базу цене продукт
-            
-                ->leftJoinSub($latestActualPrice, 'actual_prices', function ($join) {
-                    $join->on('products.id', '=', 'actual_prices.product_id');
-                })
-                ->leftJoinSub($latestRegularPrice, 'regular_prices', function($join) {
-                    $join->on('products.id', '=', 'regular_prices.product_id');
-                })
-                ->select('products.*', 'actual_prices.price_value as actual_price', 'regular_prices.price_value as regular_price')
-            */
-
             ->orderBy($sortBy, $sortOrder)
         ;
 
@@ -130,46 +84,10 @@ class ProductController extends Controller
 
         // Применяем фильтры
         $filteredQuery = $filterService->applyFilters($filters);
-        // dd($filteredQuery);
+        
         // Пагинация
         $products = $filteredQuery->paginate($perPage, ['*'], 'page', $page);
         
-        // dd('!');
-        /* Комментируем "ручное"заполнение массива - пробуем по-новому...
-            $productsArr = [];
-            $i = 0;
-
-            if(!empty($products)) {    
-                foreach($products as $product) {
-                    $productsArr[$i]['title'] = $product->title;
-                    $productsArr[$i]['prod_url_semantic'] = $product->prod_url_semantic;
-                    $productsArr[$i]['img_link'] = $product->productShowCaseImage->img_link;
-                    $productsArr[$i]['category'] = $product->category->category;
-                    $productsArr[$i]['brand'] = $product->brand->brand ?? NULL;
-                    $productsArr[$i]['model'] = $product->model  ?? NULL;
-                    $productsArr[$i]['marka'] = $product->marka  ?? NULL;
-                    $productsArr[$i]['price_actual'] = $product->actualPrice->price_value  ?? NULL;
-                    $productsArr[$i]['price_regular'] = $product->regularPrice->price_value  ?? NULL;
-                    $productsArr[$i]['prod_status'] = $product->product_status_id;
-                    $i++;
-                }
-
-                # сортируем массив по цене товара: 
-                $key = 'price_actual'; 
-                $orderSort = SORT_ASC;
-                $productsArr = $this->array_multisort_value($productsArr, $key, $orderSort);
-                //dump($productsArr);
-                $prodQuantity = count($productsArr);
-            }
-            // dd($productsArr);
-            // dd($prodQuantity);
-            
-            return view('components.assortiment-cards', [
-                'productsArr' => $productsArr,
-                'prodQuantity' => $prodQuantity,
-            ]);   
-        */
-
         // dd($products);
         // Формируем данные для ответа
         $responseData = [

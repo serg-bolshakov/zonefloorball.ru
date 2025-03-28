@@ -1,8 +1,7 @@
-// resources/js/Components/Catalog/AsideBladesWithFilters.tsx
+// resources/js/Components/Catalog/AsideBallsWithFilters.tsx
 import React, { useState, useEffect, ReactNode} from "react";
 import axios from "axios";
-import AboutSideHand from '../Articles/AboutSideHand';
-import AboutBladeFlex from '../Articles/AboutBladeFlex';
+
 import AboutBrands from '../Articles/AboutBrands';
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
@@ -11,19 +10,11 @@ import { IProductsFilters, IProductFilterItem } from "../../Types/filters";
 
 
 
-const AsideBladesWithFilters: React.FC = () => {
+const AsideEyewearsWithFilters: React.FC = () => {
 
     const [brands, setBrands] = useState<IProductFilterItem[]>([]);
-    const [filtersBladeStiffness, setFiltersBladeStiffness] = useState<IProductFilterItem[]>([]);
-    const [filtersHookBlade, setFiltersHookBlade] = useState<IProductFilterItem[]>([]);
-
-    // Функция для чтения параметров из URL
-    /**
-        В URL параметры выглядят так: http://127.0.0.1:8000/products/sticks?brand%5B0%5D=zone&hook%5B0%5D=left
-                    Это эквивалентно: http://127.0.0.1:8000/products/sticks?brand[0]=zone&hook[0]=left
-        метод searchParams.getAll('hook[]') ищет параметры в формате hook[]=left, а не hook[0]=left. Поэтому он возвращает пустой массив.
-        Нужно изменить формат параметров в URL, чтобы они соответствовали ожидаемому формату (hook[]=left вместо hook[0]=left). Это можно сделать на этапе обновления URL.
-     */
+    const [filterEyewearsSizes, setFilterEyewearsSizes] = useState<IProductFilterItem[]>([]);
+    
     const getFiltersFromURL = () => {
 
         const url = new URL(window.location.href);
@@ -36,12 +27,10 @@ const AsideBladesWithFilters: React.FC = () => {
         });
 
         const result = {
-            hooks: cleanSearchParams.getAll('hook_blade[]'),
-            flexes: cleanSearchParams.getAll('blade_stiffness[]'),
+            sizes: cleanSearchParams.getAll('size[]'),
             brands: cleanSearchParams.getAll('brand[]'),
         };
-
-        // console.log('Считанные параметры:', result);
+        
         return result;
     };
 
@@ -56,7 +45,6 @@ const AsideBladesWithFilters: React.FC = () => {
 
         // Удаляем индексы из параметров (например, hook[0] -> hook[])
         const cleanFilterType = filterType.replace(/\[\d+\]/, '[]');
-        // console.log('cleanFilterType:', cleanFilterType);
 
         if (isChecked) {
             searchParams.append(cleanFilterType, filterValue);
@@ -72,22 +60,20 @@ const AsideBladesWithFilters: React.FC = () => {
             });
             url.search = newParams.toString();
         }
-        //console.log(url.toString());    // http://127.0.0.1:8000/products/blades?hook_blade%5B%5D=left
         window.location.href = url.toString();
     };
 
     // Загрузка данных при монтировании компонента
     useEffect(() => {
-        axios.get('/api/blades-aside-filters')
+        axios.get('/api/eyewears-aside-filters')
             .then(response => {
-                // console.log(response.data.asideWithBladesFilters);
-                const { brands, filtersBladeStiffness, filtersHookBlade } = response.data.asideWithBladesFilters;
-
+                const { brands, filterEyewearsSizes } = response.data.asideWithFilters;
+                console.log(filterEyewearsSizes);
                 // Чтение параметров из URL
-                const { hooks, flexes, brands: urlBrands } = getFiltersFromURL(); // brands: urlBrands - переименование при деструктуризации. В объекте, возвращаемом функцией getFiltersFromURL, есть свойство brands.
+                const { sizes, brands: urlBrands } = getFiltersFromURL(); // brands: urlBrands - переименование при деструктуризации. В объекте, возвращаемом функцией getFiltersFromURL, есть свойство brands.
                 // Теперь: brands — это состояние компонента. urlBrands — это параметры из URL.
                              
-                if(hooks && hooks.length > 0 || flexes && flexes.length > 0 || urlBrands && urlBrands.length > 0)  {
+                if(sizes && sizes.length > 0 || urlBrands && urlBrands.length > 0)  {
                     toast.success('Фильтры применены...', {
                         position: "top-right",
                         autoClose: 1000, // Уведомление закроется через полсекунды
@@ -105,15 +91,10 @@ const AsideBladesWithFilters: React.FC = () => {
                     // isBrandChecked: brand.brand ? urlBrands.includes(brand.brand) : false,
                     isBrandChecked: urlBrands.includes(brand.brand?.toString() || ''),
                 })));
-                setFiltersBladeStiffness(filtersBladeStiffness.map((flex: IProductFilterItem) => ({
-                    ...flex,
-                    // flex.prop_value может быть string | number | undefined, поэтому используется toString() для приведения к строке (если prop_value — число).
-                    isPropChecked: flexes.includes(flex.prop_value?.toString() || ''),
-                })));
-
-                setFiltersHookBlade(filtersHookBlade.map((hook: IProductFilterItem) => ({
-                    ...hook,
-                    isPropChecked: hooks.includes(hook.prop_value?.toString() || ''),
+                setFilterEyewearsSizes(filterEyewearsSizes.map((size: IProductFilterItem) => ({
+                    ...size,
+                    // size.size_value может быть string | number | undefined, поэтому используется toString() для приведения к строке (если size_value — число).
+                    isPropChecked: sizes.includes(size.size_value?.toString() || ''),
                 })));
             })
             .catch(error => {
@@ -125,81 +106,61 @@ const AsideBladesWithFilters: React.FC = () => {
 
     // Обработчик изменения состояния фильтров
     const handleFilterChange = (filterType: string, filterValue: string, isChecked: boolean) => {
-        
+        console.log(filterType);
+        console.log(filterValue);
+        console.log(isChecked);
         // Сначала обновляем состояние в React в зависимости от типа фильтра
         switch (filterType) {
-            case 'hook_blade[]':
-                setFiltersHookBlade(prev => prev.map(hook =>
-                    hook.prop_value === filterValue ? { ...hook, isPropChecked: isChecked } : hook
-                ));
-                break;
-            case 'blade_stiffness[]':
-                setFiltersBladeStiffness(prev => prev.map(flex =>
-                    flex.prop_value === filterValue ? { ...flex, isPropChecked: isChecked } : flex
-                ));
-                break;
             case 'brand[]':
                 setBrands(prev => prev.map(brand =>
                     brand.brand === filterValue ? { ...brand, isBrandChecked: isChecked } : brand
                 ));
                 break;
+            case 'size[]':
+                setFilterEyewearsSizes(prev => prev.map(size =>
+                    size.size_value === filterValue ? { ...size, isPropChecked: isChecked } : size
+                ));
+                break;
             default:
                 break;
         }
-
+        console.log(filterType);
+        console.log(filterValue);
+        console.log(isChecked);
         // Затем обновляем URL
         updateURL(filterType, filterValue, isChecked);
     };
 
     // if (!asideWithSticksFilters) {
-    if (!brands || !filtersBladeStiffness || !filtersHookBlade) {
+    if (!brands || !filterEyewearsSizes) {
         return <div>Загрузка...</div>;
     }
 
     return (
         <>
-            <div className="pop-up__checkbox-block-hint">Хват (игровая сторона)
-                <div className="pop-up__checkbox-block-hint-text">
-                    <AboutSideHand />
-                </div>
+            <div className="checkbox-filters__param">
+                Размер
             </div>
             <div className="prop-list">
-                {filtersHookBlade.map((filterHook: IProductFilterItem) => (
-                    <div key={filterHook.prop_title + '-' + filterHook.prop_value}>  
-                        <input type="checkbox" checked={!!filterHook.isPropChecked} id={`hook_blade_${filterHook.prop_value}`} name="hook_blade[]" value={filterHook.prop_value} 
+                {filterEyewearsSizes.map((size: IProductFilterItem) => (
+                    <div key={size.size_value}>
+                        <input type="checkbox" checked={!!size.isPropChecked} id={`size_${size.size_value}`} 
+                            name="size[]" value={size.size_value} 
                             onChange={(e) => {
-                                // Приводим prop_value к строке и проверяем, что оно не undefined
-                                if (filterHook.prop_value !== undefined) {
-                                    handleFilterChange('hook_blade[]', filterHook.prop_value.toString(), e.target.checked);
+                                if(size.size_value != undefined) {
+                                    handleFilterChange('size[]', size.size_value.toString(), e.target.checked);
                                 }
                             }}
                         />
-                        <label htmlFor={`hook_blade_${filterHook.prop_value}`} className="checkbox-label">{filterHook.prop_value_view}</label>
+                        <label htmlFor={`size_${size.size_value}`}>
+                            <div className="pop-up__checkbox-block-prop-hint">{size.size_value}
+                                <div className="pop-up__checkbox-block-prop-hint-text">{size.size_recommendation}</div>
+                            </div>
+                        </label>
                     </div>
                 ))}
             </div>
-
-            <div className="pop-up__checkbox-block-hint">Степень жёсткости крюка
-                <div className="pop-up__checkbox-block-hint-text">
-                    <AboutBladeFlex />
-                </div>
-            </div>
-
-            <div className="prop-list">
-                {filtersBladeStiffness.map((filterBladeStiffness: IProductFilterItem) => (
-                <div key={filterBladeStiffness.prop_title + '-' + filterBladeStiffness.prop_value} className="d-flex aline-items-center flex-test">
-                    <input type="checkbox" checked={!!filterBladeStiffness.isPropChecked} id={`blade_stiffness_${filterBladeStiffness.prop_value}`} name="blade_stiffness[]" value={filterBladeStiffness.prop_value} 
-                        onChange={(e) => {
-                            if(filterBladeStiffness.prop_value !== undefined) {
-                                handleFilterChange('blade_stiffness[]', filterBladeStiffness.prop_value.toString(), e.target.checked);
-                            }
-                        }}
-                    />
-                    <label htmlFor={`blade_stiffness_${filterBladeStiffness.prop_value}`}><div className="checkbox-label">{filterBladeStiffness.prop_value_view}</div></label>
-                </div>
-                ))}
-            </div>
-
+       
             <div className="pop-up__checkbox-block-hint">Бренд
                 <div className="pop-up__checkbox-block-hint-text">
                     <AboutBrands />
@@ -207,7 +168,7 @@ const AsideBladesWithFilters: React.FC = () => {
             </div>
             <div className="prop-list">
                 {brands.map((filterBrand: IProductFilterItem) => (
-                    <div key={filterBrand.id}>
+                    <div key={filterBrand.id} className="">
                         <input type="checkbox" checked={!!filterBrand.isBrandChecked} id={`brand_${filterBrand.brand}`} name="brand[]" value={filterBrand.brand}
                             onChange={(e) => {
                                 if(filterBrand.brand !== undefined) {
@@ -223,4 +184,4 @@ const AsideBladesWithFilters: React.FC = () => {
     );
 };
 
-export default AsideBladesWithFilters;
+export default AsideEyewearsWithFilters;

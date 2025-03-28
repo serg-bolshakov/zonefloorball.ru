@@ -8,6 +8,10 @@ import AsideAccordionAll from '../Components/Catalog/AsideAccordionAll';
 import AsideSticksWithFilters from '@/Components/Catalog/AsideSticksWithFilters';
 import AsideBladesWithFilters from '@/Components/Catalog/AsideBladesWithFilters';
 import AsideBallsWithFilters from '@/Components/Catalog/AsideBallsWithFilters';
+import AsideBagsWithFilters from '@/Components/Catalog/AsideBagsWithFilters';
+import AsideGripsWithFilters from '@/Components/Catalog/AsideGripsWithFilters';
+import AsideEyewearsWithFilters from '@/Components/Catalog/AsideEyewearsWithFilters';
+import AsideGoalieWithFilters from '@/Components/Catalog/AsideGoalieWithFilters';
 import AssortimentCards from '../Components/AssortimentCards';
 import { Inertia, Method } from '@inertiajs/inertia';
 // import { usePage } from '@inertiajs/react';
@@ -101,12 +105,20 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
 
     const getAsideComponent = () => {
         switch (filtersSetComponent) {
-            case 'sticks':
+            case 'sticks':                              // клюшки
                 return <AsideSticksWithFilters />;
-            case 'blades':
+            case 'blades':                              // крюки
                 return <AsideBladesWithFilters />;
-            case 'balls':
+            case 'balls':                               // мячи
                 return <AsideBallsWithFilters />;
+            case 'bags':                                // сумки и чехлы
+                return <AsideAccordionAll />;
+            case 'grips':                               // обмотки
+                return <AsideGripsWithFilters />;
+            case 'eyewears':                            // очки
+                return <AsideEyewearsWithFilters />;
+            case 'goalie':                              // вратарская экипировка
+                return <AsideGoalieWithFilters />;
             case '':
                 return <AsideAccordionAll />;
             default:
@@ -148,7 +160,7 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                     <div className="products-content">
                         <aside className="aside-with-filters">
                         <div className="category-description">
-                            <p>{ catDescription }</p>
+                            <p dangerouslySetInnerHTML={{ __html: catDescription }} />
                         </div>
                             {getAsideComponent()}
                         </aside>   

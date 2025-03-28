@@ -185,8 +185,47 @@ trait CategoryTrait {
         return $res;
     }    
     
-    public function getBrandedCategoriesMenuArrCopyFromGoalie($brandId, $categoryId) {
-        
+    //public function getBrandedCategoriesMenuArrCopyFromGoalie($brandId, $categoryId) {
+    // почти копия getBrandedCategoriesMenuArrMainCategory($brandId, $categoryId), в отличие от неё getBrandedCategoriesMenuStrForParentCategory возвращает строку: "catIds" => "9,10,11,12,17,13,14,15" в виде строки
+        /*  array:2 [▼ // app\Http\Controllers\GoalieAsideFiltersController.php:31
+                8 => array:7 [▼
+                    0 => {#722 ▶}
+                    9 => {#627 ▶}
+                    10 => {#626 ▶}
+                    11 => {#624 ▶}
+                    12 => {#623 ▶}
+                    17 => {#655 ▶}
+                    16 => array:4 [▼
+                    0 => {#720 ▶}
+                    13 => {#625 ▶}
+                    14 => {#622 ▶}
+                    15 => {#621 ▶}
+                    ]
+                ]
+                "catIds" => "9,10,11,12,17,13,14,15"
+                ]
+        */
+    // getBrandedCategoriesMenuArrMainCategory:
+        /* array:2 [▼ // app\Http\Controllers\GoalieAsideFiltersController.php:32
+            8 => array:6 [▼
+                0 => {#715 ▶}
+                9 => {#627 ▶}
+                10 => {#626 ▶}
+                11 => {#624 ▶}
+                12 => {#623 ▶}
+                17 => {#632 ▶}
+            ]
+            "catIds" => array:5 [▼
+                0 => 9
+                1 => 10
+                2 => 11
+                3 => 12
+                4 => 17
+            ]
+            ]
+        */
+
+    public function getBrandedCategoriesMenuStrForParentCategory($brandId, $categoryId) {
         $res = [];
         $categoryIds = [];
 
@@ -203,19 +242,20 @@ trait CategoryTrait {
         ->where('products.product_status_id', '<>', '2')
         ->distinct()
         ->get('categories.*');
-
-        # некоторые категории являются потомками от нескольких категорий (например, у нас "Баулы" относятся к категории "Сумки и чехлы", а так же являются подкатегорией "Вратарям") 
-        # - проверяем есть ли такие категории и, для вывода во всплывающем меню хедера, разбиваем такие категории на отдельные элементы массива:
+        
+        # некоторые категории являются потомками от нескольких категорий (например, у нас "Баулы" относятся к категории "Сумки и чехлы", а так же являются подкатегорией "Вратарям") - проверяем есть ли такие категории и, для вывода во всплывающем меню хедера, разбиваем такие категории на отдельные элементы массива:
         foreach($categories as $key=>$category) {
             $parentsIdsStr = $category->parent_id; 
-            if(str_contains($parentsIdsStr, ',')) {
-                $parentCategoriesArr = explode(',', $parentsIdsStr);
-                $categories->forget($key)->all();
-                
-                foreach($parentCategoriesArr as $parentCategory) {
-                    $copy_of_object = clone $category;
-                    $copy_of_object->parent_id = $parentCategory;
-                    $categories[] = $copy_of_object;
+            if(!empty($parentsIdsStr)) {
+                if(str_contains($parentsIdsStr, ',')) {
+                    $parentCategoriesArr = explode(',', $parentsIdsStr);
+                    $categories->forget($key)->all();
+                    
+                    foreach($parentCategoriesArr as $parentCategory) {
+                        $copy_of_object = clone $category;
+                        $copy_of_object->parent_id = $parentCategory;
+                        $categories[] = $copy_of_object;
+                    }
                 }
             }
         }
@@ -229,60 +269,47 @@ trait CategoryTrait {
         ->get();
         
         $groupedCategories = $categories->groupBy('parent_id');
-        
-        # смотрим, если у основной категории есть потомки, - выводим основную категорию вместе с потомками
-        # если у основной категории нет потомков, - выводим её ... здесь переделываем исходник из Goalie.php:
-
         //dump($groupedCategories);
-        if($groupedCategories->has($categoryId)) {
-            foreach($groupedCategories as $key=>$group) {
-                if($key) {
-                    //dump($key);
-                    //dump($group);
-                    foreach($group as $subMainElem) {
-                        # обратиться к БД и узнать, есть ли у этой подкатегории родитель:
-                        $hasParentCategory = DB::table('categories')->where('id', $subMainElem->parent_id)->value('parent_id');
-                        if(!$hasParentCategory) {
-                            if(!isset($row[$key][0])) { 
-                                $catalogCategory = DB::table('categories')->where('id', $key)->get();
-                                $row[$key][0] = $catalogCategory[0];
-                            }
-                            $row[$key][$subMainElem->id] = $subMainElem;
-                            $res = $row;
-                            $categoryIds[] = $subMainElem->id; // выбираем для бренд-фильтра
-                        } else {
-                            // dump($hasParentCategory);
-                            if(!isset($row[$hasParentCategory][$key][0])) { 
-                                $catalogCategory = DB::table('categories')->where('id', $key)->get();
-                                $row[$hasParentCategory][$key][0] = $catalogCategory[0];
-                            }
-                            $row[$hasParentCategory][$key][$subMainElem->id] = $subMainElem;
-                            $res = $row;
-                            $categoryIds[] = $subMainElem->id; // выбираем для бренд-фильтра
+        foreach($groupedCategories as $key=>$group) {
+            if($key) {
+                //dump($key);
+                //dump($group);
+                foreach($group as $subMainElem) {
+                    # обратиться к БД и узнать, есть ли у этой подкатегории родитель:
+                    $hasParentCategory = DB::table('categories')->where('id', $subMainElem->parent_id)->value('parent_id');
+                    if(!$hasParentCategory) {
+                        if(!isset($row[$key][0])) { 
+                            $catalogCategory = DB::table('categories')->where('id', $key)->get();
+                            $row[$key][0] = $catalogCategory[0];
                         }
+                        $row[$key][$subMainElem->id] = $subMainElem;
+                        $res = $row;
+                        $categoryIds[] = $subMainElem->id; // выбираем для бренд-фильтра
+                    } else {
+                        // dump($hasParentCategory);
+                        if(!isset($row[$hasParentCategory][$key][0])) { 
+                            $catalogCategory = DB::table('categories')->where('id', $key)->get();
+                            $row[$hasParentCategory][$key][0] = $catalogCategory[0];
+                        }
+                        $row[$hasParentCategory][$key][$subMainElem->id] = $subMainElem;
+                        $res = $row;
+                        $categoryIds[] = $subMainElem->id; // выбираем для бренд-фильтра
                     }
                 }
             }
-            
-            //dd($res);
-            # оставляем только "вратарскую" категорию:        
-            $res = array_filter($res, function ($k) use ($categoryId){
-                        return $k == $categoryId;
-                    },
-                    ARRAY_FILTER_USE_KEY
-                );
-        } else {
-            foreach($categories as $key => $category) {
-                if($category->id == $categoryId) {
-                    $res[$category->id] = $category;
-                    $categoryIds[] = $category->id;
-                    break;
-                }
-            } 
         }
-       
+        //dd($categoryId);
+        # оставляем только "вратарскую" категорию:        
+        $res = array_filter($res, function ($k) use ($categoryId){
+                    return $k == $categoryId;
+                },
+                ARRAY_FILTER_USE_KEY
+            );
+
+        # переберём массив и проверим на checked:
+        $goalieCategories = $res[$categoryId];
+
         $res['catIds'] = array_unique($categoryIds);
-        $res['catIds'] = implode(',', $res['catIds']);
         //dd($res);
         return $res;
     }
@@ -519,7 +546,7 @@ trait CategoryTrait {
                 }
             }
         }
-        // dd($res);
+        //dd($res);
         return $res;
     }
 }

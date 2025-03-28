@@ -8,6 +8,10 @@ use App\Http\Controllers\UserOrdersCountController;
 use App\Http\Controllers\SticksAsideFiltersController;
 use App\Http\Controllers\BladesAsideFiltersController;
 use App\Http\Controllers\BallsAsideFiltersController;
+use App\Http\Controllers\BagsAsideFiltersController;
+use App\Http\Controllers\GripsAsideFiltersController;
+use App\Http\Controllers\EyewearsAsideFiltersController;
+use App\Http\Controllers\GoalieAsideFiltersController;
 use App\Http\Controllers\ProductController;
 
 
@@ -32,6 +36,10 @@ Route::get('/initial-data', [InitialDataController::class, 'index']);
 Route::get('/sticks-aside-filters', [SticksAsideFiltersController::class, 'index']);
 Route::get('/blades-aside-filters', [BladesAsideFiltersController::class, 'index']);
 Route::get('/balls-aside-filters', [BallsAsideFiltersController::class, 'index']);
+Route::get('/bags-aside-filters', [BagsAsideFiltersController::class, 'index']);
+Route::get('/grips-aside-filters', [GripsAsideFiltersController::class, 'index']);
+Route::get('/eyewears-aside-filters', [EyewearsAsideFiltersController::class, 'index']);
+Route::get('/goalie-aside-filters', [GoalieAsideFiltersController::class, 'index']);
 Route::get('/catalog', [ProductController::class, 'catalogApi']);
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);

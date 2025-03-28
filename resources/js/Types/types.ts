@@ -83,9 +83,6 @@ export interface ICategoryMenuItem {
     brand_id?: number;
     url_semantic?: string;
     category?: string;
-    /**
-     * Название категории для отображения.
-     */
     category_view?: string;
     category_view_2?: string;
     cat_description?: string;
@@ -99,8 +96,11 @@ export interface ICategoryMenuItem {
     prop_value_view?: string;
     prop_url_semantic?: string;
     model?: string;
+    isPropChecked?: boolean; // добавили для управления состоянием чекбокса
     0?: ICategoryMenuItem; // по большому счёту - это "костыль", чтобы TS не показывал ошибку - при переборе вложенных уровней категории, например: "Дополнительная защита" - только в этом случае мы будем получать value[0] в Header.tsx - ничего другое не помогает. Случай уникальный - вот по-этому такая ситуация
-    children?: ICategoryMenuItem[] | Record<number, ICategoryMenuItem>;  // Массив или объект. Вложенные объекты - это как 4-й уровень вложенности должен быть по задумке - посмотрим, что получится..
+    // children?: ICategoryMenuItem[] | Record<number, ICategoryMenuItem>;  // Массив или объект. Вложенные объекты - это как 4-й уровень вложенности должен быть по задумке - посмотрим, что получится..
+    [key: string]: any; // Для динамических ключей вложенных категорий
+    children?: Record<string, ICategoryMenuItem>; // Для вложенных структур
 }
  
 // опишем тип для объектов второго уровня с числовыми ключами (например, 1, 3, 2, 6, 7, 8, 5)... каждое значение — это объект с числовыми ключами (третий уровень).
