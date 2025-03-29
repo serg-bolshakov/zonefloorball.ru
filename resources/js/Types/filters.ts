@@ -1,5 +1,4 @@
 // resources/js/Types/types.ts
-import { ReactNode } from 'react';
 
 // Создадим интерфейс для объектов третьего уровня меню категорий товаров/моделей/серий с числовыми ключами, каждое значение - это объект типа IFilterItem:
 export interface IProductFilterItem {

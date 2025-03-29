@@ -88,9 +88,13 @@
                     'keywords' => 'Клюшки для флорбола, обувь, очки, сумки и чехлы для взрослых и детей. Флорбольные ворота и мячи.',
                 ]);*/
 
+                // Прлучаем информацию о категориях. Планируем использовать для маппинга при выводе подменю категории в навбар-е хлебных крошек
+                $categoriesInfo = Category::all();
+                
                 return response()->json([
                     'user' => $user,
                     'categoriesMenuArr' => $categoriesMenuArr,
+                    'categoriesInfo' => $categoriesInfo,
                     'authBlockContentFinal' => $authBlockContentFinal,
                 ]);
             } catch (\Exception $e) {

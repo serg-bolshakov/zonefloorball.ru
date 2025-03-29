@@ -10,11 +10,15 @@ const NavBarBreadCrumb: React.FC = () => {
 
     const { categoriesMenuArr } = useAppContext();
     const { url } = usePage();
+    
+    const { categoriesInfo } = useAppContext();
+
     // const currentPath = url.split('?')[0]; // Отбрасываем строку запроса - метод split позволяет разделить строку по символу ? и взять только первую часть (путь)
     const currentPath = new URL(url, window.location.origin).pathname; // Получаем только путь - можно использовать встроенный URL API
     
     // это добавляем для реализации подменю Каталога:
     const searchParams = new URL(url, window.location.origin).searchParams;
+    
     // Получаем GET-параметры
     const categoryParam = searchParams.get('category');
     const brandParam    = searchParams.get('brand');
@@ -49,15 +53,23 @@ const NavBarBreadCrumb: React.FC = () => {
 
     // Функция для получения человекочитаемого названия категории
     const getCategoryLabel = (category: string | null) => {
-        if (!category) return '';
-        
-        // Здесь можно добавить маппинг технических названий на читаемые, а можно загружать данные через контекст: надо будет завтра утром "допилить" api-запрос...
-        const categoryMap: Record<string, string> = {
-            'sticks': 'Клюшки',
-            'blades': 'Крюки',
-        };
-        // Если category есть в маппинге — возвращаем читаемое название, иначе — исходное значение
-        return categoryMap[category] || category;
+        if (!category || !categoriesInfo) return '';
+        /*
+            // Здесь можно добавить маппинг технических названий на читаемые, а можно загружать данные через контекст: надо будет завтра утром "допилить" api-запрос...
+            const categoryMap: Record<string, string> = {
+                'sticks': 'Клюшки',
+                'blades': 'Крюки',
+            };
+            // Если category есть в маппинге — возвращаем читаемое название, иначе — исходное значение
+            return categoryMap[category] || category;
+        */
+
+        const foundCategory = Object.values(categoriesInfo)
+            .flat()                                             // Метод flat уменьшает уровень вложенности многомерного массива. Может либо делать массив одномерным, либо уменьшать мерность на заданное значение. https://code.mu/ru/javascript/manual/array/flat/
+            .find(item => item.url_semantic === category);      // Метод find помогает найти первый элемент в массиве согласно переданному в параметре коллбэку. Если элемента нет, то возвращается undefined. https://code.mu/ru/javascript/manual/array/find/
+
+        return foundCategory?.category_view_2 || category;
+
     };
 
     return (
