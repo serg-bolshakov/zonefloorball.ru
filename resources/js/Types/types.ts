@@ -133,6 +133,7 @@ export type TSecondLevel = Record<number,  Record<number, ICategoryMenuItem>>;
 // Record — это встроенный тип TypeScript, который позволяет описать объект с динамическими ключами. Синтаксис: Record<KeyType, ValueType>
 
 // Интерфейс для первого уровня: объект с ключами "NoName", "unihoc", "zone", "UnihocZoneRussia". Каждое значение — это объект с числовыми ключами (второй уровень).
+
 export interface ICategoriesMenuArr {
     NoName: TSecondLevel;
     unihoc: TSecondLevel;
@@ -191,4 +192,112 @@ export interface IProductsResponse {
         to: number;
         total: number;
     };
+}
+
+export interface ICategoryItemFromDB {
+    id: number;
+    category?: string | null;
+    category_view?: string;
+    category_view_2?: string;
+    parent_id?: number | string | null;
+    cat_description?: string | null;
+    url_semantic?: string;
+    tag_title?: string;
+    meta_name_description?: string;
+    meta_name_keywords?: string | null;
+    meta_name_robots?: string;
+    category_title?: string | null;
+}
+
+export interface IBrandItemFromDB {
+    id: number;
+    brand?: string;
+    brand_view?: string | null;
+    description?: string | null;
+    url?: string | null;
+}
+
+export interface ISizeItemFromDB {
+    id: number;
+    category_id?: number | null;
+    size_title?: string | null;
+    size_unit?: string | null;
+    size_value?: string | null;
+    size_value_view?: string | null;
+    size_recommendation?: string | null;
+    length?: number | null;
+    width?: number | null;
+    height?: number | null;
+}
+
+export interface IPropertyItemFromDB {
+    id: number;
+    prop_title?: string;
+    category_id?: number;
+    brand_id?: number | null;
+    unit?: string | null;
+    prop_value?: string | number | null;
+    prop_value_view?: string | null;
+    prop_url_semantic?: string | null;
+    archived?: boolean | null;
+    prop_description?: string | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+    author_id?: number| null;
+}
+
+export interface IImageItemFromDB {
+    id: number,
+    product_id?: number;
+    img_main?: boolean | null;
+    img_link?: string | null;
+    img_promo?: boolean | null;
+    img_showcase?: boolean | null;
+    img_orient_id?: number | null;
+    created_at: string | null;
+    author_id: number| null;
+}
+
+export interface IImgOrientItemFromDB {
+    id: number;
+    img_orient: string;
+}
+
+export interface IPriceItemFromDB {
+    id: number,
+    created_at: string | null;
+    updated_at: string | null;
+    product_id?: number;
+    price_type_id?: number,
+    price_value?: number | null;  
+    date_start?: string | null;   // ISO-дата (например, "2025-03-29")
+    date_end?: string | null;
+    author_id: number| null;
+}
+
+export interface IProductItemFromDB {
+    id: number,
+    article?: number;
+    title?: string | null;
+    category_id?: number | null;
+    brand_id?: number | null;
+    model?: string | null;
+    marka?: string | null;
+    size_id?: number | null;
+    product_unit_id?: number;
+    colour?: string | null;
+    material?: string | null;
+    weight?: number | null;
+    prod_desc?: string | null;
+    prod_url_semantic?: string;
+    tag_title?: string;
+    meta_name_description?: string | null;
+    meta_name_keywords?: string | null;
+    style_link?: string | null;
+    iff_id?: number | null;
+    product_ean?: number | null;
+    created_at?: string | null;
+    updated_at?: string | null;
+    product_status_id?: boolean | null;
+    author_id?: number| null;
 }
