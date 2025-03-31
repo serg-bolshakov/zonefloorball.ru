@@ -11,6 +11,7 @@ import ModalContext from '../Contexts/ModalContext'; // Импортируем �
 const useModal = () => {
     const context = useContext(ModalContext);
     if (!context) {
+        console.error('Модальный контекст отсутствует! Проверить иерархию провайдера');
         throw new Error('useModal должен быть использован внутри ModalProvider');
     }
     return context;

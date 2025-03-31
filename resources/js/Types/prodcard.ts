@@ -3,18 +3,22 @@ import { ICategoryItemFromDB, IBrandItemFromDB, ISizeItemFromDB, IProductItemFro
         IPropertyItemFromDB, IImageItemFromDB, IImgOrientItemFromDB, IPriceItemFromDB
  } from "./types";
 
-// Интерфейс для первого уровня: объект со строковыми ключами "id", "article", ... ,
-// а также объекты, где каждое значение — это объект со строковыми ключами (второй уровень).
-
 export interface IProductCardGeneralProps extends IProductItemFromDB {
-    actualPrice: IPriceItemFromDB,
-    regularPrice: IPriceItemFromDB,
-    category: ICategoryItemFromDB,
-    brand: IBrandItemFromDB,
-    size: ISizeItemFromDB,
-    properties: IPropertyItemFromDB, 
-    productMainImage: IImageItemFromDB[],
-    productCardImgOrients: IImgOrientItemFromDB,
-    productShowCaseImage: IImageItemFromDB,
+    actualPrice: IPriceItemFromDB;
+    regularPrice: IPriceItemFromDB;
+    category: ICategoryItemFromDB;
+    brand: IBrandItemFromDB;
+    size: ISizeItemFromDB;
+    properties: IPropertyItemFromDB; 
+    productMainImage: IImageItemFromDB;
+    productCardImgOrients: IImgOrientItemFromDB;
+    productShowCaseImage: IImageItemFromDB;
 }
  
+export interface IProductCardResponse {
+    title: string;
+    robots: string;
+    description: string;
+    keywords: string;
+    prodInfo: IProductCardGeneralProps;
+}

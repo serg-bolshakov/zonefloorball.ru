@@ -4,7 +4,6 @@ import React from 'react';
 import RangeOfProducts from './RangeOfProducts';
 import Info from './Info';
 import Articles from './Articles';
-import Modal from '../Modal';                   
 import useModal from '../../Hooks/useModal';    
 import CustomersCares from "./CustomersCares";
 
@@ -35,14 +34,6 @@ const Footer: React.FC = () => {
                     <CustomersCares />
                 </div>
             </footer>
-
-            {/* modal.isOpen определяет, нужно ли отображать модальное окно.
-                modal.content — это содержимое модального окна (например, <AboutUs />).
-                closeModal передаётся в компонент Modal для закрытия окна. */}
-
-            <Modal isOpen={modal.isOpen} onClose={closeModal}>
-                {modal.content}
-            </Modal>
         </>
     );
 };

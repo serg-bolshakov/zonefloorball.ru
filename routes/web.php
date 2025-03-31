@@ -17,6 +17,7 @@ use App\Http\Controllers\SiteMapController;
 use App\Http\Controllers\IndexReactController;
 use App\Http\Controllers\CatalogReactController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProductCardController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -42,7 +43,7 @@ Route::match(['get', 'post'],'/products/{category?}', [ProductController::class,
 // Route::match(['get', 'post'], '/', ['App\\Http\\Controllers\\IndexController', 'index']);
 
 
-Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [CardController::class, 'index']);
+Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardController::class, 'index']);
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
 Route::match(['get', 'post'], '/products/favorites', [PackageController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);

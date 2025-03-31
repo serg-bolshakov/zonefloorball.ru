@@ -2,7 +2,12 @@
 // создаём контекст (создали этот файл ModalContext.ts) и импортируем сюда функцию createContext
 
 import { createContext, ReactNode } from 'react';
-import { IModalState } from '../Types/types'; // Интерфейс для состояния модального окна
+
+// Интерфейс для состояния модального окна
+interface IModalState {
+    isOpen: boolean;
+    content: ReactNode | null; // ReactNode — это тип для любого React-элемента (компонент, строка, число и т.д.)
+}
 
 // Интерфейс для контекста
 interface IModalContextType {
@@ -15,7 +20,7 @@ interface IModalContextType {
 // начальное значение undefined, так как нам оно непринципиально (можно было оставить просто пустые скобки, если бы не типизация). 
 // Заданное значение по умолчанию появится при чтении контекста, если не будет найдено каких-то других:
 const ModalContext = createContext<IModalContextType | undefined>(undefined);
-
+console.log('const ModalContext', ModalContext);
 export default ModalContext;
 
 /** Как это работает вместе

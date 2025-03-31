@@ -18,10 +18,12 @@ export const ModalProvider: React.FC<IModalProviderProps> = ({ children }) => {
     const closeModal = () => {
         setModal({ isOpen: false, content: null });
     };
-
+    console.log('ModalProvider mounted', { modal, openModal, closeModal });
     return (
         <ModalContext.Provider value={{ modal, openModal, closeModal }}>
             {children}
         </ModalContext.Provider>
     );
 };
+
+// ModalContext.Provider - провайдер контекста, который является свойством ОБЪЕКТА КОНТЕКСТА ModalContext
