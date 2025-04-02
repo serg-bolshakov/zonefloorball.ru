@@ -168,7 +168,7 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                         ) : (
                             <Link
                                 key={'page' + page}
-                                href={getPageUrl(page)}
+                                href={getPageUrl(page)} 
                                 className={`pagination-link ${currentPage === page ? 'activeProduct' : ''}`}
                                 preserveScroll // Сохраняет позицию скролла
                                 preserveState // Сохраняет состояние компонента

@@ -301,3 +301,27 @@ export interface IProductItemFromDB {
     product_status_id?: boolean | null;
     author_id?: number| null;
 }
+
+export interface IProductReportFromDB {
+    id: number,
+    product_id?: number;
+    in_stock?: number;
+    on_sale?: number;
+    reserved?: number;
+    coming_soon?: number;
+    expected_receipt_date?: string | null;
+    on_preorder?: number;
+    preodered?: number;
+    created_at?: string | null;
+    updated_at?: string | null;
+}
+
+export interface IProductUnitFromDB {
+    id: number,
+    unit_parent_id?: number | null;
+    unit_prod_value?: string;
+    coefficient?: number;
+    unit_prod_code?: number | null;
+    unit_prod_value_view?: string;
+    unit_prod_value_name?: string;
+}

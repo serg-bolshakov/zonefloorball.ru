@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use Inertia\Inertia;
 use App\Models\Product;
+use App\Services\ProductCard\ProductCardServiceFactory;
 
 class ProductCardController extends Controller
 {    
+
     public function index($prodUrlSemantic) {
+
         $responseData = $this->getResponseData($prodUrlSemantic);
         // dd($responseData);
         return Inertia::render('ProductCard', $responseData);
@@ -16,7 +19,7 @@ class ProductCardController extends Controller
     protected function getResponseData($prodUrlSemantic) {
         $prodInfo = Product::with(['actualPrice', 'regularPrice', 'category', 'brand', 'size', 'properties', 
         'productMainImage', 'productCardImgOrients', 'actualPrice', 'regularPrice', 'productShowCaseImage', 
-        'properties', 'productReport'])->where('prod_url_semantic', $prodUrlSemantic)->first();
+        'properties', 'productReport', 'productUnit', 'productPromoImages'])->where('prod_url_semantic', $prodUrlSemantic)->first();
         
         if($prodInfo['actualPrice']->price_value < $prodInfo['regularPrice']->price_value) {
             $prodInfo['price_special'] = $prodInfo['actualPrice']->price_value;
@@ -24,11 +27,17 @@ class ProductCardController extends Controller
             $prodInfo['price_special'] = null;
         }
         
+        $categoryId = $prodInfo->category_id;
+        $similarProductsService = ProductCardServiceFactory::create($categoryId, $prodInfo);    // Выбираем сервис для выборки в карточку товара аналогичных товаров, разных размеров/цветов...
+        $propVariants = $similarProductsService->getSimilarProps();                             // Получаем различные варианты исполнения просматриваемого товара (размеры/цвета/модели...)
+
+        // dd($propVariants['propHook']);
         return [
             'title' => $prodInfo->tag_title,
             'robots' => 'INDEX,FOLLOW',
             'description' => $prodInfo->meta_name_description,
             'keywords' => $prodInfo->meta_name_keywords,
+            'propVariants' => $propVariants,
             'prodInfo' => [
                 'id' => $prodInfo->id,
                 'article' => $prodInfo->article,
@@ -60,7 +69,9 @@ class ProductCardController extends Controller
                 'productCardImgOrients' => $prodInfo->productCardImgOrients[0],
                 'productShowCaseImage' => $prodInfo->productShowCaseImage,
                 'priceSpecial' => $prodInfo->priceSpecial,
-                'productReport' => $prodInfo->productReport
+                'productReport' => $prodInfo->productReport,
+                'productUnit' => $prodInfo->productUnit,
+                'productPromoImages' => $prodInfo->productPromoImages
             ]
         ];
     }

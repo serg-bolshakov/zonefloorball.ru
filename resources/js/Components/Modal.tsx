@@ -18,9 +18,9 @@ interface IModalProps {
 const Modal: React.FC<IModalProps> = ({ isOpen, onClose, children }) => {
     useEffect(() => {
         if (isOpen) {
-            document.body.style.overflow = 'hidden'; // Блокируем скролл страницы
+            document.body.style.overflow = 'hidden';    // Блокируем скролл страницы
         } else {
-            document.body.style.overflow = 'auto'; // Восстанавливаем скролл
+            document.body.style.overflow = 'auto';      // Восстанавливаем скролл
         }
     }, [isOpen]);
 
