@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { IPropVariants } from '@/Types/prodcard';
-// import { motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface Props {
     propVariants: IPropVariants;
@@ -21,29 +21,45 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                     {/* Левый хват */}
                     {((propVariants.propHook !== 'Левый' && propVariants.resultpossibleHookForProductCard) || 
                      (propVariants.resultpossibleHookForProductCard && propVariants.resultpossibleHookForProductCard.prop_value === 'left')) ? (
-                        <div className="cardStick-props__item-hook">
+                        <motion.div 
+                            className="cardStick-props__item-hook"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
                             <Link href={propVariants.resultpossibleHookForProductCard.prod_url_semantic}>
                                 {propVariants.resultpossibleHookForProductCard.prop_value_view}
                             </Link>
-                        </div>
+                        </motion.div>
                     ) : propVariants.propHook === 'Левый' ? (
-                        <div className="cardStick-props__item-hook-active">
+                        <motion.div 
+                            className="cardStick-props__item-hook-active"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
                             {propVariants.propHook}
-                        </div>
+                        </motion.div>
                     ) : null}
 
                     {/* Правый хват */}
                     {((propVariants.propHook !== 'Правый' && propVariants.resultpossibleHookForProductCard) || 
                      (propVariants.resultpossibleHookForProductCard && propVariants.resultpossibleHookForProductCard.prop_value === 'right')) ? (
-                        <div className="cardStick-props__item-hook">
+                        <motion.div 
+                            className="cardStick-props__item-hook"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
                             <Link href={propVariants.resultpossibleHookForProductCard.prod_url_semantic}  preserveScroll preserveState>
                                 {propVariants.resultpossibleHookForProductCard.prop_value_view}
                             </Link>
-                        </div>
+                        </motion.div>
                     ) : propVariants.propHook === 'Правый' ? (
-                        <div className="cardStick-props__item-hook-active">
+                        <motion.div 
+                            className="cardStick-props__item-hook-active"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
                             {propVariants.propHook}
-                        </div>
+                        </motion.div>
                     ) : null}
                 </>
             ) : propVariants.propHook ? (
@@ -51,9 +67,13 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                     <div className="cardProduct-props__item-hook-title fs12">
                         Хват (игровая сторона): 
                     </div>
-                    <div className="cardStick-props__item-hook-active">
+                    <motion.div 
+                        className="cardStick-props__item-hook-active"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        >
                         {propVariants.propHook}
-                    </div>
+                    </motion.div>
                 </>
             ) : null}
 
@@ -65,11 +85,16 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                     </div>
                     
                     {propVariants.possibleShaftLengthForProductCard.map(possibleShaftLength => (
-                        <div key={'possibleShaftLength' + possibleShaftLength.id} className={possibleShaftLength.classCurrent || ''}>
+                        <motion.div 
+                            key={possibleShaftLength.prod_url_semantic} 
+                            className={possibleShaftLength.classCurrent || ''}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
                             <Link href={possibleShaftLength.prod_url_semantic}  preserveScroll preserveState>
                                 {possibleShaftLength.size_value}
                             </Link>
-                        </div>
+                        </motion.div>
                     ))}
 
                     {/* {propVariants.possibleShaftLengthForProductCard

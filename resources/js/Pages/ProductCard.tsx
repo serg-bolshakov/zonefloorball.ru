@@ -15,6 +15,7 @@ import ProductActions from '@/Components/ProductCard/ProductActions';
 import ProductGallery from '@/Components/ProductCard/ProductGallery';
 import PropVariants from '@/Components/ProductCard/PropVariants';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { AnimatePresence, motion } from 'framer-motion';
 
 const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants}) => {
 
@@ -29,6 +30,14 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                     <meta name="robots" content={robots} />
                 </Helmet>
 
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={`motion_div_${prodInfo.id}`} // Ключ для анимации при смене товара
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                    >
                 <main>
                 <NavBarBreadCrumb />
                     <ProductHeader title={ prodInfo.title } article={ prodInfo.article } brand_id={ prodInfo.brand_id } brand={ prodInfo.brand } />
@@ -77,6 +86,8 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                     )}
                     
                 </main>
+                    </motion.div>
+                </AnimatePresence>
             </MainLayout>    
         );
     } catch(error) {
