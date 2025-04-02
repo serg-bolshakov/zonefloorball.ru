@@ -14,6 +14,7 @@ import ProductDescription from '@/Components/ProductCard/ProductDescription';
 import ProductActions from '@/Components/ProductCard/ProductActions';
 import ProductGallery from '@/Components/ProductCard/ProductGallery';
 import PropVariants from '@/Components/ProductCard/PropVariants';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants}) => {
 
@@ -36,10 +37,12 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                         <section>
                             { prodInfo.productMainImage.img_link && (
                                 <Link href={`/storage/${ prodInfo.productMainImage.img_link }`}>
-                                    <img className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
+                                    <LazyLoadImage
+                                        className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
                                         src={`/storage/${ prodInfo.productMainImage.img_link }`} 
                                         alt={[prodInfo.category.category, prodInfo.brand.brand_view, prodInfo.model, prodInfo.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} 
                                         title="Кликни на изображение, чтобы посмотреть его на всём экране."
+                                        
                                     />
                                 </Link>
                             )}

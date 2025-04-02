@@ -2,6 +2,7 @@
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { IPropVariants } from '@/Types/prodcard';
+// import { motion } from 'framer-motion';
 
 interface Props {
     propVariants: IPropVariants;
