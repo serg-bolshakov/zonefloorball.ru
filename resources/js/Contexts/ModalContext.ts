@@ -20,7 +20,7 @@ interface IModalContextType {
 // начальное значение undefined, так как нам оно непринципиально (можно было оставить просто пустые скобки, если бы не типизация). 
 // Заданное значение по умолчанию появится при чтении контекста, если не будет найдено каких-то других:
 const ModalContext = createContext<IModalContextType | undefined>(undefined);
-console.log('const ModalContext', ModalContext);
+// console.log('const ModalContext', ModalContext);
 export default ModalContext;
 
 /** Как это работает вместе

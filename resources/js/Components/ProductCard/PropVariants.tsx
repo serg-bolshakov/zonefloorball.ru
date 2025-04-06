@@ -26,7 +26,7 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            <Link href={propVariants.resultpossibleHookForProductCard.prod_url_semantic}>
+                            <Link href={propVariants.resultpossibleHookForProductCard.prod_url_semantic} preserveScroll preserveState>
                                 {propVariants.resultpossibleHookForProductCard.prop_value_view}
                             </Link>
                         </motion.div>

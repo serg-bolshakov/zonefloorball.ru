@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import axios from 'axios'; // можно использовать Inertia.js для запросов
 import useAppContext from '../../Hooks/useAppContext';
+import { useUserDataContext } from '@/Hooks/useUserDataContext';
+import { motion } from 'framer-motion';
 
 interface OrderResponse {
     ordersCount: number;
@@ -11,95 +13,11 @@ interface OrderResponse {
 const Header: React.FC = () => {
     const { user, categoriesMenuArr, authBlockContentFinal } = useAppContext();
     
-    // Стейты для счётчиков - данных, которые хранятся внутри компонента. TypeScript автоматически определяет тип состояния на основе начального значения. 
-    // Однако, если начальное значение не соответствует ожидаемому типу (например, null или данные из localStorage), нужно явно указать тип.
-    const [ordersCount, setOrdersCount] = useState<number>(0);
-    const [favoritesCount, setFavoritesCount] = useState<number>(0);
-    const [cartCount, setCartCount] = useState<number>(0);
-
-    /**
-     * Данные из localStorage возвращаются в виде строки (string) или null, если ключ отсутствует. Поэтому нужно:
-
-        Проверить, что данные не null.
-        Преобразовать строку в нужный тип (например, массив или объект).
-        Указать тип для переменной.
-
-        Как вариант:
-        
-        const favorites = localStorage.getItem('favorites');
-        const cart = localStorage.getItem('cart');
-
-        if (favorites) {
-        const parsedFavorites: Array<{ id: number; name: string }> = JSON.parse(favorites);
-        setFavoritesCount(parsedFavorites.length);
-        }
-
-        if (cart) {
-        const parsedCart: Array<{ id: number; quantity: number }> = JSON.parse(cart);
-        setCartCount(parsedCart.length);
-        }
-
-        Здесь:
-        localStorage.getItem возвращает string | null.
-        JSON.parse преобразует строку в объект или массив.
-        Мы явно указываем тип для parsedFavorites и parsedCart, чтобы TypeScript знал, как работать с этими данными.
-
-        Типизация данных для авторизованных пользователей
-        Если мы делаем запрос к API для получения данных, то нужно типизировать ответ. Мы используем axios:
-
-        interface OrderResponse {
-            ordersCount: number;
-        }
-
-        useEffect(() => {
-        if (user) {
-            axios.get<OrderResponse>('/api/orders')
-            .then((response) => {
-                setOrdersCount(response.data.ordersCount);
-            })
-            .catch((error) => {
-                console.error('Ошибка при загрузке данных:', error);
-            });
-        }
-        }, [user]);
-        
-        Здесь:
-        axios.get<OrderResponse> указывает, что ответ будет соответствовать типу OrderResponse.
-        response.data.ordersCount будет типом number, как указано в интерфейсе.
-     */
-
-    // Эффект для инициализации стейтов
-    useEffect(() => {
-        // Загрузка данных из локального хранилища для избранного и корзины
-        const favorites = localStorage.getItem('favorites');
-        const cart = localStorage.getItem('cart');
-        const orders = localStorage.getItem('orders');
-
-        // Загрузка данных для авторизованных пользователей
-        if (user) {
-            // Создаём маршрут и контроллер для получения данных (создаём API-эндпойнт в Laravel - сказал "своими словами" - не уверен, что применил правильную формулировку) в routes/api.php:
-            axios.get<OrderResponse>('/api/user-orders-count')
-            .then((response) => {
-                setOrdersCount(response.data.ordersCount);
-            })
-            .catch((error) => {
-                console.error('Ошибка при загрузке данных:', error);
-                // Можно добавить уведомление об ошибке - надо подумать как...
-            });
-        } else {
-            if (orders) {
-                setOrdersCount(JSON.parse(orders).length);
-            }
-        }
-
-        if (favorites) {
-            setFavoritesCount(JSON.parse(favorites).length);
-        }
-
-        if (cart) {
-            setCartCount(JSON.parse(cart).length);
-        }
-    }, [user]);
+    const { orders, favorites, cart } = useUserDataContext();
+    // Считаем количества
+    const ordersCount = orders.length;
+    const favoritesCount = favorites.length;
+    const cartCount = cart.length;
 
     // Если categoriesMenuArr ещё не загружено, показываем заглушку
     if (!categoriesMenuArr) {
@@ -355,11 +273,11 @@ const Header: React.FC = () => {
                         <p><Link className="header-icon" href="/profile?getorders=all">Заказы</Link></p>
                     </div>
 
-                    <div className="header-icon__block">
+                    <motion.div  className="header-icon__block" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                         {favoritesCount > 0 && ( <div className="header-favorites__counter header-logo__counter color-red">{favoritesCount}</div>)}
                         <Link  className="" href="/products/favorites"><img src="/storage/icons/favorite.png" alt="favorite" title="Посмотреть избранное" /></Link>
                         <p><Link className="header-icon" href="/products/favorites">Избранное</Link></p>
-                    </div>
+                    </motion.div>
 
                     <div className="header-icon__block basket-logo__div">
                         {cartCount > 0 && ( <div className="header-basket__counter header-logo__counter color-red">{ cartCount }</div> )}

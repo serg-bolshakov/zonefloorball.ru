@@ -32,11 +32,11 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
 
                 <AnimatePresence mode="wait">
                     <motion.div
-                        key={`motion_div_${prodInfo.id}`} // Ключ для анимации при смене товара
+                        key={`motion_div_${prodInfo.id}`} // Ключ для анимации при смене товара, когда перезагружается страница...
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ duration: 0.9 }}
                     >
                 <main>
                 <NavBarBreadCrumb />

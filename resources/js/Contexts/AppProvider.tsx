@@ -12,9 +12,6 @@ interface IAppProviderProps {
     children: ReactNode;
 }
 
-// Создадим интерфейс для объектов второго уровня меню информации о категориях с числовыми ключами, каждое значение - это объект типа ICategoryItemFromDB:
-
-
 export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [categoriesMenuArr, setCategoriesMenuArr] = useState<ICategoriesMenuArr | null>(null);

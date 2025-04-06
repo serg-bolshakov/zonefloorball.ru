@@ -12,6 +12,7 @@ use App\Http\Controllers\BagsAsideFiltersController;
 use App\Http\Controllers\GripsAsideFiltersController;
 use App\Http\Controllers\EyewearsAsideFiltersController;
 use App\Http\Controllers\GoalieAsideFiltersController;
+use App\Http\Controllers\UserDataController;
 use App\Http\Controllers\ProductController;
 
 
@@ -32,6 +33,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 */
 
 Route::get('/user-orders-count', [UserOrdersCountController::class, 'index']);
+Route::get('/user-data', [UserDataController::class, 'index']);
 Route::get('/initial-data', [InitialDataController::class, 'index']);
 Route::get('/sticks-aside-filters', [SticksAsideFiltersController::class, 'index']);
 Route::get('/blades-aside-filters', [BladesAsideFiltersController::class, 'index']);
