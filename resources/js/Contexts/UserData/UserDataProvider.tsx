@@ -70,7 +70,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 // axios должен автоматически пребразовать массив (свойство объекта) в JSON-строку - потом посмотрим, что получилось...
                 updateState(update);
             } else {
-                localStorage.setItem('favorites', JSON.stringify(newFavorites));
+                localStorage.setItem('favorites', JSON.stringify(newFavorites));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
                 updateState(update);
             }
             
@@ -136,7 +136,9 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     // Синхронизация между вкладками: Пользователь открыл товар в двух вкладках... в одной вкладке добавил в избранное... во второй вкладке счётчик обновится автоматически...
     useEffect(() => {
         const handleStorage = (e: StorageEvent) => {
+            // e.key === 'favorites' - проверяем, что изменилось нужное нам поле
             if (e.key === 'favorites') {
+                // e.newValue - новое значение (или null, если данные удалены)
                 updateState({ favorites: JSON.parse(e.newValue || '[]') });
             }
             // Аналогично для cart и orders
@@ -146,6 +148,38 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         return () => window.removeEventListener('storage', handleStorage);
     }, []);
 
+    // Реализация механизма (синхронизации между вкладками) для авторизованных пользователей и не авторизованных
+    // Комбинируем события localStorage + фокус вкладки через комбинацию события localStorage + фокус вкладки (при возврате на вкладку)
+    // localStorage для гостей / Проверка при фокусе вкладки для авторизованных
+    const fetchFavorites = useCallback(async () => {
+        if(!user) return;
+        try {
+            const { data } = await axios.get(API_ENDPOINTS.FAVORITES);
+            updateState({
+                favorites: data,
+                favoritesTotal: data.length
+            });
+        } catch (error) {
+            console.error('Ошибка загрузки избранного:', getErrorMessage(error));
+        }
+    }, [user]);
+
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (!document.hidden) {
+                fetchFavorites(); // Только при возврате на вкладку
+                if(!user) {
+                    // Для гостей берём актуальные данные из localStorage
+                    updateState({
+                        favorites: getLocalStorageData('favorites', [])
+                    });
+                }
+            }
+        };
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }, [user, fetchFavorites]);
+    // Почему это лучше: 0 лишних запросов пока пользователь неактивен, мгновенное обновление при переключении вкладок, простота (не требует WebSockets)...
 
     // memo помогает нам избегать повторного рендеринга компонента, если его пропсы остаются неизменными.
     // https://code.mu/ru/javascript/framework/react/book/supreme/hooks/api-memo/ 

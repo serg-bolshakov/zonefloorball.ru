@@ -23,8 +23,8 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                      (propVariants.resultpossibleHookForProductCard && propVariants.resultpossibleHookForProductCard.prop_value === 'left')) ? (
                         <motion.div 
                             className="cardStick-props__item-hook"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.05, rotate: [0, 5, -5, 0] }}
+                            whileTap={{ scale: 0.95, rotate: [0, 15, -15, 0] }}
                         >
                             <Link href={propVariants.resultpossibleHookForProductCard.prod_url_semantic} preserveScroll preserveState>
                                 {propVariants.resultpossibleHookForProductCard.prop_value_view}
@@ -33,8 +33,8 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                     ) : propVariants.propHook === 'Левый' ? (
                         <motion.div 
                             className="cardStick-props__item-hook-active"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.05, rotate: [0, 5, -5, 0] }}    // rotate: [0, 10, -10, 0] // Лёгкое "дрожание"
+                            whileTap={{ scale: 0.95, rotate: [0, 15, -15, 0] }}
                         >
                             {propVariants.propHook}
                         </motion.div>
@@ -45,8 +45,8 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                      (propVariants.resultpossibleHookForProductCard && propVariants.resultpossibleHookForProductCard.prop_value === 'right')) ? (
                         <motion.div 
                             className="cardStick-props__item-hook"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.05, rotate: [0, 5, -5, 0] }}
+                            whileTap={{ scale: 0.95, rotate: [0, 15, -15, 0] }}
                         >
                             <Link href={propVariants.resultpossibleHookForProductCard.prod_url_semantic}  preserveScroll preserveState>
                                 {propVariants.resultpossibleHookForProductCard.prop_value_view}
@@ -55,8 +55,8 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                     ) : propVariants.propHook === 'Правый' ? (
                         <motion.div 
                             className="cardStick-props__item-hook-active"
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.05, rotate: [0, 5, -5, 0] }}
+                            whileTap={{ scale: 0.95, rotate: [0, 15, -15, 0] }}
                         >
                             {propVariants.propHook}
                         </motion.div>
@@ -69,8 +69,8 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                     </div>
                     <motion.div 
                         className="cardStick-props__item-hook-active"
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.05, rotate: [0, 5, -5, 0] }}
+                        whileTap={{ scale: 0.95, rotate: [0, 15, -15, 0] }}
                         >
                         {propVariants.propHook}
                     </motion.div>
@@ -88,8 +88,8 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
                         <motion.div 
                             key={possibleShaftLength.prod_url_semantic} 
                             className={possibleShaftLength.classCurrent || ''}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={{ scale: 1.1, rotate: [0, 5, -5, 0] }}
+                            whileTap={{ scale: 0.95, rotate: [0, 15, -15, 0] }}
                         >
                             <Link href={possibleShaftLength.prod_url_semantic}  preserveScroll preserveState>
                                 {possibleShaftLength.size_value}
