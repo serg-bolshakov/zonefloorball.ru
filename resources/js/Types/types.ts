@@ -147,7 +147,7 @@ export interface IModalState {
     content: ReactNode | null; // ReactNode — это тип для любого React-элемента (компонент, строка, число и т.д.)
 }
 
-export interface IProduct {
+export interface IProduct extends IProductReportFromDB {
     id: number;                                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     article?: number | null;
     title: string;                                  // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
@@ -173,6 +173,14 @@ export interface IProduct {
     product_status_id?: number | null;
     prod_status?: number | null;                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     img_link?: string | null;                        // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    
+    price_with_rank_discount?   : number | null;
+    price_with_action_discount? : number | null;
+    percent_of_rank_discount?   : number | null;
+    summa_of_action_discount?   : number | null;
+    price_special?              : number | null;
+    date_end?                   : string | null;
+    
 }
 
 export interface IProductsResponse {

@@ -68,8 +68,8 @@
                         </div>
                     </div>
                 @endforeach
+                </div>
             </div>
-        </div>
 
     <script src="{{ asset('js/favoriteschecklocalstorage.js') }}"></script>
     <script src="{{ asset('js/favorites.js') }}"></script>

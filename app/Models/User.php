@@ -1,5 +1,5 @@
 <?php
-
+// app/Models/User.php
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -58,5 +58,12 @@ use Laravel\Sanctum\HasApiTokens;
     public function rank()
     {
         return $this->belongsTo(ClientRank::class, 'client_rank_id');
+    }
+
+    
+     /* У авторизованного пользователя может быть одна JSON-строка избранного */
+    public function favorite() {
+        return $this->hasOne(Favorite::class);
+        // return $this->hasOne(Favorite::class, 'user_id');
     }
 }

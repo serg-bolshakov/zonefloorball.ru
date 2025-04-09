@@ -1,5 +1,5 @@
 <?php
-
+// routes/web.php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CardController;
@@ -18,6 +18,7 @@ use App\Http\Controllers\IndexReactController;
 use App\Http\Controllers\CatalogReactController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductCardController;
+use App\Http\Controllers\FavoritesController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -37,15 +38,15 @@ use App\Models\Order;
 */
 
 // Маршруты для Inertia.js
-Route::match(['get', 'post'],'/', [IndexReactController::class, 'index'])->name('home');
-Route::match(['get', 'post'],'/products/{category?}', [ProductController::class, 'index']);
+Route::match(['get', 'post'], '/', [IndexReactController::class, 'index'])->name('home');
+Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'index']);
+Route::match(['get', 'post'], '/products/{category?}', [ProductController::class, 'index']);
 // Route::match(['get', 'post'],'/products/catalog', [CatalogReactController::class, 'index']);
 // Route::match(['get', 'post'], '/', ['App\\Http\\Controllers\\IndexController', 'index']);
 
 
 Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardController::class, 'index']);
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
-Route::match(['get', 'post'], '/products/favorites', [PackageController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
 //Route::match(['get', 'post'], '/products/{category?}', ['App\\Http\\Controllers\\CatalogController', 'index']);
 Route::match(['get', 'post'], '/lk', [LkController::class, 'index']);
