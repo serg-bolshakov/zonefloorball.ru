@@ -11,6 +11,8 @@ import { IProduct } from "@/Types/types";
 import { Link, usePage } from '@inertiajs/react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { formatPrice } from "@/Utils/priceFormatter";
+import { toast } from 'react-toastify';
+import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 
 interface IHomeProps {
     title: string;
@@ -19,32 +21,29 @@ interface IHomeProps {
     keywords: string;
 }
 
-const fetchFavoriteProducts = async (ids: number[]) => {
-    console.log(ids);
-    try {
-        const response = await axios.post('/api/products/favorites', {
-            ids,
-            _token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
-        }, {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest',
-                'Accept': 'application/json'
-            }
-        });
-        console.log(response.data);
-        return response.data;
-    } catch (error) {
-        throw new Error(getErrorMessage(error));
-    }
-};
-
 const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) => {
     const { user } = useAppContext();
     const { favorites } = useUserDataContext();
     const [favoriteProducts, setFavoriteProducts] = useState<IProduct[]>([]);
     const [isLoading, setIsLoading] = useState(false);
 
+    const toastConfig = {
+        position: "top-right" as const,
+        autoClose: 3000, // Уведомление закроется через секунду
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        transition: Bounce, // Используем Slide, Zoom, Flip, Bounce для этого тоста
+    }
+
     useEffect(() => {
+
+        // Создаём AbortController для управления отменой запроса
+        // создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
+        const controller = new AbortController();   // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
+        const signal = controller.signal;           // это объект AbortSignal, который передаётся в axios (или fetch).
+
         if (favorites.length === 0) {
             setFavoriteProducts([]);
             return;
@@ -54,32 +53,63 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
             setIsLoading(true);
 
             try {
-                const data = await fetchFavoriteProducts(favorites);
-                console.log('Raw response:', data.favoriteProducts.data);
-                setFavoriteProducts(data.favoriteProducts?.data || []);
+                const response = await axios.post('/api/products/favorites', {
+                    ids: favorites,
+                    _token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
+                }, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    signal, // Передаём signal в конфиг axios          
+                });
+
+                // Проверяем, не был ли запрос отменён
+                if (!signal.aborted) {
+                    setFavoriteProducts(response.data.favoriteProducts?.data || []);
+                }
+
             } catch (error) {
-                console.error('Ошибка загрузки:', getErrorMessage(error));
+                // Игнорируем ошибку, если запрос был отменён
+                if (!axios.isCancel(error)) {
+                    toast.error('Ошибка загрузки:' + getErrorMessage(error), toastConfig);
+                }
             } finally {
-                setIsLoading(false);
+                if (!signal.aborted) {
+                    setIsLoading(false);
+                }
             }
         };
         
         load();
 
-    }, [favorites]); // Зависимость от favorites
+        // Функция очистки: отменяем запрос при размонтировании или изменении favorites
+        return () => {
+            controller.abort();
+        };
+        
+    }, [favorites]); // Зависимость от favorites // При изменении favorites старый запрос отменяется
+
+    /* Как работает AbortController?
+        1. Создание контроллера: 
+            - const controller = new AbortController() создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
+            - controller.signal — это объект AbortSignal, который передаётся в axios (или fetch).
+        2. Отмена запроса:
+            - Когда вызывается controller.abort(), запрос прерывается.
+            - Axios автоматически отклоняет промис с ошибкой CanceledError (можно проверить через axios.isCancel(error)).
+        3. Очистка в useEffect:
+            - Функция, возвращаемая из useEffect, выполняется:
+                a) При размонтировании компонента;
+                b) Перед повторным вызовом эффекта (например, при изменении favorites).
+            - Это гарантирует, что старый запрос не "висит" в фоне, если пользователь быстро меняет данные.
+
+        AbortController требует привязки к жизненному циклу компонента
+            - Контроллер должен создаваться и отменяться в useEffect, иначе он не будет работать правильно.
+
+        Добавление AbortController сделает код более надёжным, особенно если пользователь быстро уходит со страницы или меняет фильтры.
+    */
 
     const memoizedProducts = useMemo(() => favoriteProducts, [favoriteProducts]);
-
-    // Функция для форматирования цены
-    /*
-    const formatPrice = (price: number): string => {
-        return price.toLocaleString('ru-RU', {
-            style: 'decimal',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-        });
-    };
-    */
 
     return (    
         <MainLayout>
