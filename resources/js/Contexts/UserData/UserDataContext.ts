@@ -34,9 +34,10 @@ export interface UserDataContextType extends UserDataState {
         favoritesTotal: number; 
         error?: string 
     }>;
-    removeFromFavorites?: (productId: number) => Promise<{ success: boolean; error?: string }>;
 
-    // Использование Promise — если метод будет делать API-запросы...     
+    // Использование Promise — если метод будет делать API-запросы...
+    removeFromFavorites: (productId: number) => Promise<{ favoritesTotal: number; error?: string }>;
+     
     addToCart?: ( params: AddToCartParams ) => Promise<{ 
         newQuantity: number; 
         cartTotal: number;  // Полезно для отображения в UI

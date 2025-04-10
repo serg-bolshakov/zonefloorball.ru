@@ -52,7 +52,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 return {
                     // favoritesTotal: state.favoritesTotal,
                     favoritesTotal: favorites.length,
-                    error: 'Товар уже находится в избранном - пора его уже и купить...' 
+                    error: 'Товар уже находится в избранном - его уже можно купить...' 
                 };
             }
 
@@ -89,7 +89,45 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             };
         }
     }, [user, state.favorites]);    // Зависимости здесь!
-    
+
+    const removeFromFavorites = useCallback(async (productId: number) => {
+        try {
+            updateState({isLoading: true});
+
+            // Создаём НОВЫЙ массив без мутаций
+            const updatedFavorites = state.favorites.filter(id => id !== productId);
+            
+            // Локальное обновление (синхронно)
+            updateState({
+                favorites: updatedFavorites,
+                favoritesTotal: updatedFavorites.length,
+                isLoading: false
+            });
+
+            // Сохранение на сервер (если пользователь авторизован)
+            if (user) {
+                await axios.post(API_ENDPOINTS.FAVORITES, { 
+                    favorites: updatedFavorites // Отправляем обновлённый массив
+                });    
+            } else {
+                localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
+            }
+
+            return { favoritesTotal: updatedFavorites.length };
+
+        } catch (error) {
+            // const message = handleError(error);
+            const message = getErrorMessage(error); // Новая обработка
+            updateState({
+                error: message,
+                isLoading: false
+            });
+            return { 
+                favoritesTotal: state.favoritesTotal,
+                error: message 
+            };
+        }
+    }, [user, state.favorites]);  
  
     const getLocalStorageData = (key: string, defaultValue: any) => {
       try {
@@ -187,6 +225,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     const contextValue = useMemo(() => ({
         ...state,
         addToFavorites,
+        removeFromFavorites,
         // Будущие методы добавятся здесь
     }), [
         state.cart,
@@ -194,7 +233,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         state.orders,
         state.isLoading,
         state.error,
-        addToFavorites
+        addToFavorites,
+        removeFromFavorites
     ]);
 
     return (

@@ -67,6 +67,10 @@ strong {
 .padding-left16px   { padding-left: 16px;  }
 .padding-right16px  { padding-right: 16px; }
 .padding-right24px  { padding-right: 24px; }
+.padding-top8px     { padding-top: 8px;    }
+.padding-top12px    { padding-top: 12px;   }
+.padding-top16px    { padding-top: 16px;   }
+.padding-top24px    { padding-top: 24px;   }
 
 .wrapper {
     margin: 24px auto;
@@ -1958,7 +1962,7 @@ input[type="checkbox"]:checked + label:after {
     margin: 12px 0;
     font-weight: 600;
     font-style: normal;
-    font-size: 18px;
+    font-size: 14px;
     color: rgba(0, 0, 0, 0.7);
     background-color: transparent;
     text-shadow: 0 0 4px rgba(255, 255, 255, 0.8); /* Тень для текста */

@@ -13,6 +13,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { formatPrice } from "@/Utils/priceFormatter";
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
+import { useCallback } from "react";
+import NavBarBreadCrumb from "@/Components/NavBarBreadCrumb";
 
 interface IHomeProps {
     title: string;
@@ -26,6 +28,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
     const { favorites } = useUserDataContext();
     const [favoriteProducts, setFavoriteProducts] = useState<IProduct[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     const toastConfig = {
         position: "top-right" as const,
@@ -36,6 +39,16 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
         draggable: true,
         transition: Bounce, // Используем Slide, Zoom, Flip, Bounce для этого тоста
     }
+
+    const { removeFromFavorites } = useUserDataContext();
+    const handleFavoriteClick = useCallback(async (productId: number) => {
+        const result = await removeFromFavorites(productId);
+        if (result.error) {
+            toast.error(result.error, toastConfig);
+        } else {
+            toast.success('Товар успешно удалён из Избранного...', toastConfig);
+        }
+    }, [removeFromFavorites]);
 
     useEffect(() => {
 
@@ -49,8 +62,15 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
             return;
         }
         
-        const load = async () => {
+        const loadFavorites = async () => {
+
+            if (!favorites.length) {
+                setFavoriteProducts([]);
+                return;
+            }
+
             setIsLoading(true);
+            setError(null);
 
             try {
                 const response = await axios.post('/api/products/favorites', {
@@ -72,6 +92,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
             } catch (error) {
                 // Игнорируем ошибку, если запрос был отменён
                 if (!axios.isCancel(error)) {
+                    setError(getErrorMessage(error));
                     toast.error('Ошибка загрузки:' + getErrorMessage(error), toastConfig);
                 }
             } finally {
@@ -81,7 +102,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
             }
         };
         
-        load();
+        loadFavorites();
 
         // Функция очистки: отменяем запрос при размонтировании или изменении favorites
         return () => {
@@ -120,12 +141,21 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                 <meta name="robots" content={robots} />
             </Helmet>
 
+            <NavBarBreadCrumb />
+
             <div className="basket-wrapper">
-                <h1 className="basketTitle">Избранное ({favorites.length})</h1>
+                <h1 className="basketTitle padding-top24px">Избранное ({favorites.length}) .</h1>
+                <p>Всё самое лучшее здесь...</p>
                 
+                {error && (
+                    <div className="error-message">
+                        Ошибка: {error}. Попробуйте обновить страницу.
+                    </div>
+                )}
+
                 {isLoading ? (
                     <div>Загрузка...</div>
-                ) : (
+                ) : favoriteProducts.length > 0 ? (
                     <div id="favoritesproductsblock">
                         {memoizedProducts.map(product => (
                             <div key={product.id} className="basket-row__product">
@@ -143,7 +173,10 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                                     <div className="basket-res__total">
                                         <p>сегодня в продаже: <span className="basket-quantity__span-tag">{ product.on_sale }</span> шт.</p>
                                         <div className="basket-delete__product-div">
-                                            <img className="favorites-img__remove" data-removefromfavorites={ product.id } src="/storage/icons/icon-trash.png" alt="icon-trash" title="Удалить товар из Избранного" />
+                                            <img className="favorites-img__remove" data-removefromfavorites={ product.id } 
+                                            src="/storage/icons/icon-trash.png" 
+                                            onClick={() => handleFavoriteClick(product.id)}
+                                            alt="icon-trash" title="Удалить товар из Избранного" />
                                             <motion.div 
                                                 whileHover={{ scale: 1.1 }}  
                                                 whileTap={{ scale: 0.9 }}
@@ -163,7 +196,9 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                                                 data-addtobasketfromfavoritesurl={ product.prod_url_semantic }
                                                 data-addtobasketfromfavoritesimglink={ product.img_link }
                                                 data-addtobasketfromfavoritesallowed={ product.on_sale }
-                                                src="/storage/icons/icon-shoppingcart.png" alt="icon-shoppingcart" title="Добавить выбранный товар в Корзину для покупок"
+                                                src="/storage/icons/icon-shoppingcart.png" 
+                                                alt="icon-shoppingcart" 
+                                                title="Добавить выбранный товар в Корзину для покупок"
                                             />
                                             </motion.div>
                                         </div> 
@@ -209,6 +244,10 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
 
                             </div>
                         ))}
+                    </div>
+                ) : (
+                    <div className="empty-favorites">
+                        В избранном пока нет товаров
                     </div>
                 )}
             </div>
