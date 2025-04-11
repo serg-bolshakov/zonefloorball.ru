@@ -11,7 +11,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     
     const { user } = useAppContext();
     const [state, setState] = useState<UserDataState>({
-        cart:      [],
+        cart:      {},  // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
         favorites: [],
         orders:    [],
         cartTotal: 0,
@@ -21,27 +21,54 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         error: null
     });
 
+    type TCart = Record<number, number>; // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
+    
+    const calculateCartTotal = (cart: TCart) => 
+        Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+
     // Помним, что состояние обновляется асинхронно! 
     // если просто setState({ ...state, newValue }) - может использовать устаревшее состояние
     // setState(prev => ({ ...prev, newValue })) - всегда использует актуальное состояние
     // Общая функция обновления состояния
-    const updateState = (partialState: Partial<UserDataState>) => {
+    /*const updateState = (partialState: Partial<UserDataState>) => {
         setState(prev => ({
                 ...prev,
                 ...partialState,
                 // Автоматически пересчитываем totals при изменении массивов
-                ...(partialState.cart && { cartTotal: partialState.cart.length }),
+                ...(partialState.cart && { cartTotal: calculateCartTotal(partialState.cart) }),
                 ...(partialState.favorites && { favoritesTotal: partialState.favorites.length }),
                 ...(partialState.orders && { ordersTotal: partialState.orders.length })
         }));
+    };*/
+    const updateState = (partialState: Partial<UserDataState>) => {
+        setState(prev => {
+            const newState = {...prev, ...partialState};    
+            return {
+                ...newState,
+                // Автоматически пересчитываем totals при изменении массивов
+                cartTotal: calculateCartTotal(newState.cart),
+                favoritesTotal: newState.favorites.length,
+                ordersTotal: newState.orders.length
+            };                
+        });
     };
 
-    // Обработка ошибок
-    // const handleError = (error: unknown): string => {
-    //     return error instanceof Error ? error.message : 'Unknown error';
-    // };
-    // Применили утилиту!
-  
+    /** Нужен ли debounce из lodash?
+     *  Без debounce: Каждое изменение корзины (например, быстрое нажатие +/-) будет вызывать:
+     *      - Запрос к API (для авторизованных) / Запрос к API (для авторизованных)
+     *  Проблемы: Лишняя нагрузка на API / Мелькание интерфейса
+     */
+    // Решение без lodash: Самодельный debounce:
+    let saveTimeout: NodeJS.Timeout;
+
+    const saveCart = (cart: TCart) => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            localStorage.setItem('cart', JSON.stringify(cart));
+        }, 500); // Задержка 500 мс
+    };
+
+
     // Для методов, которые зависят от состояния, указываем зависимости! Не забываем!
     const addToFavorites = useCallback(async (productId: number) => {
         try {
@@ -128,6 +155,74 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             };
         }
     }, [user, state.favorites]);  
+
+    const addToCart = useCallback(async (productId: number, quantity: number = 1) => {
+        
+        try {
+            //Валидация quantity:
+            if (quantity <= 0 || !Number.isInteger(quantity)) {
+                return { 
+                    cartTotal: calculateCartTotal(state.cart),
+                    error: 'Некорректное количество' 
+                };
+            }
+
+            updateState({isLoading: true});
+            
+            // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
+            // 1. Проверяем, есть ли товар в корзине
+            if(productId in state.cart) {       // Было: if(Object.keys(cart).includes(productId.toString())) {... productId in state.cart быстрее Object.keys().includes()
+                const newCart = {...state.cart};
+                newCart[productId] += quantity; // Увеличиваем количество
+                
+                updateState({ 
+                    cart: newCart,
+                    isLoading: false 
+                });
+
+                return {
+                    cartTotal: calculateCartTotal(newCart),
+                    error: `Товар уже в корзине (теперь: ${newCart[productId]} шт.)` // Понятнее для пользователя
+                };
+            }
+            
+            // 2. Если товара ещё нет — добавляем
+            const newCart = {...state.cart, 
+                [productId]: (state.cart[productId] || 0) + quantity };
+
+            if (user) {
+                await axios.post(API_ENDPOINTS.CART, { 
+                    cart: newCart
+                });    
+            } else {
+                // localStorage.setItem('cart', JSON.stringify(newCart));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
+                saveCart(newCart); // Вместо прямого вызова localStorage
+            }
+
+            updateState({ 
+                cart: newCart,
+                isLoading: false 
+            });
+
+            // Реальная реализация может вернуть undefined (если есть try-catch без return) - делаем return
+            return { 
+                cartTotal: calculateCartTotal(newCart),
+            };
+
+        } catch (error) {
+            const message = getErrorMessage(error);
+            updateState({
+                error: message,
+                isLoading: false
+            });
+
+            return { 
+                cartTotal: state.cartTotal,
+                error: message 
+            };
+        }
+        
+    }, [user, state.cart]); 
  
     const getLocalStorageData = (key: string, defaultValue: any) => {
       try {
@@ -152,7 +247,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
               });
             }  else {
                 updateState({
-                    cart: getLocalStorageData('cart', []),
+                    cart: getLocalStorageData('cart', {}),
                     favorites: getLocalStorageData('favorites', []),
                     orders: getLocalStorageData('orders', []),
                     isLoading: false,
@@ -226,6 +321,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         ...state,
         addToFavorites,
         removeFromFavorites,
+        addToCart,
         // Будущие методы добавятся здесь
     }), [
         state.cart,
@@ -234,7 +330,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         state.isLoading,
         state.error,
         addToFavorites,
-        removeFromFavorites
+        removeFromFavorites,
+        addToCart
     ]);
 
     return (

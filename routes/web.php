@@ -19,6 +19,7 @@ use App\Http\Controllers\CatalogReactController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductCardController;
 use App\Http\Controllers\FavoritesController;
+use App\Http\Controllers\CartController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -39,6 +40,7 @@ use App\Models\Order;
 
 // Маршруты для Inertia.js
 Route::match(['get', 'post'], '/', [IndexReactController::class, 'index'])->name('home');
+Route::match(['get', 'post'], '/products/cart', [CartController::class, 'index']);
 Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'index']);
 Route::match(['get', 'post'], '/products/{category?}', [ProductController::class, 'index']);
 // Route::match(['get', 'post'],'/products/catalog', [CatalogReactController::class, 'index']);

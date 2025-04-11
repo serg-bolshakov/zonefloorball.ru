@@ -13,11 +13,11 @@ interface OrderResponse {
 const Header: React.FC = () => {
     const { user, categoriesMenuArr, authBlockContentFinal } = useAppContext();
     
-    const { orders, favorites, cart } = useUserDataContext();
+    const { orders, favorites, cartTotal } = useUserDataContext();
     // Считаем количества
     const ordersCount = orders.length;
     const favoritesCount = favorites.length;
-    const cartCount = cart.length;
+    const cartCount = cartTotal;
 
     // Если categoriesMenuArr ещё не загружено, показываем заглушку
     if (!categoriesMenuArr) {

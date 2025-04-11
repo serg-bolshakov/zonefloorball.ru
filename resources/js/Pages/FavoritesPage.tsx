@@ -51,7 +51,6 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
     }, [removeFromFavorites]);
 
     useEffect(() => {
-
         // Создаём AbortController для управления отменой запроса
         // создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
         const controller = new AbortController();   // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
@@ -63,7 +62,6 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
         }
         
         const loadFavorites = async () => {
-
             if (!favorites.length) {
                 setFavoriteProducts([]);
                 return;
@@ -130,6 +128,23 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
         Добавление AbortController сделает код более надёжным, особенно если пользователь быстро уходит со страницы или меняет фильтры.
     */
 
+    const { cart, addToCart } = useUserDataContext();
+    const handleAddToCartClick = useCallback(async (productId: number, quantity: number = 1, on_sale: number = 0) => {
+        // если добавляемый пользователем товар уже есть в корзине, смотрим его количество в корзине и сравниваем с тем, сколько единиц товара есть в продаже:
+        if(productId in cart) {
+            if(cart[productId] + quantity <= on_sale) {
+                const result = await addToCart(productId, quantity);
+                if (result.error) {
+                    toast.error(result.error, toastConfig);
+                } else {
+                    toast.success('Товар успешно добавлен в корзину...', toastConfig);
+                }
+            } else {
+                toast.error('Нельзя добавить в корзину количество товара больше, чем его есть в наличии ' + '(' + on_sale+ ')', toastConfig);
+            }
+        }
+    }, [addToCart]);
+    
     const memoizedProducts = useMemo(() => favoriteProducts, [favoriteProducts]);
 
     return (    
@@ -197,6 +212,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                                                 data-addtobasketfromfavoritesimglink={ product.img_link }
                                                 data-addtobasketfromfavoritesallowed={ product.on_sale }
                                                 src="/storage/icons/icon-shoppingcart.png" 
+                                                onClick={() => handleAddToCartClick(product.id, 1, product.on_sale)}
                                                 alt="icon-shoppingcart" 
                                                 title="Добавить выбранный товар в Корзину для покупок"
                                             />
