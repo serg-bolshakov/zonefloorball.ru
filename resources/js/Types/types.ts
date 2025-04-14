@@ -174,12 +174,14 @@ export interface IProduct extends IProductReportFromDB {
     prod_status?: number | null;                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     img_link?: string | null;                        // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     
-    price_with_rank_discount?   : number | null;
-    price_with_action_discount? : number | null;
-    percent_of_rank_discount?   : number | null;
-    summa_of_action_discount?   : number | null;
-    price_special?              : number | null;
-    date_end?                   : string | null;
+    price_with_rank_discount?   : number;
+    price_with_action_discount? : number;
+    percent_of_rank_discount?   : number;
+    summa_of_action_discount?   : number;
+    price_special?              : number;
+    date_end?                   : string;
+
+    quantity?: number;
     
 }
 

@@ -71,7 +71,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
             setError(null);
 
             try {
-                const response = await axios.post('/api/products/favorites', {
+                const response = await axios.post('/api/products/favorites', {          // Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'getProducts']) ->middleware('api'); // Важно!;
                     ids: favorites,
                     _token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
                 }, {
@@ -131,7 +131,39 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
     const { cart, addToCart } = useUserDataContext();
     const handleAddToCartClick = useCallback(async (productId: number, quantity: number = 1, on_sale: number = 0) => {
         // если добавляемый пользователем товар уже есть в корзине, смотрим его количество в корзине и сравниваем с тем, сколько единиц товара есть в продаже:
-        if(productId in cart) {
+        try {
+            // Проверяем доступное количество
+            const currentQty = cart[productId] || 0;
+            const newQty = currentQty + quantity;
+
+            if (newQty > on_sale) {
+                // toast.error('Нельзя добавить в корзину количество товара больше, чем его есть в наличии ' + '(' + on_sale + ')', toastConfig)
+                throw new Error(`В корзине уже максимально доступное количество товара: ${on_sale} шт.!`);
+            }
+
+            // Добавляем в корзину
+            const result = await addToCart(productId, quantity);
+
+            if (result.error) {
+                toast.error(result.error, toastConfig);
+                throw new Error(result.error);
+            }
+
+            toast.success(
+                currentQty > 0 
+                  ? `Количество товара обновлено (${newQty} шт.)`
+                  : 'Товар успешно добавлен в корзину',
+                toastConfig
+            );
+        } catch (error) {
+            toast.error(
+                error instanceof Error 
+                  ? error.message 
+                  : 'Произошла ошибка при добавлении в корзину',
+                toastConfig
+              );
+        }       
+        /*if(productId in cart) {
             if(cart[productId] + quantity <= on_sale) {
                 const result = await addToCart(productId, quantity);
                 if (result.error) {
@@ -142,8 +174,19 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
             } else {
                 toast.error('Нельзя добавить в корзину количество товара больше, чем его есть в наличии ' + '(' + on_sale+ ')', toastConfig);
             }
-        }
-    }, [addToCart]);
+        } else {
+            if(quantity <= on_sale) {
+                const result = await addToCart(productId, quantity);
+                if (result.error) {
+                    toast.error(result.error, toastConfig);
+                } else {
+                    toast.success('Товар успешно добавлен в корзину...', toastConfig);
+                }
+            } else {
+                toast.error('Нельзя добавить в корзину количество товара больше, чем его есть в наличии ' + '(' + on_sale+ ')', toastConfig);
+            }
+        }*/
+    }, [addToCart, cart]);
     
     const memoizedProducts = useMemo(() => favoriteProducts, [favoriteProducts]);
 

@@ -1,34 +1,18 @@
-// resources/js/Сontexts/UserData/Context.tsx
+// resources/js/Сontexts/UserData/Context.ts
 
 import { createContext } from 'react';
 
-/*export interface CartItem {
-    productId: number;
-    quantity: number;
-    addedAt?: Date; // Полезно для сортировки
-}*/
-type TCart = Record<number, number>; // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
-
-
+export type TCart = Record<number, number>; // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
 export interface UserDataState {
-    cart          : TCart;
-    favorites     : number[];
-    orders        : number[];
-    cartTotal     : number; 
-    favoritesTotal: number; 
-    ordersTotal   : number; 
-    isLoading     : boolean;        // Статус загрузки
-    error         : string | null;
+    cart           : TCart;
+    favorites      : number[];
+    orders         : string[];
+    cartTotal      : number; 
+    favoritesTotal : number; 
+    ordersTotal    : number; 
+    isLoading      : boolean;        // Статус загрузки
+    error          : string | null;
 }
-
-/*export interface AddToCartParams {
-    productId: number; 
-    quantity: number;
-    options?: {             // Опциональность (?:) — методы будем добавлять постепенно...
-        silent?: boolean;   // Часто нужно передавать флаги (например, для мгновенного обновления UI):
-        merge? : boolean;   // Совмещать с существующим количеством
-    };    
-}*/
 
 export interface UserDataContextType extends UserDataState {
     // Избранное
@@ -45,7 +29,11 @@ export interface UserDataContextType extends UserDataState {
         error?: string;     
     }>;
     
-    updateCartItem?: (productId: number, quantity: number) => void;
+    updateCart: (productId: number, quantity: number) => Promise<{  
+        cartTotal: number;  // Полезно для отображения в UI
+        error?: string;     
+    }>;
+
     removeFromCart?: (productId: number) => void;
     clearCart?: () => Promise<void>;
 

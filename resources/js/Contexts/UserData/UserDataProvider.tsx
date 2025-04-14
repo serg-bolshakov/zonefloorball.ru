@@ -6,10 +6,11 @@ import { UserDataState } from './UserDataContext';
 import { UserDataContext } from './UserDataContext';
 import { API_ENDPOINTS } from '@/Constants/api';
 import { getErrorMessage } from '@/Utils/error';
+import { TCart } from './UserDataContext';
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
     
-    const { user } = useAppContext();
+    const { user, cart, favorites, orders } = useAppContext();
     const [state, setState] = useState<UserDataState>({
         cart:      {},  // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
         favorites: [],
@@ -21,8 +22,6 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         error: null
     });
 
-    type TCart = Record<number, number>; // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
-    
     const calculateCartTotal = (cart: TCart) => 
         Object.values(cart).reduce((sum, qty) => sum + qty, 0);
 
@@ -60,14 +59,12 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
      */
     // Решение без lodash: Самодельный debounce:
     let saveTimeout: NodeJS.Timeout;
-
     const saveCart = (cart: TCart) => {
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
             localStorage.setItem('cart', JSON.stringify(cart));
         }, 500); // Задержка 500 мс
     };
-
 
     // Для методов, которые зависят от состояния, указываем зависимости! Не забываем!
     const addToFavorites = useCallback(async (productId: number) => {
@@ -157,7 +154,6 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     }, [user, state.favorites]);  
 
     const addToCart = useCallback(async (productId: number, quantity: number = 1) => {
-        
         try {
             //Валидация quantity:
             if (quantity <= 0 || !Number.isInteger(quantity)) {
@@ -192,6 +188,55 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
             if (user) {
                 await axios.post(API_ENDPOINTS.CART, { 
+                    products: newCart
+                });    
+            } else {
+                // localStorage.setItem('cart', JSON.stringify(newCart));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
+                saveCart(newCart); // Вместо прямого вызова localStorage
+            }
+
+            updateState({ 
+                cart: newCart,
+                isLoading: false 
+            });
+
+            // Реальная реализация может вернуть undefined (если есть try-catch без return) - делаем return
+            return { 
+                cartTotal: calculateCartTotal(newCart),
+            };
+
+        } catch (error) {
+            const message = getErrorMessage(error);
+            updateState({
+                error: message,
+                isLoading: false
+            });
+
+            return { 
+                cartTotal: state.cartTotal,
+                error: message 
+            };
+        }
+    }, [user, state.cart]); 
+
+    const updateCart = useCallback(async (productId: number, quantity: number): Promise<{ cartTotal: number; error?: string; }> => {
+        try {
+            //Валидация quantity:
+            if (quantity <= 0 || !Number.isInteger(quantity)) {
+                return { 
+                    cartTotal: calculateCartTotal(state.cart),
+                    error: 'Некорректное количество' 
+                };
+            }
+
+            updateState({isLoading: true});
+            
+            // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
+            const newCart = {...state.cart};
+            newCart[productId] = quantity; // Изменяем количество
+
+            if (user) {
+                await axios.post(API_ENDPOINTS.CART, { 
                     cart: newCart
                 });    
             } else {
@@ -221,8 +266,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 error: message 
             };
         }
-        
-    }, [user, state.cart]); 
+    }, [user, state.cart]);
  
     const getLocalStorageData = (key: string, defaultValue: any) => {
       try {
@@ -234,17 +278,17 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
       }
     };
   
-    // Загрузка начальных данных:
+    // Загрузка начальных данных: 
     useEffect(() => {
       const loadData = async () => {
         try {
             if (user) {
-              //const userData = getLocalStorageData('userData', {});
-              const { data } = await axios.get('/api/user-data');
-              updateState({
-                ...data, 
-                isLoading: false
-              });
+                updateState({
+                    cart: cart,
+                    favorites: favorites,
+                    orders: orders,
+                    isLoading: false,
+                });
             }  else {
                 updateState({
                     cart: getLocalStorageData('cart', {}),
@@ -274,7 +318,11 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 // e.newValue - новое значение (или null, если данные удалены)
                 updateState({ favorites: JSON.parse(e.newValue || '[]') });
             }
-            // Аналогично для cart и orders
+            // Аналогично для cart и orders:
+            if (e.key === 'cart') {
+                // e.newValue - новое значение (или null, если данные удалены)
+                updateState({ cart: JSON.parse(e.newValue || '{}') });
+            }
         };
 
         window.addEventListener('storage', handleStorage);
@@ -322,6 +370,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         addToFavorites,
         removeFromFavorites,
         addToCart,
+        updateCart
         // Будущие методы добавятся здесь
     }), [
         state.cart,
@@ -331,7 +380,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         state.error,
         addToFavorites,
         removeFromFavorites,
-        addToCart
+        addToCart,
+        updateCart
     ]);
 
     return (

@@ -281,8 +281,8 @@ const Header: React.FC = () => {
 
                     <div className="header-icon__block basket-logo__div">
                         {cartCount > 0 && ( <div className="header-basket__counter header-logo__counter color-red">{ cartCount }</div> )}
-                        <Link className="" href="/products/basket"><img src="/storage/icons/icon-shopping-cart.png" alt="basket" title="Посмотреть корзину" /></Link>
-                        <p><Link className="header-icon" href="/products/basket">Корзина</Link></p>
+                        <Link className="" href="/products/cart"><img src="/storage/icons/icon-shopping-cart.png" alt="basket" title="Посмотреть корзину" /></Link>
+                        <p><Link className="header-icon" href="/products/cart">Корзина</Link></p>
                     </div>
                 </div>
 

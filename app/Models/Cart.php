@@ -19,7 +19,7 @@ class Cart extends Model {
 
     // Валидация JSON в Laravel:
     protected $casts = [
-        'products' => 'array'   // Автоматическая конвертация
+        'products' => 'array' // {product_id: quantity}  // Автоматическая конвертация
     ];
 
     /**
@@ -33,14 +33,14 @@ class Cart extends Model {
     */
 
     /** Когда сохраняем JSON в БД: 
-     * $cart->products = '{"1": {"quantity": 2}}'; // Строка
-     * Laravel автоматически преобразует это в: $cart->products; // ['1' => ['quantity' => 2]]
+     * $cart->products = '{product_id: quantity}'; // Строка
+     * Laravel автоматически преобразует это в: $cart->products; // ['86' => 2]
     */
 
     public static function rules(): array {
         return [
-            'products' => 'json',
-            'products.*.quantity' => 'integer|min:1' 
+            'products' => 'array',
+            'products.*' => 'integer|min:1' // Проверяем quantity 
         ];
     }
 
@@ -58,4 +58,27 @@ class Cart extends Model {
      *  - Сохраняет в БД как JSON
      * 3. При следующем запросе: Laravel автоматически преобразует JSON из БД в массив PHP благодаря $casts.
     */
+
+    // Рекомендованный метод для получения товаров корзины
+    public static function getCartProducts(array $productIds) {
+        return Product::whereIn('id', array_keys($productIds))
+            ->get()
+            ->map(function ($product) use ($productIds) {
+                $product->quantity = $productIds[$product->id] ?? 0;
+                return $product;
+        });
+    }
+
+    // метод для получения товаров корзины
+    public static function getCartItems(array $productIds) {
+        return Product::with([
+            'actualPrice', 
+            'regularPrice', 
+            'productReport', 
+            'productShowCaseImage'
+            ])
+            ->where('product_status_id', '=', 1)
+            ->whereIn('id', array_keys($productIds))
+        ->get();   
+    }
 }

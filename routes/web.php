@@ -111,3 +111,13 @@ Route::post('/sync-orders-list', function (Request $request) {
     return response()->json($ordersIdsArr);
 });
 
+// Временный маршрут для тестирования
+Route::get('/test-cart', function(Request $request) {
+    $fakeRequest = new \Illuminate\Http\Request([
+        'cart' => ['47' => 3, '84' => 1] // Имитируем данные из localStorage
+    ]);
+    
+    return app()->make(\App\Http\Controllers\CartController::class)
+        ->sync($fakeRequest);
+});
+

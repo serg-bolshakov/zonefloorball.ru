@@ -10,6 +10,8 @@
     use App\Models\Organization;
     use App\Models\Order;
     use App\Models\User;
+    use App\Models\Favorite;
+    use App\Models\Cart;
     
     use Illuminate\Support\Facades\Auth;
     use Inertia\Inertia;
@@ -19,11 +21,12 @@
             try {
                 # Метод url вернет URL без строки запроса, а метод fullUrl, включая строку запроса:
                 $locationString = $request->url();
-                $authBlockContentFinal = '';
+                $authBlockContentFinal = $userType = $user_id = '';
                 $userStatus = 'Гость';
-                $userType = '';
-                $user_id = '';
         
+                $cart = $favorites = $orders = [];
+                $cartTotal = $favoritesTotal = $ordersTotal = 0;
+
                 $loginLink  = '/login'   ;
                 $regLink    = '/register';
                 $logoutLink = '/logout'  ;
@@ -38,6 +41,9 @@
                     $userType = $user->client_type_id;
                     $user_id  = $user->id;
                     $userName = $user->name;
+
+                    $favorites = Favorite::where('user_id', $user_id)->pluck('product_ids');
+                    $cart = Cart::where('user_id', $user_id)->pluck('products');
         
                     // посмотрим его историю заказов (смотрим только количество заказов - это для обозначения в иконке "Заказы" в хедере):
                     $userAuthedOrdersCount = Order::where('order_client_type_id', $userType)->where('order_client_id', $user_id)->count();
@@ -73,29 +79,21 @@
                     
                 $categoriesMenuArr = $this->getCategoriesMenu();
                 // dd($categoriesMenuArr);
-                /* return Inertia::render('Home', [
-                    'categoriesMenuArr' => $categoriesMenuArr,
-                    'authBlockContentFinal' => $authBlockContentFinal,
-                    'userAuthedOrdersCount' => $userAuthedOrdersCount ?? 0,
-                    'userType' => $userType,
-                    'user_id' => $user_id,
-                    'locationString' => $locationString,
-                    'userName' => $userName ?? 'Гость',
-                    'user'  => $user,
-                    'title' => 'UnihocZoneRussia Флорбольная экипировка.Всё для флорбола. Купить',
-                    'robots' => 'INDEX,FOLLOW',
-                    'description' => 'Найти, выбрать и купить товары для флорбола для детей и взрослых. Всё для флорбола от ведущего мирового производителя.',
-                    'keywords' => 'Клюшки для флорбола, обувь, очки, сумки и чехлы для взрослых и детей. Флорбольные ворота и мячи.',
-                ]);*/
 
                 // Прлучаем информацию о категориях. Планируем использовать для маппинга при выводе подменю категории в навбар-е хлебных крошек
-                $categoriesInfo = Category::all();
+                $categoriesInfo = Category::all(); 
                 
                 return response()->json([
                     'user' => $user,
                     'categoriesMenuArr' => $categoriesMenuArr,
                     'categoriesInfo' => $categoriesInfo,
                     'authBlockContentFinal' => $authBlockContentFinal,
+                    'cart' => $cart,
+                    'favorites' => $favorites,
+                    'cartTotal' => $cartTotal,
+                    'favoritesTotal' => $favoritesTotal,
+                    'orders' => $orders,
+                    'ordersTotal' => $ordersTotal,
                 ]);
             } catch (\Exception $e) {
                 return response()->json([
