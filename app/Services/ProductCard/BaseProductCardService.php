@@ -34,7 +34,7 @@ abstract class BaseProductCardService
     protected $brand_id;
     protected $model;
     protected $marka;
-    protected $colour;    
+    protected $colour;    // здесь я бы подумал! мячики, например, как раз по цвету могут отличаться...
     
     public function __construct($prodInfo)
     {

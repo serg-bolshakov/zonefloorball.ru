@@ -31,10 +31,15 @@ export interface IPropVariants {
     propHook?: string;
     resultpossibleHookForProductCard?: IPropsVariantsSecondLevel;
     possibleShaftLengthForProductCard?: IPropsVariantsSecondLevel[];
+    resultotherColourBladeForCard?: IPropsVariantsSecondLevel[];
 }
 
 export interface IPropsVariantsSecondLevel {
     id: number;
+    category_id?: number;
+    model?: string | null;
+    marka?: string | null;
+    colour?: string | null;
     prod_url_semantic: string;
     prop_title?: string;
     prop_value?: string | number;
@@ -42,4 +47,6 @@ export interface IPropsVariantsSecondLevel {
     size_title?: string;
     size_value?: string | number;
     classCurrent?: string;
+    img_main?: boolean | null;
+    img_link?: string | null;
 }

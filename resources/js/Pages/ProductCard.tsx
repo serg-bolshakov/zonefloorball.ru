@@ -13,9 +13,9 @@ import ProductDetails from '@/Components/ProductCard/ProductDetails';
 import ProductDescription from '@/Components/ProductCard/ProductDescription';
 import ProductActions from '@/Components/ProductCard/ProductActions';
 import ProductGallery from '@/Components/ProductCard/ProductGallery';
-import PropVariants from '@/Components/ProductCard/PropVariants';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { AnimatePresence, motion } from 'framer-motion';
+import PropVariants1 from '../Components/ProductCard/PropVariants';
 
 const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants}) => {
 
@@ -58,7 +58,10 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                         </section>
 
                         <section className="cardProduct-props">
-                            <PropVariants propVariants={propVariants} />
+                        <PropVariants1 
+                            propVariants={propVariants} 
+                            categoryId={prodInfo.category.id} // Передаём категорию
+                        />
                             
                             {prodInfo.actualPrice && (
                                 <PriceBlock actualPrice={prodInfo.actualPrice} regularPrice={prodInfo.regularPrice} />

@@ -31,7 +31,7 @@ class ProductCardController extends Controller
         $similarProductsService = ProductCardServiceFactory::create($categoryId, $prodInfo);    // Выбираем сервис для выборки в карточку товара аналогичных товаров, разных размеров/цветов...
         $propVariants = $similarProductsService->getSimilarProps();                             // Получаем различные варианты исполнения просматриваемого товара (размеры/цвета/модели...)
 
-        // dd($propVariants['propHook']);
+        // dd($propVariants);
         return [
             'title' => $prodInfo->tag_title,
             'robots' => 'INDEX,FOLLOW',

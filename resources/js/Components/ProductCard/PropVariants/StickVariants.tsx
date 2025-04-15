@@ -1,14 +1,14 @@
-// resources/js/Components/ProductCard/PropVariants.tsx
+// resources/js/Components/ProductCard/PropVariants/StickVariants.tsx
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { IPropVariants } from '@/Types/prodcard';
 import { motion } from 'framer-motion';
 
-interface Props {
+interface StickProps {
     propVariants: IPropVariants;
 }
 
-const PropVariants: React.FC<Props> = ({ propVariants }) => {
+const StickVariants: React.FC<StickProps> = ({ propVariants }) => {
     return (
         <section className="cardProduct-props__item">
             {/* Хват (игровая сторона) */}
@@ -119,4 +119,4 @@ const PropVariants: React.FC<Props> = ({ propVariants }) => {
     );
 };
 
-export default PropVariants;
+export default StickVariants;

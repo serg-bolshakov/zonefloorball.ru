@@ -258,7 +258,7 @@ class BlockOtherPossibleProdsForCard extends Component
             ->get();
            
             $res['resultotherColourBladeForCard'] = $resultotherColourBladeForCard; 
-            dd($res);
+            // dd($res);
             return $res;   
         } 
 
