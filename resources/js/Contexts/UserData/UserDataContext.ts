@@ -34,7 +34,11 @@ export interface UserDataContextType extends UserDataState {
         error?: string;     
     }>;
 
-    removeFromCart?: (productId: number) => void;
+    removeFromCart: (productId: number) => Promise<{  
+        cartTotal: number;
+        error?: string;     
+    }>;
+    
     clearCart?: () => Promise<void>;
 
     // Заказы

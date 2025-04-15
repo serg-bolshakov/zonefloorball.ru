@@ -76,7 +76,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 return {
                     // favoritesTotal: state.favoritesTotal,
                     favoritesTotal: favorites.length,
-                    error: 'Товар уже находится в избранном - его уже можно купить...' 
+                    error: 'Товар уже присутствует в Избранном...', 
                 };
             }
 
@@ -218,6 +218,55 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             };
         }
     }, [user, state.cart]); 
+
+    const removeFromCart = useCallback(async (productId: number): Promise<{ cartTotal: number; error?: string; }> => {
+        try {
+            updateState({isLoading: true});
+
+            // Создаём новый объект без удаляемого товара (без мутаций!)
+            const { [productId]: _, ...rest } = state.cart;             // Деструктуризация с исключением
+            const newCart = rest;
+            /** Как работает деструктуризация с исключением в нашем случае:
+             *  const state.cart = { 84: 1, 89: 2 };            // Исходный объект корзины
+             *  const productId = 84;                           // Удаляемый товар
+             *  Шаг 1: Деструктуризация с исключением: 
+             *  const { [productId]: _, ...rest } = state.cart; // → Извлекаем ключ `84` в переменную `_` (она не используется), а остальное — в `rest`
+             *  Шаг 2: Результат: console.log(rest);            // { 89: 2 } - Красота!
+             */
+            // const newCart = state.cart; delete newCart[productId];   // Удаляем из корзины товар с запрошенным на удаление id - этот вариант решения оставим "в прошлое"...
+            
+            // Локальное обновление (синхронно)
+            updateState({
+                cart: newCart,
+                cartTotal: calculateCartTotal(newCart),
+                isLoading: false
+            });
+
+            // Сохранение на сервер (если пользователь авторизован) / localStorage
+            if (user) {
+                await axios.post(API_ENDPOINTS.CART, { 
+                    cart: newCart // Отправляем обновлённый массив
+                });    
+            } else {
+                localStorage.setItem('cart', JSON.stringify(newCart));
+            }
+
+            return { cartTotal: calculateCartTotal(newCart) };
+
+        } catch (error) {
+            // const message = handleError(error);
+            const message = getErrorMessage(error); 
+            updateState({
+                error: message,
+                isLoading: false
+            });
+            return { 
+                cartTotal: state.cartTotal,
+                error: message 
+            };
+        }
+    }, [user, state.cart]);  
+
 
     const updateCart = useCallback(async (productId: number, quantity: number): Promise<{ cartTotal: number; error?: string; }> => {
         try {
@@ -370,7 +419,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         addToFavorites,
         removeFromFavorites,
         addToCart,
-        updateCart
+        updateCart,
+        removeFromCart
         // Будущие методы добавятся здесь
     }), [
         state.cart,
@@ -381,7 +431,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         addToFavorites,
         removeFromFavorites,
         addToCart,
-        updateCart
+        updateCart,
+        removeFromCart
     ]);
 
     return (

@@ -16,6 +16,7 @@ const toastConfig = {
 
 interface QuantityControlProps {
     prodId:number
+    prodTitle: string
     value: number;
     on_sale: number;
     updateCart: (prodId: number, value: number) => Promise<{  
@@ -27,6 +28,7 @@ interface QuantityControlProps {
 
 export const QuantityControl: React.FC<QuantityControlProps> = ({ 
         prodId,
+        prodTitle,
         value: initialValue,  // деструктуризация с переименованием: возьми свойство value из полученных пропсов и и сохрани его в локальную переменную initialValue
         /** Что происходит:
          *  1. Получение пропса:
@@ -78,10 +80,11 @@ export const QuantityControl: React.FC<QuantityControlProps> = ({
     useEffect (() => {
         if(initialValue > 0 && on_sale === 0) {
             // Товар полностью закончился
+            toast.warning(`К сожалению товар ${ prodTitle } закончился, мы перенесли его в Избранное...`, toastConfig);
             handleUpdate(0);
         } else if(initialValue > on_sale) {
             // Товара доступного к продаже меньше, чем в корзине
-            toast.warning('Количество товаров в корзине изменилось...', toastConfig);
+            toast.warning(`Количество товаров ${ prodTitle } в корзине изменилось...`, toastConfig);
             handleUpdate(on_sale);
         }
     }, [initialValue, on_sale]);

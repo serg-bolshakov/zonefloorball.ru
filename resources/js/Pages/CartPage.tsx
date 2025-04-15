@@ -28,19 +28,19 @@ interface IHomeProps {
 
 const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) => {
     const { user } = useAppContext();
-    const { cart, cartTotal, updateCart, addToFavorites } = useUserDataContext();
+    const { cart, cartTotal, updateCart, addToFavorites, removeFromCart } = useUserDataContext();
     const [cartProducts, setCartProducts] = useState<IProduct[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const toastConfig = {
         position: "top-right" as const,
-        autoClose: 3000, // Уведомление закроется через секунду
+        autoClose: 1500, // Уведомление закроется через секунду
         hideProgressBar: true,
         closeOnClick: true,
         pauseOnHover: true,
         draggable: true,
-        transition: Bounce, // Используем Slide, Zoom, Flip, Bounce для этого тоста
+        transition: Zoom, // Используем Slide, Zoom, Flip, Bounce для этого тоста
     }
 
     useEffect(() => {
@@ -99,7 +99,33 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
         };
 
     }, [cart]);
-    
+
+    const handleFavoriteClick = useCallback(async (productId: number) => {
+        try {
+            const result = await addToFavorites(productId);    
+            if (result.error) {
+                toast.error(result.error, toastConfig);
+            } else {
+                toast.success('Товар успешно добавлен в Избранное...', toastConfig);
+            }
+        } catch(error) {
+            toast.error('Не удалось добавить в Избранное', toastConfig);
+        }
+    }, [addToFavorites]);
+
+    const handleRemoveFromCartClick = useCallback(async (productId: number) => {
+        try {
+            const result = await removeFromCart(productId);    
+            if (result.error) {
+                toast.error(result.error, toastConfig);
+            } else {
+                toast.success('Товар успешно удалён из Корзины...', toastConfig);
+            }
+        } catch(error) {
+            toast.error('Не удалось добавить в Избранное', toastConfig);
+        }
+    }, [removeFromCart]);
+
     const memoizedProducts = useMemo(() => cartProducts, [cartProducts]);
 
     return (    
@@ -140,8 +166,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                                     <div className="basket-res__total">
                                         <p>сегодня в продаже: <span className="basket-quantity__span-tag" data-soldprodid={ product.id }>{ product.on_sale }</span> шт.</p>
                                         <div className="basket-delete__product-div">
-                                            <img className="basket-img__remove" data-removefrombasket={ product.id } src="/storage/icons/icon-trash.png" alt="icon-trash" title="Удалить товар из корзины" />
-                                            <img className="basket-img__addtofavorites" data-addtofavoritesfrombasketid={ product.id } src="/storage/icons/favorite.png" alt="icon-favorites" title="Добавить выбранный товар в Избранное" />
+                                            <img className="basket-img__remove"  onClick={() => handleRemoveFromCartClick(product.id)} data-removefrombasket={ product.id } src="/storage/icons/icon-trash.png" alt="icon-trash" title="Удалить товар из корзины" />
+                                            <img className="basket-img__addtofavorites"  onClick={() => handleFavoriteClick(product.id)} data-addtofavoritesfrombasketid={ product.id } src="/storage/icons/favorite.png" alt="icon-favorites" title="Добавить выбранный товар в Избранное" />
                                         </div> 
                                     </div>
                                     <p>по лучшей цене: </p>
@@ -190,6 +216,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                                         <div className="basket-row__priceCount">
                                             <QuantityControl
                                                 prodId={product.id}
+                                                prodTitle={ product.title }
                                                 value={product.quantity ?? 0}
                                                 on_sale={product.on_sale ?? 0}
                                                 updateCart={ updateCart }
