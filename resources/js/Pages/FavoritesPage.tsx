@@ -231,7 +231,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                                     <div className="basket-res__total">
                                         <p>сегодня в продаже: <span className="basket-quantity__span-tag">{ product.on_sale }</span> шт.</p>
                                         <div className="basket-delete__product-div">
-                                            <img className="favorites-img__remove" data-removefromfavorites={ product.id } 
+                                            <img className="favorites-img__remove cursor-pointer" data-removefromfavorites={ product.id } 
                                             src="/storage/icons/icon-trash.png" 
                                             onClick={() => handleFavoriteClick(product.id)}
                                             alt="icon-trash" title="Удалить товар из Избранного" />
@@ -247,7 +247,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                                                     }
                                                 }}
                                             >
-                                            <img className="favorites-img__addtobasket" data-addtobasketfromfavoritesid={ product.id } 
+                                            <img className="favorites-img__addtobasket cursor-pointer" data-addtobasketfromfavoritesid={ product.id } 
                                                 data-addtobasketfromfavoritesarticle={ product.article }
                                                 data-addtobasketfromfavoritesname={ product.title }
                                                 data-addtobasketfromfavoritesprice={ product.price_regular }

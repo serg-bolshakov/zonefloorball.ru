@@ -166,8 +166,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                                     <div className="basket-res__total">
                                         <p>сегодня в продаже: <span className="basket-quantity__span-tag" data-soldprodid={ product.id }>{ product.on_sale }</span> шт.</p>
                                         <div className="basket-delete__product-div">
-                                            <img className="basket-img__remove"  onClick={() => handleRemoveFromCartClick(product.id)} data-removefrombasket={ product.id } src="/storage/icons/icon-trash.png" alt="icon-trash" title="Удалить товар из корзины" />
-                                            <img className="basket-img__addtofavorites"  onClick={() => handleFavoriteClick(product.id)} data-addtofavoritesfrombasketid={ product.id } src="/storage/icons/favorite.png" alt="icon-favorites" title="Добавить выбранный товар в Избранное" />
+                                            <img className="basket-img__remove cursor-pointer"  onClick={() => handleRemoveFromCartClick(product.id)} data-removefrombasket={ product.id } src="/storage/icons/icon-trash.png" alt="icon-trash" title="Удалить товар из корзины" />
+                                            <img className="basket-img__addtofavorites cursor-pointer"  onClick={() => handleFavoriteClick(product.id)} data-addtofavoritesfrombasketid={ product.id } src="/storage/icons/favorite.png" alt="icon-favorites" title="Добавить выбранный товар в Избранное" />
                                         </div> 
                                     </div>
                                     <p>по лучшей цене: </p>

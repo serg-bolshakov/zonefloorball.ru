@@ -89,6 +89,7 @@ const ProductActions: React.FC<IProductActions> = ({ prodInfo }) => {
                 >
                     <img
                     id="buttonFromProductCardPutProductForFavorites" 
+                    className='cursor-pointer'
                     src="/storage/icons/favorite.png" 
                     onClick={handleFavoriteClick}
                     alt="favorite-logo" 
