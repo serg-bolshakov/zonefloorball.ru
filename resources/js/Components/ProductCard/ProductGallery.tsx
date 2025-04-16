@@ -143,7 +143,7 @@ const ProductGallery: React.FC<IProductGallery> = ({ promoImgs, category, model,
                 <motion.div
                     key={`${img.img_link}-${index}`}
                     whileHover={{ scale: 1.03 }}
-                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 100 }}
                 >
                     <LazyLoadImage
                     src={`/storage/${img.img_link}`}
@@ -167,7 +167,7 @@ const ProductGallery: React.FC<IProductGallery> = ({ promoImgs, category, model,
                         exit={{ opacity: 0 }}
                         className="prodcard-img_block"
                         onClick={handleOutsideClick}
-                        transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 100 }}
                     >
                         <motion.div
                             ref={modalRef}
