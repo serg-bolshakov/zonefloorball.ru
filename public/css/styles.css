@@ -23,6 +23,20 @@ body {
 .color-red   { color: red;  }
 .color-green { color: green; }
 
+.z-50  { z-index: 50; }
+
+.inset-0 { inset: 0; }
+
+.bg-black_90 { background-color: rgba(0, 0, 0, 0.9); }
+
+.max-w-4xl      {max-width: 4vmax; } 
+
+.max-h-80vh     {max-height: 80vh; }
+.max-h-85vh     {max-height: 85vh; }
+.max-h-90vh     {max-height: 90vh; }
+
+.object-contain {object-fit: contain;}
+
 .bg-test {
     background-color: yellow;
 }
@@ -72,6 +86,11 @@ strong {
 .padding-top16px    { padding-top: 16px;   }
 .padding-top24px    { padding-top: 24px;   }
 
+.relative { position: relative; }
+.fixed    { position: fixed;    }
+.sticky   { position: sticky;   }
+.absolute { position: absolute; }
+
 .wrapper {
     margin: 24px auto;
     background-color: white;
@@ -115,6 +134,14 @@ strong {
         width: 100%;
     }
 
+}
+
+@media (max-width: 640px) {
+    .promo-img-button {
+      width: 2rem;
+      height: 2rem;
+      font-size: 1rem;
+    }
 }
 
 header {
@@ -3879,37 +3906,36 @@ a.changing-form__submit-btn:hover {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-
 .modal-react h1 {
     font-weight: 600;
     margin-top: 24px;
     margin-bottom: 16px;
 }
 
+/* Модальное окно */
 .prodcard-img_block {
     position: fixed;
-    z-index: 10;
-    left: 0;
     top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0, 0, 0, 0.5);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    cursor: pointer;
 }
 
 .modal-img {
-    display: flex;
-    justify-content: center;
-    padding: 50px;
-    border: 1px solid #888;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    background: rgba(0, 0, 0, 0.8);
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    cursor: default;
 }
 
 .modal-img img {
     display: flex;
-    justify-content: center;
     border: 1px solid #888;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -3957,6 +3983,86 @@ a.changing-form__submit-btn:hover {
 .modal-close:focus {
     color: black;
     text-decoration: none;
+    transform: scale(1.2);    
+}
+
+.modal-close-gallery {
+    position: absolute;
+    top: -40px;
+    right: -40px;
+    font-size: 2rem;
+    color: white;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.modal-close-gallery:hover { transform: scale(1.2); }
+
+/* w-2 h-2 rounded-full transition-all */
+.w-2            { width: 0.5rem;}
+.w-4            { width: 1rem;}
+.h-2            { height: 0.5rem;}
+.rounded-full   { border-radius: 50%; }
+.transition-all { transition: all;}
+
+.bg-gray-500 { background: gray; }
+.bg-white    { background: white; }
+
+/* list-disc pl-5 mt-1 */
+.list-disc { list-style:disc; }
+.pl-5      { padding-left: 1.25rem; }
+.mt-1      { margin-top: 0.25rem;   }
+
+/* right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full hover:bg-black/70 transition-all */
+.promo-img-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%); /* Смещаем назад на половину высоты */
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    border: none;
+    font-size: 1.2rem;
+    transition: transform 1s;
+}
+
+.promo-img-button:focus {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+.promo-img-button__right {
+    right: 1rem;
+}
+
+.promo-img-button:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.promo-img-button__left {
+    left: 1rem;
+    right: auto;
+}
+
+/* <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2"> */
+.promo-img-current {
+    position: absolute;
+    bottom: 1rem;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
 }
 
 .modal-trigger {
