@@ -91,24 +91,6 @@ class BladeProductCardService extends BaseProductCardService
         $propsVariants['resultpossibleHookForProductCard'] = $possibleHookForProductCard;
         $propsVariants['propHook'] = $currentProductPropHookValueView;
 
-        // фишка с выбором значений из массива любого уровня вложенности по ключу - отличная фишка - нужно будет подумать как использовать - пока комментирую...
-        // $prodUrlSemanticArr = $this->extractUniqueUrls($propsVariants, 'prod_url_semantic');
-        // dd($propsVariants);
         return $propsVariants;
     }
-    
-    
-    // получить значения по ключу из массива любого уровня вложенности (пока не будем использовать, но решение офигенное)...
-    function extractUniqueUrls(array $array, string $key): array {
-        $result = [];
-        
-        array_walk_recursive($array, function ($value, $k) use ($key, &$result) {
-            if ($k === $key) {
-                $result[] = $value;
-            }
-        });
-        
-        return array_values(array_unique($result));
-    }    
-    
 }

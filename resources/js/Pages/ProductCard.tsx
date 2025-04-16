@@ -101,7 +101,8 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                                         <img 
                                             loading="lazy" 
                                             src={`/storage/${ prodInfo.productMainImage.img_link }`} 
-                                            alt="Увеличенное изображение товара" />
+                                            alt="Увеличенное изображение товара" 
+                                        />
                                     </div>
                                 </div>
                             </>

@@ -2,6 +2,7 @@
 import { IPropVariants } from '@/Types/prodcard';
 import StickVariants from './StickVariants';
 import BladeVariants from '../BladeVariants';
+import BallVariants from './BallVariants';
 // import HookVariants from './HookVariants';
 
 interface Props {
@@ -15,8 +16,8 @@ const PropVariants: React.FC<Props> = ({ propVariants, categoryId }) => {
       return <StickVariants propVariants={propVariants} />;
     case 2: // Крюки
       return <BladeVariants propVariants={propVariants} />;
-    // case 3: // Крюки
-    //   return <HookVariants propVariants={propVariants} />;
+    case 3: // Мячи
+      return <BallVariants propVariants={propVariants} />;
     default:
       return null; // fallback-компонент - пустой блок, без вывода вариантов для карточки товара - только этот товар ... 
   }

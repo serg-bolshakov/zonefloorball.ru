@@ -66,7 +66,22 @@ const ProductGallery: React.FC<IProductGallery> = ({ promoImgs, category, model,
 
     // Проверяем, была ли подсказка уже показана
     const shouldShowHint = () => {
-        return localStorage.getItem('imgGalleryHintShown') !== 'true';
+        const hintData = localStorage.getItem('imgGalleryHint');
+        if (!hintData) return true;
+        try {
+            const {shown, date } = JSON.parse(hintData);
+            // Показывать не чаще чем раз в 30 дней
+            return !shown || new Date().getTime() - new Date(date).getTime() > 30 * 24 * 60 * 60 * 1000;
+        }catch {
+            return true;
+        }
+    };
+
+    const markHintAsShown = () => {
+        localStorage.setItem('imgGalleryHint', JSON.stringify({
+          shown: true,
+          date: new Date().toISOString()
+        }));
     };
 
     const showNavigationHint = useCallback(() => {
@@ -86,7 +101,8 @@ const ProductGallery: React.FC<IProductGallery> = ({ promoImgs, category, model,
             closeButton: true,
             icon: () => 'ℹ️',    // Функция, возвращающая JSX/строку
             toastId: 'galleryHint',
-            onClose: () => localStorage.setItem('imgGalleryHintShown', 'true')
+            // onClose: () => localStorage.setItem('imgGalleryHintShown', 'true')
+            onClose: () => markHintAsShown()
           }
         );
       }, [images.length]);

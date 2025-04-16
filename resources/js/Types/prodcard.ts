@@ -29,6 +29,10 @@ export interface IProductCardResponse {
 
 export interface IPropVariants {
     propHook?: string;
+    classComponent?: string;
+    choiceComment?: string;
+    href?: boolean | string;
+    products?: IPropsVariantsSecondLevel[];
     resultpossibleHookForProductCard?: IPropsVariantsSecondLevel;
     possibleShaftLengthForProductCard?: IPropsVariantsSecondLevel[];
     resultotherColourBladeForCard?: IPropsVariantsSecondLevel[];
