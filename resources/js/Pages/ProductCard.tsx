@@ -1,6 +1,6 @@
 // resources/js/Pages/ProductCard.tsx
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { Link } from '@inertiajs/react';
 import { Helmet } from 'react-helmet';
 import MainLayout from '../Layouts/MainLayout';
@@ -15,9 +15,29 @@ import ProductActions from '@/Components/ProductCard/ProductActions';
 import ProductGallery from '@/Components/ProductCard/ProductGallery';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { AnimatePresence, motion } from 'framer-motion';
-import PropVariants1 from '../Components/ProductCard/PropVariants';
+import PropVariants from '@/Components/ProductCard/PropVariants';
 
 const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants}) => {
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    // работа с событиями: useEffect для управления подпиской на события (Обработчик удаляется при размонтировании компонента)
+    // добавляем ESC-закрытие:
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setIsModalOpen(false);
+        };
+
+        if (isModalOpen) {
+            window.addEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = 'hidden'; // Блокируем скролл
+        }
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown);
+            document.body.style.overflow = ''; // Восстанавливаем скролл
+        };
+    }, [isModalOpen]);
+    // Оптимизация рендеринга: useCallback для функции закрытия (Остановка распространения события для контента модалки)
+    const closeModal = useCallback(() => setIsModalOpen(false), []);
 
     try {
         
@@ -44,21 +64,54 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
 
                     <section className="cardProduct-line__block">
                         <section>
-                            { prodInfo.productMainImage.img_link && (
-                                <Link href={`/storage/${ prodInfo.productMainImage.img_link }`}>
-                                    <LazyLoadImage
-                                        className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
-                                        src={`/storage/${ prodInfo.productMainImage.img_link }`} 
-                                        alt={[prodInfo.category.category, prodInfo.brand.brand_view, prodInfo.model, prodInfo.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} 
-                                        title="Кликни на изображение, чтобы посмотреть его на всём экране."
-                                        
-                                    />
-                                </Link>
+                            { prodInfo.productMainImage.img_link && (                          
+                                <LazyLoadImage
+                                    className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
+                                    onClick={() => setIsModalOpen(true)}
+                                    src={`/storage/${ prodInfo.productMainImage.img_link }`} 
+                                    alt={[prodInfo.category.category, prodInfo.brand.brand_view, prodInfo.model, prodInfo.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} 
+                                    title="Кликни на изображение, чтобы посмотреть его на всём экране."
+                                />
                             )}
+                            <AnimatePresence>
+                            {isModalOpen && (
+                                <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.9 }}
+                                className="prodcard-img_block"
+                                onClick={closeModal}
+                                >
+                            <>
+                                <div className="prodcard-img_block" onClick={closeModal}>
+                                    <div 
+                                        className="modal-img" 
+                                        onClick={(e) => e.stopPropagation()} // Предотвращаем закрытие при клике на контент
+                                    >
+                                        <span 
+                                            className="modal-close" 
+                                            onClick={closeModal}
+                                            role="button"
+                                            aria-label="Закрыть модальное окно"
+                                            tabIndex={0}
+                                        >
+                                            &times;
+                                        </span>
+                                        <img 
+                                            loading="lazy" 
+                                            src={`/storage/${ prodInfo.productMainImage.img_link }`} 
+                                            alt="Увеличенное изображение товара" />
+                                    </div>
+                                </div>
+                            </>
+                            </motion.div>
+                            )}
+                            </AnimatePresence>
                         </section>
 
                         <section className="cardProduct-props">
-                        <PropVariants1 
+                        <PropVariants 
                             propVariants={propVariants} 
                             categoryId={prodInfo.category.id} // Передаём категорию
                         />

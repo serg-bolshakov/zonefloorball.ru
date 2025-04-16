@@ -1,20 +1,20 @@
 // resources/js/Components/ProductCard/PropVariants/index.tsx
 import { IPropVariants } from '@/Types/prodcard';
 import StickVariants from './StickVariants';
-// import BallVariants from './BallVariants';
+import BladeVariants from '../BladeVariants';
 // import HookVariants from './HookVariants';
 
-interface Props1 {
+interface Props {
   propVariants: IPropVariants;
   categoryId: number; // Добавляем категорию
 }
 
-const PropVariants1: React.FC<Props1> = ({ propVariants, categoryId }) => {
+const PropVariants: React.FC<Props> = ({ propVariants, categoryId }) => {
   switch (categoryId) {
     case 1: // Клюшки
       return <StickVariants propVariants={propVariants} />;
-    // case 2: // Мячи
-    //   return <BallVariants propVariants={propVariants} />;
+    case 2: // Крюки
+      return <BladeVariants propVariants={propVariants} />;
     // case 3: // Крюки
     //   return <HookVariants propVariants={propVariants} />;
     default:
@@ -22,4 +22,4 @@ const PropVariants1: React.FC<Props1> = ({ propVariants, categoryId }) => {
   }
 };
 
-export default PropVariants1;
+export default PropVariants;
