@@ -1,4 +1,4 @@
-// resources/js/Components/ProductCard/PropVariants/StickVariants.tsx
+// resources/js/Components/ProductCard/PropVariants/BladeVariants.tsx
 import React from 'react';
 import { Link } from '@inertiajs/react';
 import { IPropVariants } from '@/Types/prodcard';

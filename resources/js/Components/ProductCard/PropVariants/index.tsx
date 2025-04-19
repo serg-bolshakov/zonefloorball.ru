@@ -1,8 +1,8 @@
 // resources/js/Components/ProductCard/PropVariants/index.tsx
 import { IPropVariants } from '@/Types/prodcard';
 import StickVariants from './StickVariants';
-import BladeVariants from '../BladeVariants';
 import BallVariants from './BallVariants';
+import BladeVariants from './BladeVariants';
 // import HookVariants from './HookVariants';
 
 interface Props {
