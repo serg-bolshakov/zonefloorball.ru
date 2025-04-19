@@ -3,15 +3,18 @@
 import { createContext } from 'react';
 
 export type TCart = Record<number, number>; // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
+export type TRecentlyViewedProducts = Record<number, number>; // { [productId]: timestamp } — это один объект вида { 84: 123456789, 89: 123456790 }
+
 export interface UserDataState {
-    cart           : TCart;
-    favorites      : number[];
-    orders         : string[];
-    cartTotal      : number; 
-    favoritesTotal : number; 
-    ordersTotal    : number; 
-    isLoading      : boolean;        // Статус загрузки
-    error          : string | null;
+    cart                  : TCart;
+    favorites             : number[];
+    orders                : string[];
+    recentlyViewedProducts: TRecentlyViewedProducts;
+    cartTotal             : number; 
+    favoritesTotal        : number; 
+    ordersTotal           : number; 
+    isLoading             : boolean;        // Статус загрузки
+    error                 : string | null;
 }
 
 export interface UserDataContextType extends UserDataState {
@@ -47,6 +50,11 @@ export interface UserDataContextType extends UserDataState {
     // Статус загрузки
     isLoading: boolean;
     error: string | null;
+
+    // Недавно просмотренные товары
+    addRecentlyViewedProd: ( productId: number ) => Promise<{  
+        error?: string;     
+    }>;
 }
 
 export const UserDataContext = createContext<UserDataContextType | null>(null);

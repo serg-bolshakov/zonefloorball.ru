@@ -16,6 +16,7 @@ use App\Http\Controllers\UserDataController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\RecentlyViewedController;
 
 
 /*
@@ -47,6 +48,8 @@ Route::get('/goalie-aside-filters', [GoalieAsideFiltersController::class, 'index
 Route::get('/catalog', [ProductController::class, 'catalogApi']);
 Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'getProducts'])->middleware('api'); // Важно!;
 Route::match(['get', 'post'], '/products/cart', [CartController::class, 'sync'])->middleware('api');
+Route::get('/products/recently-viewed', [RecentlyViewedController::class, 'getProducts'])->middleware('api');
+Route::post('/products/recently-viewed', [RecentlyViewedController::class, 'store'])->middleware('api');
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);
 });

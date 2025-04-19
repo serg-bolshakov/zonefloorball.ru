@@ -6,20 +6,22 @@ import { UserDataState } from './UserDataContext';
 import { UserDataContext } from './UserDataContext';
 import { API_ENDPOINTS } from '@/Constants/api';
 import { getErrorMessage } from '@/Utils/error';
-import { TCart } from './UserDataContext';
+import { TCart, TRecentlyViewedProducts } from './UserDataContext';
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
     
     const { user, cart, favorites, orders } = useAppContext();
+    
     const [state, setState] = useState<UserDataState>({
-        cart:      {},  // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
-        favorites: [],
-        orders:    [],
-        cartTotal: 0,
-        favoritesTotal: 0,
-        ordersTotal: 0, 
-        isLoading: true, // Начинаем с true, так как данные загружаются
-        error: null
+        cart                    : {},  // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
+        favorites               : [],
+        orders                  : [],
+        recentlyViewedProducts  : {},
+        cartTotal               : 0,
+        favoritesTotal          : 0,
+        ordersTotal             : 0, 
+        isLoading               : true, // Начинаем с true, так как данные загружаются
+        error                   : null
     });
 
     const calculateCartTotal = (cart: TCart) => 
@@ -326,6 +328,62 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
           return defaultValue;
       }
     };
+
+    const addRecentlyViewedProd = useCallback(async (productId: number) => {
+        try {
+            // Оптимизация: пропускаем если уже загружается
+            if (state.isLoading) return { error: 'Already processing' };
+
+            updateState({isLoading: true});
+            
+            const timestamp = Date.now();
+            const updatedItems = { ...state.recentlyViewedProducts, [productId]: timestamp };
+
+            if (user) {
+                await axios.post(API_ENDPOINTS.RECENTLY_VIEWED, { 
+                    product_id: productId,
+                    viewed_at: new Date(timestamp).toISOString()
+                });    
+            } else {
+                // localStorage.setItem('recently_viewed', JSON.stringify(updatedItems));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
+                updateRecentlyViewedLocalStorage(updatedItems);
+            }
+
+            updateState({ 
+                recentlyViewedProducts: updatedItems,
+                isLoading: false 
+            });
+
+            // Реальная реализация может вернуть undefined (если есть try-catch без return) - делаем return
+            return {
+                error: undefined
+            };
+        } catch (error) {
+            const message = getErrorMessage(error);
+            
+            updateState({
+                error: message,
+                isLoading: false
+            });
+
+            return { 
+                error: message 
+            };
+        }
+    }, [user, state.recentlyViewedProducts, state.isLoading]); 
+
+    // Добавляем ограничение количества товаров (элементов), например, последние 6:
+    const MAX_ITEMS = 6;
+
+    const updateRecentlyViewedLocalStorage = (items: TRecentlyViewedProducts) => {
+    const sorted = Object.entries(items)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, MAX_ITEMS)
+        .reduce((acc, [productId, timestamp]) => ({ ...acc, [productId]: timestamp }), {});
+    
+        localStorage.setItem('recently_viewed', JSON.stringify(sorted));
+        return sorted;
+    };
   
     // Загрузка начальных данных: 
     useEffect(() => {
@@ -336,6 +394,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     cart: cart,
                     favorites: favorites,
                     orders: orders,
+                    recentlyViewedProducts: state.recentlyViewedProducts,
                     isLoading: false,
                 });
             }  else {
@@ -343,6 +402,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     cart: getLocalStorageData('cart', {}),
                     favorites: getLocalStorageData('favorites', []),
                     orders: getLocalStorageData('orders', []),
+                    recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
                     isLoading: false,
                 });
             }
@@ -420,19 +480,22 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         removeFromFavorites,
         addToCart,
         updateCart,
-        removeFromCart
+        removeFromCart,
+        addRecentlyViewedProd
         // Будущие методы добавятся здесь
     }), [
         state.cart,
         state.favorites,
         state.orders,
+        state.recentlyViewedProducts,
         state.isLoading,
         state.error,
         addToFavorites,
         removeFromFavorites,
         addToCart,
         updateCart,
-        removeFromCart
+        removeFromCart,
+        addRecentlyViewedProd
     ]);
 
     return (

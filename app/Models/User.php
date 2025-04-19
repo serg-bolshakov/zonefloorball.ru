@@ -45,7 +45,7 @@ use Laravel\Sanctum\HasApiTokens;
     ];
 
     /**
-     * The attributes that should be cast.
+     * The attributes that should be cast (приведение типов...)
      *
      * @var array<string, string>
      */
@@ -55,8 +55,7 @@ use Laravel\Sanctum\HasApiTokens;
     ];
 
     /* Получить ранг пользователя */
-    public function rank()
-    {
+    public function rank() {
         return $this->belongsTo(ClientRank::class, 'client_rank_id');
     }
 
@@ -65,5 +64,11 @@ use Laravel\Sanctum\HasApiTokens;
     public function favorite() {
         return $this->hasOne(Favorite::class);
         // return $this->hasOne(Favorite::class, 'user_id');
+    }
+
+    // получить список просмотренных товаров - вернёт коллекцию записей:
+    public function recentlyViewedProducts() {
+        // У пользователя много записей в этой таблице
+        return $this->hasMany(RecentlyViewedProduct::class);
     }
 }

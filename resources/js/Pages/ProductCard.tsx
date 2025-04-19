@@ -1,7 +1,6 @@
 // resources/js/Pages/ProductCard.tsx
 
 import React, { useState, useEffect, useContext, useCallback } from 'react';
-import { Link } from '@inertiajs/react';
 import { Helmet } from 'react-helmet';
 import MainLayout from '../Layouts/MainLayout';
 import NavBarBreadCrumb from '@/Components/NavBarBreadCrumb';
@@ -16,8 +15,13 @@ import ProductGallery from '@/Components/ProductCard/ProductGallery';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { AnimatePresence, motion } from 'framer-motion';
 import PropVariants from '@/Components/ProductCard/PropVariants';
+import RecentlyViewedProducts from '@/Components/ProductCard/RecentlyViewedProducts';
+import useAppContext from '@/Hooks/useAppContext';
+import { useUserDataContext } from '@/Hooks/useUserDataContext';
 
 const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants}) => {
+    const { user } = useAppContext();
+    const { addRecentlyViewedProd } = useUserDataContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
     // работа с событиями: useEffect для управления подпиской на события (Обработчик удаляется при размонтировании компонента)
     // добавляем ESC-закрытие:
@@ -36,6 +40,17 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
             document.body.style.overflow = ''; // Восстанавливаем скролл
         };
     }, [isModalOpen]);
+
+    //  Гость (юзер) открывает товар, мы записываем id-просматриваемого товара в localStorage и/или в БД:
+    useEffect(() => { 
+        if(prodInfo?.id) {                                  // проверка на существование prodInfo.id
+            const timer = setTimeout(() => {
+                addRecentlyViewedProd(prodInfo.id);
+            }, 1000);  
+            return () => clearTimeout(timer);               // Задержка для UX - защита от многократных вызовов...
+        }
+     }, [prodInfo?.id]);                                    // Зависимость только от ID
+
     // Оптимизация рендеринга: useCallback для функции закрытия (Остановка распространения события для контента модалки)
     const closeModal = useCallback(() => setIsModalOpen(false), []);
 
@@ -145,6 +160,7 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                 </main>
                     </motion.div>
                 </AnimatePresence>
+                <RecentlyViewedProducts />
             </MainLayout>    
         );
     } catch(error) {

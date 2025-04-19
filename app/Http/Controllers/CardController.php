@@ -29,6 +29,6 @@ class CardController extends Controller
             'prodInfo' => $prodInfo,
         ];
 
-        dd($responseData['prodInfo']);
+        //dd($responseData['prodInfo']);
     }
 }

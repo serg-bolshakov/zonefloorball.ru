@@ -1,14 +1,9 @@
 // resources/js/Components/Header/Header.tsx
 import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
-import axios from 'axios'; // можно использовать Inertia.js для запросов
 import useAppContext from '../../Hooks/useAppContext';
 import { useUserDataContext } from '@/Hooks/useUserDataContext';
 import { motion } from 'framer-motion';
-
-interface OrderResponse {
-    ordersCount: number;
-}
 
 const Header: React.FC = () => {
     const { user, categoriesMenuArr, authBlockContentFinal } = useAppContext();

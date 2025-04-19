@@ -13,7 +13,7 @@ const ProductDescription: React.FC<IProductDescription> = ({ prodInfo }) => {
             {prodInfo.prod_desc && (
                 <div className="cardProduct-description" dangerouslySetInnerHTML={{ __html: prodInfo.prod_desc }} />
             )}
-            {prodInfo.size.size_recommendation && (
+            {prodInfo?.size?.size_recommendation && (
             <div className="cardProduct-productTarget">   
                 <span> {prodInfo.size.size_recommendation }</span>
             </div>

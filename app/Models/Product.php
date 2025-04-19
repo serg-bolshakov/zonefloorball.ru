@@ -91,4 +91,9 @@ class Product extends Model
         return $this->belongsToMany(Property::class);
     }
 
+    // получить пользователей, которые смотрели данный товар - вернёт коллекцию записей 
+    public function recentlyViewedByUsers() {
+        // Товар просмотрен многими пользователями (через записи)
+        return $this->hasMany(RecentlyViewedProduct::class);
+    }
 }

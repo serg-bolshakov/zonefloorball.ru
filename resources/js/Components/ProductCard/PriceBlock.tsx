@@ -18,18 +18,11 @@ const PriceBlock: React.FC<IPriceBlock> = ({ actualPrice, regularPrice }) => {
             });
         };
     */
-
     const formatPrice = (price: number) => price.toLocaleString('ru-RU');
 
     return (
         <section className="cardProduct-productPrice__block">
             <div>Лучшая цена:</div>
-
-            {/* { actualPrice.price_value && regularPrice.price_value &&
-                actualPrice.price_value !== null && regularPrice.price_value !== null && 
-                actualPrice.price_value !== undefined && regularPrice.price_value !== undefined ? (
-
-                actualPrice.price_value < regularPrice.price_value ? (  */}
             {actualPrice?.price_value && regularPrice?.price_value ? (
                 actualPrice.price_value < regularPrice.price_value ? (    
                     <>

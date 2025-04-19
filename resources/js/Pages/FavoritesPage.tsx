@@ -271,12 +271,17 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                                             <>
                                                 <div className="basket-favorites__priceCurrentSale nobr">{formatPrice(product.price_special)} <sup>&#8381;</sup></div>
                                                 <div className="cardProduct-priceBeforSale nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
+                                                <div className="basket-favorites__priceDiscountInPercentage nobr">- {Math.ceil(100 - (product.price_special / product.price_regular) * 100)}%</div>
+                                            </>
+                                        ) : product.price_regular && product.price_actual && product.price_actual < product.price_regular ? (
+                                            <>
+                                                <div className="basket-favorites__priceCurrentSale nobr">{formatPrice(product.price_actual)} <sup>&#8381;</sup></div>
+                                                <div className="cardProduct-priceBeforSale nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
                                                 <div className="basket-favorites__priceDiscountInPercentage nobr">- {Math.ceil(100 - (product.price_actual / product.price_regular) * 100)}%</div>
                                             </>
-                                        ) : ( product.price_regular && (
+                                        ) : product.price_regular && (
                                                 <div className="basket-favorites__priceCurrent nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
-                                            ) 
-                                        )}           
+                                        )}            
                                     </div>
 
                                     { product.date_end && ( 

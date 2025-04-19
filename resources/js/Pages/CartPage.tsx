@@ -75,8 +75,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
 
                 // Проверяем, не был ли запрос отменён
                 if (!signal.aborted) {
-                    console.log('response.data.products', response.data.products);
-                    setCartProducts(response.data.products || {});
+                    setCartProducts(response.data.products || []);
                 }
             } catch (error) {
                 // Игнорируем ошибку, если запрос был отменён
@@ -176,12 +175,17 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                                             <>
                                                 <div className="basket-favorites__priceCurrentSale nobr">{formatPrice(product.price_special)} <sup>&#8381;</sup></div>
                                                 <div className="cardProduct-priceBeforSale nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
+                                                <div className="basket-favorites__priceDiscountInPercentage nobr">- {Math.ceil(100 - (product.price_special / product.price_regular) * 100)}%</div>
+                                            </>
+                                        ) : product.price_regular && product.price_actual && product.price_actual < product.price_regular ? (
+                                            <>
+                                                <div className="basket-favorites__priceCurrentSale nobr">{formatPrice(product.price_actual)} <sup>&#8381;</sup></div>
+                                                <div className="cardProduct-priceBeforSale nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
                                                 <div className="basket-favorites__priceDiscountInPercentage nobr">- {Math.ceil(100 - (product.price_actual / product.price_regular) * 100)}%</div>
                                             </>
-                                        ) : ( product.price_regular && (
+                                        ) : product.price_regular && (
                                                 <div className="basket-favorites__priceCurrent nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
-                                            ) 
-                                        )}   
+                                        )}        
 
                                         { product.date_end && ( 
                                             <div className="cardProduct-priceValidPeriod">акция действует до: { product.date_end }</div>
