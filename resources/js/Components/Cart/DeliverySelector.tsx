@@ -53,7 +53,7 @@ const DeliverySelector: React.FC<onDeliveryChangeProps> = ({ onDeliveryChange })
   };
 
   const handlePostOfficeSelect = (data: any) => {
-    console.log('Выбрано отделение:', data);
+    console.log('Выбрано отделение: ', data);
     // Здесь можно обновить состояние с выбранным отделением
   };
 
