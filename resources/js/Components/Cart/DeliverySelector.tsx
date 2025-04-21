@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { usePage } from '@inertiajs/react';
+import RussianPostMap from '../RussianPostMap';
 
 interface DeliveryOption {
   id: number;
@@ -49,6 +50,11 @@ const DeliverySelector: React.FC<onDeliveryChangeProps> = ({ onDeliveryChange })
     } catch (error) {
       console.error('Ошибка загрузки отделений:', error);
     }
+  };
+
+  const handlePostOfficeSelect = (data: any) => {
+    console.log('Выбрано отделение:', data);
+    // Здесь можно обновить состояние с выбранным отделением
   };
 
   return (
@@ -105,14 +111,9 @@ const DeliverySelector: React.FC<onDeliveryChangeProps> = ({ onDeliveryChange })
         />
 
         {/* Блок для отображения карты Почты России */}
-        {selectedOption === 3 && postOfficeData && (
-            <div className="post-office-map">
-            {/* Здесь будет компонент с Яндекс.Картой */}
-            <p>Выберите отделение на карте:</p>
-            {/* Интеграция с API карт */}
-            </div>
+        {selectedOption === 3 && (
+            <RussianPostMap onSelect={handlePostOfficeSelect} />
         )}       
-      
     </>
   );
 };
