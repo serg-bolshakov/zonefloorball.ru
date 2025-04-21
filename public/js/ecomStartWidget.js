@@ -1,3 +1,4 @@
+// public/js/ecomStartWidget.js
 ecomStartWidget({
     id: 50051,
     containerId: 'ecom-widget',

@@ -3,6 +3,13 @@ body {
     height: 100vh;
 }
 
+sup {
+    vertical-align: super;
+    font-size: 0.75em; /* уменьшаем размер */
+}
+
+i { font-style: italic; }
+
 .d-flex    { display: flex; }
 .d-block   { display: block; }
 .d-greed   { display: grid; }
@@ -2066,7 +2073,7 @@ input[type="checkbox"]:checked + label:after {
 .basket-res__no-delivery {
     display: flex;
     width: 320px;
-    margin: 48px 0 0 0;
+    margin: 0 0 12px 0;
     justify-content: space-between;
 }
   
@@ -2256,7 +2263,7 @@ input[type="checkbox"]:checked + label:after {
 	border: 1px solid #cecece;
 	border-top: none;
     border-radius: 0 0 8px 8px;
-	display: none;
+	/* display: none; */
 	position: absolute;
 	background: #fff;
     z-index: 4;
