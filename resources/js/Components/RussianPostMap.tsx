@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useExternalScript } from '@/Hooks/useExternalScript';
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
-import { Helmet } from "react-helmet";
+// import { Helmet } from "react-helmet";
 
 declare global {                        // Объявление глобального интерфейса
   interface Window {                    // Что делает: Расширяет стандартный интерфейс Window
@@ -35,14 +35,14 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
   useExternalScript('https://widget.pochta.ru/map/widget/widget.js');
   // 1. Хук useExternalScript - динамически создаёт <script> тег и добавляет его в <body>.
 
-  // 2. Добавляем Helmet для метаданных и fallback-загрузки
-    <Helmet>
+  // 2. Добавляем Helmet для метаданных и fallback-загрузки - не заработало на хостинге - комментируем на память:
+  /*  <Helmet>
     <script 
         src="https://widget.pochta.ru/map/widget/widget.js" 
         async 
         onError={() => console.error('Ошибка загрузки скрипта Почты России')}
     />
-    </Helmet>
+    </Helmet> */
 
   useEffect(() => {
     // Инициализируем виджет после загрузки скрипта
@@ -56,11 +56,11 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
       }
     };
 
-    // Быстрая проверка (если скрипт уже загружен через Helmet)
+    /*// Быстрая проверка (если скрипт уже загружен через Helmet)
     if (window.ecomStartWidget) {
         initWidget();
         return;
-    }
+    }*/
 
     // Интервал как fallback - Проверяем доступность функции каждые 100мс
     const interval = setInterval(() => {
