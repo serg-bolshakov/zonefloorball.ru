@@ -61,7 +61,7 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     sortOrder = 'asc',
     categoryId,
 }) => {
-    console.log(products);
+    
     const [currentSortBy, setCurrentSortBy] = useState(sortBy);
     const [currentSortOrder, setCurrentSortOrder] = useState(sortOrder);
 

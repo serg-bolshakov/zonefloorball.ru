@@ -10,12 +10,12 @@ interface AssortimentCardsProps {
 
 const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
     // const generateId = useId(); // Используем useId
-     console.log('Products:', products); // Выводим продукты в консоль
+    // console.log('Products:', products); // Выводим продукты в консоль
     
     const totalPages = products.meta.last_page;
     const currentPage = products.meta.current_page;
     const maxPagesToShow = 3; // Максимальное количество отображаемых страниц
-    console.log('currentPage', currentPage);
+    //console.log('currentPage', currentPage);
     //console.log(Math.floor(maxPagesToShow / 2));
     //console.log(Math.max(2, currentPage - Math.floor(maxPagesToShow / 2)));
     //console.log('startPage: ', Math.max(2, currentPage - Math.floor(maxPagesToShow / 2)));

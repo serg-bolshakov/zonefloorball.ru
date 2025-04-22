@@ -1,5 +1,5 @@
 // resources/js/Components/RussianPostMap.tsx - Компонент для виджета Почты России
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useExternalScript } from '@/Hooks/useExternalScript';
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
@@ -44,6 +44,7 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
     />
     </Helmet> */
 
+    const [useApiFallback, setUseApiFallback] = useState(false);
     // Загружаем скрипт только через хук
     const scriptStatus = useExternalScript('https://widget.pochta.ru/map/widget/widget.js');
 
