@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useExternalScript } from '@/Hooks/useExternalScript';
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
-// import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet";
 
 declare global {                        // Объявление глобального интерфейса
   interface Window {                    // Что делает: Расширяет стандартный интерфейс Window
@@ -31,12 +31,12 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
         transition: Slide, // Используем Slide, Zoom, Flip, Bounce для этого тоста
     }
 
-  // Загружаем скрипт виджета
-  // useExternalScript('https://widget.pochta.ru/map/widget/widget.js');
-  // 1. Хук useExternalScript - динамически создаёт <script> тег и добавляет его в <body>.
-  
-  // 2. Добавляем Helmet для метаданных и fallback-загрузки - не заработало на хостинге - комментируем на память:
-  /*  <Helmet>
+    // Загружаем скрипт виджета
+    // useExternalScript('https://widget.pochta.ru/map/widget/widget.js');
+    // 1. Хук useExternalScript - динамически создаёт <script> тег и добавляет его в <body>.
+    
+    // 2. Добавляем Helmet для метаданных и fallback-загрузки - не заработало на хостинге - комментируем на память:
+    /*  <Helmet>
     <script 
         src="https://widget.pochta.ru/map/widget/widget.js" 
         async 
@@ -53,45 +53,50 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
             toast.error('Не удалось загрузить карту. Попробуйте позже.');
             return;
         }
+        
         // Пропускаем если скрипт еще не готов
         if (scriptStatus !== 'ready') return;
 
+        let widgetInitialized = false;
         let interval: NodeJS.Timeout;
 
         // Инициализируем виджет после загрузки скрипта
         const initWidget = () => {
+            if (widgetInitialized || !window.ecomStartWidget) return false;
+
             if (typeof window.ecomStartWidget === 'function') {                 // Проверяем, что функция действительно доступна.
                 window.ecomStartWidget({                                        // Вызываем её с параметрами:
                 id: 50063,                                                      // Идентификатор виджета (50063).
-                callbackFunction: () => {                                   // Функция, которая получит данные выбранного отделения.
+                callbackFunction: () => {                                       // Функция, которая получит данные выбранного отделения.
                     onSelect;
-                    clearInterval(interval);
-                  },
+                },
                 containerId: 'ecom-widget'                                      // ID DOM-элемента, куда встроится виджет.
                 });
+
+                widgetInitialized = true;
                 return true;
             }
             return false;
         };
 
-        // Пытаемся инициализировать сразу
-        if (initWidget()) return;
+        // Прямая инициализация если скрипт уже загружен
+        if (!initWidget()) {
+            // Fallback с интервалом проверки
+            interval = setInterval(() => {
+                if (initWidget()) {
+                    clearInterval(interval);
+                }
+            }, 100);
 
-        /*// Быстрая проверка (если скрипт уже загружен через Helmet)
-        if (window.ecomStartWidget) {
-            initWidget();
-            return;
-        }*/
-
-        // Интервал как fallback - Проверяем доступность функции каждые 100мс
-        interval = setInterval(() => {
-        if (window.ecomStartWidget) {             // 
-            clearInterval(interval);
-            initWidget();
-        }
-        }, 100);
+            // Таймаут на случай если скрипт не загрузится
+            setTimeout(() => {
+                if (!widgetInitialized) {
+                clearInterval(interval);
+                toast.error('Виджет Почты России не загрузился');
+                }
+            }, 5000);
     
-        /** Проблема: После выполнения useExternalScript скрипт начинает загружаться, но: 
+            /** Проблема: После выполнения useExternalScript скрипт начинает загружаться, но: 
      *      - Мы не знаем, сколько это займёт времени (зависит от сети пользователя)... 
      *      - Не можем использовать onload для скрипта, так как он управляется через хук...
      *  Решение: Периодически проверяем (каждые 100 мс), появилась ли нужная функция в window.
@@ -105,31 +110,33 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
      *      - Логичнее показать сообщение "Не удалось загрузить карту" через 2-3 секунды.  
      */
 
-        // После рассуждений, изложенных выше, добавляем ещё и таймаут для обработки возможных ошибок с загрузкой виджета:
-        // Таймаут для отмены через 2 секунды
-        const timeout = setTimeout(() => {
-        clearInterval(interval);
-        if (!window.ecomStartWidget) {
-            toast.error('Не удалось загрузить карту. Что-то пошло не так...', toastConfig);
+            // Очистка при размонтировании
+            return () => {
+                clearInterval(interval);
+            };
+            // Зачем: Если пользователь уйдёт со страницы до загрузки скрипта, интервал будет отменён, чтобы избежать утечек памяти.
         }
-        }, 2000); // Ждём максимум 2 секунды - как защита от бесконечного цикла...
-
-        // Очистка при размонтировании
-        return () => {
-            clearInterval(interval);
-            clearTimeout(timeout);
-          };
-        // Зачем: Если пользователь уйдёт со страницы до загрузки скрипта, интервал будет отменён, чтобы избежать утечек памяти.
     }, [scriptStatus, onSelect]);
 
     return (
-        <div className="russianpost-map__content">
-        <p className="russianpost-map__content-text">
-            Для просмотра сроков и стоимости доставки заказа, введите адрес и выберите отделение связи:
-        </p>
-        <div id="ecom-widget" className="russianpost-map" />
-        <div className="map__params"></div>
-        </div>
+        <>
+            <Helmet>
+                <script 
+                src="https://widget.pochta.ru/map/widget/widget.js" 
+                async 
+                defer
+                onLoad={() => console.log('Скрипт Почты России загружен')}
+                onError={() => console.error('Ошибка загрузки скрипта')}
+                />
+            </Helmet>
+            <div className="russianpost-map__content">
+            <p className="russianpost-map__content-text">
+                Для просмотра сроков и стоимости доставки заказа, введите адрес и выберите отделение связи:
+            </p>
+            <div id="ecom-widget" className="russianpost-map" />
+            <div className="map__params"></div>
+            </div>
+        </>
     );
 };
 
