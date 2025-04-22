@@ -1,4 +1,6 @@
 // resources/js/Hooks/useExternalScript.ts
+// Хук useExternalScript - динамически создаёт <script> тег и добавляет его в <body>
+
 import { useEffect } from 'react';
 
 export const useExternalScript = (src: string) => {

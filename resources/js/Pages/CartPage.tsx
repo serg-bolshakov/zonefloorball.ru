@@ -44,8 +44,6 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
         deliveryPrice: 0
     });
 
-    
-
     const toastConfig = {
         position: "top-right" as const,
         autoClose: 1500, // Уведомление закроется через секунду-другую...
