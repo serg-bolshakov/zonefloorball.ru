@@ -32,9 +32,9 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
     }
 
   // Загружаем скрипт виджета
-  useExternalScript('https://widget.pochta.ru/map/widget/widget.js');
+  // useExternalScript('https://widget.pochta.ru/map/widget/widget.js');
   // 1. Хук useExternalScript - динамически создаёт <script> тег и добавляет его в <body>.
-
+  
   // 2. Добавляем Helmet для метаданных и fallback-загрузки - не заработало на хостинге - комментируем на память:
   /*  <Helmet>
     <script 
@@ -44,33 +44,53 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
     />
     </Helmet> */
 
-  useEffect(() => {
-    // Инициализируем виджет после загрузки скрипта
-    const initWidget = () => {
-      if (window.ecomStartWidget) {             // Проверяем, что функция действительно доступна.
-        window.ecomStartWidget({                // Вызываем её с параметрами:
-          id: 50063,                            // Идентификатор виджета (50063).
-          callbackFunction: onSelect,           // Функция, которая получит данные выбранного отделения.
-          containerId: 'ecom-widget'            // ID DOM-элемента, куда встроится виджет.
-        });
-      }
-    };
+    // Загружаем скрипт только через хук
+    const scriptStatus = useExternalScript('https://widget.pochta.ru/map/widget/widget.js');
 
-    /*// Быстрая проверка (если скрипт уже загружен через Helmet)
-    if (window.ecomStartWidget) {
-        initWidget();
-        return;
-    }*/
+    useEffect(() => {
+        if (scriptStatus === 'error') {
+            toast.error('Не удалось загрузить карту. Попробуйте позже.');
+            return;
+        }
+        // Пропускаем если скрипт еще не готов
+        if (scriptStatus !== 'ready') return;
 
-    // Интервал как fallback - Проверяем доступность функции каждые 100мс
-    const interval = setInterval(() => {
-      if (window.ecomStartWidget) {             // 
-        clearInterval(interval);
-        initWidget();
-      }
-    }, 100);
+        let interval: NodeJS.Timeout;
+
+        // Инициализируем виджет после загрузки скрипта
+        const initWidget = () => {
+            if (typeof window.ecomStartWidget === 'function') {                 // Проверяем, что функция действительно доступна.
+                window.ecomStartWidget({                                        // Вызываем её с параметрами:
+                id: 50063,                                                      // Идентификатор виджета (50063).
+                callbackFunction: () => {                                   // Функция, которая получит данные выбранного отделения.
+                    onSelect;
+                    clearInterval(interval);
+                  },
+                containerId: 'ecom-widget'                                      // ID DOM-элемента, куда встроится виджет.
+                });
+                return true;
+            }
+            return false;
+        };
+
+        // Пытаемся инициализировать сразу
+        if (initWidget()) return;
+
+        /*// Быстрая проверка (если скрипт уже загружен через Helmet)
+        if (window.ecomStartWidget) {
+            initWidget();
+            return;
+        }*/
+
+        // Интервал как fallback - Проверяем доступность функции каждые 100мс
+        interval = setInterval(() => {
+        if (window.ecomStartWidget) {             // 
+            clearInterval(interval);
+            initWidget();
+        }
+        }, 100);
     
-    /** Проблема: После выполнения useExternalScript скрипт начинает загружаться, но: 
+        /** Проблема: После выполнения useExternalScript скрипт начинает загружаться, но: 
      *      - Мы не знаем, сколько это займёт времени (зависит от сети пользователя)... 
      *      - Не можем использовать onload для скрипта, так как он управляется через хук...
      *  Решение: Периодически проверяем (каждые 100 мс), появилась ли нужная функция в window.
@@ -84,34 +104,32 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
      *      - Логичнее показать сообщение "Не удалось загрузить карту" через 2-3 секунды.  
      */
 
-    // После рассуждений, изложенных выше, добавляем ещё и таймаут для обработки возможных ошибок с загрузкой виджета:
-    useEffect(() => {
+        // После рассуждений, изложенных выше, добавляем ещё и таймаут для обработки возможных ошибок с загрузкой виджета:
+        // Таймаут для отмены через 2 секунды
         const timeout = setTimeout(() => {
+        clearInterval(interval);
         if (!window.ecomStartWidget) {
             toast.error('Не удалось загрузить карту. Что-то пошло не так...', toastConfig);
-            clearInterval(interval);
         }
-        }, 2000); // Ждём максимум 2 секунды
-    
+        }, 2000); // Ждём максимум 2 секунды - как защита от бесконечного цикла...
+
+        // Очистка при размонтировании
         return () => {
-        clearInterval(interval);
-        clearTimeout(timeout);
-        };
-    }, []);
+            clearInterval(interval);
+            clearTimeout(timeout);
+          };
+        // Зачем: Если пользователь уйдёт со страницы до загрузки скрипта, интервал будет отменён, чтобы избежать утечек памяти.
+    }, [scriptStatus, onSelect]);
 
-    return () => clearInterval(interval);       // Очистка при размонтировании
-    // Зачем: Если пользователь уйдёт со страницы до загрузки скрипта, интервал будет отменён, чтобы избежать утечек памяти.
-  }, [onSelect]);
-
-  return (
-    <div className="russianpost-map__content">
-      <p className="russianpost-map__content-text">
-        Для просмотра сроков и стоимости доставки заказа, введите адрес и выберите отделение связи:
-      </p>
-      <div id="ecom-widget" className="russianpost-map" />
-      <div className="map__params"></div>
-    </div>
-  );
+    return (
+        <div className="russianpost-map__content">
+        <p className="russianpost-map__content-text">
+            Для просмотра сроков и стоимости доставки заказа, введите адрес и выберите отделение связи:
+        </p>
+        <div id="ecom-widget" className="russianpost-map" />
+        <div className="map__params"></div>
+        </div>
+    );
 };
 
 export default RussianPostMap;
