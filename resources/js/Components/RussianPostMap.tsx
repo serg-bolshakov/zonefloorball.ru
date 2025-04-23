@@ -34,7 +34,7 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
         window.handlePostOfficeSelection = (response: RussianPostWidgetResponse) => {
             
             if (!response) return;
-            console.log('Данные от Почты России:', response);
+            // console.log('Данные от Почты России:', response);
             
             onSelect({
             address: [response.cityTo, response.addressTo]

@@ -319,13 +319,15 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                                     </div>
                                 </>
                             ) : (
-                            <div className='basket-res__total'>
-                                <h3 className=''>Итого к оплате за заказ: </h3>
-                                <h3>{formatPrice(deliveryOptions.deliveryPrice + regularAmount)}&nbsp;<sup>&#8381;</sup></h3>
-                            </div>
+                                !((deliveryOptions.deliveryPrice === 0) && (deliveryOptions.selectedOption === 3)) && (
+                                <div className='basket-res__total'>
+                                    <h3 className=''>Итого к оплате за заказ: </h3>
+                                    <h3>{formatPrice(deliveryOptions.deliveryPrice + regularAmount)}&nbsp;<sup>&#8381;</sup></h3>
+                                </div>
+                                )
                             )}
                         </section>
-                        {!(deliveryOptions.deliveryPrice === 0) && !(deliveryOptions.selectedOption === 3) && (    
+                        {!((deliveryOptions.deliveryPrice === 0) && (deliveryOptions.selectedOption === 3)) && (    
                         <section> {/* заводим блок кнопок для оплаты заказа или получения счёта: */}
                             <div className='basket-res__total'>
                                 <button className="basket-button">Ещё подумаю</button>
