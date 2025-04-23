@@ -47,8 +47,6 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
     setPostDeliveryPrice(data.cost);
   };
 
-  console.log('handlePostOfficeData', handlePostOfficeData)
-
   return (
     <>      
         {/* Основное поле выбора */}
@@ -125,7 +123,7 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
               <>
                 <div className="basket-res__delivery">
                   <h3 className="basketPriceYesDeliveryBlockH3elemDelivery">
-                  Стоимость доставки: {postDeliveryPrice}
+                  Стоимость доставки: {Math.round(postDeliveryPrice)}
                   &nbsp;<sup>₽</sup>
                   </h3>
               </div>
