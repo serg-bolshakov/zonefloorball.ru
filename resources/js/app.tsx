@@ -12,15 +12,15 @@ if(element) {
     createInertiaApp({                                      // функция, которая инициализирует Inertia-приложение...
         resolve: (name: string): Promise<ReactElement> => { // функция для динамического импорта компонентов...
             // Пробуем загрузить .tsx, если не получится — загружаем .jsx
-            //console.log(`Загрузка компонента: ${name}.tsx`); // Отладка
+            // console.log(`Загрузка компонента: ${name}.tsx`); // Отладка
             return import(`./Pages/${name}.tsx`)
             .then(module => {
-                console.log(`Компонент ${name} загружен:`, module.default); // Отладка
+                // console.log(`Компонент ${name} загружен:`, module.default); // Отладка
                 return module.default;
             })
             .catch(() => import(`./Pages/${name}.jsx`))
             .catch((error) => {                             // Добавим обработку ошибок для динамического импорта: запасной компонент...
-                console.error(`Ошибка при загрузке компонента ${name}:`, error);
+                // console.error(`Ошибка при загрузке компонента ${name}:`, error);
                 return import('./Pages/NotFound');
             });       
         },

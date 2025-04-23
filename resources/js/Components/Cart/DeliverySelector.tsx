@@ -13,7 +13,7 @@ interface DeliveryWay {
 
 
 interface onDeliveryChangeProps {
-    onDeliveryChange: (optionId: number, price: number) => void;
+    onDeliveryChange: (deliveryWayId: number, price: number) => void;
 }
 
 const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
@@ -22,7 +22,8 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
                                 // Пропсам, переданным от сервера (Laravel) / URL-параметрам / Данным сессии
   const [selectedDeliveryWay, setSelectedDeliveryWay] = useState<number>(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
+  const [postDeliveryPrice, setPostDeliveryPrice] = useState<number>(0);
+
   // Варианты доставки (можно вынести в конфиг или получать из API)
   const deliveryWays: DeliveryWay[] = [
     { id: 1, name: 'Самовывоз со склада продавца: ', price: 0, type: 'pickup' },
@@ -30,12 +31,11 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
     { id: 3, name: 'Почта России: ', price: props.deliveryPrice ?? 490, type: 'post' } // Цена будет уточнена
   ];
 
-  const handleDeliveryWaySelect = (optionId: number, deliveryPrice: number) => {
-    onDeliveryChange(optionId, deliveryPrice); // Передаём данные в родительский компонент
-    setSelectedDeliveryWay(optionId);
+  const handleDeliveryWaySelect = (deliveryWayId: number, deliveryPrice: number) => {
+    onDeliveryChange(deliveryWayId, deliveryPrice); // Передаём данные в родительский компонент
+    setSelectedDeliveryWay(deliveryWayId);
     setIsDropdownOpen(false);
   };
-
 
   const handlePostOfficeData = (data: {
     address: string;
@@ -44,7 +44,10 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
     postOfficeId: number;
   }) => {
     onDeliveryChange(3, data.cost); // 3 - ID способа "Почта России"
+    setPostDeliveryPrice(data.cost);
   };
+
+  console.log('handlePostOfficeData', handlePostOfficeData)
 
   return (
     <>      
@@ -63,14 +66,14 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
         <div className="basket-res__delivery">
             <h3 className="basketPriceYesDeliveryBlockH3elemDelivery">
             {selectedDeliveryWay === 0 ? (
-                <i>Сейчас стоимость заказа без учёта доставки.</i>
-                ) : (
-                    <>
-                        Стоимость доставки: {deliveryWays.find(o => o.id === selectedDeliveryWay)?.price}
-                        &nbsp;<sup>₽</sup>
-                    </>
-                )
-            }
+              <i>Сейчас стоимость заказа без учёта доставки.</i>
+            ) : ( 
+              selectedDeliveryWay !== 3 && (
+              <>
+                  Стоимость доставки: {deliveryWays.find(o => o.id === selectedDeliveryWay)?.price}
+                  &nbsp;<sup>₽</sup>
+              </>
+            ))}
             </h3>
         </div>
 
@@ -82,11 +85,19 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
                 key={deliveryWay.id}
                 onClick={() => handleDeliveryWaySelect(deliveryWay.id, deliveryWay.price)}
                 >
-                <a data-transport={deliveryWay.id}>
-                    {deliveryWay.name} 
-                    {deliveryWay.price > 0 && `${deliveryWay.price} ₽`}
-                    {deliveryWay.price === 0 && 'бесплатно'}
-                </a>
+                
+                  <a data-transport={deliveryWay.id}>
+                  {deliveryWay.id === 3 ? (
+                      <> {deliveryWay.name} 
+                      {`от ${deliveryWay.price} ₽`}
+                      </>
+                    ) : (
+                      <>{deliveryWay.name} 
+                      {deliveryWay.price > 0 && `${deliveryWay.price} ₽`}
+                      {deliveryWay.price === 0 && 'бесплатно'} </>
+                  )}
+                  </a>
+
                 </li>
             ))}
             </ul>
@@ -101,7 +112,26 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
 
         {/* Блок для отображения карты Почты России */}
         {selectedDeliveryWay === 3 && (
-            <RussianPostMap onSelect={handlePostOfficeData} />
+          <>
+            <div className="russianpost-map__content">
+                {postDeliveryPrice === 0 && (
+                  <p className="russianpost-map__content-text">
+                    Для просмотра сроков и стоимости доставки заказа, введите адрес и выберите отделение связи:
+                </p>
+                )}
+                <RussianPostMap onSelect={handlePostOfficeData} />
+            </div>
+            {postDeliveryPrice > 0 && (
+              <>
+                <div className="basket-res__delivery">
+                  <h3 className="basketPriceYesDeliveryBlockH3elemDelivery">
+                  Стоимость доставки: {postDeliveryPrice}
+                  &nbsp;<sup>₽</sup>
+                  </h3>
+              </div>
+              </>
+            )}
+          </>
         )}       
     </>
   );

@@ -27,6 +27,7 @@ interface RussianPostMapProps {
 }
 
 const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
+// const RussianPostMap = () => {
 
     // 1. Сначала гарантированно создаём глобальную функцию - инициализация глобальной функции
     useEffect(() => {
@@ -42,7 +43,7 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
             cost: response.cashOfDelivery / 100,
             deliveryTime: response.deliveryDescription.description,
             postOfficeId: response.id
-            });        
+            });       
         };
 
         return () => {
@@ -50,6 +51,7 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
             window.handlePostOfficeSelection = null;
         };
     }, [onSelect]);
+    // }, []);
 
     
     const toastConfig = {
@@ -145,24 +147,20 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
     return (
         <>
             <Helmet>
-                {/* Разрешаем геолокацию только для виджета Почты России */}
+                {/* Для тестирования можно временно разрешить всем */}
                 <meta 
                 http-equiv="Permissions-Policy" 
-                content="geolocation=(self 'https://widget.pochta.ru')" 
+                content="geolocation=*" 
                 />
                 <script 
-                src="https://widget.pochta.ru/map/widget/widget.js" 
-                async 
-                defer
+                    src="https://widget.pochta.ru/map/widget/widget.js" 
+                    async 
+                    defer
                 />
             </Helmet>
-            <div className="russianpost-map__content">
-            <p className="russianpost-map__content-text">
-                Для просмотра сроков и стоимости доставки заказа, введите адрес и выберите отделение связи:
-            </p>
+            
             <div id="ecom-widget" className="russianpost-map" />
             <div className="map__params"></div>
-            </div>
         </>
     );
 };
