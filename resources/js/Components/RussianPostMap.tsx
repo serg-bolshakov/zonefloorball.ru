@@ -86,10 +86,10 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
                 return false;
             }
             
-            /* if (widgetInitialized || typeof window.ecomStartWidget !== 'function') {    // Проверяем, что функция действительно доступна.
+            if (widgetInitialized || typeof window.ecomStartWidget !== 'function') {    // Проверяем, что функция действительно доступна.
                 console.error('widgetInitialized не инициализирована или typeof window.ecomStartWidget !== function');
                 return false;
-            }*/ 
+            }
 
             window.ecomStartWidget({                                        // Вызываем её с параметрами:
             id: 50063,                                                      // Идентификатор виджета (50063).
