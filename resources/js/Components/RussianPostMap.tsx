@@ -145,12 +145,15 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
     return (
         <>
             <Helmet>
+                {/* Разрешаем геолокацию только для виджета Почты России */}
+                <meta 
+                http-equiv="Permissions-Policy" 
+                content="geolocation=(self 'https://widget.pochta.ru')" 
+                />
                 <script 
                 src="https://widget.pochta.ru/map/widget/widget.js" 
                 async 
                 defer
-                onLoad={() => console.log('Скрипт Почты России загружен')}
-                onError={() => console.error('Ошибка загрузки скрипта')}
                 />
             </Helmet>
             <div className="russianpost-map__content">
