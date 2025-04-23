@@ -212,7 +212,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                 )}
 
                 {isLoading ? (
-                    <div>Загрузка...</div>
+                    <div></div>
                 ) : favoriteProducts.length > 0 ? (
                     <div id="favoritesproductsblock">
                         {memoizedProducts.map(product => (

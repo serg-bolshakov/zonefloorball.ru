@@ -52,7 +52,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
         deliveryTime: ''
     });
 
-    console.log('deliveryData', deliveryData);
+    // console.log('deliveryData', deliveryData); -
 
     const toastConfig = {
         position: "top-right" as const,
@@ -204,7 +204,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                 )}
 
                 {isLoading ? (
-                    <div>Загрузка...</div>
+                    <div></div>
                 ) : cartTotal > 0 ? (
                     <>
                         <div id="basketproductsblock">
