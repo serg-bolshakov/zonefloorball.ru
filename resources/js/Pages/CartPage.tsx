@@ -336,8 +336,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                         {(!(deliveryOptions.deliveryPrice === 0 && deliveryOptions.selectedOption === 3)) && (    
                         <section> {/* заводим блок кнопок для оплаты заказа или получения счёта: */}
                             <div className='basket-res__total'>
-                                <button className="basket-button">Ещё подумаю</button>
-                                <button className="basket-button">→ Купить →</button>
+                                <button className="basket-button">{deliveryOptions.deliveryPrice}</button>
+                                <button className="basket-button">→ {deliveryOptions.selectedOption} →</button>
                             </div>
                         </section>
                         )}
