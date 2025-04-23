@@ -28,7 +28,7 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
   const deliveryWays: DeliveryWay[] = [
     { id: 1, name: 'Самовывоз со склада продавца: ', price: 0, type: 'pickup' },
     { id: 2, name: 'Доставка по Нижнему Новгороду: ', price: props.deliveryPrice ?? 990, type: 'local' },
-    { id: 3, name: 'Почта России: ', price: props.deliveryPrice ?? 490, type: 'post' } // Цена будет уточнена
+    { id: 3, name: 'Почта России: ', price: props.deliveryPrice ?? 0, type: 'post' } // Цена будет уточнена
   ];
 
   const handleDeliveryWaySelect = (deliveryWayId: number, deliveryPrice: number) => {
@@ -87,7 +87,7 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
                   <a data-transport={deliveryWay.id}>
                   {deliveryWay.id === 3 ? (
                       <> {deliveryWay.name} 
-                      {`от ${deliveryWay.price} ₽`}
+                      {`от 490 ₽`}
                       </>
                     ) : (
                       <>{deliveryWay.name} 
