@@ -16,7 +16,16 @@ interface onDeliveryChangeProps {
     onDeliveryChange: (deliveryWayId: number, price: number) => void;
 }
 
-const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
+interface onPostOfficeSelectProps {
+  onPostOfficeSelect: (deliveryAddress: string, deliveryPrice: number, deliveryTime: string) => void;
+}
+
+interface DeliverySelectorProps {
+  onDeliveryChange: (optionId: number, price: number) => void;
+  onPostOfficeSelect: (address: string, price: number, time: string) => void;
+}
+
+const DeliverySelector = ({ onDeliveryChange, onPostOfficeSelect }: DeliverySelectorProps) => {
   const { props } = usePage();  // Автоматически получит тип из inertia.d.ts
                                 // хук из библиотеки @inertiajs/react - предоставляет доступ к:
                                 // Пропсам, переданным от сервера (Laravel) / URL-параметрам / Данным сессии
@@ -44,6 +53,7 @@ const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
     postOfficeId: number;
   }) => {
     onDeliveryChange(3, data.cost); // 3 - ID способа "Почта России"
+    onPostOfficeSelect(data.address, data.cost, data.deliveryTime);
     setPostDeliveryPrice(data.cost);
   };
 

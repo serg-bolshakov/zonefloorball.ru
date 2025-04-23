@@ -9,6 +9,7 @@ import { useEffect, useState, useMemo } from "react";
 import { getErrorMessage } from "@/Utils/error";
 import { IProduct } from "@/Types/types";
 import { Link, usePage } from '@inertiajs/react';
+import { InertiaLink } from "@inertiajs/inertia-react";
 import { AnimatePresence, motion } from 'framer-motion';
 import { formatPrice } from "@/Utils/priceFormatter";
 import { toast } from 'react-toastify';
@@ -44,6 +45,15 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
         deliveryPrice: 0
     });
 
+    // Данные об адресе доставки товара (если они поступили через response API Почты России):
+    const [deliveryData, setDeliveryData] = useState({
+        deliveryAddress: '',
+        deliveryPrice: 0,
+        deliveryTime: ''
+    });
+
+    console.log('deliveryData', deliveryData);
+
     const toastConfig = {
         position: "top-right" as const,
         autoClose: 1500, // Уведомление закроется через секунду-другую...
@@ -53,6 +63,13 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
         draggable: true,
         transition: Zoom, // Используем Slide, Zoom, Flip, Bounce для этого тоста
     }
+
+    const { props } = usePage();
+    const returnBack = () => {
+        const comeFrom = props.from || '/catalog'; // Получаем сохранённый URL
+        window.history.back(); // Или явный редирект:
+        // Inertia.visit(comeFrom);
+      };
 
     useEffect(() => {
         const controller = new AbortController; // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
@@ -302,6 +319,12 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                                 selectedOption: optionId,
                                 deliveryPrice: price
                             })}
+
+                            onPostOfficeSelect={(address, price, time) => setDeliveryData({
+                                deliveryAddress: address,
+                                deliveryPrice: price,
+                                deliveryTime: time
+                            })}
                         />
 
                         {/* заводим блок расчёта итоговой суммы к оплате: */}
@@ -336,7 +359,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                         {(!(deliveryOptions.deliveryPrice === 0 && deliveryOptions.selectedOption === 3)) && (    
                         <section> {/* заводим блок кнопок для оплаты заказа или получения счёта: */}
                             <div className='basket-res__total'>
-                                <button className="basket-button">Ещё подумаю</button>
+                                <button onClick={returnBack} className="basket-button">Ещё подумаю</button>
                                 <button className="basket-button">→ Купить →</button>
                             </div>
                         </section>

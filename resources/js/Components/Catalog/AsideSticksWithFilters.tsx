@@ -50,7 +50,7 @@ const AsideSticksWithFilters: React.FC = () => {
         return result;
     };
 
-    console.log('Параметры из URL:', getFiltersFromURL());
+    // console.log('Параметры из URL:', getFiltersFromURL());
 
     // Функция для обновления URL: Эта функция будет обновлять URL в зависимости от выбранных фильтров:
     const updateURL = (filterType: string, filterValue: string, isChecked: boolean) => {
