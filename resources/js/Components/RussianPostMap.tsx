@@ -4,23 +4,54 @@ import { useExternalScript } from '@/Hooks/useExternalScript';
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import { Helmet } from "react-helmet";
+import { RussianPostWidgetResponse } from '@/Types/delivery';
 
-declare global {                        // Объявление глобального интерфейса
-  interface Window {                    // Что делает: Расширяет стандартный интерфейс Window
-    ecomStartWidget?: (config: {        // добавляя в него опциональную (?) функцию ecomStartWidget.
-      id: number;                       // Зачем: TypeScript будет "знать" об этой функции, 
-      callbackFunction: Function;       // когда она появится в глобальной области видимости после загрузки скрипта.
+declare global {                                                        // Объявление глобального интерфейса
+  interface Window {                                                    // Что делает: Расширяет стандартный интерфейс Window
+    ecomStartWidget?: (config: {                                        // добавляя в него опциональную (?) функцию ecomStartWidget.
+      id: number;                                                       // Зачем: TypeScript будет "знать" об этой функции, 
+      callbackFunction: (data: RussianPostWidgetResponse) => void;      // когда она появится в глобальной области видимости после загрузки скрипта.
       containerId: string;
     }) => void;
+    handlePostOfficeSelection: ((data: RussianPostWidgetResponse) => void) | null;
   }
 }
 
 interface RussianPostMapProps {
-  onSelect: (data: any) => void;
+    onSelect: (data: {
+      address: string;
+      cost: number;
+      deliveryTime: string;
+      postOfficeId: number;
+    }) => void;
 }
 
 const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
 
+    // 1. Сначала гарантированно создаём глобальную функцию - инициализация глобальной функции
+    useEffect(() => {
+        window.handlePostOfficeSelection = (response: RussianPostWidgetResponse) => {
+            
+            if (!response) return;
+            console.log('Данные от Почты России:', response);
+            
+            onSelect({
+            address: [response.cityTo, response.addressTo]
+                .filter(Boolean)
+                .join(', '),
+            cost: response.cashOfDelivery / 100,
+            deliveryTime: response.deliveryDescription.description,
+            postOfficeId: response.id
+            });        
+        };
+
+        return () => {
+            // Очищаем при размонтировании
+            window.handlePostOfficeSelection = null;
+        };
+    }, [onSelect]);
+
+    
     const toastConfig = {
         position: "top-right" as const,
         autoClose: 1500, // Уведомление закроется через секунду-другую...
@@ -31,23 +62,10 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
         transition: Slide, // Используем Slide, Zoom, Flip, Bounce для этого тоста
     }
 
-    // Загружаем скрипт виджета
-    // useExternalScript('https://widget.pochta.ru/map/widget/widget.js');
-    // 1. Хук useExternalScript - динамически создаёт <script> тег и добавляет его в <body>.
-    
-    // 2. Добавляем Helmet для метаданных и fallback-загрузки - не заработало на хостинге - комментируем на память:
-    /*  <Helmet>
-    <script 
-        src="https://widget.pochta.ru/map/widget/widget.js" 
-        async 
-        onError={() => console.error('Ошибка загрузки скрипта Почты России')}
-    />
-    </Helmet> */
-
-    const [useApiFallback, setUseApiFallback] = useState(false);
-    // Загружаем скрипт только через хук
+    // Загружаем скрипт только через хук - useExternalScript - динамически создаёт <script> тег и добавляет его в <body>.
     const scriptStatus = useExternalScript('https://widget.pochta.ru/map/widget/widget.js');
 
+    // 2. Затем инициализируем виджет
     useEffect(() => {
         if (scriptStatus === 'error') {
             toast.error('Не удалось загрузить карту. Попробуйте позже.');
@@ -59,42 +77,47 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
 
         let widgetInitialized = false;
         let interval: NodeJS.Timeout;
+        let timeout: NodeJS.Timeout;
 
         // Инициализируем виджет после загрузки скрипта
-        const initWidget = () => {
-            if (widgetInitialized || !window.ecomStartWidget) return false;
-
-            if (typeof window.ecomStartWidget === 'function') {                 // Проверяем, что функция действительно доступна.
-                window.ecomStartWidget({                                        // Вызываем её с параметрами:
-                id: 50063,                                                      // Идентификатор виджета (50063).
-                callbackFunction: () => {                                       // Функция, которая получит данные выбранного отделения.
-                    onSelect;
-                },
-                containerId: 'ecom-widget'                                      // ID DOM-элемента, куда встроится виджет.
-                });
-
-                widgetInitialized = true;
-                return true;
+        const initWidget = (): boolean => {
+            if (!window.handlePostOfficeSelection || !window.ecomStartWidget) {
+                console.error('Функция обратного вызова не инициализирована');
+                return false;
             }
-            return false;
+            
+            /* if (widgetInitialized || typeof window.ecomStartWidget !== 'function') {    // Проверяем, что функция действительно доступна.
+                console.error('widgetInitialized не инициализирована или typeof window.ecomStartWidget !== function');
+                return false;
+            }*/ 
+
+            window.ecomStartWidget({                                        // Вызываем её с параметрами:
+            id: 50063,                                                      // Идентификатор виджета (50063).
+            callbackFunction: window.handlePostOfficeSelection,             // Теперь функция гарантированно существует
+            containerId: 'ecom-widget'                                      // ID DOM-элемента, куда встроится виджет.
+            });
+
+            widgetInitialized = true;
+            return true;
         };
 
-        // Прямая инициализация если скрипт уже загружен
+        // Первая попытка инициализации
         if (!initWidget()) {
-            // Fallback с интервалом проверки
             interval = setInterval(() => {
-                if (initWidget()) {
-                    clearInterval(interval);
-                }
+            if (initWidget()) {
+                clearTimeout(timeout);
+                clearInterval(interval);
+            }
             }, 100);
 
-            // Таймаут на случай если скрипт не загрузится
-            setTimeout(() => {
-                if (!widgetInitialized) {
+            // Фолбек-таймаут
+            timeout = setTimeout(() => {
+            if (!widgetInitialized) {
                 clearInterval(interval);
-                toast.error('Виджет Почты России не загрузился');
-                }
+                toast.error('Виджет не загрузился. Обновите страницу.');
+            }
             }, 5000);
+        }
     
             /** Проблема: После выполнения useExternalScript скрипт начинает загружаться, но: 
      *      - Мы не знаем, сколько это займёт времени (зависит от сети пользователя)... 
@@ -110,13 +133,14 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
      *      - Логичнее показать сообщение "Не удалось загрузить карту" через 2-3 секунды.  
      */
 
-            // Очистка при размонтировании
-            return () => {
-                clearInterval(interval);
-            };
-            // Зачем: Если пользователь уйдёт со страницы до загрузки скрипта, интервал будет отменён, чтобы избежать утечек памяти.
-        }
-    }, [scriptStatus, onSelect]);
+        // Очистка при размонтировании
+        return () => {
+            clearInterval(interval);
+            clearTimeout(timeout);
+        };
+        // Зачем: Если пользователь уйдёт со страницы до загрузки скрипта, интервал будет отменён, чтобы избежать утечек памяти.
+        
+    }, [scriptStatus]);
 
     return (
         <>
@@ -142,7 +166,7 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
 
 export default RussianPostMap;
 
-/** 🛠 Как работает весь поток
+/** 🛠 Как работает весь поток (Переписал немного, но суть прежняя...)
         - Пользователь выбирает "Почта России" → Рендерится <RussianPostMap>.
         - Хук useExternalScript начинает загружать widget.js.
         - Пока скрипт грузится, useEffect запускает интервал:

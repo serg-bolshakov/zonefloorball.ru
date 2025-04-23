@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { usePage } from '@inertiajs/react';
 import RussianPostMap from '../RussianPostMap';
 
-interface DeliveryOption {
+interface DeliveryWay {
   id: number;
   name: string;
   price: number;
@@ -16,45 +16,34 @@ interface onDeliveryChangeProps {
     onDeliveryChange: (optionId: number, price: number) => void;
 }
 
-const DeliverySelector: React.FC<onDeliveryChangeProps> = ({ onDeliveryChange }) => {
+const DeliverySelector = ({ onDeliveryChange }: onDeliveryChangeProps) => {
   const { props } = usePage();  // Автоматически получит тип из inertia.d.ts
                                 // хук из библиотеки @inertiajs/react - предоставляет доступ к:
                                 // Пропсам, переданным от сервера (Laravel) / URL-параметрам / Данным сессии
-  const [selectedOption, setSelectedOption] = useState<number>(0);
+  const [selectedDeliveryWay, setSelectedDeliveryWay] = useState<number>(0);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [postOfficeData, setPostOfficeData] = useState<any>(null);
-
-
+  
   // Варианты доставки (можно вынести в конфиг или получать из API)
-  const deliveryOptions: DeliveryOption[] = [
+  const deliveryWays: DeliveryWay[] = [
     { id: 1, name: 'Самовывоз со склада продавца: ', price: 0, type: 'pickup' },
     { id: 2, name: 'Доставка по Нижнему Новгороду: ', price: props.deliveryPrice ?? 990, type: 'local' },
     { id: 3, name: 'Почта России: ', price: props.deliveryPrice ?? 490, type: 'post' } // Цена будет уточнена
   ];
 
-  const handleOptionSelect = (optionId: number, deliveryPrice: number) => {
+  const handleDeliveryWaySelect = (optionId: number, deliveryPrice: number) => {
     onDeliveryChange(optionId, deliveryPrice); // Передаём данные в родительский компонент
-    setSelectedOption(optionId);
+    setSelectedDeliveryWay(optionId);
     setIsDropdownOpen(false);
-    
-    if (optionId === 3) {
-      loadPostOffices(); // Загружаем отделения Почты России
-    }
   };
 
-  const loadPostOffices = async () => {
-    try {
-      // Здесь будет ваш API-запрос к сервису Почты России
-      const response = await fetch('https://api.pochta.ru/offices');
-      setPostOfficeData(await response.json());
-    } catch (error) {
-      console.error('Ошибка загрузки отделений:', error);
-    }
-  };
 
-  const handlePostOfficeSelect = (data: any) => {
-    console.log('Выбрано отделение: ', data);
-    // Здесь можно обновить состояние с выбранным отделением
+  const handlePostOfficeData = (data: {
+    address: string;
+    cost: number;
+    deliveryTime: string;
+    postOfficeId: number;
+  }) => {
+    onDeliveryChange(3, data.cost); // 3 - ID способа "Почта России"
   };
 
   return (
@@ -65,19 +54,19 @@ const DeliverySelector: React.FC<onDeliveryChangeProps> = ({ onDeliveryChange })
                 className={`basketSelectTransportVisibleBlock ${isDropdownOpen ? 'active' : ''}`}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-                {selectedOption 
-                ? deliveryOptions.find(o => o.id === selectedOption)?.name 
+                {selectedDeliveryWay 
+                ? deliveryWays.find(o => o.id === selectedDeliveryWay)?.name 
                 : 'Выбрать способ доставки/получения заказа'}
             </div>
         </div>
       
         <div className="basket-res__delivery">
             <h3 className="basketPriceYesDeliveryBlockH3elemDelivery">
-            {selectedOption === 0 ? (
+            {selectedDeliveryWay === 0 ? (
                 <i>Сейчас стоимость заказа без учёта доставки.</i>
                 ) : (
                     <>
-                        Стоимость доставки: {deliveryOptions.find(o => o.id === selectedOption)?.price}
+                        Стоимость доставки: {deliveryWays.find(o => o.id === selectedDeliveryWay)?.price}
                         &nbsp;<sup>₽</sup>
                     </>
                 )
@@ -88,15 +77,15 @@ const DeliverySelector: React.FC<onDeliveryChangeProps> = ({ onDeliveryChange })
         {/* Выпадающий список */}
         {isDropdownOpen && (
             <ul className="basket-select__transport-drop">
-            {deliveryOptions.map(option => (
+            {deliveryWays.map(deliveryWay => (
                 <li 
-                key={option.id}
-                onClick={() => handleOptionSelect(option.id, option.price)}
+                key={deliveryWay.id}
+                onClick={() => handleDeliveryWaySelect(deliveryWay.id, deliveryWay.price)}
                 >
-                <a data-transport={option.id}>
-                    {option.name} 
-                    {option.price > 0 && `${option.price} ₽`}
-                    {option.price === 0 && 'бесплатно'}
+                <a data-transport={deliveryWay.id}>
+                    {deliveryWay.name} 
+                    {deliveryWay.price > 0 && `${deliveryWay.price} ₽`}
+                    {deliveryWay.price === 0 && 'бесплатно'}
                 </a>
                 </li>
             ))}
@@ -107,12 +96,12 @@ const DeliverySelector: React.FC<onDeliveryChangeProps> = ({ onDeliveryChange })
         <input 
             type="hidden" 
             name="choosedTransportCompanyForOrderDelivery" 
-            value={selectedOption} 
+            value={selectedDeliveryWay} 
         />
 
         {/* Блок для отображения карты Почты России */}
-        {selectedOption === 3 && (
-            <RussianPostMap onSelect={handlePostOfficeSelect} />
+        {selectedDeliveryWay === 3 && (
+            <RussianPostMap onSelect={handlePostOfficeData} />
         )}       
     </>
   );

@@ -1,0 +1,58 @@
+// resources/js/Types/delivery.d.ts
+
+// Назначение:            Типизация клиентской логики (ответы API, состояния компонентов)
+// Пример использования:  Данные виджета Почты России, параметры доставки
+// Где доступен:          Только в связанных компонентах
+
+
+export interface DeliveryDescription {    // информация о доставке, включает в себя следующие поля:
+  description: string;                    // описание условий доставки
+  values: {                               // значения времени доставки заказа
+    deliveryMax: number;                  // максимальное время доставки (в днях)
+    deliveryMin: number;                  // минимальное время доставки (в днях);
+    extraTimeInHours: number;             // время на обработку заказа (в часах);
+  };
+}
+
+// Возвращаемые параметры в callbackFunction:
+export interface RussianPostWidgetResponse {
+  addressTo: string;                      //  адрес пункта выдачи заказа, включает в себя улицу, дом, литеру и т.д.;
+  areaTo: string | null;                  //  район пункта выдачи, (возможна строка "null"). null - оставляем null как валидное значение
+  cashOfDelivery: number;                 //  стоимость доставки;
+  cityTo: string;                         //  город пункта выдачи; 
+  deliveryDescription: DeliveryDescription;
+  indexTo: string;                        //  индекс пункта выдачи;
+  id: number;                             //  ID пункта выдачи заказа;
+  regionTo: string;                       //  регион пункта выдачи;
+  weight: number;                         //  вес заказа
+  mailType:                               //  тип отправления (см. ниже возможные значения поля);
+    | 'POSTAL_PARCEL' 
+    | 'PARCEL_CLASS_1' 
+    | 'ONLINE_PARCEL' 
+    | 'ECOM_MARKETPLACE';
+  pvzType: 'russian_post' | 'postamat';   // тип пункта выдачи заказа (см. ниже возможные значения поля);
+}
+
+// Объявляем глобальную функцию для TypeScript
+// declare global {
+//   interface Window {
+//     handlePostOfficeSelection: (data: RussianPostWidgetResponse) => void;
+//     //ecomStartWidget?: (config: WidgetConfig) => void;
+//   }
+// }
+
+/** Оптимизированная структура (рекомендуемая)
+  resources/
+    js/
+      Types/
+        inertia.d.ts       # Типы Inertia.js
+        delivery/          # Типы доставки
+          widget.d.ts      # Типы виджета Почты России
+          api.d.ts         # Типы API-ответов
+        index.d.ts         # Главный файл экспорта типов
+ 
+
+  Разделение ответственности:
+    - inertia.d.ts — только для типов, связанных с Inertia.js
+    - delivery/*.d.ts — для бизнес-логики доставки
+ */
