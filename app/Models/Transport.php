@@ -9,6 +9,4 @@ class Transport extends Model
 {
     use HasFactory;
     
-
-    
 }
