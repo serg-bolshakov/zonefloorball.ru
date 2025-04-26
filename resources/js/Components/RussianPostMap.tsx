@@ -36,13 +36,23 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
             if (!response) return;
             // console.log('Данные от Почты России:', response);
             
+            const isInvalidValue = (value: any) => 
+                value == null || 
+                value === 'null' || 
+                value === 'undefined' || 
+                (typeof value === 'string' && value.trim() === '');
+
+            const addressParts = [
+                response.areaTo,
+                response.cityTo,
+                response.addressTo
+            ].filter(part => !isInvalidValue(part));
+            
             onSelect({
-            address: [response.cityTo, response.addressTo]
-                .filter(Boolean)
-                .join(', '),
-            cost: response.cashOfDelivery / 100,
-            deliveryTime: response.deliveryDescription.description,
-            postOfficeId: response.id
+                address: addressParts.join(', '),
+                cost: response.cashOfDelivery / 100,
+                deliveryTime: response.deliveryDescription.description,
+                postOfficeId: response.id
             });       
         };
 
