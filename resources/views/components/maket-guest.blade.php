@@ -23,7 +23,6 @@
 	<body>
 		<div class="wrapper">
 			{{ $slot }}
-            <x-footer />
 		</div>
 	</body>
 </html>

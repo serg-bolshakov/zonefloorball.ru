@@ -48,6 +48,10 @@ i { font-style: italic; }
     background-color: yellow;
 }
 
+.invalid {
+    border-color: #ff4444;
+}
+
 .flex-test {
     gap: 10px; /* Добавляем отступ между чекбоксом и текстом */
 } 
@@ -2397,6 +2401,20 @@ input[type="checkbox"]:checked + label:after {
     border: 1px solid #cecece;
     background: #f6f6f6;
     border-radius: 4px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Плавный переход */
+}
+
+.registration-form__input.invalid {
+    border-color: #ff4444;
+    background-color: #fff6f6;
+    box-shadow: 0 0 0 2px rgba(255, 68, 68, 0.2);
+    animation: shake 0.5s;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
 }
 
 .registration-form__input-address {
@@ -2568,21 +2586,21 @@ a.order-btn {
     text-align: center;
 }
   
-.registration-form__submit-btn:hover {
+.registration-form__submit-btn, .order-btn:hover {
     box-shadow: inset 0px -20px 20px #ffffff;
 }
   
-.registration-form__submit-btn:active {
+.registration-form__submit-btn, .order-btn:active {
     margin-top: 1px;
     margin-bottom: -1px;
     zoom: 1;
 }
 
-.registration-form__submit-btn:focus {
+.registration-form__submit-btn, .order-btn:focus {
     outline: none;
 }
   
-a.registration-form__submit-btn {
+a.registration-form__submit-btn, .order-btn {
     display: block;
     text-align: center;
     width: 120px;
@@ -3485,9 +3503,9 @@ video {
 
 .order-info__text {
     font-weight: 400;
-    font-size: 12px;
+    font-size: 14px;
     margin: 2px 0;
-    line-height: 1.2;
+    line-height: 1.4;
     text-align: justify;
 }
 

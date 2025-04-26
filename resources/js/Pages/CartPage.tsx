@@ -22,8 +22,12 @@ import { QuantityControl } from "@/Components/Cart/QuantityControl";
 import ProductsQuantityInCart from "@/Components/Cart/ProductsQuantityInCart";
 import DiscountSummary from "@/Components/Cart/DiscountSummary";
 import DeliverySelector from "@/Components/Cart/DeliverySelector";
+import useModal from "@/Hooks/useModal";
+import AuthWarningModal from '../Components/OrderCheckoutModals/AuthWarningModal'; 
+import { IGuestCustomerData } from "@/Types/orders";
+import GuestCustomerDataModalForm from "@/Components/OrderCheckoutModals/GuestCustomerDataModalForm";
 
-interface IHomeProps {
+interface IHomeProps {  
     title: string;
     robots: string;
     description: string;
@@ -31,14 +35,16 @@ interface IHomeProps {
 }
 
 const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) => {
+    const { openModal, closeModal } = useModal();
+
     const { user } = useAppContext();
     const { cart, cartTotal, updateCart, addToFavorites, removeFromCart } = useUserDataContext();
     const [cartProducts, setCartProducts] = useState<IProduct[]>([]);
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const [cartAmount, setCartAmount] = useState(0);
-    const [regularAmount, setRegularAmount] = useState(0); // Сумма без скидок
+    const [cartAmount, setCartAmount] = useState<number>(0);
+    const [regularAmount, setRegularAmount] = useState<number>(0); // Сумма без скидок
 
     const [deliveryOptions, setDeliveryOptions] = useState({
         selectedOption: 0,
@@ -51,6 +57,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
         deliveryPrice: 0,
         deliveryTime: ''
     });
+
+    const [guestData, setGuestData] = useState<IGuestCustomerData | null>(null);
 
     // console.log('deliveryData', deliveryData); -
 
@@ -182,6 +190,29 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
     const formattedAmount = useMemo(() => formatPrice(cartAmount), [cartAmount]);                       // это уже излишество, наверное...
     const memoizedProducts = useMemo(() => cartProducts, [cartProducts]);
 
+    const handleGuestFormSubmit = (data: IGuestCustomerData) => {
+        // Отправка данных на сервер
+        console.log('Form data:', data);
+        // Дальнейшая логика (редирект на оплату и т.д.)
+    };
+
+    // Модалка с формой данных гостя
+    const openCustomerFormModal = () => {
+        openModal(
+            <GuestCustomerDataModalForm 
+                initialDeliveryAddress={deliveryData.deliveryAddress}
+                onSubmit={handleGuestFormSubmit}
+                onCancel={() => closeModal()}
+            />
+        )
+    };
+
+    // При продолжении без регистрации
+    const handleContinueAsGuest = () => {
+        closeModal();
+        openCustomerFormModal();
+    };
+
     return (    
         <MainLayout>
             <Helmet>
@@ -195,7 +226,6 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
 
             <div className="basket-wrapper">
                 <h1 className="basketTitle padding-top24px">Корзина покупок ({ cartTotal }) .</h1>
-                <p>Всё самое лучшее здесь...</p>
                 
                 {error && (
                     <div className="error-message">
@@ -359,8 +389,27 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                         {(!(deliveryOptions.deliveryPrice === 0 && deliveryOptions.selectedOption === 3)) && (    
                         <section> {/* заводим блок кнопок для оплаты заказа или получения счёта: */}
                             <div className='basket-res__total'>
-                                <button onClick={returnBack} className="basket-button">Ещё подумаю</button>
-                                <button className="basket-button">→ Купить →</button>
+                                <motion.button onClick={returnBack} className="basket-button" whileHover={{ scale: 1.1 }}  
+                                    whileTap={{ scale: 0.9 }}>Ещё подумаю</motion.button>
+                                <motion.button 
+                                    className="basket-button" 
+                                    whileHover={{ scale: 1.1 }}  
+                                    whileTap={{ scale: 0.9 }}
+                                    animate={{
+                                        scale: [1, 1.05, 0.95], // Пульсация
+                                        transition: { 
+                                        repeat: Infinity, 
+                                        repeatDelay: 1,
+                                        duration: 0.9 
+                                        }
+                                    }}
+                                    onClick={() => openModal(
+                                        <AuthWarningModal 
+                                            onContinueAsGuest={handleContinueAsGuest}
+                                         // onAuthRedirect={() => redirectToAuth()} // Пока можно закомментировать - это на будущее: перенести логику вложения сюда, в родительский компонент...
+                                        />)
+                                    }>Оформить заказ
+                                </motion.button>
                             </div>
                         </section>
                         )}
