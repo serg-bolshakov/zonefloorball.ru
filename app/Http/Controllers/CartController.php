@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\User;                                        // User — нужен для typehint в forUser(User $user)
-use App\Models\Product; 
+use App\Models\Product;
+use App\Models\Transport;
 use App\Services\DiscountService;
 use Inertia\Inertia;
 
@@ -14,15 +15,33 @@ class CartController extends Controller
     public function index() {
         try {
             return Inertia::render('CartPage', [
-                    'title' => 'Корзина покупок',
-                    'robots' => 'NOINDEX,NOFOLLOW',
-                    'description' => '',
-                    'keywords' => '',
-                ]);
+                'title' => 'Корзина покупок',
+                'robots' => 'NOINDEX,NOFOLLOW',
+                'description' => '',
+                'keywords' => '',
+                'transports' => $this->getTransports(),
+            ]);
         } catch (\Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
             ], 500);
+        }
+    }
+            
+    // Получаем доступные способы доставки товаров (заказов):
+    public function getTransports() {
+        try {
+            return Transport::where('is_active', true)
+            ->get()
+            ->map(fn($t) => [
+                'id' => $t->id,
+                'code' => $t->code,
+                'name' => $t->name,
+                'base_price' => $t->base_price,
+                'price_calculation' => $t->price_calculation
+            ]);
+        } catch (\Exception $e) {
+            return [];
         }
     }
 
