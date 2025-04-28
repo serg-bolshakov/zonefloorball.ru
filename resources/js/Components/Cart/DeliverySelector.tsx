@@ -37,6 +37,7 @@ interface onPostOfficeSelectProps {
 // }
 
 const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
+  console.log('transports: ', transports);
   const [selectedTransportId, setSelectedTransportId] = useState<number>(0);
   const { props } = usePage();  // Автоматически получит тип из inertia.d.ts
                                 // хук из библиотеки @inertiajs/react - предоставляет доступ к:
@@ -76,7 +77,7 @@ const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
                 className={`basketSelectTransportVisibleBlock ${isDropdownOpen ? 'active' : ''}`}
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
-                {selectedTransportId 
+                {selectedTransportId > 0 
                 ? transports.find(o => o.id === selectedTransportId)?.name 
                 : 'Выберите способ доставки/получения'}
             </div>
