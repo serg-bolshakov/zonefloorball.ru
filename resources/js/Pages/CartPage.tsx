@@ -26,15 +26,17 @@ import useModal from "@/Hooks/useModal";
 import AuthWarningModal from '../Components/OrderCheckoutModals/AuthWarningModal'; 
 import { IGuestCustomerData } from "@/Types/orders";
 import GuestCustomerDataModalForm from "@/Components/OrderCheckoutModals/GuestCustomerDataModalForm";
+import { ITransport } from "@/Types/delivery";
 
 interface IHomeProps {  
     title: string;
     robots: string;
     description: string;
     keywords: string;
+    transports: ITransport[];
 }
 
-const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) => {
+const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, transports}) => {
     const { openModal, closeModal } = useModal();
 
     const { user } = useAppContext();
@@ -345,16 +347,22 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) 
                             <h3 className="basketPriceNoDeliveryBlockH3elemTotalAmount">на сумму: {formatPrice(cartAmount)} <sup>₽</sup></h3>
                         </div>
                         <DeliverySelector
-                            onDeliveryChange={(optionId, price) => setDeliveryOptions({
-                                selectedOption: optionId,
-                                deliveryPrice: price
-                            })}
+                            transports={transports}
+                            onSelect={(data) => {
+                                console.log('Выбрано:', data);
+                                // Здесь сохраняем в состояние корзины
+                              }}
 
-                            onPostOfficeSelect={(address, price, time) => setDeliveryData({
-                                deliveryAddress: address,
-                                deliveryPrice: price,
-                                deliveryTime: time
-                            })}
+                            // onDeliveryChange={(optionId, price) => setDeliveryOptions({
+                            //     selectedOption: optionId,
+                            //     deliveryPrice: price
+                            // })}
+
+                            // onPostOfficeSelect={(address, price, time) => setDeliveryData({
+                            //     deliveryAddress: address,
+                            //     deliveryPrice: price,
+                            //     deliveryTime: time
+                            // })}
                         />
 
                         {/* заводим блок расчёта итоговой суммы к оплате: */}
