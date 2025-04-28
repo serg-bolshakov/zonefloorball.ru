@@ -4,5 +4,6 @@ export const API_ENDPOINTS = {
     CART: '/api/products/cart',
     RECENTLY_VIEWED: '/api/products/recently-viewed',
     USER_DATA: '/api/user-data',
-    warehouses: '/api/warehouses',
+    WAREHOUSES: '/api/warehouses',
+    DELIVERY_OPTIONS: '/api/delivery-options',
 } as const; // `as const` для точной типизации

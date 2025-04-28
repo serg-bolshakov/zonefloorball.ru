@@ -33,13 +33,18 @@ export interface RussianPostWidgetResponse {
   pvzType: 'russian_post' | 'postamat';   // тип пункта выдачи заказа (см. ниже возможные значения поля);
 }
 
-// Объявляем глобальную функцию для TypeScript
-// declare global {
-//   interface Window {
-//     handlePostOfficeSelection: (data: RussianPostWidgetResponse) => void;
-//     //ecomStartWidget?: (config: WidgetConfig) => void;
-//   }
-// }
+export interface ITransport {
+  id: number;
+  code: 'pickup' | 'local' | 'post';
+  name: string;
+  base_price: number;
+  price_calculation: 'fixed' | 'distance' | 'weight' | 'external';
+  description?: string;
+  metadata?: {
+    work_hours?: string;
+    restrictions?: string;
+  };
+}
 
 /** Оптимизированная структура (рекомендуемая)
   resources/

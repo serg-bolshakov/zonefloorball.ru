@@ -4,10 +4,12 @@
 // Где доступен:          Во всех компонентах, использующих usePage()
 
 import '@inertiajs/core';
+import { ITransport } from './delivery';
 
 declare module '@inertiajs/core' {
   interface PageProps {
     deliveryPrice: number;
+    transports?: ITransport[];
     // другие общие пропсы...
   }
 }
