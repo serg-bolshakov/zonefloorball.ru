@@ -1,7 +1,6 @@
 //resources/js/Components/Cart/DeliverySelector.tsx
 
 import { useState } from 'react';
-import { usePage } from '@inertiajs/react';
 import RussianPostMap from '../RussianPostMap';
 import { ITransport } from '@/Types/delivery';
 
@@ -39,35 +38,8 @@ interface onPostOfficeSelectProps {
 const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
   console.log('transports: ', transports);
   const [selectedTransportId, setSelectedTransportId] = useState<number>(0);
-  const { props } = usePage();  // Автоматически получит тип из inertia.d.ts
-                                // хук из библиотеки @inertiajs/react - предоставляет доступ к:
-                                // Пропсам, переданным от сервера (Laravel) / URL-параметрам / Данным сессии
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [postDeliveryPrice, setPostDeliveryPrice] = useState<number>(0);
-
-  // Варианты доставки (можно вынести в конфиг или получать из API)
-  /*const deliveryWays: DeliveryWay[] = [
-    { id: 1, name: 'Самовывоз со склада продавца: ', price: 0, type: 'pickup' },
-    { id: 2, name: 'Доставка по Нижнему Новгороду: ', price: props.deliveryPrice ?? 990, type: 'local' },
-    { id: 3, name: 'Почта России: ', price: props.deliveryPrice ?? 0, type: 'post' } // Цена будет уточнена
-  ];*/
-
-  /*const handleDeliveryWaySelect = (deliveryWayId: number, deliveryPrice: number) => {
-    onDeliveryChange(deliveryWayId, deliveryPrice); // Передаём данные в родительский компонент
-    setSelectedDeliveryWay(deliveryWayId);
-    setIsDropdownOpen(false);
-  };*/
-
-  /*const handlePostOfficeData = (data: {
-    address: string;
-    cost: number;
-    deliveryTime: string;
-    postOfficeId: number;
-  }) => {
-    onDeliveryChange(3, data.cost); // 3 - ID способа "Почта России"
-    onPostOfficeSelect(data.address, data.cost, data.deliveryTime);
-    setPostDeliveryPrice(data.cost);
-  };*/
 
   return (
     <>      
@@ -109,15 +81,12 @@ const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
                   }}>
                 
                   <a data-transport={transport.id}>
-                  {transport.id === 3 ? (
-                      <> {transport.name} 
-                      {`: от 490 ₽`}
-                      </>
-                    ) : (
-                      <>{transport.name} 
-                      {transport.base_price > 0 && `: ${transport.base_price} ₽`}
-                      {transport.base_price === 0 && ': бесплатно'} </>
-                  )}
+                  {transport.name}
+                  {transport.price_calculation === 'external'
+                    ? ': (расчёт при выборе)'
+                    : transport.base_price > 0
+                      ? `: (${transport.base_price} ₽)`
+                      : ': (бесплатно)'}
                   </a>
 
                 </li>
