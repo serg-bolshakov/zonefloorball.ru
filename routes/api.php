@@ -18,6 +18,7 @@ use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\RecentlyViewedController;
 use App\Http\Controllers\WarehouseController;
+use App\Http\Controllers\DeliveryController;
 
 
 /*
@@ -52,6 +53,7 @@ Route::match(['get', 'post'], '/products/cart', [CartController::class, 'sync'])
 Route::get('/products/recently-viewed', [RecentlyViewedController::class, 'getProducts'])->middleware('api');
 Route::post('/products/recently-viewed', [RecentlyViewedController::class, 'store'])->middleware('api');
 Route::get('/warehouses', [WarehouseController::class, 'index']);
+Route::get('/delivery-options', [DeliveryController::class, 'index']);
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);
 });
