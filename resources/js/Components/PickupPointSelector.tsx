@@ -24,7 +24,7 @@ const PickupPointSelector = () => {
     }>>([]);
   
     useEffect(() => {
-        fetch(API_ENDPOINTS.warehouses)
+        fetch(API_ENDPOINTS.WAREHOUSES)
           .then(res => res.json())
           .then((data: IWarehouse[]) => {
             setPoints(data.map(wh => ({
