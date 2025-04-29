@@ -41,13 +41,14 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
                 (typeof value === 'string' && value.trim() === '');
 
             const addressParts = [
+                response.indexTo,
                 response.areaTo,
                 response.cityTo,
                 response.addressTo
             ].filter(part => !isInvalidValue(part));
             
             onSelect({
-                address: addressParts.join(', '),
+                address: 'Получение в отделении Почты России по адресу: ' + addressParts.join(', '),
                 cost: response.cashOfDelivery / 100,
                 deliveryTime: response.deliveryDescription.description,
                 //postOfficeId: response.id
