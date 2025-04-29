@@ -58,13 +58,14 @@ const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
                   onClick={() => {
                     setSelectedTransportId(transport.id);
                     setIsDropdownOpen(false);
-                    onSelect({
+                    transport.code === 'pickup' || transport.code === 'local' 
+                    ? onSelect({
                       transportId: transport.id,
                       address: transport.code === 'pickup' ?  'Самовывоз: ' + DEFAULT_WAREHOUSE.title : '',
                       price: transport.base_price,
                       time: '1-2 дня'
-                      }
-                    )
+                      })
+                    : true;
                   }}>
                 
                   <a data-transport={transport.id}>
@@ -98,13 +99,15 @@ const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
                 </p>
                 )}
                 <RussianPostMap 
-                  onSelect={(data) => onSelect({
+                  onSelect={(data) => {
+                    onSelect({
                     transportId: 3,
                     address: data.address,
                     price: data.cost,
                     time: data.deliveryTime
-                    }
-                  )}
+                    }),
+                    setPostDeliveryPrice(data.cost)
+                  }}
                 />
             </div>
             {postDeliveryPrice > 0 && (
