@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import RussianPostMap from '../RussianPostMap';
 import { ITransport } from '@/Types/delivery';
+import { DEFAULT_WAREHOUSE } from '@/Config/constants';
 
 interface DeliverySelectorProps {
   transports: ITransport[];
@@ -13,27 +14,6 @@ interface DeliverySelectorProps {
     time: string;
   }) => void;
 }
-
-interface DeliveryWay {
-  id: number;
-  name: string;
-  price: number;
-  type: 'pickup' | 'local' | 'post';
-}
-
-
-interface onDeliveryChangeProps {
-    onDeliveryChange: (deliveryWayId: number, price: number) => void;
-}
-
-interface onPostOfficeSelectProps {
-  onPostOfficeSelect: (deliveryAddress: string, deliveryPrice: number, deliveryTime: string) => void;
-}
-
-// interface DeliverySelectorProps {
-//   onDeliveryChange: (optionId: number, price: number) => void;
-//   onPostOfficeSelect: (address: string, price: number, time: string) => void;
-// }
 
 const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
   console.log('transports: ', transports);
@@ -78,6 +58,13 @@ const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
                   onClick={() => {
                     setSelectedTransportId(transport.id);
                     setIsDropdownOpen(false);
+                    onSelect({
+                      transportId: transport.id,
+                      address: transport.code === 'pickup' ?  'Самовывоз: ' + DEFAULT_WAREHOUSE.title : '',
+                      price: transport.base_price,
+                      time: '1-2 дня'
+                      }
+                    )
                   }}>
                 
                   <a data-transport={transport.id}>
@@ -116,7 +103,8 @@ const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
                     address: data.address,
                     price: data.cost,
                     time: data.deliveryTime
-                })}
+                    }
+                  )}
                 />
             </div>
             {postDeliveryPrice > 0 && (
