@@ -355,9 +355,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                         </div>
                         <DeliverySelector
                             transports={transports}
-                            // selectedTransportId={deliveryData.transportId} // Для контролируемости
+                                // selectedTransportId={deliveryData.transportId} // Для контролируемости - пока не будем этого делать...
                             onSelect={(data) => {
-                                console.log('Выбрано:', data);
                                 // Здесь сохраняем в состояние корзины
                                 handleTransportSelect(data);
                             }}
