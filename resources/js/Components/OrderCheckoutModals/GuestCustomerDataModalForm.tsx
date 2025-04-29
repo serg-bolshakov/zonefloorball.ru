@@ -144,7 +144,7 @@ const GuestCustomerDataModalForm: React.FC<GuestCustomerDataModalFormProps> = ({
         const isFirstNameValid = validateField('firstName', formData.firstName);
         const isLastNameValid = validateField('lastName', formData.lastName);
         const isPhoneValid = validateField('phone', formData.phone);
-        const isEmailValid = validateField('phone', formData.email);
+        const isEmailValid = validateField('email', formData.email);
         const isAddressValid = validateField('deliveryAddress', formData.deliveryAddress);
 
         if (isFirstNameValid && isLastNameValid && isPhoneValid && isEmailValid && isAddressValid) {
@@ -265,11 +265,19 @@ const GuestCustomerDataModalForm: React.FC<GuestCustomerDataModalFormProps> = ({
                         </>
                     )}                   
                                         
-                    <span className="productAddition-form__clearance">Адрес доставки/получения должен быть указан, либо он "подгружается" из данных, введённых при выборе способа доставки.</span>
+                    <span className="productAddition-form__clearance">Адрес доставки/получения должен быть указана русском языке, либо он "подгружается" из данных, введённых при выборе способа доставки.</span>
                 </div>
                 
                 <div className="d-flex flex-sb padding-left8px padding-right24px">
-                    
+                    <motion.button 
+                            whileHover={{ scale: 1.1 }}  
+                            whileTap={{ scale: 0.9 }}
+                            type="button" className="order-btn"
+                            onClick={onCancel}
+                        >
+                        Отменить
+                    </motion.button>
+
                     <motion.button 
                         whileHover={{ scale: 1.1 }}  
                         whileTap={{ scale: 0.9 }}
@@ -287,13 +295,6 @@ const GuestCustomerDataModalForm: React.FC<GuestCustomerDataModalFormProps> = ({
                         Вперёд
                     </motion.button>
                     
-                    <motion.button 
-                        whileHover={{ scale: 1.1 }}  
-                        whileTap={{ scale: 0.9 }}
-                        type="button" className="order-btn"
-                    >
-                        Отменить
-                    </motion.button>
                 </div>
             
             </form>

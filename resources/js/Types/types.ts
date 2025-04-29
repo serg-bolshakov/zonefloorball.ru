@@ -166,10 +166,10 @@ export interface IProduct extends IProductReportFromDB {
     prod_url_semantic?: string;                      // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     iff_id?: number | null;
     product_ean?: number | null;
-    actual_price?: number | null;
-    price_actual?: number | null;                    // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
-    regular_price?: number | null;
-    price_regular?: number | null;                   // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    actual_price?: number;
+    price_actual?: number;                    // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    regular_price?: number;
+    price_regular?: number;                   // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     product_status_id?: number | null;
     prod_status?: number | null;                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     img_link?: string | null;                        // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards

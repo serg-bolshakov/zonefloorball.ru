@@ -96,6 +96,8 @@ strong {
 .padding-top12px    { padding-top: 12px;   }
 .padding-top16px    { padding-top: 16px;   }
 .padding-top24px    { padding-top: 24px;   }
+.padding4x          {padding: 4px;         }
+.padding8x          {padding: 8px;         }
 
 .relative { position: relative; }
 .fixed    { position: fixed;    }
@@ -2512,6 +2514,19 @@ input[type="checkbox"]:checked + label:after {
   
 .lk-orders__product-item > a:hover {
     color: blue;
+}
+
+.order-confirmation__product {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    vertical-align: top;
+    /* width: 100%; */
+    background: #f6f6f6;
+    /* background: red; */
+    border-bottom: 1px solid #cecece;
+    margin-bottom: 4px;
+    padding: 8px;
 }
   
 .basket-order__product-item {

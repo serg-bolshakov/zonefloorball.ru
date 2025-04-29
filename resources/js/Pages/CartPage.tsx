@@ -27,6 +27,7 @@ import AuthWarningModal from '../Components/OrderCheckoutModals/AuthWarningModal
 import { IGuestCustomerData } from "@/Types/orders";
 import GuestCustomerDataModalForm from "@/Components/OrderCheckoutModals/GuestCustomerDataModalForm";
 import { ITransport, DeliverySelectionData } from "@/Types/delivery";
+import OrderConfirmation from "@/Components/OrderCheckoutModals/OrderConfirmation";
 
 
 interface IHomeProps {  
@@ -79,7 +80,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         const comeFrom = props.from || '/catalog'; // Получаем сохранённый URL
         window.history.back(); // Или явный редирект:
         // Inertia.visit(comeFrom);
-      };
+    };
 
     useEffect(() => {
         const controller = new AbortController; // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
@@ -199,12 +200,6 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const formattedAmount = useMemo(() => formatPrice(cartAmount), [cartAmount]);                       // это уже излишество, наверное...
     const memoizedProducts = useMemo(() => cartProducts, [cartProducts]);
 
-    const handleGuestFormSubmit = (data: IGuestCustomerData) => {
-        // Отправка данных на сервер
-        console.log('Form data:', data);
-        // Дальнейшая логика (редирект на оплату и т.д.)
-    };
-
     // Модалка с формой данных гостя
     const openCustomerFormModal = () => {
         openModal(
@@ -220,6 +215,50 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const handleContinueAsGuest = () => {
         closeModal();
         openCustomerFormModal();
+    };
+
+    const handleGuestFormSubmit = (customerData: IGuestCustomerData) => {
+        // Отправка данных на сервер
+        console.log('Form data:', customerData);
+        closeModal();
+        openOrderConfirmationModal(customerData);
+        // Дальнейшая логика (редирект на оплату и т.д.)
+    };
+
+    const openOrderConfirmationModal = (customerData: IGuestCustomerData) => {
+        openModal(
+          <OrderConfirmation
+            products={cartProducts}
+            deliveryData={deliveryData}
+            customerData={customerData}
+            cartTotal={cartTotal}
+            cartAmount={cartAmount}
+            regularTotal={regularAmount}
+            onReserve={handleReserveOrder}
+            onPay={handlePayOrder}
+            onBack={() => openCustomerFormModal()} // Возврат к редактированию
+          />
+        );
+    };
+
+    const handleReserveOrder = async () => {
+        try {
+          setIsLoading(true);
+          await api.reserveOrder({ 
+            products: cartProducts,
+            delivery: deliveryData,
+            customer: customerData // из пропсов
+          });
+          // Редирект или очистка корзины
+        } catch (error) {
+          setError('Ошибка резервации');
+        } finally {
+          setIsLoading(false);
+        }
+    };
+
+    const handlePayOrder = async () => {
+        // Аналогично, но с платежным процессом
     };
 
     return (    

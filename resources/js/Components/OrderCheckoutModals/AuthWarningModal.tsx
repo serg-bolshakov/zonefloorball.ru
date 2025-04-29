@@ -1,3 +1,4 @@
+// resources/js/Components/OrderCheckoutModals/AuthWarningModal.tsx
 import useModal from "@/Hooks/useModal";
 import { Link } from "@inertiajs/inertia-react";    // Жёсткая связка с Inertia.js (Link) - это скорее недостаток - перепишем в коде на <a>... наверное...
 
