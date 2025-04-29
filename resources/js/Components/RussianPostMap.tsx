@@ -22,12 +22,10 @@ interface RussianPostMapProps {
       address: string;
       cost: number;
       deliveryTime: string;
-      //postOfficeId: number;
     }) => void;
 }
 
 const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
-// const RussianPostMap = () => {
 
     // 1. Сначала гарантированно создаём глобальную функцию - инициализация глобальной функции
     useEffect(() => {
@@ -61,8 +59,6 @@ const RussianPostMap = ({ onSelect }: RussianPostMapProps) => {
             window.handlePostOfficeSelection = null;
         };
     }, [onSelect]);
-    // }, []);
-
     
     const toastConfig = {
         position: "top-right" as const,

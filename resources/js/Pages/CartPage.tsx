@@ -26,7 +26,8 @@ import useModal from "@/Hooks/useModal";
 import AuthWarningModal from '../Components/OrderCheckoutModals/AuthWarningModal'; 
 import { IGuestCustomerData } from "@/Types/orders";
 import GuestCustomerDataModalForm from "@/Components/OrderCheckoutModals/GuestCustomerDataModalForm";
-import { ITransport } from "@/Types/delivery";
+import { ITransport, DeliverySelectionData } from "@/Types/delivery";
+
 
 interface IHomeProps {  
     title: string;
@@ -48,17 +49,16 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const [cartAmount, setCartAmount] = useState<number>(0);
     const [regularAmount, setRegularAmount] = useState<number>(0); // Сумма без скидок
 
-    const [deliveryOptions, setDeliveryOptions] = useState({
-        selectedOption: 0,
-        deliveryPrice: 0
-    });
-
-    // Данные об адресе доставки товара (если они поступили через response API Почты России):
-    const [deliveryData, setDeliveryData] = useState({
-        deliveryAddress: '',
-        deliveryPrice: 0,
-        deliveryTime: ''
-    });
+    const initialDeliveryData: DeliverySelectionData = {        // initialDeliveryData можно переиспользовать (например, для сброса)...
+        transportId: 0,
+        address: '',
+        price: 0,
+        time: '',
+        metadata: {}
+    };
+    
+    // Данные об адресе доставки товара:
+    const [deliveryData, setDeliveryData] = useState<DeliverySelectionData>(initialDeliveryData);
 
     const [guestData, setGuestData] = useState<IGuestCustomerData | null>(null);
 
@@ -185,7 +185,14 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             
             return total + (effectivePrice * (product.quantity ?? 0));
         }, 0);
-      }, []);      
+    }, []);
+    
+    const handleTransportSelect = useCallback((data: DeliverySelectionData) => {
+        // setDeliveryData(data);   - можно и так... но так лучше:
+        setDeliveryData(prev => 
+            JSON.stringify(prev) === JSON.stringify(data) ? prev : data
+        );
+    }, []);
 
     // Использование:
     const memoizedcartAmount = useMemo(() => calculateCartTotalAmount(cartProducts), [cartProducts]);   // это уже излишество, наверное...
@@ -202,7 +209,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const openCustomerFormModal = () => {
         openModal(
             <GuestCustomerDataModalForm 
-                initialDeliveryAddress={deliveryData.deliveryAddress}
+                initialDeliveryAddress={deliveryData.address}
                 onSubmit={handleGuestFormSubmit}
                 onCancel={() => closeModal()}
             />
@@ -348,53 +355,45 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                         </div>
                         <DeliverySelector
                             transports={transports}
+                            // selectedTransportId={deliveryData.transportId} // Для контролируемости
                             onSelect={(data) => {
                                 console.log('Выбрано:', data);
                                 // Здесь сохраняем в состояние корзины
-                              }}
+                                handleTransportSelect(data);
+                            }}
 
-                            // onDeliveryChange={(optionId, price) => setDeliveryOptions({
-                            //     selectedOption: optionId,
-                            //     deliveryPrice: price
-                            // })}
-
-                            // onPostOfficeSelect={(address, price, time) => setDeliveryData({
-                            //     deliveryAddress: address,
-                            //     deliveryPrice: price,
-                            //     deliveryTime: time
-                            // })}
                         />
 
                         {/* заводим блок расчёта итоговой суммы к оплате: */}
-                        {deliveryOptions.deliveryPrice >= 0 && deliveryOptions.selectedOption > 0 && (
+                        {deliveryData.price >= 0 && deliveryData.transportId > 0 && (
                         <>
                         <section>
                             {cartAmount < regularAmount ? (
                                 <>
-                                    {(!(deliveryOptions.deliveryPrice === 0 && deliveryOptions.selectedOption === 3)) && (
+                                    {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (
                                         <>
                                             <h3 className=''>Итого к оплате за заказ: </h3>
                                             <div className='basket-res__total'>
                                                 <h3 className='basketTotalAmountBlockH3elem2 line-through'>
-                                                {formatPrice(deliveryOptions.deliveryPrice + regularAmount)}
+                                                {formatPrice(deliveryData.price + regularAmount)}
                                                 </h3>
-                                                <h3 className="color-red">{formatPrice(deliveryOptions.deliveryPrice + cartAmount)}&nbsp;<sup>&#8381;</sup></h3>
+                                                <h3 className="color-red">{formatPrice(deliveryData.price + cartAmount)}&nbsp;<sup>&#8381;</sup></h3>
                                             </div>
                                         </>
                                     )
                                 }</>
                             ) : (
                                 <>
-                                    {(!(deliveryOptions.deliveryPrice === 0 && deliveryOptions.selectedOption === 3)) && (
+                                    {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (
                                         <div className='basket-res__total'>
                                             <h3 className=''>Итого к оплате за заказ: </h3>
-                                            <h3>{formatPrice(deliveryOptions.deliveryPrice + regularAmount)}&nbsp;<sup>&#8381;</sup></h3>
+                                            <h3>{formatPrice(deliveryData.price + regularAmount)}&nbsp;<sup>&#8381;</sup></h3>
                                         </div>
                                     )}
                                 </>
                             )}
                         </section>
-                        {(!(deliveryOptions.deliveryPrice === 0 && deliveryOptions.selectedOption === 3)) && (    
+                        {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (    
                         <section> {/* заводим блок кнопок для оплаты заказа или получения счёта: */}
                             <div className='basket-res__total'>
                                 <motion.button onClick={returnBack} className="basket-button" whileHover={{ scale: 1.1 }}  

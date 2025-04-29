@@ -17,7 +17,7 @@ interface DeliverySelectorProps {
 }
 
 const DeliverySelector = ({ transports, initialTransportId = 0, onSelect }: DeliverySelectorProps) => {
-  console.log('transports: ', transports);
+  
   const [selectedTransportId, setSelectedTransportId] = useState(initialTransportId);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [postDeliveryPrice, setPostDeliveryPrice] = useState<number>(0);
