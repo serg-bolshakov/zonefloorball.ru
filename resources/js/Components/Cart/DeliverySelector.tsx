@@ -7,6 +7,7 @@ import { DEFAULT_WAREHOUSE } from '@/Config/constants';
 
 interface DeliverySelectorProps {
   transports: ITransport[];
+  initialTransportId?: number; //Добавляем пропс initialTransportId (для сохранения выбора)
   onSelect: (data: {
     transportId: number;
     address: string;
@@ -15,11 +16,13 @@ interface DeliverySelectorProps {
   }) => void;
 }
 
-const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
+const DeliverySelector = ({ transports, initialTransportId = 0, onSelect }: DeliverySelectorProps) => {
   console.log('transports: ', transports);
-  const [selectedTransportId, setSelectedTransportId] = useState<number>(0);
+  const [selectedTransportId, setSelectedTransportId] = useState(initialTransportId);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [postDeliveryPrice, setPostDeliveryPrice] = useState<number>(0);
+
+  const selectedTransport = transports.find(t => t.id === selectedTransportId);
 
   return (
     <>      
@@ -30,7 +33,7 @@ const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
             >
                 {selectedTransportId > 0 
-                ? transports.find(o => o.id === selectedTransportId)?.name 
+                ? selectedTransport?.name 
                 : 'Выберите способ доставки/получения'}
             </div>
         </div>
@@ -42,7 +45,7 @@ const DeliverySelector = ({ transports, onSelect }: DeliverySelectorProps) => {
             ) : ( 
               selectedTransportId !== 3 && (
               <>
-                  Стоимость доставки: {transports.find(o => o.id === selectedTransportId)?.base_price}
+                  Стоимость доставки: {selectedTransport?.base_price}
                   &nbsp;<sup>₽</sup>
               </>
             ))}
