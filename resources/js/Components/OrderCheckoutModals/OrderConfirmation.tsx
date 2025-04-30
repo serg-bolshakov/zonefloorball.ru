@@ -37,6 +37,26 @@ interface IOrderConfirmationProps {
 
     const discountAmount = regularTotal - cartAmount;
     const discountPercent = Math.round((discountAmount / regularTotal) * 100);
+
+    // Добавим проверку для deliveryData.price:
+    const deliveryPrice = deliveryData?.price ?? 0;
+
+    // Анимации кнопок (вынесем в константы):
+    const buttonAnimation = {
+        hover: { scale: 1.1 },
+        tap: { scale: 0.9 }
+    };
+      
+    const pulseAnimation = {
+        animate: {
+            scale: [1, 1.03, 1],
+            transition: { 
+                repeat: Infinity, 
+                repeatDelay: 2,
+                duration: 1.1 
+            }
+        }
+    };
     
     return (
         <>
@@ -68,7 +88,7 @@ interface IOrderConfirmationProps {
                 
                 {/* Выбранный способ доставки заказа: */}
                 <div className="basket-order__product-item basket-order__delivery-way">
-                    <span>{deliveryText} ({deliveryData.time}, {deliveryData.price}&nbsp;<sup>₽</sup>)</span>
+                    <span>{deliveryText} ({deliveryData.time}, {deliveryPrice}&nbsp;<sup>₽</sup>)</span>
                 </div>
                 
                 {/* Данные получателя */}
@@ -96,8 +116,8 @@ interface IOrderConfirmationProps {
                 {/* Кнопки действий */}
                 <div className="d-flex flex-sa">
                     <motion.button 
-                    whileHover={{ scale: 1.1 }}  
-                    whileTap={{ scale: 0.9 }}
+                    whileHover={buttonAnimation.hover}  
+                    whileTap={buttonAnimation.tap}
                     onClick={onBack}
                     className="registration-form__submit-btn"
                     >
@@ -106,8 +126,8 @@ interface IOrderConfirmationProps {
                     
                     { user && (
                         <motion.button 
-                        whileHover={{ scale: 1.1 }}  
-                        whileTap={{ scale: 0.9 }}
+                        whileHover={buttonAnimation.hover}  
+                        whileTap={buttonAnimation.tap}
                         onClick={onReserve}
                         className="registration-form__submit-btn"
                         >
@@ -116,16 +136,9 @@ interface IOrderConfirmationProps {
                     )}
                     
                     <motion.button 
-                    whileHover={{ scale: 1.1 }}  
-                    whileTap={{ scale: 0.9 }}
-                    animate={{
-                        scale: [1, 1.03, 1], // Пульсация
-                        transition: { 
-                        repeat: Infinity, 
-                        repeatDelay: 2,
-                        duration: 1.1 
-                        }
-                    }}
+                    whileHover={buttonAnimation.hover}  
+                    whileTap={buttonAnimation.tap}
+                    {...(pulseAnimation)}
                     onClick={onPay}
                     className="registration-form__submit-btn  primary"
                     >

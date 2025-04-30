@@ -268,7 +268,7 @@ const GuestCustomerDataModalForm: React.FC<GuestCustomerDataModalFormProps> = ({
                     <span className="productAddition-form__clearance">Адрес доставки/получения должен быть указана русском языке, либо он "подгружается" из данных, введённых при выборе способа доставки.</span>
                 </div>
                 
-                <div className="d-flex flex-sb padding-left8px padding-right24px">
+                <div className="registration-form__input-item d-flex flex-sb padding-left8px padding-right24px">
                     <motion.button 
                             whileHover={{ scale: 1.1 }}  
                             whileTap={{ scale: 0.9 }}
