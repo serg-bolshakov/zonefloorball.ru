@@ -441,11 +441,11 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                     whileHover={{ scale: 1.1 }}  
                                     whileTap={{ scale: 0.9 }}
                                     animate={{
-                                        scale: [1, 1.05, 0.95], // Пульсация
+                                        scale: [1, 1.03, 1], // Пульсация
                                         transition: { 
                                         repeat: Infinity, 
-                                        repeatDelay: 1,
-                                        duration: 0.9 
+                                        repeatDelay: 2,
+                                        duration: 1.1 
                                         }
                                     }}
                                     onClick={() => openModal(
