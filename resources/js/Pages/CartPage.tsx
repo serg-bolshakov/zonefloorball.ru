@@ -1,34 +1,37 @@
 // resources/js/Pages/CartPage.tsx
 import useAppContext from "@/Hooks/useAppContext";
-import { useUserDataContext } from "@/Hooks/useUserDataContext";
-import axios from "axios";
-import { getCookie } from "@/Utils/cookies";                        // Хелпер для получения CSRF-токена
-import MainLayout from "@/Layouts/MainLayout";
-import { Helmet } from "react-helmet";
-import { useEffect, useState, useMemo } from "react";
-import { getErrorMessage } from "@/Utils/error";
-import { IProduct } from "@/Types/types";
-import { Link, usePage } from '@inertiajs/react';
-import { InertiaLink } from "@inertiajs/inertia-react";
-import { AnimatePresence, motion } from 'framer-motion';
-import { formatPrice } from "@/Utils/priceFormatter";
-import { toast } from 'react-toastify';
-import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
-import { useCallback } from "react";
-import NavBarBreadCrumb from "@/Components/NavBarBreadCrumb";
-import { API_ENDPOINTS } from "@/Constants/api";
-import PriceBlock from "@/Components/Cart/PriceBlock";
-import { QuantityControl } from "@/Components/Cart/QuantityControl";
-import ProductsQuantityInCart from "@/Components/Cart/ProductsQuantityInCart";
-import DiscountSummary from "@/Components/Cart/DiscountSummary";
-import DeliverySelector from "@/Components/Cart/DeliverySelector";
-import useModal from "@/Hooks/useModal";
-import AuthWarningModal from '../Components/OrderCheckoutModals/AuthWarningModal'; 
-import { IGuestCustomerData } from "@/Types/orders";
-import GuestCustomerDataModalForm from "@/Components/OrderCheckoutModals/GuestCustomerDataModalForm";
-import { ITransport, DeliverySelectionData } from "@/Types/delivery";
-import OrderConfirmation from "@/Components/OrderCheckoutModals/OrderConfirmation";
-
+    import { useUserDataContext } from "@/Hooks/useUserDataContext";
+    import axios from "axios";
+    import { getCookie } from "@/Utils/cookies";                        // Хелпер для получения CSRF-токена
+    import MainLayout from "@/Layouts/MainLayout";
+    import { Helmet } from "react-helmet";
+    import { useEffect, useState, useMemo, useRef } from "react";
+    import { getErrorMessage } from "@/Utils/error";
+    import { IProduct } from "@/Types/types";
+    import { Link, usePage } from '@inertiajs/react';
+    import { InertiaLink } from "@inertiajs/inertia-react";
+    import { AnimatePresence, motion } from 'framer-motion';
+    import { formatPrice } from "@/Utils/priceFormatter";
+    import { toast } from 'react-toastify';
+    import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
+    import { useCallback } from "react";
+    import NavBarBreadCrumb from "@/Components/NavBarBreadCrumb";
+    import { API_ENDPOINTS } from "@/Constants/api";
+    import PriceBlock from "@/Components/Cart/PriceBlock";
+    import { QuantityControl } from "@/Components/Cart/QuantityControl";
+    import ProductsQuantityInCart from "@/Components/Cart/ProductsQuantityInCart";
+    import DiscountSummary from "@/Components/Cart/DiscountSummary";
+    import DeliverySelector from "@/Components/Cart/DeliverySelector";
+    import useModal from "@/Hooks/useModal";
+    import AuthWarningModal from '../Components/OrderCheckoutModals/AuthWarningModal'; 
+    import { TCustomer } from "@/Types/types";
+    import { IGuestCustomer } from "@/Types/types";
+    import { isGuest, isIndividual, isLegal } from '@/Types/types';
+    import GuestCustomerDataModalForm from "@/Components/OrderCheckoutModals/GuestCustomerDataModalForm";
+    import { ITransport, IDeliverySelectionData } from "@/Types/delivery";
+    import OrderConfirmation from "@/Components/OrderCheckoutModals/OrderConfirmation";
+    import { IGuestCustomerData } from "@/Types/orders";
+    import useCreateOrder from "@/Hooks/useCreateOrder";
 
 interface IHomeProps {  
     title: string;
@@ -50,7 +53,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const [cartAmount, setCartAmount] = useState<number>(0);
     const [regularAmount, setRegularAmount] = useState<number>(0); // Сумма без скидок
 
-    const initialDeliveryData: DeliverySelectionData = {        // initialDeliveryData можно переиспользовать (например, для сброса)...
+    const initialDeliveryData: IDeliverySelectionData = {        // initialDeliveryData можно переиспользовать (например, для сброса)...
         transportId: 0,
         address: '',
         price: 0,
@@ -59,12 +62,46 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     };
     
     // Данные об адресе доставки товара:
-    const [deliveryData, setDeliveryData] = useState<DeliverySelectionData>(initialDeliveryData);
+    const [deliveryData, setDeliveryData] = useState<IDeliverySelectionData>(initialDeliveryData);
 
-    const [guestData, setGuestData] = useState<IGuestCustomerData | null>(null);
-
-    // console.log('deliveryData', deliveryData); -
-
+    // Данные о покупателе:
+    // Проверка типа покупателя
+    const getInitialCustomerData = (): TCustomer => {
+        if (!user) {
+          return {
+            type: 'guest',
+            firstName: '',
+            lastName: '',
+            phone: '',
+            email: '',
+            deliveryAddress: deliveryData.address || ''
+          };
+        }
+      
+        if (isIndividual(user)) {
+          return {
+            ...user,
+            // Маппинг полей если нужно
+            /*type: 'individual',
+            firstName: user.name,
+            lastName: user.pers_surname || '',
+            phone: user.pers_tel || '',
+            email: user.pers_email || user.email || ''*/
+          };
+        }
+      
+        // Для юрлиц
+        return {
+          type: 'legal',
+          ...user,
+          // Основные контактные данные
+          phone: user.org_tel || '',
+          email: user.org_email || user.email || ''
+        };
+    };
+      
+    const [customerData, setCustomerData] = useState<TCustomer>(getInitialCustomerData);
+    
     const toastConfig = {
         position: "top-right" as const,
         autoClose: 1500, // Уведомление закроется через секунду-другую...
@@ -73,7 +110,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         pauseOnHover: true,
         draggable: true,
         transition: Zoom, // Используем Slide, Zoom, Flip, Bounce для этого тоста
-    }
+    };
 
     const { props } = usePage();
     const returnBack = () => {
@@ -188,7 +225,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         }, 0);
     }, []);
     
-    const handleTransportSelect = useCallback((data: DeliverySelectionData) => {
+    const handleTransportSelect = useCallback((data: IDeliverySelectionData) => {
         // setDeliveryData(data);   - можно и так... но так лучше:
         setDeliveryData(prev => 
             JSON.stringify(prev) === JSON.stringify(data) ? prev : data
@@ -200,65 +237,115 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const formattedAmount = useMemo(() => formatPrice(cartAmount), [cartAmount]);                       // это уже излишество, наверное...
     const memoizedProducts = useMemo(() => cartProducts, [cartProducts]);
 
-    // Модалка с формой данных гостя
-    const openCustomerFormModal = () => {
+    // Создаем ref для хранения актуальных данных Покупателя
+    const customerDataRef = useRef<TCustomer>(customerData);
+    customerDataRef.current = customerData; // Всегда актуальное значение
+
+    const deliveryAddressRef = useRef<string>(deliveryData.address);
+    deliveryAddressRef.current = deliveryData.address;
+        
+    // При продолжении без регистрации: Модалка с формой данных гостя
+    const handleContinueAsGuest = () => {
+        closeModal();
         openModal(
             <GuestCustomerDataModalForm 
                 initialDeliveryAddress={deliveryData.address}
-                onSubmit={handleGuestFormSubmit}
+                initialCustomerData={customerData  as IGuestCustomer}
+                onSubmit={(data) => {       //  при сабмите формы гостя обновляем:
+                    // 1. стейт данных пользователя:
+                    setCustomerData(data);
+
+                    // 2. Обновляем стейт доставки (если изменился адрес)
+                    if (deliveryData.address !== data.deliveryAddress) {
+                        setDeliveryData(prev => ({
+                        ...prev,
+                        address: data.deliveryAddress, // только адрес
+                        }));
+                    }
+
+                    // 3. Обновляем ref-ы (чтобы модалка получила актуальные данные)
+                    customerDataRef.current = data;
+                    deliveryAddressRef.current = data.deliveryAddress;
+
+                    // 4. Открываем модалку подтверждения
+                    openOrderConfirmationModal();   // Вызываем без параметров
+                }}
                 onCancel={() => closeModal()}
             />
         )
     };
 
-    // При продолжении без регистрации
-    const handleContinueAsGuest = () => {
-        closeModal();
-        openCustomerFormModal();
-    };
-
-    const handleGuestFormSubmit = (customerData: IGuestCustomerData) => {
-        // Отправка данных на сервер
-        console.log('Form data:', customerData);
-        closeModal();
-        openOrderConfirmationModal(customerData);
-        // Дальнейшая логика (редирект на оплату и т.д.)
-    };
-
-    const openOrderConfirmationModal = (customerData: IGuestCustomerData) => {
+    const openOrderConfirmationModal = () => {
+        console.log(deliveryData);
+        console.log(deliveryAddressRef.current);
         openModal(
           <OrderConfirmation
             products={cartProducts}
             deliveryData={deliveryData}
-            customerData={customerData}
+            currentDeliveryAddress={deliveryAddressRef.current}
+            customerData={customerDataRef.current} // Берем из ref
             cartTotal={cartTotal}
             cartAmount={cartAmount}
             regularTotal={regularAmount}
-            onReserve={handleReserveOrder}
-            onPay={handlePayOrder}
-            onBack={() => openCustomerFormModal()} // Возврат к редактированию
+            onReserve={() => handleOrderAction('reserve', customerData)}
+            onPay={() => handleOrderAction('pay', customerData)}
+            onBack={() => handleContinueAsGuest()} // Возврат к редактированию
           />
         );
     };
-
-    const handleReserveOrder = async () => {
-        try {
-          setIsLoading(true);
-          await api.reserveOrder({ 
-            products: cartProducts,
-            delivery: deliveryData,
-            customer: customerData // из пропсов
-          });
-          // Редирект или очистка корзины
-        } catch (error) {
-          setError('Ошибка резервации');
-        } finally {
-          setIsLoading(false);
+    
+    // Обработчик кнопки "Оформить заказ"
+    const handleCheckoutClick = () => {
+        if (user) {
+          // Авторизованный пользователь
+          openOrderConfirmationModal();
+        } else {
+          // Гость
+          openModal(
+            <AuthWarningModal 
+              onContinueAsGuest={handleContinueAsGuest}
+              onAuthRedirect={() => {
+                closeModal();
+                // После авторизации данные возьмутся из user
+                openOrderConfirmationModal();
+              }}
+            />
+          );
         }
-    };
+    };    
 
-    const handlePayOrder = async () => {
-        // Аналогично, но с платежным процессом
+    const { createOrder, isLoading: isOrderCreating } = useCreateOrder();
+
+    const handleOrderAction = async (
+        actionType: 'reserve' | 'pay',
+        customerData: TCustomer
+    ) => {
+        try {
+            const orderData = {
+                products: cartProducts.map(p => ({
+                    id: p.id,
+                    quantity: p.quantity,
+                    price: p.price_actual
+                })),
+                customer: {
+                    ...customerData,
+                    type: 'guest' as const // Явно указываем тип
+                },
+                delivery: deliveryData,
+                total: cartAmount + deliveryData.price
+            };
+    
+            await createOrder(orderData, {
+                isReserve: actionType === 'reserve',
+                paymentMethod: actionType === 'pay' ? 'online' : undefined,
+                onSuccess: (orderId) => {
+                    toast.success(`Заказ #${orderId} успешно ${actionType === 'pay' ? 'оплачен' : 'зарезервирован'}`);
+                    // Дополнительные действия после успеха
+                }
+            });
+        } catch (error) {
+            toast.error(`Ошибка при ${actionType === 'pay' ? 'оплате' : 'резервировании'}: ${error.message}`);
+        }
     };
 
     return (    
@@ -394,12 +481,10 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                         </div>
                         <DeliverySelector
                             transports={transports}
-                                // selectedTransportId={deliveryData.transportId} // Для контролируемости - пока не будем этого делать...
                             onSelect={(data) => {
                                 // Здесь сохраняем в состояние корзины
                                 handleTransportSelect(data);
                             }}
-
                         />
 
                         {/* заводим блок расчёта итоговой суммы к оплате: */}
@@ -448,12 +533,9 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                         duration: 1.1 
                                         }
                                     }}
-                                    onClick={() => openModal(
-                                        <AuthWarningModal 
-                                            onContinueAsGuest={handleContinueAsGuest}
-                                         // onAuthRedirect={() => redirectToAuth()} // Пока можно закомментировать - это на будущее: перенести логику вложения сюда, в родительский компонент...
-                                        />)
-                                    }>Оформить заказ
+                                    onClick={handleCheckoutClick}
+                                >
+                                    Оформить заказ
                                 </motion.button>
                             </div>
                         </section>

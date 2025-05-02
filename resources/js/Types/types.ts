@@ -18,15 +18,28 @@ export interface IUserBase {
     action_auth_id: number | null;
 }
 
+// Гость - покупатель
+export interface IGuestCustomer {
+    type: 'guest';
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string; 
+    deliveryAddress?: string;
+}
+
 // создаём интерфейсы для юридических и физических лиц, которые будут расширять базовый интерфейс:
 export interface IIndividualUser extends IUserBase {
+    type: 'individual';
     pers_surname: string | null;
     date_of_birth: string | null;
     pers_tel: string | null;
     pers_email: string | null;
+    bonuses?: number;
 }
 
 export interface IOrgUser extends IUserBase {
+    type: 'legal';
     org_inn: string | null;
     org_kpp: string | null;
     is_taxes_pay: boolean | null;
@@ -42,7 +55,7 @@ export interface IOrgUser extends IUserBase {
 }
 
 // Создаём объединённый тип пользователя:
-export type User = IIndividualUser | IOrgUser | null;
+export type TUser = IIndividualUser | IOrgUser | null;
 /* Пример того, как далее мы можем использовать юзера:
     
     function isIndividualUser(user: User): user is IIndividualUser {
@@ -61,6 +74,21 @@ export type User = IIndividualUser | IOrgUser | null;
     }
 
 */
+
+export type TCustomer = IGuestCustomer | IIndividualUser | IOrgUser;
+
+// Type guards (проверка типов) - это TypeScript-функция с type predicate (`is`)
+export function isIndividual(customer: TCustomer): customer is IIndividualUser {
+    return customer.type === 'individual';
+}
+  
+export function isLegal(customer: TCustomer): customer is IOrgUser {
+    return customer.type === 'legal';
+}
+  
+export function isGuest(customer: TCustomer): customer is IGuestCustomer {
+    return customer.type === 'guest';
+}
 
 // Создадим интерфейс для объектов третьего уровня меню категорий товаров/моделей/серий с числовыми ключами, каждое значение - это объект типа ICategoryMenuItem:
 export interface ICategoryMenuItem {

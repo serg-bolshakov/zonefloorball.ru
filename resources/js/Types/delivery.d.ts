@@ -46,7 +46,7 @@ export interface ITransport {
   };
 }
 
-export interface DeliverySelectionData {
+export interface IDeliverySelectionData {
   transportId: number;
   address: string;
   price: number;

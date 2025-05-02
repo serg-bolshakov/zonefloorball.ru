@@ -2,24 +2,27 @@
 import React, { useState, useEffect, useRef } from 'react';
 import useModal from "@/Hooks/useModal";
 
-import { IGuestCustomerData } from "@/Types/orders";
-import { TValidationRule } from "@/Types/orders";
+import { TCustomer } from '@/Types/types';
+import { IGuestCustomerData } from '@/Types/orders';
 
 import { motion } from 'framer-motion';
 
 interface GuestCustomerDataModalFormProps {
     initialDeliveryAddress: string;
+    initialCustomerData: TCustomer;
     onSubmit: (data: IGuestCustomerData) => void;
     onCancel: () => void;
 }
 
 const GuestCustomerDataModalForm: React.FC<GuestCustomerDataModalFormProps> = ({
     initialDeliveryAddress,
+    initialCustomerData,
     onSubmit,
     onCancel,
   }) => {
     
     const [formData, setFormData] = useState<IGuestCustomerData>({
+        type: 'guest',
         firstName: '',
         lastName: '',
         phone: '',

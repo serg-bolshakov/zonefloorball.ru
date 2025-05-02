@@ -1,27 +1,31 @@
 // resources/js/Components/OrderCheckoutModals/OrderConfirmation.tsx
 import { IProduct } from "@/Types/types";
-import { DeliverySelectionData } from "@/Types/delivery";
-import { IGuestCustomerData } from "@/Types/orders";
+import { IDeliverySelectionData } from "@/Types/delivery";
+import { TCustomer } from "@/Types/types";
 import useAppContext from "@/Hooks/useAppContext";
 import { formatPrice } from '@/Utils/priceFormatter';
 import ProductItem from "@/Components/Cart/ProductItem";
 import { motion } from 'framer-motion';
+import { isGuest, isIndividual, isLegal } from '@/Types/types';
+import { GuestCustomerInfo } from "../Cart/OrderConfirmation/GuestCustomerInfo";
 
 interface IOrderConfirmationProps {
     products: IProduct[];
-    deliveryData: DeliverySelectionData;
-    customerData: IGuestCustomerData;
+    deliveryData: IDeliverySelectionData;
+    currentDeliveryAddress: string;
+    customerData: TCustomer;
     cartTotal: number;
     cartAmount: number;
     regularTotal: number;
     onReserve: () => void;
     onPay: () => void;
     onBack: () => void;
-  }
+}
 
-  const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
+const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     products,
     deliveryData,
+    currentDeliveryAddress,
     customerData,
     cartTotal,
     cartAmount,
@@ -30,10 +34,14 @@ interface IOrderConfirmationProps {
     onPay,
     onBack
   }) => {
+    console.log(currentDeliveryAddress);
     const { user } = useAppContext();
     const deliveryText = deliveryData.transportId === 1 
-    ? `${deliveryData.address}` 
-    : `Доставка: ${customerData.deliveryAddress}`;
+    ? `${currentDeliveryAddress}` 
+    : deliveryData.transportId === 2 
+        ? `Доставка средствами продавца по городу Нижнему Новгороду по адресу: ${currentDeliveryAddress}`
+        : `Доставка: ${currentDeliveryAddress}`
+    ;
 
     const discountAmount = regularTotal - cartAmount;
     const discountPercent = Math.round((discountAmount / regularTotal) * 100);
@@ -92,20 +100,16 @@ interface IOrderConfirmationProps {
                 </div>
                 
                 {/* Данные получателя */}
-                <div className="d-flex flex-sb margin-tb12px">
-                    <span>Получатель:</span>
-                    <span>{customerData.lastName} {customerData.firstName}</span>
-                </div>
-
-                <div className="d-flex flex-sb margin-tb12px">
-                    <span>Телефон:</span>
-                    <span>{customerData.phone}</span>
-                </div>
-
-                <div className="d-flex flex-sb margin-tb12px">
-                    <span>Электронная почта:</span>
-                    <span>{customerData.email}</span>
-                </div>
+                {isGuest(customerData) ? (
+                    <GuestCustomerInfo 
+                        customer={customerData} 
+                        deliveryData={deliveryData}
+                    />
+                ) : isIndividual(customerData) ? (
+                    <IndividualCustomerInfo customer={customerData} />
+                ) : (
+                    <LegalCustomerInfo customer={customerData} />
+                )}
 
                 {/* Итог */}
                 <div className="d-flex flex-sb margin-tb12px">
