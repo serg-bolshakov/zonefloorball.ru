@@ -35,7 +35,7 @@
 ##### Дополнительная информация: 
 - Ссылка на проект: [zonefloorball.ru](https://zonefloorball.ru).
 - Исходный код: [GitHub](https://github.com/serg-bolshakov/zonefloorball.ru).
-### Сасостоятельные проекты 
+### Самостоятельные проекты 
 #### (2023–2025)
 Разработка с нуля интернет-магазина спортивных товаров  UnihocZoneRussia 
 **Что сделано**:
