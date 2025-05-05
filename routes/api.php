@@ -19,7 +19,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\RecentlyViewedController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\DeliveryController;
-
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +52,7 @@ Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class
 Route::match(['get', 'post'], '/products/cart', [CartController::class, 'sync'])->middleware('api');
 Route::get('/products/recently-viewed', [RecentlyViewedController::class, 'getProducts'])->middleware('api');
 Route::post('/products/recently-viewed', [RecentlyViewedController::class, 'store'])->middleware('api');
+Route::match(['get', 'post'],'/orders/create', [OrderController::class, 'create'])->middleware('api');
 Route::get('/warehouses', [WarehouseController::class, 'index']);
 Route::get('/delivery-options', [DeliveryController::class, 'index']);
 Route::get('/test', function () {

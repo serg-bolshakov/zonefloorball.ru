@@ -10,11 +10,26 @@ class Order extends Model {
 
     protected $fillable = [
         'order_number',
-        'order_status_id',
+        'order_client_type_id',
+        'order_client_rank_id',
+        'order_client_id',
+        'products_amount',
+        'order_delivery_cost',
+        'is_order_amount_includes_taxes',
+        'order_payment_method_id',
         'order_transport_id',
-        'pickup_point_id',
-        'delivery_address',
-        'total_price',
+        'order_delivery_address',
+        'order_recipient_names',
+        'order_recipient_tel',
+        'email',
+        'order_status_id',
+        'is_client_informed',
+        'is_tracking_by_client',
+        'order_content',
+        'order_url_semantic',
+        'payment_status',
+        'payment_details',
+        'pickup_point_id '
         // ... другие поля
     ];
 

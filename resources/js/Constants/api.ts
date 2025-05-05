@@ -6,4 +6,5 @@ export const API_ENDPOINTS = {
     USER_DATA: '/api/user-data',
     WAREHOUSES: '/api/warehouses',
     DELIVERY_OPTIONS: '/api/delivery-options',
+    ORDER_CREATE: '/api/orders/create',
 } as const; // `as const` для точной типизации

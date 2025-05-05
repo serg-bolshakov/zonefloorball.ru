@@ -324,20 +324,20 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             const orderData = {
                 products: cartProducts.map(p => ({
                     id: p.id,
-                    quantity: p.quantity,
-                    price: p.price_actual
+                    quantity: p.quantity ?? 0,
+                    price: p.price_actual ?? 0
                 })),
                 customer: {
-                    ...customerData,
-                    type: 'guest' as const // Явно указываем тип
+                    ...customerDataRef.current,
                 },
                 delivery: deliveryData,
+                products_amount: cartAmount,
                 total: cartAmount + deliveryData.price
             };
     
             await createOrder(orderData, {
                 isReserve: actionType === 'reserve',
-                paymentMethod: actionType === 'pay' ? 'online' : undefined,
+                paymentMethod: actionType === 'pay' ? 'online' : 'invoice',
                 onSuccess: (orderId) => {
                     toast.success(`Заказ #${orderId} успешно ${actionType === 'pay' ? 'оплачен' : 'зарезервирован'}`);
                     // Дополнительные действия после успеха
