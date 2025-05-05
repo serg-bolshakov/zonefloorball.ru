@@ -17,9 +17,9 @@ const CustomersCares: React.FC = () => {
                 <a href="tel:+79107955555" title="Позвонить директору" aria-label="Позвонить директору"><img src="/storage/icons/telefon-logo.png" alt="telefon-logo" title="Позвонить директору" /></a>
             </div>
             <div className="footer-auth__div">
-                <p className="margin-bottom12px">Сделано&nbsp;<a href="mailto:serg.bolshakov@gmail.com">Большаковым&nbsp;Сергеем</a>, 2023-{currentYear}</p>
+                <p className="margin-bottom12px">Сделано&nbsp;<a href="mailto:serg.bolshakov@gmail.com">Большаковым&nbsp;Сергеем</a>, февраль 2025-{currentYear}</p>
                 <p>Демоверсия 0.0.5 <a href="https://github.com/serg-bolshakov/zonefloorball.ru" target="_blank" rel="noopener noreferrer"><span className="header-icon">Посмотреть</span></a> исходный код.</p>
-                <p className="margin-bottom12px">Буду рад сотрудничеству&nbsp;(<Link href="/storage/docs/resume.pdf"><span className="cursive header-icon">resume.pdf</span></Link><span className="cursive">, 68 Кб</span>) — <br /><span className="cursive">Обновлено 06.03.2025 г.</span></p>
+                <p className="margin-bottom12px">Буду рад сотрудничеству&nbsp;(<a href="/storage/docs/resume.pdf"><span className="cursive header-icon">resume.pdf</span></a><span className="cursive">, 68 Кб</span>) — <br /><span className="cursive">Обновлено 05.05.2025 г.</span></p>
                 <p><a href="https://floorball.nnov.ru/htdocs/shop/">Перейти на сайт&nbsp;</a>флорбольной экипировки</p>
                 <p>или в наш флорбольный <a href="https://floorball.nnov.ru/market/floorball-sticks">Интернет-магазин&nbsp;</a></p>
             </div>

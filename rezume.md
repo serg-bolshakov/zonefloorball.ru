@@ -20,7 +20,7 @@
 - **Frontend**: React, TypeScript, JavaScript, HTML/CSS (адаптивная вёрстка, Flex/Grid), Framer  Motion (анимации интерфейсов).
 - **Backend**: PHP, Laravel (роутинг, Middleware, Blade, Eloquent ORM), MySQL (написание миграций и запросов)..
 - **Инструменты**: Git, Figma, Vite (сборка проекта).
-- **Библиотеки**: Axios (HTTP-запросы) , Inertia.js (интеграция Laravel + React).
+- **Библиотеки**: Axios (HTTP-запросы), Inertia.js (интеграция Laravel + React).
 - **Методологии**: оптимизация производительности (useMemo, React.memo, кеширование), тестирование (PHPUnit).
 
 ## Опыт работы.
