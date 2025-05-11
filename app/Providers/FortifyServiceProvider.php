@@ -1,5 +1,5 @@
 <?php
-
+// app/Providers/FortifyServiceProvider.php
 namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
@@ -129,6 +129,10 @@ class FortifyServiceProvider extends ServiceProvider
 
             if ($user &&
                 Hash::check($request->password, $user->password)) {
+                    \Log::debug('Fortify auth success', [
+                        'user_id' => $user->id,
+                        'session_id' => session()->getId()
+                    ]);
                 session()->flash('flash', "Вы авторизовались. Мы ждали вас, $user->name!");  // с помощью метода flash сохраняем элемент в сессию только для следующего запроса. - это тз прежнего - тоже пока настроить не могу... 
                 return $user;
             }

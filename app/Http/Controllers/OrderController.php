@@ -1,6 +1,9 @@
 <?php
-
+// app/Http/Controllers/OrderController.php
 namespace App\Http\Controllers;
+
+# используем FormRequest для создания классов валидации входных API-запросов: 
+use App\Http\Requests\StoreOrderRequest;
 
 use App\Services\DiscountService;
 use App\Models\Discount;
@@ -25,14 +28,19 @@ use Illuminate\Support\Facades\Auth; // Получение аутентифиц�
 
 use App\Enums\OrderStatus;                  // создали класс-перечисление:
 use App\Enums\PaymentMethod;
+
+/* Если вы не хотите использовать метод validate запроса, то вы можете создать экземпляр валидатора вручную, 
+   используя фасад Validator. Метод make фасада генерирует новый экземпляр валидатора: */
+use Illuminate\Support\Facades\Validator;
+
+
 class OrderController extends Controller {
     protected $discountService;
 
     use OrderHelperTrait;
     use CalculateDiscountTrait;
 
-    public function __construct(DiscountService $discountService)
-    {
+    public function __construct(DiscountService $discountService) {
         $this->discountService = $discountService;
     }
 
@@ -56,9 +64,10 @@ class OrderController extends Controller {
         return response()->json($order, 201);
     }
 
-    public function create (Request $request) {
+    public function create (StoreOrderRequest $request) {
+
         // Просмотр логов:  tail -f storage/logs/laravel.log
-            // \Log::debug('$request:', $request); // Ошибка! Request нельзя напрямую в context
+            /*// \Log::debug('$request:', $request); // Ошибка! Request нельзя напрямую в context
             \Log::debug('Request data:', [
                 'method' => $request->method(),
                 'data' => $request->all(),
@@ -70,40 +79,40 @@ class OrderController extends Controller {
                 'data_received' => $request->all(),
                 'your_token' => $request->input('_token'),
                 'is_ajax' => $request->ajax()
-            ]);
-        
+            ]);*/   
 
-        $this->validateRequest($request);
         
-        // если пользователь авторизован, нужно получить его данные для возможного оформления заказов: Получаем пользователя с загруженным отношением rank
-        $user               = Auth::user()->load('rank');
-        $orderClientTypeId  = $user ?  $user->client_type_id : 1;    // 1 - Физическое лицо (может быть и авторизованным и гостем)
+        $user = Auth::check() ? Auth::user() : null;
+        \Log::debug('User data OrderController:', [
+            'id' => $user?->id,
+            'name' => $user?->name,
+            'email' => $user?->email,
+        ]);
+
+        // Данные уже валидны! Должны быть...
+        $validated = $request->validated();
 
         $orderData = $this->prepareOrderData($request, $user);
-
+        
+        \Log::debug('Request data:', [
+            'method' => $request->method(),
+            '$validated' => $validated,
+            'order_number' => $this->generateOrderNumber(1),
+            '$validated.products' => $validated['products'],
+        ]);
+        // Простой ответ для проверки
+        return response()->json([
+            'status' => 'success',
+            'order_status_id' => 2
+        ]);
+        
+        
         if ($this->isGuestOrder($request, $user)) {
             return $this->handleGuestOrder($request, $orderData);
         }
 
         return $this->handleAuthenticatedOrder($request, $user, $orderData);
         
-        
-        $representPerson = ''; // Представитель компании
-        $rankDiscount = $rankDiscountPercent = NULL;
-      
-
-        // если пользователь авторизован, нужно получить его данные для возможного оформления заказов:
-        if(Auth::check()) {
-            // Получаем пользователя с загруженным отношением rank
-            $user = Auth::user()->load('rank');
-            
-            // если авторизовано юридическое лицо, получаем его вместе с представителем:
-            if($user->client_type_id == '2') {
-                $orderClientTypeId = 2;
-                $representPerson = User::find($user->this_id);
-            }
-        }
-
         $orderRecipientNames = '';
         if    (isset($user->client_type_id) && ($user->client_type_id == '1')) {$orderRecipientNames = $user->pers_surname . ' ' . $user->name; }
         elseif(isset($user->client_type_id) && ($user->client_type_id == '2')) {$orderRecipientNames = $user->name;   }
@@ -190,22 +199,16 @@ class OrderController extends Controller {
         }
     }
 
-    protected function validateRequest(Request $request) {
-        $request->validate([
-            'customer' => 'required|array',
-            'delivery' => 'required|array',
-            'products' => 'required|array'
-        ]);
-    }
-
-    protected function prepareOrderData(Request $request, User $user): array {
+    protected function prepareOrderData($validated, User $user = null): array {
         $orderClientTypeId = $user ? $user->client_type_id : 1;
+               
         return [
             'order_number' => $this->generateOrderNumber($orderClientTypeId),
+            /*'order_content' => $this->createOrderContentJSON($validated['products']),
             'order_status_id' => $this->resolveOrderStatusId($request),
             'payment_method_id' => $this->resolvePaymentMethod($request),
-            'recipient_info' => $this->getRecipientInfo($request, $user)
-        ];
+            'recipient_info' => $this->getRecipientInfo($request, $user)*/
+        ];       
     }
 
     protected function handleGuestOrder(Request $request, array $orderData) {
@@ -257,6 +260,11 @@ class OrderController extends Controller {
             }
         }
         return $orderClientTypeId . '-' . date('y') . '-' . date('m') . '/' . $countOrdersThisMonth;
+    }
+
+    private function createOrderContentJSON ($orderContent) {
+        //&productId_3=3&quantityProdId_3=1&priceProdId_3=340&discountTypeProdId=2&discountSummProdId=10&prodPriceRegular=350&productId_5=5&quantityProdId_5=1&priceProdId_5=3490&discountTypeProdId=1&discountSummProdId=500&prodPriceRegular=3990&productId_8=8&quantityProdId_8=1&priceProdId_8=14540&discountTypeProdId=2&discountSummProdId=450&prodPriceRegular=14990&productId_9=9&quantityProdId_9=1&priceProdId_9=3870&discountTypeProdId=2&discountSummProdId=120&prodPriceRegular=3990
+        //&productId_5=5&quantityProdId_5=1&priceProdId_5=3490&discountTypeProdId=1&discountSummProdId=500&prodPriceRegular=3990
     }
     
     private function resolveOrderStatusId(Request $request):int {

@@ -26,6 +26,9 @@ use Illuminate\Http\Request;                                        // подк�
 use Illuminate\Support\Facades\DB;                                  // подключаем фасад
 use App\Models\Order;
 
+use App\Http\Controllers\InitialDataController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -38,10 +41,28 @@ use App\Models\Order;
 |
 */
 
+/**
+ * API-роуты (routes/api.php) используют api middleware group, где нет сессии
+ * Web-роуты (routes/web.php) используют web middleware, который поддерживает сессии
+ * Переносим Route::get('/initial-data', [InitialDataController::class, 'index']); в web.php
+ */
+
+Route::middleware('web')->group(function () {
+    // Инициализация данных
+    Route::get('/api/initial-data', [InitialDataController::class, 'index']);
+
+    // Получение избранного
+    Route::get('/products/favorites', [FavoritesController::class, 'index']);
+    
+    // Обновление избранного (сохранение в БД)
+    Route::post('/products/favorites', [FavoritesController::class, 'update']);
+});
+
+
 // Маршруты для Inertia.js
 Route::match(['get', 'post'], '/', [IndexReactController::class, 'index'])->name('home');
 Route::match(['get', 'post'], '/products/cart', [CartController::class, 'index']);
-Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'index']);
+// Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'index']);
 Route::match(['get', 'post'], '/products/{category?}', [ProductController::class, 'index']);
 // Route::match(['get', 'post'],'/products/catalog', [CatalogReactController::class, 'index']);
 // Route::match(['get', 'post'], '/', ['App\\Http\\Controllers\\IndexController', 'index']);

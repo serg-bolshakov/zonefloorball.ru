@@ -2,30 +2,39 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\Auth;
-use App\Http\Resources\ProductResource; // Вместо того чтобы вручную собирать данные в массив $productsArr, пробуем использовать ресурсы (Resources) в Laravel. Ресурсы позволяют преобразовывать модели и коллекции в JSON-структуру, что упрощает работу с данными.
-                                        // В нашем случае нам нужно вернуть список товаров, пробуем использовать ресурс коллекции: php artisan make:resource ProductCollection
 use App\Http\Resources\ProductCollection;
 use Inertia\Inertia;
-
+use App\Models\Favorite;
 use App\Models\Product;
 
-class FavoritesController extends Controller
-{
+class FavoritesController extends Controller {
 
-    public function index() {
+    public function index(Request $request) {
+
+        $favoritesIds = json_decode(Auth::user()?->favorites->product_ids) 
+        ?? json_decode($request->cookie('favorites', '[]'));
+        
+        $products = Product::with(['actualPrice', 'regularPrice', 'productReport', 'productShowCaseImage'])
+            ->where('product_status_id', '=', 1)
+            ->whereIn('id', $favoritesIds)
+            ->get();   
+
         try {
             return Inertia::render('FavoritesPage', [
                     'title' => 'Избранное',
                     'robots' => 'NOINDEX,NOFOLLOW',
                     'description' => '',
                     'keywords' => '',
+                    // 'products' => new ProductCollection($products), 
                 ]);
         } catch (\Exception $e) {
             return response()->json([
-                'error' => $e->getMessage(),
+                'error' => 'Ошибка загрузки данных в FavoritesController',
+                'details' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
     }
+
 /*
     public function getProducts(Request $request) {
         dd($request);
@@ -119,35 +128,25 @@ class FavoritesController extends Controller
     }
 */
 
-    public function getProducts(Request $request) {
-        
+    /*public function getProducts($favoritesIds) {
+              
         $user = null;
         $rankDiscountPercent = 0;
-        $ids = $favoriteProducts = [];
-
+        
         // если пользователь авторизован, нужно получить его данные для возможного оформления заказов или ещё чего-нибудь:
         if(Auth::check()) {
             // Получаем пользователя с загруженным отношением rank и списком избранного:
-            $user = Auth::user()->load(['rank', 'favorite']);
-
-            // Получаем товары избранного авторизованного пользователя:
-            /*  $favoriteProducts = Product::whereIn(
-                    'id', 
-                    $user->favorite->product_ids ?? []
-                )->get();
-            */
+            $user = Auth::user()->load(['rank', 'favorites']);
         } 
 
-        $ids = $request->input('ids', '[]'); 
-
-        if(!empty($ids)) {
+        if(!empty($favoritesIds)) {
             $products = Product::with(['actualPrice', 'regularPrice', 'productReport', 'productShowCaseImage'])
                 ->where('product_status_id', '=', 1)
-                ->when($ids, function ($query, $ids) {
-                    $query->whereIn('id', $ids);
+                ->when($favoritesIds, function ($query, $favoritesIds) {
+                    $query->whereIn('id', $favoritesIds);
                 })
             ->get();
-        
+            dd($products);
             $i = 0;
         
             // если пользователь авторизован, мы должны проверить какие скидки ему доступны (по умолчанию, согласно рангу):
@@ -212,14 +211,100 @@ class FavoritesController extends Controller
 
         return response()->json([
             // 'products' => $favoriteProducts,
-            'favoriteProducts' => new ProductCollection($products),             // Inertia.js использует JSON для передачи данных между Laravel и React. 
+            'favoriteProducts' => new ProductCollection($products),     // Inertia.js использует JSON для передачи данных между Laravel и React. 
                                                                         // Когда мы передаём объект ProductCollection, он сериализуется в JSON. 
                                                                         // В процессе сериализации некоторые свойства объекта LengthAwarePaginator (например, lastPage, total, perPage и т.д.) 
                                                                         // могут быть преобразованы в массивы, если они имеют сложную структуру или если в процессе сериализации происходит 
                                                                         // дублирование данных - это проблема: в react мы получаем не значения, а массиивы значений (дублирование), 
                                                                         // что приводит к проблемам при рендеринге данных...
-            //'debug' => ['received_ids' => $request->ids],               // Возврат отладочных данных в JSON
+            //'debug' => ['received_ids' => $request->ids],             // Возврат отладочных данных в JSON
         ]);
 
+    }*/
+
+    public function update(Request $request) {
+        
+        $validated = $request->validate([
+            'favorites' => 'required|array',
+        ]);
+        
+        $user = Auth::user();
+
+        \Log::debug('FavoritesController:', [
+            'data' => $request['favorites'],
+            'product_ids' => $validated['favorites'],
+        ]);
+
+        if ($user) {
+            // Сохраняем в БД для авторизованных
+            $user->favorites()->updateOrCreate(
+                ['user_id' => $user->id],
+                ['product_ids' => json_encode($validated['favorites'])]
+            );
+        }
+        
+        // Возвращаем обновлённый список + куку для неавторизованных
+        return response()
+            ->json(['success' => true])
+            ->cookie('favorites', json_encode($validated['favorites']), 60*24*30);
+    
     }
+
+    /*private function enrichProductData(Product $product, ?User $user) {
+        $data = [
+            'id' => $product->id,
+            'title' => $product->title,
+            'prod_url_semantic' => $product->prod_url_semantic,
+            'img_link' => $product->productShowCaseImage->img_link,
+            'on_sale' => $product->productReport->on_sale,
+            'article' => $product->article,
+            'price_actual' => $product->actualPrice->price_value  ?? NULL,
+            'price_regular' => $product->regularPrice->price_value  ?? NULL,
+        ];
+
+        if($user) {
+            $data = array_merge($data, $this->calculateDiscount($product, $user));
+        }
+
+        return $data;
+    }
+
+    private function calculateDiscount(Product $product, User $user) {
+        $discountData = [];
+        $rankDiscount = $user->rank->price_discount ?? 0;
+
+        // Работаем с примененим системы скидок:
+        $discountData['price_with_rank_discount'] = $discountData['percent_of_rank_discount'] = NULL;
+        $discountData['price_with_action_discount'] = $discountData['summa_of_action_discount'] = NULL; // это скидки по "акциям"
+        
+        // если в избранное идёт регулярная цена (без скидки), подсчитаем цену со скидкой, в зависимости от ранга покупателя: 
+        if($product->actualPrice->price_value == $product->regularPrice->price_value) {
+            if($rankDiscountPercent > 0) {
+                $discountData['price_with_rank_discount'] = round($product->regularPrice->price_value - ($product->regularPrice->price_value * ($rankDiscountPercent / 100))); 
+                $discountData['percent_of_rank_discount'] = $rankDiscountPercent;
+            }
+        } elseif($product->actualPrice->price_value < $product->regularPrice->price_value) {
+            // если есть специальная цена, нужно посмотреть какая цена меньше, ту и показываем => скидки не суммируем!
+            $actualPrice = $product->actualPrice->price_value;
+            $regularPrice = $product->regularPrice->price_value;
+            $possiblePriceWithDiscount = round($regularPrice - ($regularPrice * ($rankDiscountPercent / 100)));
+            if($possiblePriceWithDiscount < $actualPrice) {
+                $discountData['price_with_rank_discount'] = $possiblePriceWithDiscount;
+                $discountData['percent_of_rank_discount'] = $rankDiscountPercent;
+            } else {
+                // выводим для покупателя его выгоду от покупки товара по цене со кидкой по акции:
+                $discountData['summa_of_action_discount'] = $regularPrice - $actualPrice;
+            }
+        }
+        
+        $discountData['date_end'] = NULL;
+        if($product->actualPrice->price_value < $product->regularPrice->price_value) {
+            $discountData['price_special'] = $product->actualPrice->price_value;
+            $discountData['date_end'] = $product->actualPrice->date_end  ?? NULL;
+        } else {
+            $discountData['price_special'] = NULL;
+        }
+
+        return $discountData;
+    }*/
 }

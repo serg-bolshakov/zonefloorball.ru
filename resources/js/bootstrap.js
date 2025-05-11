@@ -1,3 +1,5 @@
+// resources/js/bootstrap.js
+
 /**
  * We'll load the axios HTTP library which allows us to easily issue requests
  * to our Laravel back-end. This library automatically handles sending the
@@ -8,6 +10,14 @@ import axios from 'axios';
 window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.withCredentials = true; // Важно! Включаем передачу кук
+window.axios.defaults.baseURL = 'http://localhost:8000'; // Базовый URL Laravel
+
+// Автоматическое подхватывание CSRF-токена (больше не нужно вручную получать _token)
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+if (csrfToken) {
+    window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
+}
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

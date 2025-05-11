@@ -155,7 +155,9 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),
+    //'domain' => env('SESSION_DOMAIN'),           // вариант из коробки
+    //'domain' => env('SESSION_DOMAIN', 'localhost'), // Основная проблема: Сессия работает в IndexReactController (Inertia), но не в OrderController (API). Ghj,etv htibnm 09.05.2025 - сразу потеряли юзера
+    'domain' => null, // Явно отключаем привязку к домену - тоже не то
 
     /*
     |--------------------------------------------------------------------------
@@ -168,7 +170,8 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // 'secure' => env('SESSION_SECURE_COOKIE'), // из коробки пока меняем на:
+    'secure' => false, // true только для HTTPS
 
     /*
     |--------------------------------------------------------------------------

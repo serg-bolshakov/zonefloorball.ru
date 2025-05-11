@@ -11,7 +11,7 @@
         public static function forRequest(Request $request): self {
             // Используем input() с точечной нотацией для вложенных полей
             $paymentMethod = $request->input('paymentMethod');
-            $customerType = $request->input('customer.type'); // Ключевое изменение! 
+            $customerType = $request->input('customer.type');   // Ключевое изменение! 
             // Не $request->customer->type
 
             return ($paymentMethod === 'invoice' && $customerType === 'legal')

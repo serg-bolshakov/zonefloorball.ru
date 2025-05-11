@@ -61,7 +61,7 @@ use Laravel\Sanctum\HasApiTokens;
 
     
      /* У авторизованного пользователя может быть одна JSON-строка избранного */
-    public function favorite() {
+    public function favorites() {
         return $this->hasOne(Favorite::class);
         // return $this->hasOne(Favorite::class, 'user_id');
     }

@@ -3,7 +3,6 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-use App\Http\Controllers\InitialDataController  ;
 use App\Http\Controllers\UserOrdersCountController;
 use App\Http\Controllers\SticksAsideFiltersController;
 use App\Http\Controllers\BladesAsideFiltersController;
@@ -14,7 +13,7 @@ use App\Http\Controllers\EyewearsAsideFiltersController;
 use App\Http\Controllers\GoalieAsideFiltersController;
 use App\Http\Controllers\UserDataController;
 use App\Http\Controllers\ProductController;
-use App\Http\Controllers\FavoritesController;
+use App\Http\Controllers\FavoritesProductsApiController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\RecentlyViewedController;
 use App\Http\Controllers\WarehouseController;
@@ -37,9 +36,14 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 */
 
+/**
+ * API-роуты (routes/api.php) используют api middleware group, где нет сессии
+ * Web-роуты (routes/web.php) используют web middleware, который поддерживает сессии
+ * Переносим Route::get('/initial-data', [InitialDataController::class, 'index']); в web.php
+ */
+
 Route::get('/user-orders-count', [UserOrdersCountController::class, 'index']);
 Route::get('/user-data', [UserDataController::class, 'index']);
-Route::get('/initial-data', [InitialDataController::class, 'index']);
 Route::get('/sticks-aside-filters', [SticksAsideFiltersController::class, 'index']);
 Route::get('/blades-aside-filters', [BladesAsideFiltersController::class, 'index']);
 Route::get('/balls-aside-filters', [BallsAsideFiltersController::class, 'index']);
@@ -48,8 +52,8 @@ Route::get('/grips-aside-filters', [GripsAsideFiltersController::class, 'index']
 Route::get('/eyewears-aside-filters', [EyewearsAsideFiltersController::class, 'index']);
 Route::get('/goalie-aside-filters', [GoalieAsideFiltersController::class, 'index']);
 Route::get('/catalog', [ProductController::class, 'catalogApi']);
-Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'getProducts'])->middleware('api'); // Важно!;
 Route::match(['get', 'post'], '/products/cart', [CartController::class, 'sync'])->middleware('api');
+Route::post('/products/favorites', [FavoritesProductsApiController::class, 'index']);
 Route::get('/products/recently-viewed', [RecentlyViewedController::class, 'getProducts'])->middleware('api');
 Route::post('/products/recently-viewed', [RecentlyViewedController::class, 'store'])->middleware('api');
 Route::match(['get', 'post'],'/orders/create', [OrderController::class, 'create'])->middleware('api');

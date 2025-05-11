@@ -15,21 +15,47 @@ import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import { useCallback } from "react";
 import NavBarBreadCrumb from "@/Components/NavBarBreadCrumb";
+import { IProductsResponse } from '../Types/types';
 
 interface IHomeProps {
     title: string;
     robots: string;
     description: string;
     keywords: string;
+    products: IProductsResponse;
 }
 
+const defaultProducts: IProductsResponse = {
+    data: [],
+    links: {
+        first: null,
+        last: null,
+        prev: null,
+        next: null,
+    },
+    meta: {
+        current_page: 1,
+        from: 1,
+        last_page: 1,
+        path: '',
+        per_page: 6,
+        to: 1,
+        total: 0,
+    },
+};
+
 const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywords}) => {
+    
     const { user } = useAppContext();
     const { favorites } = useUserDataContext();
     const [favoriteProducts, setFavoriteProducts] = useState<IProduct[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // console.log('favorites: ', favorites);
+    // console.log('favoriteProducts: ', favoriteProducts);
+    // console.log('user: ', !user);
+   
     const toastConfig = {
         position: "top-right" as const,
         autoClose: 3000, // Уведомление закроется через секунду
@@ -51,61 +77,55 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
     }, [removeFromFavorites]);
 
     useEffect(() => {
+        
         // Создаём AbortController для управления отменой запроса
         // создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
         const controller = new AbortController();   // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
         const signal = controller.signal;           // это объект AbortSignal, который передаётся в axios (или fetch).
 
-        if (favorites.length === 0) {
-            setFavoriteProducts([]);
-            return;
-        }
-        
         const loadFavorites = async () => {
-            if (!favorites.length) {
-                setFavoriteProducts([]);
-                return;
-            }
+           
+                setIsLoading(true);
+                setError(null);
 
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                const response = await axios.post('/api/products/favorites', {          // Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'getProducts']) ->middleware('api'); // Важно!;
-                    ids: favorites,
-                    _token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
-                }, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    },
-                    signal, // Передаём signal в конфиг axios          
-                });
-
-                // Проверяем, не был ли запрос отменён
-                if (!signal.aborted) {
-                    setFavoriteProducts(response.data.favoriteProducts?.data || []);
+                try {
+                    if (!user) {          
+                        const response = await axios.post('/api/products/favorites', {          
+                            ids: favorites,
+                            _token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
+                        }, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            },
+                            signal, // Передаём signal в конфиг axios          
+                        });
+                        
+                        // Проверяем, не был ли запрос отменён
+                        if (!signal.aborted) {
+                            setFavoriteProducts(response.data.data || []);
+                        }
+                    }
+                } catch (error) {
+                    // Игнорируем ошибку, если запрос был отменён
+                    if (!axios.isCancel(error)) {
+                        setError(getErrorMessage(error));
+                        toast.error('Ошибка загрузки:' + getErrorMessage(error), toastConfig);
+                    }
+                } finally {
+                    if (!signal.aborted) {
+                        setIsLoading(false);
+                    }
                 }
-
-            } catch (error) {
-                // Игнорируем ошибку, если запрос был отменён
-                if (!axios.isCancel(error)) {
-                    setError(getErrorMessage(error));
-                    toast.error('Ошибка загрузки:' + getErrorMessage(error), toastConfig);
-                }
-            } finally {
-                if (!signal.aborted) {
-                    setIsLoading(false);
-                }
-            }
-        };
+            };
+            
+            loadFavorites();
+            
+            // Функция очистки: отменяем запрос при размонтировании или изменении favorites
+            return () => {
+                controller.abort();
+            };
         
-        loadFavorites();
-
-        // Функция очистки: отменяем запрос при размонтировании или изменении favorites
-        return () => {
-            controller.abort();
-        };
         
     }, [favorites]); // Зависимость от favorites // При изменении favorites старый запрос отменяется
 
@@ -189,7 +209,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
     }, [addToCart, cart]);
     
     const memoizedProducts = useMemo(() => favoriteProducts, [favoriteProducts]);
-
+    
     return (    
         <MainLayout>
             <Helmet>

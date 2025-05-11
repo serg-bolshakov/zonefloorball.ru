@@ -2,8 +2,17 @@
     namespace App\Http\Controllers;
     use Inertia\Inertia;
 
+    use Illuminate\Support\Facades\Auth;
+    use App\Models\User;
+
     class IndexReactController extends Controller {
         public function index() {
+            $user = Auth::check() ? Auth::user() : null;
+            \Log::debug('User data IndexReactController:', [
+                'id' => $user?->id,
+                'name' => $user?->name,
+                'email' => $user?->email,
+            ]);
             return Inertia::render('Home', [
                 'title' => 'UnihocZoneRussia Флорбольная экипировка.Всё для флорбола. Купить',
                 'robots' => 'INDEX,FOLLOW',

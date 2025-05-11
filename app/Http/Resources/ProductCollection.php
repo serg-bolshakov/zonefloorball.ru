@@ -14,16 +14,24 @@ class ProductCollection extends ResourceCollection
      */
     public function toArray(Request $request): array
     {
-        // Проверяем данные
-        // dd($this->collection->toArray());
-        
+              
         return [
-            'data' => ProductResource::collection($this->collection),   // возвращает коллекцию ресурсов ? список товаров
+            'data' => $this->collection->map(function ($product) use ($request) {
+                return new ProductResource($product);
+            }),
+            
+            // 'data' => ProductResource::collection($this->collection),   // возвращает коллекцию ресурсов ? список товаров
             // Добавляем ссылки для пагинации: 
             // 'links' => $this->getPaginationLinks(),                  // Inertia.js использует JSON для передачи данных между Laravel и React. Когда мы передаём объект ProductCollection, он сериализуется в JSON. В процессе сериализации некоторые свойства объекта LengthAwarePaginator (например, lastPage, total, perPage и т.д.) могут быть преобразованы в массивы, если они имеют сложную структуру или если в процессе сериализации происходит дублирование данных - это проблема: в react мы получаем не значения, а массиивы значений (дублирование), что приводит к проблемам при рендеринге данных
             // 'meta' => $this->getMeta(),
         ];
     }
+
+    /** если не нужна вложенность data:
+     * return $this->collection->map(function ($product) use ($request) {
+     *   return new ProductResource($product);
+     * })->all();
+    */
 
     /** Добавление ссылок для пагинации в ресурс коллекции, когда мы пробуем использовать пагинацию на стороне сервера. 
      * В Laravel это делается с помощью встроенных возможностей: класс ResourceCollection уже предоставляет встроенную поддержку пагинации.
@@ -32,8 +40,9 @@ class ProductCollection extends ResourceCollection
      * Класс ResourceCollection уже предоставляет методы для добавления метаданных пагинации. 
      * Всё, что нужно нам сделать, — это вызвать метод paginationInformation() и вернуть нужные данные.
      * Молодец Laravel! - главное, чтобы всё заработало... :)
-     */
+    */
 
+    
     protected function getPaginationLinks() {
         return [
             'first'         => $this->url(1),                   // Возвращает URL для указанной страницы. Например, $this->url(1) вернёт ссылку на первую страницу.

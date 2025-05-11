@@ -1,5 +1,4 @@
 // resources/js/Components/Header/Header.tsx
-import React, { useState, useEffect } from 'react';
 import { Link } from '@inertiajs/react';
 import useAppContext from '../../Hooks/useAppContext';
 import { useUserDataContext } from '@/Hooks/useUserDataContext';
@@ -7,7 +6,6 @@ import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
     const { user, categoriesMenuArr, authBlockContentFinal } = useAppContext();
-    
     const { orders, favorites, cartTotal } = useUserDataContext();
     // Считаем количества
     const ordersCount = orders.length;

@@ -243,7 +243,10 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
 
     const deliveryAddressRef = useRef<string>(deliveryData.address);
     deliveryAddressRef.current = deliveryData.address;
-        
+
+    const deliveryDataRef = useRef<IDeliverySelectionData>(deliveryData);
+    deliveryDataRef.current = deliveryData;    
+
     // При продолжении без регистрации: Модалка с формой данных гостя
     const handleContinueAsGuest = () => {
         closeModal();
@@ -252,6 +255,12 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 initialDeliveryAddress={deliveryData.address}
                 initialCustomerData={customerData  as IGuestCustomer}
                 onSubmit={(data) => {       //  при сабмите формы гостя обновляем:
+                    
+                    // 3. Обновляем ref-ы (чтобы модалка получила актуальные данные)
+                    customerDataRef.current = data;
+                    deliveryAddressRef.current = data.deliveryAddress;
+                    
+                    // Обновляем стейты (асинхронно)
                     // 1. стейт данных пользователя:
                     setCustomerData(data);
 
@@ -263,10 +272,12 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                         }));
                     }
 
-                    // 3. Обновляем ref-ы (чтобы модалка получила актуальные данные)
-                    customerDataRef.current = data;
-                    deliveryAddressRef.current = data.deliveryAddress;
-
+                    // 3. Теперь deliveryDataRef.current тоже актуален
+                    deliveryDataRef.current = {
+                        ...deliveryDataRef.current,
+                        address: data.deliveryAddress,
+                    };
+                    
                     // 4. Открываем модалку подтверждения
                     openOrderConfirmationModal();   // Вызываем без параметров
                 }}
@@ -276,12 +287,10 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     };
 
     const openOrderConfirmationModal = () => {
-        console.log(deliveryData);
-        console.log(deliveryAddressRef.current);
         openModal(
           <OrderConfirmation
             products={cartProducts}
-            deliveryData={deliveryData}
+            deliveryData={deliveryDataRef.current}
             currentDeliveryAddress={deliveryAddressRef.current}
             customerData={customerDataRef.current} // Берем из ref
             cartTotal={cartTotal}
@@ -330,7 +339,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 customer: {
                     ...customerDataRef.current,
                 },
-                delivery: deliveryData,
+                delivery: deliveryDataRef.current,
                 products_amount: cartAmount,
                 total: cartAmount + deliveryData.price
             };
@@ -344,7 +353,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 }
             });
         } catch (error) {
-            toast.error(`Ошибка при ${actionType === 'pay' ? 'оплате' : 'резервировании'}: ${error.message}`);
+            toast.error(`Ошибка при ${actionType === 'pay' ? 'оплате' : 'резервировании'}`);
         }
     };
 
@@ -469,8 +478,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                         
                         {regularAmount > cartAmount && (
                             <DiscountSummary 
-                            regularTotal={regularAmount}
-                            discountedTotal={cartAmount}
+                                regularTotal={regularAmount}
+                                discountedTotal={cartAmount}
                             />
                         )}
                         
