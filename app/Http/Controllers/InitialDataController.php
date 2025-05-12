@@ -45,7 +45,7 @@
                     'authBlockContentFinal' => $userData['auth_content'],
                     'cart' => $userData['cart'],
                     'favorites' => $user?->favorites?->product_ids 
-                        ? json_decode($user->favorites->product_ids, true) 
+                        ? $user->favorites->product_ids // json_decode($user->favorites->product_ids, true) - "декодирование" осуществили в модели Favorite через cast...
                         : [],
                     'orders' => [] // Заполняется отдельным запросом
                 ]);

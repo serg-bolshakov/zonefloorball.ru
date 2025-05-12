@@ -11,9 +11,9 @@ class Favorite extends Model {
 
     protected $fillable = ['user_id', 'product_ids'];
 
-    /*protected $casts = [
+    protected $casts = [
         'product_ids' => 'array'
-    ];*/
+    ];
         
     /**
      * Ошибка указывает на отсутствие updated_at, но ваша таблица его содержит
@@ -21,7 +21,7 @@ class Favorite extends Model {
      * Локально всё работает
     */
 
-    public $timestamps = true; // Явное указание (хотя и включено по умолчанию)
+    // public $timestamps = true; // Явное указание (хотя и включено по умолчанию)
 
     /* JSON-строка избранного принадлежит одному юзеру */
     public function user() {

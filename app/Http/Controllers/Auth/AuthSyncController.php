@@ -51,14 +51,41 @@ class AuthSyncController extends Controller {
 
     protected function syncFavorites(User $user, array $localFavorites): array {
 
-        $dbFavorites = json_decode($user->favorites->product_ids ?? '[]', true);
-        $merged = array_values(array_unique(array_merge($dbFavorites, $localFavorites)));
+        // $dbFavorites = json_decode($user->favorites->product_ids ?? '[]', true);
+        // Явная загрузка отношения
+        $user->load('favorites');
+
+        // Получаем текущие данные (уже декодированные благодаря $casts)
+        $dbFavorites = $user->favorites->product_ids ?? [];
+        
+        //$merged = array_values(array_unique(array_merge($dbFavorites, $localFavorites)));
         // $merged = array_unique([...$dbFavorites, ...$localFavorites]);
+
+        // Сливаем массивы
+        $merged = array_values(array_unique(array_merge($dbFavorites, $localFavorites)));
+
         \Log::debug('syncFavorites:', [
             '$localFavorites' => $localFavorites,
             '$dbFavorites' => $dbFavorites,
             '$merged' => $merged,
         ]);
+
+        // Сохраняем через query builder
+        DB::table('favorites')->updateOrInsert(
+            ['user_id' => $user->id],
+            ['product_ids' => json_encode($merged)]
+        );
+        
+        \Log::debug('DB write verification', [
+            'user_id' => $user->id,
+            'input' => $localFavorites,
+            '$dbFavorites' => $dbFavorites,
+            'merged' => $merged,
+            'saved' => DB::table('favorites')
+                ->where('user_id', $user->id)
+                ->value('product_ids')
+        ]);
+
         /*$user->favorites()->updateOrCreate(
             ['user_id' => $user->id],
             [
@@ -67,42 +94,42 @@ class AuthSyncController extends Controller {
             ]
         );*/
 
-        // Пошаговая логика без магии Eloquent
-        try {
-            // 1. Проверяем существование записи
-            $exists = DB::table('favorites')
-                ->where('user_id', $user->id)
-                ->exists();
-
-            // 2. Простое сохранение без updateOrCreate
-            if ($exists) {
-                \Log::debug('syncFavorites $exists:', [
-                    '$exists' => $exists,
-                ]);
-                DB::table('favorites')
+        /*// Пошаговая логика без магии Eloquent
+            try {
+                // 1. Проверяем существование записи
+                $exists = DB::table('favorites')
                     ->where('user_id', $user->id)
-                    ->update([
+                    ->exists();
+
+                // 2. Простое сохранение без updateOrCreate
+                if ($exists) {
+                    \Log::debug('syncFavorites $exists:', [
+                        '$exists' => $exists,
+                    ]);
+                    DB::table('favorites')
+                        ->where('user_id', $user->id)
+                        ->update([
+                            'product_ids' => json_encode($merged),
+                            // 'updated_at' => DB::raw('NOW()')
+                        ]);
+                } else {
+                    \Log::debug('syncFavorites $NOTexists:', [
+                        '$exists' => 'notexist',
+                    ]);
+                    DB::table('favorites')->insert([
+                        'user_id' => $user->id,
                         'product_ids' => json_encode($merged),
+                        // 'created_at' => DB::raw('NOW()'),
                         // 'updated_at' => DB::raw('NOW()')
                     ]);
-            } else {
-                \Log::debug('syncFavorites $NOTexists:', [
-                    '$exists' => 'notexist',
+                }
+            } catch (\Exception $e) {
+                logger()->error('Favorites save failed', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $user->id
                 ]);
-                DB::table('favorites')->insert([
-                    'user_id' => $user->id,
-                    'product_ids' => json_encode($merged),
-                    // 'created_at' => DB::raw('NOW()'),
-                    // 'updated_at' => DB::raw('NOW()')
-                ]);
-            }
-        } catch (\Exception $e) {
-            logger()->error('Favorites save failed', [
-                'error' => $e->getMessage(),
-                'user_id' => $user->id
-            ]);
-            throw $e;
-        }
+                throw $e;
+            } */
 
         return $merged;
     }
