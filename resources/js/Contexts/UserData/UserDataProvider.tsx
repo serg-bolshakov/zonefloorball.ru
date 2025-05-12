@@ -9,7 +9,7 @@ import { getErrorMessage } from '@/Utils/error';
 import { TCart, TRecentlyViewedProducts } from './UserDataContext';
 import { IProduct } from '@/Types/types';
 import { useLocalStorage } from '@/Hooks/useLocalStorage';
-import Swal from 'sweetalert2';
+import Swal from 'sweetalert2';     // https://sweetalert2.github.io/#examples
 
 type SyncData = {
   favorites?: number[];

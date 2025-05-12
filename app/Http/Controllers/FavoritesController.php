@@ -39,7 +39,6 @@ class FavoritesController extends Controller {
     public function update(Request $request) {
         \Log::debug('FavoritesController:', [
             'data' => $request->all(),
-            
         ]);
         
         $validated = $request->validate([
