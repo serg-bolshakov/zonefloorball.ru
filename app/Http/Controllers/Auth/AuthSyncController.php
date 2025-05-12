@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\Favorite;
 
 class AuthSyncController extends Controller {
 

@@ -62,7 +62,7 @@ Route::middleware('web')->group(function () {
     Route::post('/products/favorites-get', [FavoritesController::class, 'getProducts']);
 
     // Синхронизация данных при авторизации
-    Route::post('/user/sync', [AuthSyncController::class, 'syncLocalData']);
+    Route::match(['GET', 'POST'], '/user/sync', [AuthSyncController::class, 'syncLocalData']);
 });
 
 

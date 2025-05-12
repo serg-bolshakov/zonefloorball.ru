@@ -7,5 +7,5 @@ export const API_ENDPOINTS = {
     DELIVERY_OPTIONS: '/api/delivery-options',
     ORDER_CREATE: '/api/orders/create',
     FAVORITES_PRODUCTS: '/api/products/favorites',
-    USER_SYNC: '/api/user/sync',
+    // USER_SYNC: '/api/user/sync',
 } as const; // `as const` для точной типизации
