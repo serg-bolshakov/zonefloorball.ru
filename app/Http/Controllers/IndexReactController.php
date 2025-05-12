@@ -7,12 +7,7 @@
 
     class IndexReactController extends Controller {
         public function index() {
-            $user = Auth::check() ? Auth::user() : null;
-            \Log::debug('User data IndexReactController:', [
-                'id' => $user?->id,
-                'name' => $user?->name,
-                'email' => $user?->email,
-            ]);
+            
             return Inertia::render('Home', [
                 'title' => 'UnihocZoneRussia Флорбольная экипировка.Всё для флорбола. Купить',
                 'robots' => 'INDEX,FOLLOW',

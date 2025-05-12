@@ -9,6 +9,7 @@ import { getErrorMessage } from '@/Utils/error';
 import { TCart, TRecentlyViewedProducts } from './UserDataContext';
 import { IProduct } from '@/Types/types';
 import { useLocalStorage } from '@/Hooks/useLocalStorage';
+import Swal from 'sweetalert2';
 
 type SyncData = {
   favorites?: number[];
@@ -30,6 +31,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         isLoading               : true, // Начинаем с true, так как данные загружаются
         error                   : null
     });
+
+    // console.log('UserDataProvider: user', user);
 
     const calculateCartTotal = (cart: TCart) => 
         Object.values(cart).reduce((sum, qty) => sum + qty, 0);
@@ -92,7 +95,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     const addToFavorites = useCallback(async (productId: number): Promise<{
         favoritesTotal: number;
         error?: string;
-    }>  => {
+        }>  => {
         
         // 1. Безопасное получение текущего состояния с чёткой типизацией
         const getCurrentFavorites = (): number[] => {
@@ -127,22 +130,20 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             // 4. Оптимистичное обновление UI
             updateState({
                 favorites: newFavorites,
-                // favoritesTotal: newFavorites.length,
                 isLoading: true
             });
         
             // 5. Сохраняем в нужное место
             if (user) {
-                // Для авторизованных - синхронизируем с сервером
-                const result = await syncData({ favorites: newFavorites });
-                if (result.error) {
-                    throw new Error(result.error);
-                }
-            } else {
-                // Для гостей - сохраняем только в localStorage
-                localStorage.setItem('favorites', JSON.stringify(newFavorites));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
+                // Сохранение на сервер (если пользователь авторизован) 
+                await axios.post('/products/favorites', { 
+                    favorites: newFavorites, // Отправляем обновлённый массив
+                });    
             }
-            
+
+            // Для гостей - сохраняем только в localStorage
+            localStorage.setItem('favorites', JSON.stringify(newFavorites));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
+          
             return { favoritesTotal: newFavorites.length };
 
         } catch (error) {
@@ -165,7 +166,19 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     }, [user, state.favorites, updateState]);    // Зависимости здесь!
 
     const removeFromFavorites = useCallback(async (productId: number) => {
+        
+        const result = await Swal.fire({
+            title: 'Удалить из избранного?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Да',
+            cancelButtonText: 'Нет',
+        });
+
+        if (!result.isConfirmed) return {favoritesTotal: state.favoritesTotal};
+        
         try {
+
             updateState({isLoading: true});
 
             // Создаём НОВЫЙ массив без мутаций
@@ -174,7 +187,6 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             // Локальное обновление (синхронно)
             updateState({
                 favorites: updatedFavorites,
-                favoritesTotal: updatedFavorites.length,
                 isLoading: false
             });
 
@@ -183,15 +195,15 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 await axios.post('/products/favorites', { 
                     favorites: updatedFavorites // Отправляем обновлённый массив
                 });    
-            } else {
-                localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-            }
+            } 
+            // в любом случае обновляем локальное хранилище (При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.)
+            localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
 
             return { favoritesTotal: updatedFavorites.length };
 
         } catch (error) {
             // const message = handleError(error);
-            const message = getErrorMessage(error); // Новая обработка
+            const message = getErrorMessage(error); 
             updateState({
                 error: message,
                 isLoading: false
@@ -432,95 +444,107 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         return sorted;
     };
   
-    // Загрузка начальных данных: 
-    useEffect(() => {
-      const loadData = async () => {
-        try {
-            if (user) {
-                updateState({
-                    cart: cart,
-                    favorites: favorites,
-                    orders: orders,
-                    recentlyViewedProducts: state.recentlyViewedProducts,
-                    isLoading: false,
-                });
-            }  else {
-                updateState({
-                    cart: getLocalStorageData('cart', {}),
-                    favorites: getLocalStorageData('favorites', []),
-                    orders: getLocalStorageData('orders', []),
-                    recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
-                    isLoading: false,
-                });
-            }
-        } catch (error) {
-            const message = getErrorMessage(error); // Новая обработка
-            updateState({
-              error: message,
-              isLoading: false
-            });
-        }
-    };
-  
-    loadData();
-  
-    }, [user]); // Зависимость от user - эффект сработает при его изменении
-
     // синхронизация данных локального хранилища и БД при авторизации пользователя (когда логинится, например)
     const syncData = useCallback(async (manualData?: SyncData) => {
-        if (!user) return { success: false };
-
-        try {
-            // Если данные переданы вручную — используем их, иначе берём из localStorage
-            const data = manualData ?? {
-                favorites: getLocalStorageData('favorites', []),
-                cart: getLocalStorageData('cart', []),
-            };
-
-            const controller = new AbortController();
-            const response = await axios.post('/api/user/sync', data, {
-                signal: controller.signal,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                }
-            });
-
-            // Сохраняем БД-версию в контекст
-            setState(prev => ({
-                ...prev,
-                favorites: response.data.favorites || prev.favorites,
-                cart: response.data.cart || prev.cart,
-            }));
-
-            // Двойное сохранение: в localStorage на случай разлогина
-            if (response.data.favorites) {
-                localStorage.setItem('favorites', JSON.stringify(response.data.favorites));
-            }
-            if (response.data.cart) {
-                localStorage.setItem('cart', JSON.stringify(response.data.cart));
-            }
-            
-            return { success: true };
-        } catch (error) {
-            if (!axios.isCancel(error)) {
-                
-                // Восстанавливаем данные из localStorage при ошибке
-                const fallbackData = {
-                    favorites: getLocalStorageData('favorites', []),
+        console.log('newFavorites SyncData manualData', manualData);
+        if (user) {
+            console.log('Syncing data for user:', user.id);
+            // Логика синхронизации...
+  
+            try {
+                // Если данные переданы вручную — используем их, иначе берём из localStorage
+                const data = manualData ?? {
+                    favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
                     cart: getLocalStorageData('cart', []),
                 };
-                setState(prev => ({ ...prev, ...fallbackData }));
+                console.log(data);
+                const controller = new AbortController();
+                const response = await axios.post('/user/sync', data, {
+                    signal: controller.signal,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    }
+                });
 
-                return { 
-                    error: getErrorMessage(error),
-                    fallback: true // Флаг что использованы локальные данные
-                };
+                // Сохраняем БД-версию в контекст
+                setState(prev => ({
+                    ...prev,
+                    favorites: response.data.favorites || prev.favorites,
+                    cart: response.data.cart || prev.cart,
+                }));
+
+                // Двойное сохранение: в localStorage на случай разлогина
+                if (response.data.favorites) {
+                    localStorage.setItem('favorites', JSON.stringify(response.data.favorites));
+                }
+                if (response.data.cart) {
+                    localStorage.setItem('cart', JSON.stringify(response.data.cart));
+                }
+                
+                return { success: true };
+            } catch (error) {
+                if (!axios.isCancel(error)) {
+                    
+                    // Восстанавливаем данные из localStorage при ошибке
+                    const fallbackData = {
+                        favorites: getLocalStorageData('favorites', []),
+                        cart: getLocalStorageData('cart', []),
+                    };
+                    setState(prev => ({ ...prev, ...fallbackData }));
+
+                    return { 
+                        error: getErrorMessage(error),
+                        fallback: true // Флаг что использованы локальные данные
+                    };
+                }
+
+                return { error: 'Request cancelled' };
             }
-
-            return { error: 'Request cancelled' };
+        } else {
+            console.log('Syncing data for user:', 'user is absent');
+            return { success: false };
         }
     }, [user]);
+
+    // Загрузка начальных данных: 
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                if (user) {
+                    updateState({
+                        cart: cart,
+                        favorites: favorites,
+                        orders: orders,
+                        recentlyViewedProducts: state.recentlyViewedProducts,
+                        isLoading: false,
+                    });
+                }  else {
+                    updateState({
+                        cart: getLocalStorageData('cart', {}),
+                        favorites: getLocalStorageData('favorites', []),
+                        orders: getLocalStorageData('orders', []),
+                        recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
+                        isLoading: false,
+                    });
+                }
+            } catch (error) {
+                const message = getErrorMessage(error); // Новая обработка
+                updateState({
+                error: message,
+                isLoading: false
+                });
+            }
+        };
+  
+        loadData();
+
+        if (user) {
+            syncData(); // Вызов при изменении `user`
+        }
+  
+    }, [user, syncData]); // Зависимость от user - эффект сработает при его изменении
+
 
     // !!! Синхонизация между вкладками пока работать не будет (реализуем авторизацию пользователя, когда он логинится)   !!! 
     // Синхронизация между вкладками: Пользователь открыл товар в двух вкладках... в одной вкладке добавил в избранное... во второй вкладке счётчик обновится автоматически...
@@ -613,7 +637,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         updateCart,
         removeFromCart,
         addRecentlyViewedProd,
-        syncData
+        // syncData
         // Будущие методы добавятся здесь
     }), [
         state.cart,
@@ -628,7 +652,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         updateCart,
         removeFromCart,
         addRecentlyViewedProd,
-        syncData
+        // syncData
     ]);
 
     return (

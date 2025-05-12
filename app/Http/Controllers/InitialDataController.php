@@ -20,11 +20,11 @@
     class InitialDataController extends Controller {
         public function index(Request $request) {
 
-            /*\Log::debug('InitialDataController Session Check', [
+            \Log::debug('InitialDataController Session Check', [
                 'session_id' => session()->getId(),
                 'cookies_received' => $request->cookies->all(),
                 'user_id' => auth()->id()
-            ]);*/
+            ]);
             
             try {
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();
@@ -33,10 +33,11 @@
                 
                 return response()->json([
                     'user' => $user ? [
-                        'user_id' => $user->id,
-                        'user_name' => $user->name,
-                        'user_email' => $user->email,
-                        'client_type_id' => $user->client_type_id
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'client_type_id' => $user->client_type_id,
+                        'client_rank_id' => $user->client_rank_id,
                     ] : null,
                     
                     'categoriesMenuArr' => $this->getCategoriesMenu(),
@@ -44,7 +45,7 @@
                     
                     'authBlockContentFinal' => $userData['auth_content'],
                     'cart' => $userData['cart'],
-                    'favorites' => $this->getFavoritesProducts($request),
+                    'favorites' => json_decode(Auth::user()?->favorites->product_ids) ?? [],
                     'orders' => [] // Заполняется отдельным запросом
                 ]);
                     
@@ -80,9 +81,19 @@
             ];
         }
 
+        // эта функция выбирает товары, а нужно передать на фронт сторку id-шников
         private function getFavoritesProducts(Request $request) {
+            \Log::debug('InitialDataController getFavoritesProducts', [
+                'session_id' => session()->getId(),
+                'cookies_received' => $request->cookies->all(),
+                'user_id' => auth()->id()
+            ]);
             $favoritesIds = json_decode(Auth::user()?->favorites->product_ids) ?? [];
             
+            \Log::debug('InitialDataController $favoritesIds', [
+                '$favoritesIds' => $favoritesIds,
+            ]);
+
             if (empty($favoritesIds)) {
                 return [];
             } 
@@ -99,7 +110,7 @@
                 ]);*/
             return new ProductCollection($products);
         }
-        
+       
         private function getBrandedCategoriesMenuArr($brandId = 0) {
             $res = [];
     

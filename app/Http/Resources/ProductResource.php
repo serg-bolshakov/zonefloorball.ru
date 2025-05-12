@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
+use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
 class ProductResource extends JsonResource
@@ -14,15 +14,11 @@ class ProductResource extends JsonResource
      *
      * @return array<string, mixed>
      */
-    public function toArray(Request $request): array {
-        \Log::debug('ProductResource processing', ['id' => $this->id]);
-        //dd($this->resource); // Убедитесь, что модель передаётся
-        // Получаем пользователя из запроса (уже авторизованного... или NULL):
-        $user = $request->user();
-                
-        // Логика скидок (вынесли в отдельный метод)
-        $discountData = $this->calculateDiscounts($user); 
-        \Log::debug('Discount data:', $discountData); // Проверим, что здесь есть данные
+
+     public function toArray(Request $request): array {
+
+        $user = Auth::user() ?? null;
+        
         $data = [
             'id' => $this->id,
             'title' => $this->title,
@@ -44,35 +40,17 @@ class ProductResource extends JsonResource
             'on_preorder'           =>  $this->productReport->on_preorder ?? null,
             'preodered'             =>  $this->productReport->preodered ?? null,
         ];
-
-        if ($request->user()) {
-            $data = array_merge($data, $this->calculateDiscounts($request->user()));
+        
+        // если пользователь авторизован посчитаем его скидки и добавим в ответ:
+        if (!empty($user)) {
+            $data = array_merge($data, $this->calculateDiscounts($user));
         }
-        // dd($data);
-        return $data;
-      
+
+        // \Log::debug('ProductResources toArray', ['$data' => $data]);
+
+        return $data;      
     }
 
-    // Проверка скидок: пока для информации пишу этот метод (не использую, но подумаю как это можно будет использовать): 
-    public static function hasAnyDiscounts($collection): bool {
-        foreach ($collection as $product) {
-            if ($product->actualPrice->price_value < $product->regularPrice->price_value) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /** Затем в Collection:
-     *  
-     * public function toArray(Request $request): array {
-     *     return [
-     *         'products' => ProductResource::collection($this->collection), 
-     *         'has_discounts' => ProductResource::hasAnyDiscounts($this->collection)
-     *     ]; 
-     * }
-    */
-    
     protected function calculateDiscounts(?User $user): array {
         
         // Инициализация значений по умолчанию
@@ -116,63 +94,5 @@ class ProductResource extends JsonResource
 
         return $discountData;
     }
-
-    private function enrichProductData(Product $product, ?User $user) {
-        dd($product);
-        $data = [
-            'id' => $product->id,
-            'title' => $product->title,
-            'prod_url_semantic' => $product->prod_url_semantic,
-            'img_link' => $product->productShowCaseImage->img_link,
-            'on_sale' => $product->productReport->on_sale,
-            'article' => $product->article,
-            'price_actual' => $product->actualPrice->price_value  ?? NULL,
-            'price_regular' => $product->regularPrice->price_value  ?? NULL,
-        ];
-
-        if($user) {
-            $data = array_merge($data, $this->calculateDiscount($product, $user));
-        }
-
-        return $data;
-    }
-
-    private function calculateDiscount(Product $product, User $user) {
-        $discountData = [];
-        $rankDiscount = $user->rank->price_discount ?? 0;
-
-        // Работаем с примененим системы скидок:
-        $discountData['price_with_rank_discount'] = $discountData['percent_of_rank_discount'] = NULL;
-        $discountData['price_with_action_discount'] = $discountData['summa_of_action_discount'] = NULL; // это скидки по "акциям"
-        
-        // если в избранное идёт регулярная цена (без скидки), подсчитаем цену со скидкой, в зависимости от ранга покупателя: 
-        if($product->actualPrice->price_value == $product->regularPrice->price_value) {
-            if($rankDiscountPercent > 0) {
-                $discountData['price_with_rank_discount'] = round($product->regularPrice->price_value - ($product->regularPrice->price_value * ($rankDiscountPercent / 100))); 
-                $discountData['percent_of_rank_discount'] = $rankDiscountPercent;
-            }
-        } elseif($product->actualPrice->price_value < $product->regularPrice->price_value) {
-            // если есть специальная цена, нужно посмотреть какая цена меньше, ту и показываем => скидки не суммируем!
-            $actualPrice = $product->actualPrice->price_value;
-            $regularPrice = $product->regularPrice->price_value;
-            $possiblePriceWithDiscount = round($regularPrice - ($regularPrice * ($rankDiscountPercent / 100)));
-            if($possiblePriceWithDiscount < $actualPrice) {
-                $discountData['price_with_rank_discount'] = $possiblePriceWithDiscount;
-                $discountData['percent_of_rank_discount'] = $rankDiscountPercent;
-            } else {
-                // выводим для покупателя его выгоду от покупки товара по цене со кидкой по акции:
-                $discountData['summa_of_action_discount'] = $regularPrice - $actualPrice;
-            }
-        }
-        
-        $discountData['date_end'] = NULL;
-        if($product->actualPrice->price_value < $product->regularPrice->price_value) {
-            $discountData['price_special'] = $product->actualPrice->price_value;
-            $discountData['date_end'] = $product->actualPrice->date_end  ?? NULL;
-        } else {
-            $discountData['price_special'] = NULL;
-        }
-
-        return $discountData;
-    }
+    
 }

@@ -19,12 +19,11 @@ class FavoritesProductsApiController extends Controller {
             ->whereIn('id', $favoritesIds)
             ->get();   
         
-            /*\Log::debug('FavoritesProductsApiController:', [
+            \Log::debug('FavoritesProductsApiController:', [
                 'method' => $request->method(),
                 'data' => $request->all(),
                 '$favoritesIds' => $favoritesIds,
-                '$products' => $products,
-            ]);*/
+            ]);
             
             return  new ProductCollection($products);
 

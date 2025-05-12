@@ -26,6 +26,7 @@
         "react-helmet": "^6.1.0",
         "react-lazy-load-image-component": "^1.6.3",
         "react-router-dom": "^7.3.0",
-        "react-toastify": "^11.0.5"
+        "react-toastify": "^11.0.5",
+        "sweetalert2": "^11.21.0"
     }
 }

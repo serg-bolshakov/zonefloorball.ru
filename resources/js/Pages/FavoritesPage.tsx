@@ -84,48 +84,44 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
         const signal = controller.signal;           // это объект AbortSignal, который передаётся в axios (или fetch).
 
         const loadFavorites = async () => {
-           
-                setIsLoading(true);
-                setError(null);
+            setIsLoading(true);
+            setError(null);
 
-                try {
-                    if (!user) {          
-                        const response = await axios.post('/api/products/favorites', {          
-                            ids: favorites,
-                            _token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
-                        }, {
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json'
-                            },
-                            signal, // Передаём signal в конфиг axios          
-                        });
-                        
-                        // Проверяем, не был ли запрос отменён
-                        if (!signal.aborted) {
-                            setFavoriteProducts(response.data.data || []);
-                        }
-                    }
-                } catch (error) {
-                    // Игнорируем ошибку, если запрос был отменён
-                    if (!axios.isCancel(error)) {
-                        setError(getErrorMessage(error));
-                        toast.error('Ошибка загрузки:' + getErrorMessage(error), toastConfig);
-                    }
-                } finally {
+            try {
+                    const response = await axios.post('/products/favorites-get', {          
+                        ids: favorites,
+                        //_token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
+                    }, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        },
+                        signal, // Передаём signal в конфиг axios          
+                    });
+                    
+                    // Проверяем, не был ли запрос отменён
                     if (!signal.aborted) {
-                        setIsLoading(false);
+                        setFavoriteProducts(response.data.data || []);
                     }
+            } catch (error) {
+                // Игнорируем ошибку, если запрос был отменён
+                if (!axios.isCancel(error)) {
+                    setError(getErrorMessage(error));
+                    toast.error('Ошибка загрузки:' + getErrorMessage(error), toastConfig);
                 }
-            };
+            } finally {
+                if (!signal.aborted) {
+                    setIsLoading(false);
+                }
+            }
+        };
             
-            loadFavorites();
-            
-            // Функция очистки: отменяем запрос при размонтировании или изменении favorites
-            return () => {
-                controller.abort();
-            };
+        loadFavorites();
         
+        // Функция очистки: отменяем запрос при размонтировании или изменении favorites
+        return () => {
+            controller.abort();
+        };
         
     }, [favorites]); // Зависимость от favorites // При изменении favorites старый запрос отменяется
 

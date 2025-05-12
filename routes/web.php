@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;                                  // подк�
 use App\Models\Order;
 
 use App\Http\Controllers\InitialDataController;
+use App\Http\Controllers\Auth\AuthSyncController;
 
 
 
@@ -51,11 +52,17 @@ Route::middleware('web')->group(function () {
     // Инициализация данных
     Route::get('/api/initial-data', [InitialDataController::class, 'index']);
 
-    // Получение избранного
+    // Получение id-шников избранного при загрузке страницы Избранного
     Route::get('/products/favorites', [FavoritesController::class, 'index']);
-    
+        
     // Обновление избранного (сохранение в БД)
     Route::post('/products/favorites', [FavoritesController::class, 'update']);
+
+    // Получение товаров избранного
+    Route::post('/products/favorites-get', [FavoritesController::class, 'getProducts']);
+
+    // Синхронизация данных при авторизации
+    Route::post('/user/sync', [AuthSyncController::class, 'syncLocalData']);
 });
 
 

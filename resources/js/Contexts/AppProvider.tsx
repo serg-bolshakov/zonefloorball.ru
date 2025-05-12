@@ -27,10 +27,11 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
 
     // Загрузка данных при монтировании компонента
     useEffect(() => {
+        // console.log('APPProvider, useEffect: user', user);
         const loadData = async () => {
             axios.get('/api/initial-data')
                 .then(response => {
-                    console.log(response);
+                    // console.log(response);
                     setUser(response.data.user);
                     setCategoriesMenuArr(response.data.categoriesMenuArr);
                     setAuthBlockContentFinal(response.data.authBlockContentFinal);
@@ -47,6 +48,8 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
         };
         loadData();
     }, []);
+
+    // console.log('APPProvider: user', user);
 
     const contextValue: IAppContextType = {
         user, setUser,

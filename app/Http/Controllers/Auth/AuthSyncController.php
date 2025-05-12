@@ -4,17 +4,18 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
+use Illuminate\Support\Facades\Auth;
+use App\Models\User;
+
 class AuthSyncController extends Controller {
 
-    public function __construct() {
-        $this->middleware('auth'); // 'auth' для сессий
-    }
-
     public function syncLocalData(Request $request)  {
+
+        $user = Auth::user() ?? null;
+        
         $validated = $request->validate([
             'favorites'         => ['sometimes', 'array'],
             'favorites.*'       => ['integer', 'exists:products,id'], // Валидация ID товаров
@@ -22,12 +23,10 @@ class AuthSyncController extends Controller {
             'recently_viewed'   => ['sometimes', 'array'],
         ]);
 
-        try {
-            $user = $request->user();
-            
+        try {                        
             return response()->json([
                 'favorites' => $this->syncFavorites($user, $validated['favorites'] ?? []),
-                'cart'      => $this->syncCart($user, $validated['cart'] ?? []),
+                // 'cart'      => $this->syncCart($user, $validated['cart'] ?? []),
                 // Другие данные...
             ]);
 
@@ -38,13 +37,18 @@ class AuthSyncController extends Controller {
     }
 
     protected function syncFavorites(User $user, array $localFavorites): array {
-        
+
         $dbFavorites = json_decode($user->favorites->product_ids ?? '[]', true);
-        $merged = array_unique(array_merge($dbFavorites, $localFavorites));
-        
+        $merged = array_values(array_unique(array_merge($dbFavorites, $localFavorites)));
+        // $merged = array_unique([...$dbFavorites, ...$localFavorites]);
+        \Log::debug('syncFavorites:', [
+            '$localFavorites' => $localFavorites,
+            '$dbFavorites' => $dbFavorites,
+            '$merged' => $merged,
+        ]);
         $user->favorites()->updateOrCreate(
             ['user_id' => $user->id],
-            ['product_ids' => $merged]
+            ['product_ids' => json_encode($merged)]
         );
 
         return $merged;

@@ -19,6 +19,7 @@ use App\Http\Controllers\RecentlyViewedController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\Auth\AuthSyncController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,11 +31,7 @@ use App\Http\Controllers\OrderController;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-/*
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-*/
+
 
 /**
  * API-роуты (routes/api.php) используют api middleware group, где нет сессии
