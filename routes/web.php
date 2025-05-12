@@ -182,3 +182,25 @@ Route::get('/test-fav/{userId}', function($userId) {
     
     return response()->json($testData);
 });
+
+Route::get('/force-test-fav', function() {
+    try {
+        DB::table('favorites')->updateOrInsert(
+            ['user_id' => 289],
+            [
+                'product_ids' => json_encode([1,2,3]),
+                'updated_at' => DB::raw('NOW()')
+            ]
+        );
+        
+        return response()->json([
+            'status' => 'success',
+            'data' => DB::table('favorites')->where('user_id', 289)->first()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500);
+    }
+});

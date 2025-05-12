@@ -51,24 +51,41 @@ class AuthSyncController extends Controller {
 
     protected function syncFavorites(User $user, array $localFavorites): array {
 
-    // Получаем текущие избранные
-    $current = $user->favorites()->firstOrNew();
-    $currentIds = $current->product_ids ?? [];
-    
-    // Сливаем массивы
-    $merged = array_unique(array_merge($currentIds, $localFavorites));
+        $merged = [
+            ...($user->favorites->product_ids ?? []),
+            ...$localFavorites
+        ];
+        $merged = array_values(array_unique($merged));
 
-    \Log::debug('syncFavorites:', [
-        '$localFavorites' => $localFavorites,
-        '$current' => $current,
-        '$merged' => $merged,
-    ]);
-    
-    // Сохраняем (теперь Laravel знает про updated_at)
-    $user->favorites()->updateOrCreate(
-        ['user_id' => $user->id],
-        ['product_ids' => $merged] // Автоматическая конвертация
-    );
+        // Вариант 100500: Через DB facade 
+        DB::table('favorites')->updateOrInsert(
+            ['user_id' => $user->id],
+            [
+                'product_ids' => json_encode($merged),
+                'updated_at' => DB::raw('NOW()')
+            ]
+        );
+
+
+        /*
+            // Получаем текущие избранные
+            $current = $user->favorites()->firstOrNew();
+            $currentIds = $current->product_ids ?? [];
+            
+            // Сливаем массивы
+            $merged = array_unique(array_merge($currentIds, $localFavorites));
+
+            \Log::debug('syncFavorites:', [
+                '$localFavorites' => $localFavorites,
+                '$current' => $current,
+                '$merged' => $merged,
+            ]);
+            
+            // Сохраняем (теперь Laravel знает про updated_at)
+            $user->favorites()->updateOrCreate(
+                ['user_id' => $user->id],
+                ['product_ids' => $merged] // Автоматическая конвертация
+        );*/
 
 
         /*// $dbFavorites = json_decode($user->favorites->product_ids ?? '[]', true);
