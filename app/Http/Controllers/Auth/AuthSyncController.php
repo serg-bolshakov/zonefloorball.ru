@@ -16,11 +16,24 @@ class AuthSyncController extends Controller {
 
         $user = Auth::user() ?? null;
         
+        \Log::debug('AuthSyncController:', [
+            '$request' => $request->all(),
+            '$user' => $user,
+        ]);
+
+
+
         $validated = $request->validate([
             'favorites'         => ['sometimes', 'array'],
             'favorites.*'       => ['integer', 'exists:products,id'], // Валидация ID товаров
             'cart'              => ['sometimes', 'array'],
             'recently_viewed'   => ['sometimes', 'array'],
+        ]);
+
+        \Log::debug('User favorites check', [
+            'user_id' => $user->id,
+            'favorites_exists' => Favorite::where('user_id', $user->id)->exists(),
+            'current_data' => Favorite::where('user_id', $user->id)->first()?->product_ids
         ]);
 
         try {                        

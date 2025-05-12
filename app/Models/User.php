@@ -60,10 +60,12 @@ use Laravel\Sanctum\HasApiTokens;
     }
 
     
-     /* У авторизованного пользователя может быть одна JSON-строка избранного */
+    /* У авторизованного пользователя может быть одна JSON-строка избранного */
     public function favorites() {
-        return $this->hasOne(Favorite::class);
-        // return $this->hasOne(Favorite::class, 'user_id');
+        // return $this->hasOne(Favorite::class);
+        return $this->hasOne(Favorite::class)->withDefault([
+            'product_ids' => '[]'
+        ]);
     }
 
     // получить список просмотренных товаров - вернёт коллекцию записей:
