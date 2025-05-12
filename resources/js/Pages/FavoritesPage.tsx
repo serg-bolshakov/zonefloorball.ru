@@ -90,7 +90,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
             try {
                     const response = await axios.post('/products/favorites-get', {          
                         ids: favorites,
-                        //_token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
+                        token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
                     }, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',

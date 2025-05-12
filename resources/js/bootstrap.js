@@ -10,8 +10,9 @@ import axios from 'axios';
 window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+window.axios.defaults.headers.common['Accept'] = 'application/json';
 window.axios.defaults.withCredentials = true; // Важно! Включаем передачу кук
-window.axios.defaults.baseURL = 'http://localhost:8000'; // Базовый URL Laravel
+// window.axios.defaults.baseURL = 'http://localhost:8000'; // Базовый URL Laravel
 
 // Автоматическое подхватывание CSRF-токена (больше не нужно вручную получать _token)
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
