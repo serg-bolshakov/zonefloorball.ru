@@ -62,7 +62,10 @@ class AuthSyncController extends Controller {
         ]);
         $user->favorites()->updateOrCreate(
             ['user_id' => $user->id],
-            ['product_ids' => json_encode($merged)]
+            [
+                'product_ids' => json_encode($merged),
+                'updated_at' => now()->toDateTimeString() // Форсируем обновление
+            ]
         );
 
         return $merged;

@@ -25,12 +25,4 @@ class Favorite extends Model {
         // return $this->belongsTo(User::class, 'id');
     }
 
-    public function addProduct(int $productId) {
-        $ids = $this->product_ids ?: [];
-        if (!in_array($productId, $ids)) {
-            $ids[] = $productId;
-            $this->product_ids = $ids;
-            $this->save();
-        }
-    }
 }
