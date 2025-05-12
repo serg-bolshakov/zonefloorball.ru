@@ -29,6 +29,8 @@ use App\Models\Order;
 use App\Http\Controllers\InitialDataController;
 use App\Http\Controllers\Auth\AuthSyncController;
 
+use App\Models\User;
+
 
 
 /*
