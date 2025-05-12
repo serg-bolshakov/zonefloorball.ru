@@ -20,11 +20,11 @@
     class InitialDataController extends Controller {
         public function index(Request $request) {
 
-            \Log::debug('InitialDataController Session Check', [
+            /*\Log::debug('InitialDataController Session Check', [
                 'session_id' => session()->getId(),
                 'cookies_received' => $request->cookies->all(),
                 'user_id' => auth()->id()
-            ]);
+            ]);*/
             
             try {
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();

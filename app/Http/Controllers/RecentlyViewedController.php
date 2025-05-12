@@ -60,7 +60,7 @@ class RecentlyViewedController extends Controller {
                 'regex:/^[\d,]+$/', // Только цифры и запятые
             ],
         ]);
-        \Log::debug('validated:', ['validated' => $validated['ids']]);
+        // \Log::debug('validated:', ['validated' => $validated['ids']]);
 
         // Разбиваем строку на массив только после валидации
         $productIds = explode(',', $validated['ids']);
