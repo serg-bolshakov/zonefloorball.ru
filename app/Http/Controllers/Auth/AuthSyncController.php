@@ -60,7 +60,7 @@ class AuthSyncController extends Controller {
 
     \Log::debug('syncFavorites:', [
         '$localFavorites' => $localFavorites,
-        '$dbFavorites' => $dbFavorites,
+        '$current' => $current,
         '$merged' => $merged,
     ]);
     
