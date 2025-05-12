@@ -19,7 +19,6 @@ use App\Http\Controllers\RecentlyViewedController;
 use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\Auth\AuthSyncController;
 
 /*
 |--------------------------------------------------------------------------

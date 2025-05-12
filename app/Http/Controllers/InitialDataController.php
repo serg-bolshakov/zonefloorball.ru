@@ -20,11 +20,9 @@
     class InitialDataController extends Controller {
         public function index(Request $request) {
 
-            /*\Log::debug('InitialDataController Session Check', [
-                'session_id' => session()->getId(),
-                'cookies_received' => $request->cookies->all(),
-                'user_id' => auth()->id()
-            ]);*/
+            \Log::debug('InitialDataController Session Check', [
+                'request' => $request->all(),
+            ]);
             
             try {
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();
@@ -45,7 +43,9 @@
                     
                     'authBlockContentFinal' => $userData['auth_content'],
                     'cart' => $userData['cart'],
-                    'favorites' => json_decode(Auth::user()?->favorites->product_ids) ?? [],
+                    'favorites' => $user?->favorites?->product_ids 
+                        ? json_decode($user->favorites->product_ids, true) 
+                        : [],
                     'orders' => [] // Заполняется отдельным запросом
                 ]);
                     
