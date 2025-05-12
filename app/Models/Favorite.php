@@ -21,7 +21,8 @@ class Favorite extends Model {
      * Локально всё работает
     */
 
-    // public $timestamps = true; // Явное указание (хотя и включено по умолчанию)
+    public $timestamps = true; // Явное указание (хотя и включено по умолчанию)
+    
 
     /* JSON-строка избранного принадлежит одному юзеру */
     public function user() {

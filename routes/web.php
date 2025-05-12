@@ -156,3 +156,27 @@ Route::get('/test-db', function() {
         'table_structure' => $result[0]->{'Create Table'}
     ]);
 });
+
+// Временный роут для проверки
+Route::get('/test-fav/{userId}', function($userId) {
+    $user = User::find($userId);
+    
+    $testData = [
+        'before' => $user->favorites->product_ids ?? null,
+        'table_structure' => DB::select('SHOW CREATE TABLE favorites')[0]
+    ];
+    
+    // Тест записи
+    try {
+        $user->favorites()->updateOrCreate(
+            ['user_id' => $userId],
+            ['product_ids' => [1,2,3]]
+        );
+        $testData['after'] = $user->fresh()->favorites->product_ids;
+        $testData['status'] = 'success';
+    } catch (\Exception $e) {
+        $testData['error'] = $e->getMessage();
+    }
+    
+    return response()->json($testData);
+});

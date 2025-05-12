@@ -51,40 +51,60 @@ class AuthSyncController extends Controller {
 
     protected function syncFavorites(User $user, array $localFavorites): array {
 
-        // $dbFavorites = json_decode($user->favorites->product_ids ?? '[]', true);
-        // Явная загрузка отношения
-        $user->load('favorites');
+    // Получаем текущие избранные
+    $current = $user->favorites()->firstOrNew();
+    $currentIds = $current->product_ids ?? [];
+    
+    // Сливаем массивы
+    $merged = array_unique(array_merge($currentIds, $localFavorites));
 
-        // Получаем текущие данные (уже декодированные благодаря $casts)
-        $dbFavorites = $user->favorites->product_ids ?? [];
-        
-        //$merged = array_values(array_unique(array_merge($dbFavorites, $localFavorites)));
-        // $merged = array_unique([...$dbFavorites, ...$localFavorites]);
+    \Log::debug('syncFavorites:', [
+        '$localFavorites' => $localFavorites,
+        '$dbFavorites' => $dbFavorites,
+        '$merged' => $merged,
+    ]);
+    
+    // Сохраняем (теперь Laravel знает про updated_at)
+    $user->favorites()->updateOrCreate(
+        ['user_id' => $user->id],
+        ['product_ids' => $merged] // Автоматическая конвертация
+    );
 
-        // Сливаем массивы
-        $merged = array_values(array_unique(array_merge($dbFavorites, $localFavorites)));
 
-        \Log::debug('syncFavorites:', [
-            '$localFavorites' => $localFavorites,
-            '$dbFavorites' => $dbFavorites,
-            '$merged' => $merged,
-        ]);
+        /*// $dbFavorites = json_decode($user->favorites->product_ids ?? '[]', true);
+            // Явная загрузка отношения
+            $user->load('favorites');
 
-        // Сохраняем через query builder
-        DB::table('favorites')->updateOrInsert(
-            ['user_id' => $user->id],
-            ['product_ids' => json_encode($merged)]
-        );
-        
-        \Log::debug('DB write verification', [
-            'user_id' => $user->id,
-            'input' => $localFavorites,
-            '$dbFavorites' => $dbFavorites,
-            'merged' => $merged,
-            'saved' => DB::table('favorites')
-                ->where('user_id', $user->id)
-                ->value('product_ids')
-        ]);
+            // Получаем текущие данные (уже декодированные благодаря $casts)
+            $dbFavorites = $user->favorites->product_ids ?? [];
+            
+            //$merged = array_values(array_unique(array_merge($dbFavorites, $localFavorites)));
+            // $merged = array_unique([...$dbFavorites, ...$localFavorites]);
+
+            // Сливаем массивы
+            $merged = array_values(array_unique(array_merge($dbFavorites, $localFavorites)));
+
+            \Log::debug('syncFavorites:', [
+                '$localFavorites' => $localFavorites,
+                '$dbFavorites' => $dbFavorites,
+                '$merged' => $merged,
+            ]);
+
+            // Сохраняем через query builder
+            DB::table('favorites')->updateOrInsert(
+                ['user_id' => $user->id],
+                ['product_ids' => json_encode($merged)]
+            );
+            
+            \Log::debug('DB write verification', [
+                'user_id' => $user->id,
+                'input' => $localFavorites,
+                '$dbFavorites' => $dbFavorites,
+                'merged' => $merged,
+                'saved' => DB::table('favorites')
+                    ->where('user_id', $user->id)
+                    ->value('product_ids')
+        ]);*/
 
         /*$user->favorites()->updateOrCreate(
             ['user_id' => $user->id],
