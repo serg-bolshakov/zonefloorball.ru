@@ -11,9 +11,9 @@ class Favorite extends Model {
 
     protected $fillable = ['user_id', 'product_ids'];
 
-    protected $casts = [
+    /*protected $casts = [
         'product_ids' => 'array'
-    ];
+    ];*/
         
     /**
      * Ошибка указывает на отсутствие updated_at, но ваша таблица его содержит
