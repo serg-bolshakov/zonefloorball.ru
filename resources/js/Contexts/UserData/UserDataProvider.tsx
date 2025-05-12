@@ -455,7 +455,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 // Если данные переданы вручную — используем их, иначе берём из localStorage
                 const data = manualData ?? {
                     favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
-                    cart: getLocalStorageData('cart', []),
+                    // cart: getLocalStorageData('cart', []),
                 };
                 console.log(data);
                 const controller = new AbortController();

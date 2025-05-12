@@ -76,18 +76,24 @@ class AuthSyncController extends Controller {
 
             // 2. Простое сохранение без updateOrCreate
             if ($exists) {
+                \Log::debug('syncFavorites $exists:', [
+                    '$exists' => $exists,
+                ]);
                 DB::table('favorites')
                     ->where('user_id', $user->id)
                     ->update([
                         'product_ids' => json_encode($merged),
-                        'updated_at' => DB::raw('NOW()')
+                        // 'updated_at' => DB::raw('NOW()')
                     ]);
             } else {
+                \Log::debug('syncFavorites $NOTexists:', [
+                    '$exists' => 'notexist',
+                ]);
                 DB::table('favorites')->insert([
                     'user_id' => $user->id,
                     'product_ids' => json_encode($merged),
-                    'created_at' => DB::raw('NOW()'),
-                    'updated_at' => DB::raw('NOW()')
+                    // 'created_at' => DB::raw('NOW()'),
+                    // 'updated_at' => DB::raw('NOW()')
                 ]);
             }
         } catch (\Exception $e) {
