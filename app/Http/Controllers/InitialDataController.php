@@ -22,6 +22,7 @@
 
             \Log::debug('InitialDataController Session Check', [
                 'request' => $request->all(),
+                'user' => Auth::user(),
             ]);
             
             try {
