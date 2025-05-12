@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB; 
 
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -21,8 +22,6 @@ class AuthSyncController extends Controller {
             '$request' => $request->all(),
             '$user' => $user,
         ]);
-
-
 
         $validated = $request->validate([
             'favorites'         => ['sometimes', 'array'],
@@ -60,13 +59,44 @@ class AuthSyncController extends Controller {
             '$dbFavorites' => $dbFavorites,
             '$merged' => $merged,
         ]);
-        $user->favorites()->updateOrCreate(
+        /*$user->favorites()->updateOrCreate(
             ['user_id' => $user->id],
             [
                 'product_ids' => json_encode($merged),
                 'updated_at' => now()->toDateTimeString() // Форсируем обновление
             ]
-        );
+        );*/
+
+        // Пошаговая логика без магии Eloquent
+        try {
+            // 1. Проверяем существование записи
+            $exists = DB::table('favorites')
+                ->where('user_id', $user->id)
+                ->exists();
+
+            // 2. Простое сохранение без updateOrCreate
+            if ($exists) {
+                DB::table('favorites')
+                    ->where('user_id', $user->id)
+                    ->update([
+                        'product_ids' => json_encode($merged),
+                        'updated_at' => DB::raw('NOW()')
+                    ]);
+            } else {
+                DB::table('favorites')->insert([
+                    'user_id' => $user->id,
+                    'product_ids' => json_encode($merged),
+                    'created_at' => DB::raw('NOW()'),
+                    'updated_at' => DB::raw('NOW()')
+                ]);
+            }
+        } catch (\Exception $e) {
+            logger()->error('Favorites save failed', [
+                'error' => $e->getMessage(),
+                'user_id' => $user->id
+            ]);
+            throw $e;
+        }
 
         return $merged;
     }

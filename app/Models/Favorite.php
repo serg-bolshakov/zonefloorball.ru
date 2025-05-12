@@ -10,7 +10,11 @@ class Favorite extends Model {
     use HasFactory;
 
     protected $fillable = ['user_id', 'product_ids'];
-    
+
+    protected $casts = [
+        'product_ids' => 'array'
+    ];
+        
     /**
      * Ошибка указывает на отсутствие updated_at, но ваша таблица его содержит
      * Проблема возникает только на продакшене

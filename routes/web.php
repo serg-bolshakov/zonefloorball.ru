@@ -149,3 +149,10 @@ Route::get('/test-cart', function(Request $request) {
         ->sync($fakeRequest);
 });
 
+// Временный роут для теста
+Route::get('/test-db', function() {
+    $result = DB::select('SHOW CREATE TABLE favorites');
+    return response()->json([
+        'table_structure' => $result[0]->{'Create Table'}
+    ]);
+});
