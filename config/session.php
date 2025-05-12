@@ -170,7 +170,7 @@ return [
     |
     */
 
-    // 'secure' => env('SESSION_SECURE_COOKIE'), // из коробки пока меняем на:
+    // 'secure' => env('SESSION_SECURE_COOKIE'), // из коробки пока меняем на вот так: 
     'secure' => false, // true только для HTTPS
 
     /*
