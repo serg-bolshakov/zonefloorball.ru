@@ -76,7 +76,7 @@ const MainLayout: React.FC<IMainLayoutsProps> = ({ children }) => {
                     html: `
                         <div style="text-align: center; margin-top: 1rem">
                             <div style="color: #ff3366; font-weight: bold; margin-bottom: 0.5rem">
-                                Сайт в разработке.
+                                ОТКРЫТИЕ 30 июня 2025&nbsp;г. Сайт в разработке.
                             </div>
                             <div>Мы активно работаем над улучшением сервиса</div>
                         </div>
