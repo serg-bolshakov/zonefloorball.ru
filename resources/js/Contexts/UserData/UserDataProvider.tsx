@@ -167,16 +167,6 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
     const removeFromFavorites = useCallback(async (productId: number) => {
         
-        /*const result = await Swal.fire({
-            title: 'Удалить из избранного?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonText: 'Да',
-            cancelButtonText: 'Нет',
-        });
-
-        if (!result.isConfirmed) return {favoritesTotal: state.favoritesTotal};*/
-        
         try {
 
             updateState({isLoading: true});

@@ -13,7 +13,7 @@ import { ModalAdapter } from '@/Components/ModalAdapter';                   // �
 import Modal from '@/Components/Modal';                                     // добавляем компонент Modal, кот. принимает пропсы isOpen, onClose, children и отображает модальное окно, если isOpen равно true 
 import useModal from '@/Hooks/useModal';
 
-import Swal from 'sweetalert2';     // https://sweetalert2.github.io/#examples
+// import Swal from 'sweetalert2';     // https://sweetalert2.github.io/#examples
 import { useEffect } from 'react';
 
 interface IMainLayoutsProps {
@@ -64,7 +64,7 @@ const MainLayout: React.FC<IMainLayoutsProps> = ({ children }) => {
         showDevNotice();
     }, []);*/
     
-    useEffect(() => {
+    /*useEffect(() => {
         const showDevNotice = async () => {
             const lastShown = localStorage.getItem('devNoticeLastShown');
             const isExpired = lastShown && Date.now() - Number(lastShown) > 24 * 60 * 60 * 1000;
@@ -99,7 +99,7 @@ const MainLayout: React.FC<IMainLayoutsProps> = ({ children }) => {
         };
         
         showDevNotice();
-    }, []);
+    }, []);*/
 
     return (
         <>
