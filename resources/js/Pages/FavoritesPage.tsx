@@ -16,6 +16,7 @@ import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import { useCallback } from "react";
 import NavBarBreadCrumb from "@/Components/NavBarBreadCrumb";
 import { IProductsResponse } from '../Types/types';
+import Swal from 'sweetalert2';     // https://sweetalert2.github.io/#examples
 
 interface IHomeProps {
     title: string;
@@ -68,12 +69,39 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
 
     const { removeFromFavorites } = useUserDataContext();
     const handleFavoriteClick = useCallback(async (productId: number) => {
-        const result = await removeFromFavorites(productId);
-        if (result.error) {
-            toast.error(result.error, toastConfig);
-        } else {
-            toast.success('Товар успешно удалён из Избранного...', toastConfig);
+        // 1. Сначала запрашиваем подтверждение
+        const confirmation = await Swal.fire({
+            title: 'Удалить из избранного?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#ff3366',
+            cancelButtonColor: '#aaa',
+            confirmButtonText: 'Да, удалить',
+            cancelButtonText: 'Нет, оставить'
+        });
+        
+        // 2. Если пользователь отменил - сразу выходим
+        if (!confirmation.isConfirmed) { 
+            toast.success('Товар оставлен в Избранном...', toastConfig);
+            return; 
         }
+
+        // 3. Удаление с обработкой состояния
+        try {
+            const result = await removeFromFavorites(productId);
+            
+            if (result.error) {
+                toast.error(result.error);
+            } else {
+                toast.success('Товар удалён из Избранного...', toastConfig);
+            }
+            
+            return result;
+        } catch (error) {
+            toast.error('Ошибка при удалении');
+            return { error: 'Не удалось выполнить действие' };
+        }
+        
     }, [removeFromFavorites]);
 
     useEffect(() => {
