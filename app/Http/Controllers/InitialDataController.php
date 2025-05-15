@@ -78,7 +78,7 @@
                     . '<br><a href="' . ($isProfilePage ? '/' : '/profile') . '">'
                     . ($isProfilePage ? 'выйти из профиля' : 'войти в профиль') 
                     . '</a> или <a href="/logout">выйти из системы</a>',
-                'cart' => Cart::where('user_id', $user->id)->pluck('products'),
+                'cart' => Cart::where('user_id', $user->id)->pluck('content'),
             ];
         }
 
