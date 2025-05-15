@@ -99,7 +99,7 @@ const MainLayout: React.FC<IMainLayoutsProps> = ({ children }) => {
         };
         
         showDevNotice();
-    }, []);*/
+    }, []); */
 
     return (
         <>
