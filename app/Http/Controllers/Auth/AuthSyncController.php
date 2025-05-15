@@ -33,7 +33,8 @@ class AuthSyncController extends Controller {
         \Log::debug('User favorites check', [
             'user_id' => $user->id,
             'favorites_exists' => Favorite::where('user_id', $user->id)->exists(),
-            'current_data' => Favorite::where('user_id', $user->id)->first()?->product_ids
+            'current_data' => Favorite::where('user_id', $user->id)->first()?->product_ids,
+            '$validated' => $validated,
         ]);
 
         try {                        
@@ -51,41 +52,27 @@ class AuthSyncController extends Controller {
 
     protected function syncFavorites(User $user, array $localFavorites): array {
 
-        $merged = [
-            ...($user->favorites->product_ids ?? []),
-            ...$localFavorites
-        ];
-        $merged = array_values(array_unique($merged));
+        // Получаем или создаём модель избранного
+        $favorites = $user->favorites()->firstOrNew();
+        // Берём product_ids как массив
+        $currentIds = $favorites->product_ids ?? [];
+        
+        // Сливаем массивы
+        $merged = array_unique(array_merge($currentIds, $localFavorites));
 
-        // Вариант 100500: Через DB facade 
-        DB::table('favorites')->updateOrInsert(
+        // Для отладки (убедимся, что типы правильные)
+        \Log::debug('syncFavorites debug', [
+            'currentIds_type' => gettype($currentIds),
+            'currentIds_content' => $currentIds,
+            'localFavorites' => $localFavorites,
+            'merged_result' => $merged
+        ]);
+        
+        // Сохраняем
+        $user->favorites()->updateOrCreate(
             ['user_id' => $user->id],
-            [
-                'product_ids' => json_encode($merged),
-                'updated_at' => DB::raw('NOW()')
-            ]
+            ['product_ids' => $merged] // Автоматическая конвертация
         );
-
-
-        /*
-            // Получаем текущие избранные
-            $current = $user->favorites()->firstOrNew();
-            $currentIds = $current->product_ids ?? [];
-            
-            // Сливаем массивы
-            $merged = array_unique(array_merge($currentIds, $localFavorites));
-
-            \Log::debug('syncFavorites:', [
-                '$localFavorites' => $localFavorites,
-                '$current' => $current,
-                '$merged' => $merged,
-            ]);
-            
-            // Сохраняем (теперь Laravel знает про updated_at)
-            $user->favorites()->updateOrCreate(
-                ['user_id' => $user->id],
-                ['product_ids' => $merged] // Автоматическая конвертация
-        );*/
 
 
         /*// $dbFavorites = json_decode($user->favorites->product_ids ?? '[]', true);
@@ -122,14 +109,6 @@ class AuthSyncController extends Controller {
                     ->where('user_id', $user->id)
                     ->value('product_ids')
         ]);*/
-
-        /*$user->favorites()->updateOrCreate(
-            ['user_id' => $user->id],
-            [
-                'product_ids' => json_encode($merged),
-                'updated_at' => now()->toDateTimeString() // Форсируем обновление
-            ]
-        );*/
 
         /*// Пошаговая логика без магии Eloquent
             try {
