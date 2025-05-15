@@ -16,7 +16,7 @@ import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import { useCallback } from "react";
 import NavBarBreadCrumb from "@/Components/NavBarBreadCrumb";
 import { IProductsResponse } from '../Types/types';
-import Swal from 'sweetalert2';     // https://sweetalert2.github.io/#examples
+// import Swal from 'sweetalert2';     // https://sweetalert2.github.io/#examples
 
 interface IHomeProps {
     title: string;
@@ -70,7 +70,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
     const { removeFromFavorites } = useUserDataContext();
     const handleFavoriteClick = useCallback(async (productId: number) => {
         // 1. Сначала запрашиваем подтверждение
-        const confirmation = await Swal.fire({
+        /*const confirmation = await Swal.fire({
             title: 'Удалить из избранного?',
             icon: 'question',
             showCancelButton: true,
@@ -84,7 +84,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
         if (!confirmation.isConfirmed) { 
             toast.success('Товар оставлен в Избранном...', toastConfig);
             return; 
-        }
+        }*/
 
         // 3. Удаление с обработкой состояния
         try {
