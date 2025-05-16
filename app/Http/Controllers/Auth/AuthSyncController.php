@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Favorite;
+use App\Models\RecentlyViewedProduct;
 
 class AuthSyncController extends Controller {
 
@@ -32,9 +33,9 @@ class AuthSyncController extends Controller {
                     $query->where('is_active', true);
                 })
             ],*/
-            'favorites.*'       => ['integer', 'exists:products,id'], // Валидация ID товаров 
-            'cart'              => ['sometimes', 'array'],
-            'recently_viewed'   => ['sometimes', 'array'],
+            'favorites.*'               => ['integer', 'exists:products,id'], // Валидация ID товаров 
+            'cart'                      => ['sometimes', 'array'],
+            'recentlyViewedProducts'    => ['sometimes', 'array'],
         ]);
 
         \Log::debug('User favorites check', [
@@ -162,8 +163,12 @@ class AuthSyncController extends Controller {
         return $merged;
     }
 
-    protected function syncCart(User $user, array $localCart): array
-    {
+    protected function syncCart(User $user, array $localCart): array {
+        // Аналогичная логика для корзины
+        // Можно добавить проверку наличия товаров
+    }
+
+    protected function syncRecentlyViewed(User $user, array $localRecentlyViewed): array {
         // Аналогичная логика для корзины
         // Можно добавить проверку наличия товаров
     }

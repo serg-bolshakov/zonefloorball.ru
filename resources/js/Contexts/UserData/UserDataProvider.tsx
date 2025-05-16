@@ -424,13 +424,13 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     const MAX_ITEMS = 6;
 
     const updateRecentlyViewedLocalStorage = (items: TRecentlyViewedProducts) => {
-    const sorted = Object.entries(items)
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, MAX_ITEMS)
-        .reduce((acc, [productId, timestamp]) => ({ ...acc, [productId]: timestamp }), {});
-    
-        localStorage.setItem('recently_viewed', JSON.stringify(sorted));
-        return sorted;
+        const sorted = Object.entries(items)
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, MAX_ITEMS)
+            .reduce((acc, [productId, timestamp]) => ({ ...acc, [productId]: timestamp }), {});
+        
+            localStorage.setItem('recently_viewed', JSON.stringify(sorted));
+            return sorted;
     };
   
     // синхронизация данных локального хранилища и БД при авторизации пользователя (когда логинится, например)
@@ -438,17 +438,18 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         console.log('newFavorites SyncData manualData', manualData);
         if (user) {
             console.log('Syncing data for user:', user.id);
+
             // Логика синхронизации...
-  
             try {
                 // Если данные переданы вручную — используем их, иначе берём из localStorage
                 const data = manualData ?? {
                     favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
                     // cart: getLocalStorageData('cart', []),
+                    recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
                 };
                 console.log(data);
                 const controller = new AbortController();
-                const response = await axios.post('/user/sync', data, {
+                const response = await axios.post('/user/sync', data, {     // Route::match(['GET', 'POST'], '/user/sync', [AuthSyncController::class, 'syncLocalData']); - Синхронизация данных при авторизации
                     signal: controller.signal,
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -461,6 +462,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     ...prev,
                     favorites: response.data.favorites || prev.favorites,
                     cart: response.data.cart || prev.cart,
+                    recentlyViewedProducts: response.data.recentlyViewedProducts || prev.recentlyViewedProducts,
+                    
                 }));
 
                 // Двойное сохранение: в localStorage на случай разлогина
@@ -469,6 +472,9 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 }
                 if (response.data.cart) {
                     localStorage.setItem('cart', JSON.stringify(response.data.cart));
+                }
+                if (response.data.recentlyViewedProducts) {
+                    localStorage.setItem('recently_viewed', JSON.stringify(response.data.recentlyViewedProducts));
                 }
                 
                 return { success: true };
@@ -479,6 +485,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     const fallbackData = {
                         favorites: getLocalStorageData('favorites', []),
                         cart: getLocalStorageData('cart', []),
+                        recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
                     };
                     setState(prev => ({ ...prev, ...fallbackData }));
 
