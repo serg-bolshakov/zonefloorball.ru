@@ -25,7 +25,14 @@ class AuthSyncController extends Controller {
 
         $validated = $request->validate([
             'favorites'         => ['sometimes', 'array'],
-            'favorites.*'       => ['integer', 'exists:products,id'], // Валидация ID товаров
+            /*'favorites.*' => [                                      // Валидация ID товаров - подумать! В этом случае выдаёт ошибку: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'is_active' in 'where clause' (Connection: mysql, SQL: select count(*) as aggregate from `products` where `id` = 2 and (`is_active` = 1))
+                // может добавить в таблицу products is_active и убрать таблицу product_statuses (два значения: active, archieved) - надо подумать...
+                'integer',
+                Rule::exists('products', 'id')->where(function ($query) {
+                    $query->where('is_active', true);
+                })
+            ],*/
+            'favorites.*'       => ['integer', 'exists:products,id'], // Валидация ID товаров 
             'cart'              => ['sometimes', 'array'],
             'recently_viewed'   => ['sometimes', 'array'],
         ]);
@@ -34,7 +41,9 @@ class AuthSyncController extends Controller {
             'user_id' => $user->id,
             'favorites_exists' => Favorite::where('user_id', $user->id)->exists(),
             'current_data' => Favorite::where('user_id', $user->id)->first()?->product_ids,
+            'current_data_type' => gettype(Favorite::where('user_id', $user->id)->first()?->product_ids),
             '$validated' => $validated,
+            '$validated[favorites]_type' => gettype($validated['favorites']),
         ]);
 
         try {                        
@@ -52,26 +61,29 @@ class AuthSyncController extends Controller {
 
     protected function syncFavorites(User $user, array $localFavorites): array {
 
-        // Получаем или создаём модель избранного
+        // Получаем или создаём запись
         $favorites = $user->favorites()->firstOrNew();
-        // Берём product_ids как массив
-        $currentIds = $favorites->product_ids ?? [];
-        
-        // Сливаем массивы
-        $merged = array_unique(array_merge($currentIds, $localFavorites));
 
-        // Для отладки (убедимся, что типы правильные)
-        \Log::debug('syncFavorites debug', [
-            'currentIds_type' => gettype($currentIds),
-            'currentIds_content' => $currentIds,
-            'localFavorites' => $localFavorites,
-            'merged_result' => $merged
-        ]);
+        // Всегда получаем массив (явное преобразование)
+        // $currentIds = json_decode($favorites->product_ids ?? '[]', true) ?? [];
+
+        // Защищённое получение массива
+        $currentIds = $this->safeJsonDecode($favorites->product_ids);
+
+        /*try {
+            $currentIds = json_decode($favorites->product_ids ?? '[]', true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException $e) {
+            $currentIds = [];
+            Log::error("Invalid JSON in favorites for user {$user->id}");
+        }*/
         
-        // Сохраняем
+        // Сливаем и удаляем дубликаты
+        $merged = array_unique(array_merge($currentIds, $localFavorites));
+        
+        // Сохраняем как JSON
         $user->favorites()->updateOrCreate(
             ['user_id' => $user->id],
-            ['product_ids' => $merged] // Автоматическая конвертация
+            ['product_ids' => json_encode(array_values($merged))]
         );
 
 
@@ -156,4 +168,20 @@ class AuthSyncController extends Controller {
         // Можно добавить проверку наличия товаров
     }
     
+    // Защищённое получение массива
+    private function safeJsonDecode(?string $json): array {
+        if (empty($json)) {
+            return [];
+        }
+        
+        // Удаляем лишние экранированные кавычки
+        $cleaned = stripslashes(trim($json, '"'));
+        
+        try {
+            return json_decode($cleaned, true, 512, JSON_THROW_ON_ERROR) ?? [];
+        } catch (\JsonException $e) {
+            Log::error("JSON decode error: " . $e->getMessage());
+            return [];
+        }
+    }
 }

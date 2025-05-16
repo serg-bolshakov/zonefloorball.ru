@@ -9,21 +9,21 @@ use Illuminate\Database\Eloquent\Model;
 class Favorite extends Model {
     use HasFactory;
 
-    protected $table = 'favorites';
-    protected $primaryKey = 'id';
+    // protected $table = 'favorites';
+    // protected $primaryKey = 'id';
     
     // Явно указываем, что timestamps есть
-    public $timestamps = true;
+    // public $timestamps = true;
     
     // Указываем имена полей вручную
-    const CREATED_AT = 'created_at';
-    const UPDATED_AT = 'updated_at';
+    // const CREATED_AT = 'created_at';
+    // const UPDATED_AT = 'updated_at';
     
     protected $fillable = ['user_id', 'product_ids'];
     
-    protected $casts = [
-        'product_ids' => 'array'
-    ];
+    // protected $casts = [
+    //     'product_ids' => 'array'
+    // ];
     
 
     /* JSON-строка избранного принадлежит одному юзеру */

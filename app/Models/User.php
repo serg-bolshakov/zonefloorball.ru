@@ -64,7 +64,7 @@ use Laravel\Sanctum\HasApiTokens;
     public function favorites() {
         // return $this->hasOne(Favorite::class);
         return $this->hasOne(Favorite::class)->withDefault([
-            'product_ids' => '[]'
+            'product_ids' => '[]' // Всегда JSON-строка
         ]);
     }
 
