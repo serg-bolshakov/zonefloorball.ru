@@ -20,6 +20,9 @@
     "dependencies": {
         "@inertiajs/inertia-react": "^0.8.1",
         "@inertiajs/react": "^2.0.3",
+        "@pnotify/animate": "^5.2.0",
+        "@pnotify/confirm": "^5.2.0",
+        "@pnotify/core": "^5.2.0",
         "framer-motion": "^12.6.3",
         "react": "^18.3.1",
         "react-dom": "^18.3.1",

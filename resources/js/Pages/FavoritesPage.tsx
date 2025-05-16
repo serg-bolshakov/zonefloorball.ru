@@ -16,7 +16,8 @@ import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import { useCallback } from "react";
 import NavBarBreadCrumb from "@/Components/NavBarBreadCrumb";
 import { IProductsResponse } from '../Types/types';
-// import Swal from 'sweetalert2';     // https://sweetalert2.github.io/#examples
+import useModal from "@/Hooks/useModal";
+import { ConfirmModal } from "@/Components/Modal/ConfirmModal";
 
 interface IHomeProps {
     title: string;
@@ -68,26 +69,68 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
     }
 
     const { removeFromFavorites } = useUserDataContext();
+    const { openModal } = useModal(); 
     const handleFavoriteClick = useCallback(async (productId: number) => {
-        // 1. Сначала запрашиваем подтверждение
-        /*const confirmation = await Swal.fire({
-            title: 'Удалить из избранного?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#ff3366',
-            cancelButtonColor: '#aaa',
-            confirmButtonText: 'Да, удалить',
-            cancelButtonText: 'Нет, оставить'
+        openModal(null, 'confirm', {
+            title: "Удалить из избранного?",
+            onConfirm: async () => {
+                try {
+                    const result = await removeFromFavorites(productId);
+                    if (result.error) {
+                        toast.error(result.error);
+                    } else {
+                        toast.success('Товар удалён из Избранного...', toastConfig);
+                    }
+                } catch (error) {
+                    toast.error('Ошибка при удалении');
+                }
+            },
+            onCancel: () => {
+                toast.success('Товар оставлен в Избранном', toastConfig);
+            }
         });
-        
-        // 2. Если пользователь отменил - сразу выходим
-        if (!confirmation.isConfirmed) { 
-            toast.success('Товар оставлен в Избранном...', toastConfig);
-            return; 
-        }*/
+        // Показываем модальное окно подтверждения
+        /*openModal(
+            <div className="bg-white rounded-lg p-6 max-w-md mx-auto">
+                <h3 className="text-lg font-medium mb-4">Удалить из избранного?</h3>
+                <div className="flex justify-end space-x-3">
+                    <button
+                        onClick={() => {
+                            // При отмене просто закрываем модалку
+                            useModal().closeModal();
+                            toast.success('Товар оставлен в Избранном', toastConfig);
+                        }}
+                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+                    >
+                        Нет, оставить
+                    </button>
+                    <button
+                        onClick={async () => {
+                            try {
+                            // При подтверждении выполняем удаление
+                            const result = await removeFromFavorites(productId);
+                            useModal().closeModal();
+                            
+                            if (result.error) {
+                                toast.error(result.error);
+                            } else {
+                                toast.success('Товар удалён из Избранного...', toastConfig);
+                            }
+                            } catch (error) {
+                            useModal().closeModal();
+                            toast.error('Ошибка при удалении');
+                            }
+                        }}
+                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded"
+                    >
+                        Да, удалить
+                    </button>
+                </div>
+            </div>
+        );*/
 
         // 3. Удаление с обработкой состояния
-        try {
+        /*try {
             const result = await removeFromFavorites(productId);
             
             if (result.error) {
@@ -100,9 +143,9 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
         } catch (error) {
             toast.error('Ошибка при удалении');
             return { error: 'Не удалось выполнить действие' };
-        }
+        }*/
         
-    }, [removeFromFavorites]);
+    }, [removeFromFavorites, openModal]);
 
     useEffect(() => {
         

@@ -3,16 +3,20 @@
 
 import { createContext, ReactNode } from 'react';
 
+export type TModalType = 'default' | 'confirm';
+
 // Интерфейс для состояния модального окна
-interface IModalState {
+export interface IModalState {
     isOpen: boolean;
     content: ReactNode | null; // ReactNode — это тип для любого React-элемента (компонент, строка, число и т.д.)
+    type: TModalType;
+    props?: Record<string, any>;
 }
 
 // Интерфейс для контекста
 interface IModalContextType {
     modal: IModalState;
-    openModal: (content: ReactNode) => void;
+    openModal: (content: ReactNode, type?: TModalType, props?: Record<string, any>) => void;
     closeModal: () => void;
 }
 

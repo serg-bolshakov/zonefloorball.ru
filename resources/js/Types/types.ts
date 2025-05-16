@@ -170,10 +170,10 @@ export interface ICategoriesMenuArr {
 }
 
 // Интерфейс для состояния модального окна
-export interface IModalState {
-    isOpen: boolean;
-    content: ReactNode | null; // ReactNode — это тип для любого React-элемента (компонент, строка, число и т.д.)
-}
+// export interface IModalState {
+//     isOpen: boolean;
+//     content: ReactNode | null; // ReactNode — это тип для любого React-элемента (компонент, строка, число и т.д.)
+// }
 
 export interface IProduct extends IProductReportFromDB {
     id: number;                                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
