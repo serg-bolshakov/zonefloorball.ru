@@ -51,7 +51,8 @@ const RecentlyViewedProducts: React.FC = () => {
                 if (!productIds) return; // Не делать запрос если нет товаров
 
                 const response = await axios.get(`${API_ENDPOINTS.RECENTLY_VIEWED}?ids=${productIds}`);
-                setRecentlyViewedProducts(response.data.products);
+                console.log('response', response.data.data);
+                setRecentlyViewedProducts(response.data?.data);
             } catch (error) {
                 // Игнорируем ошибку, если запрос был отменён
                 if (!axios.isCancel(error)) {
@@ -78,7 +79,7 @@ const RecentlyViewedProducts: React.FC = () => {
 
             {isLoading ? (
                 <div>Загрузка...</div>
-            ) : recentlyViewedProducts.length > 0 ? (
+            ) : recentlyViewedProducts?.length > 0 ? (
                     <>
                     <section className="page-products__viewed-content">
                         <h2 className='basketTitle'>Вы недавно смотрели...</h2>

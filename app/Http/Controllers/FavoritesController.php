@@ -12,10 +12,10 @@ class FavoritesController extends Controller {
 
     public function index(Request $request) {
 
-        \Log::debug('FavoritesController Index: Session Check', [
+        /*\Log::debug('FavoritesController Index: Session Check', [
             'request' => $request->all(),
             'user' => Auth::user(),
-        ]);
+        ]);*/
 
         $favoritesIds = json_decode(Auth::user()?->favorites?->product_ids, '[]') 
          ?? json_decode($request->cookie('favorites', '[]'));
@@ -74,7 +74,7 @@ class FavoritesController extends Controller {
             $favoritesIds = $request->ids ?? json_decode(Auth::user()?->favorites->product_ids | []);
             $user = Auth::user();
 
-            \Log::debug('User in FavoritesController getProducts', ['passed_user' => $user,]);
+            // \Log::debug('User in FavoritesController getProducts', ['passed_user' => $user,]);
 
             $products = Product::with(['actualPrice', 'regularPrice', 'productReport', 'productShowCaseImage'])
             ->where('product_status_id', '=', 1)

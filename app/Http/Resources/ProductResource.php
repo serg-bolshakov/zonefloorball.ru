@@ -18,7 +18,7 @@ class ProductResource extends JsonResource
      public function toArray(Request $request): array {
 
         $user = Auth::user() ?? null;
-        
+
         $data = [
             'id' => $this->id,
             'title' => $this->title,
@@ -46,7 +46,7 @@ class ProductResource extends JsonResource
             $data = array_merge($data, $this->calculateDiscounts($user));
         }
 
-        // \Log::debug('ProductResources toArray', ['$data' => $data]);
+        \Log::debug('ProductResources toArray', ['$user' => $user]);
 
         return $data;      
     }
