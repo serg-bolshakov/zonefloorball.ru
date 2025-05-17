@@ -36,11 +36,11 @@ class AuthSyncController extends Controller {
         ]);
 
         
-        /*\Log::debug('AuthSyncController User recprods check', [
+        \Log::debug('AuthSyncController User recprods check', [
             '$localRecentlyViewed' => $localRecentlyViewed,
             '$validated' => $validated,
             '$validated[recentlyViewedProducts]_type' => gettype($validated['recentlyViewedProducts']),
-        ]);*/
+        ]);
 
         try {                        
             return response()->json([
@@ -58,8 +58,15 @@ class AuthSyncController extends Controller {
 
     protected function syncFavorites(User $user, array $localFavorites): array {
 
+        \Log::debug('AuthSyncController syncFavorites', [
+            '$localFavorites' => $localFavorites,
+        ]);
         // Получаем или создаём запись
         $favorites = $user->favorites()->firstOrNew();
+
+        \Log::debug('AuthSyncController syncFavorites', [
+            '$favorites' => $favorites,
+        ]);
 
         // Всегда получаем массив (явное преобразование)
         // $currentIds = json_decode($favorites->product_ids ?? '[]', true) ?? [];
@@ -165,6 +172,11 @@ class AuthSyncController extends Controller {
     }
 
     protected function syncRecentlyViewed(User $user, array $localRecentlyViewed): array {
+        
+        \Log::debug('AuthSyncController syncRecentlyViewed', [
+            '$localFavorites' => $localFavorites,
+        ]);
+        
         // 1. Получаем текущие данные из БД
         $dbItems = RecentlyViewedProduct::where('user_id', $user->id)
             ->get()
@@ -172,6 +184,10 @@ class AuthSyncController extends Controller {
                 return [$item->product_id => $item->viewed_at->getTimestampMs()];
             })
             ->toArray(); // { "33": 1747380000000, ... }
+
+        \Log::debug('AuthSyncController syncRecentlyViewed', [
+            '$dbItems' => $dbItems,
+        ]);
 
         // 2. Объединяем данные (берём максимум из локальных и БД)
         $merged = [];
