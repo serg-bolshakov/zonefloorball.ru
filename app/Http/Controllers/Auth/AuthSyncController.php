@@ -37,7 +37,6 @@ class AuthSyncController extends Controller {
 
         
         \Log::debug('AuthSyncController User recprods check', [
-            '$localRecentlyViewed' => $localRecentlyViewed,
             '$validated' => $validated,
             '$validated[recentlyViewedProducts]_type' => gettype($validated['recentlyViewedProducts']),
         ]);
@@ -173,46 +172,81 @@ class AuthSyncController extends Controller {
 
     protected function syncRecentlyViewed(User $user, array $localRecentlyViewed): array {
         
-        \Log::debug('AuthSyncController syncRecentlyViewed', [
-            '$localFavorites' => $localFavorites,
-        ]);
+        /*\Log::debug('AuthSyncController syncRecentlyViewed', [
+            '$localRecentlyViewed' => $localRecentlyViewed,
+            'user_id' => $user->id,
+        ]);*/
         
-        // 1. Получаем текущие данные из БД
-        $dbItems = RecentlyViewedProduct::where('user_id', $user->id)
-            ->get()
-            ->mapWithKeys(function ($item) {
-                return [$item->product_id => $item->viewed_at->getTimestampMs()];
-            })
-            ->toArray(); // { "33": 1747380000000, ... }
-
-        \Log::debug('AuthSyncController syncRecentlyViewed', [
-            '$dbItems' => $dbItems,
-        ]);
-
-        // 2. Объединяем данные (берём максимум из локальных и БД)
-        $merged = [];
-        foreach ($localRecentlyViewed as $productId => $timestamp) {
-            $merged[$productId] = max($timestamp, $dbItems[$productId] ?? 0);
-        }
-        // Добавляем записи из БД, которых нет в localStorage
-        foreach ($dbItems as $productId => $timestamp) {
-            if (!isset($merged[$productId])) {
-                $merged[$productId] = $timestamp;
-            }
-        }
-
-        // 3. Сохраняем TOP-6 самых свежих в БД
-        // RecentlyViewedProduct::where('user_id', $user->id)->delete(); - решили оставлять в БД все записи, удаляются из БД самые старые записи (старше одного года)
-        arsort($merged); // Сортируем по убыванию timestamp
-        $top6 = array_slice($merged, 0, 6, true);
-        foreach ($top6 as $productId => $timestamp) {
-            RecentlyViewedProduct::create([
-                'user_id' => $user->id,
+        // 1. Конвертируем локальные данные в формат [product_id => viewed_at]
+        $localItems = collect($localRecentlyViewed)
+            ->map(fn ($ts, $productId) => [
                 'product_id' => $productId,
-                'viewed_at' => Carbon::createFromTimestampMs($timestamp),
+                'viewed_at' => Carbon::createFromTimestampMs($ts)
             ]);
+
+        // 2. Получаем существующие записи из БД
+        $existingItems = RecentlyViewedProduct::where('user_id', $user->id)
+            ->get()
+            ->keyBy('product_id');
+
+        // 3. Объединяем данные, обновляя существующие
+        foreach ($localItems as $item) {
+            RecentlyViewedProduct::updateOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'product_id' => $item['product_id']
+                ],
+                [
+                    'viewed_at' => $item['viewed_at']
+                ]
+            );
         }
-        return $top6;
+
+        // 4. Возвращаем актуальные данные (уже без дублей)
+        return RecentlyViewedProduct::where('user_id', $user->id)
+            ->orderByDesc('viewed_at')
+            ->limit(6)
+            ->get()
+            ->mapWithKeys(fn ($item) => [$item->product_id => $item->viewed_at->getTimestampMs()])
+            ->toArray();
+
+        /*// 1. Получаем текущие данные из БД
+            $dbItems = RecentlyViewedProduct::where('user_id', $user->id)
+                ->get()
+                ->mapWithKeys(function ($item) {
+                    return [$item->product_id => $item->viewed_at->getTimestampMs()];
+                })
+                ->toArray(); // { "33": 1747380000000, ... }
+
+            \Log::debug('AuthSyncController syncRecentlyViewed', [
+                '$dbItems' => $dbItems,
+            ]);
+
+            // 2. Объединяем данные (берём максимум из локальных и БД)
+            $merged = [];
+            foreach ($localRecentlyViewed as $productId => $timestamp) {
+                $merged[$productId] = max($timestamp, $dbItems[$productId] ?? 0);
+            }
+            // Добавляем записи из БД, которых нет в localStorage
+            foreach ($dbItems as $productId => $timestamp) {
+                if (!isset($merged[$productId])) {
+                    $merged[$productId] = $timestamp;
+                }
+            }
+
+            // 3. Сохраняем TOP-6 самых свежих в БД
+            // RecentlyViewedProduct::where('user_id', $user->id)->delete(); - решили оставлять в БД все записи, удаляются из БД самые старые записи (старше одного года)
+            arsort($merged); // Сортируем по убыванию timestamp
+            $top6 = array_slice($merged, 0, 6, true);
+            foreach ($top6 as $productId => $timestamp) {
+                RecentlyViewedProduct::create([
+                    'user_id' => $user->id,
+                    'product_id' => $productId,
+                    'viewed_at' => Carbon::createFromTimestampMs($timestamp),
+                ]);
+            }
+            return $top6;
+        */
     }
     
     // Защищённое получение массива
