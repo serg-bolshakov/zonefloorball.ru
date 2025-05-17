@@ -12,45 +12,41 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Favorite;
 use App\Models\RecentlyViewedProduct;
+use Illuminate\Support\Carbon; 
 
 class AuthSyncController extends Controller {
 
     public function syncLocalData(Request $request)  {
 
         $user = Auth::user() ?? null;
+        // $localRecentlyViewed = $request->input('recentlyViewedProducts', []); // { "33": 1747389626452, ... }
         
-        \Log::debug('AuthSyncController:', [
-            '$request' => $request->all(),
-            '$user' => $user,
-        ]);
-
         $validated = $request->validate([
-            'favorites'         => ['sometimes', 'array'],
-            /*'favorites.*' => [                                      // Валидация ID товаров - подумать! В этом случае выдаёт ошибку: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'is_active' in 'where clause' (Connection: mysql, SQL: select count(*) as aggregate from `products` where `id` = 2 and (`is_active` = 1))
+            'favorites'                 => ['sometimes', 'array'],
+            /*'favorites.*' => [                                                // Валидация ID товаров - подумать! В этом случае выдаёт ошибку: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'is_active' in 'where clause' (Connection: mysql, SQL: select count(*) as aggregate from `products` where `id` = 2 and (`is_active` = 1))
                 // может добавить в таблицу products is_active и убрать таблицу product_statuses (два значения: active, archieved) - надо подумать...
                 'integer',
                 Rule::exists('products', 'id')->where(function ($query) {
                     $query->where('is_active', true);
                 })
             ],*/
-            'favorites.*'               => ['integer', 'exists:products,id'], // Валидация ID товаров 
+            'favorites.*'               => ['integer', 'exists:products,id'],   // Валидация ID товаров 
             'cart'                      => ['sometimes', 'array'],
             'recentlyViewedProducts'    => ['sometimes', 'array'],
         ]);
 
-        \Log::debug('User favorites check', [
-            'user_id' => $user->id,
-            'favorites_exists' => Favorite::where('user_id', $user->id)->exists(),
-            'current_data' => Favorite::where('user_id', $user->id)->first()?->product_ids,
-            'current_data_type' => gettype(Favorite::where('user_id', $user->id)->first()?->product_ids),
+        
+        /*\Log::debug('AuthSyncController User recprods check', [
+            '$localRecentlyViewed' => $localRecentlyViewed,
             '$validated' => $validated,
-            '$validated[favorites]_type' => gettype($validated['favorites']),
-        ]);
+            '$validated[recentlyViewedProducts]_type' => gettype($validated['recentlyViewedProducts']),
+        ]);*/
 
         try {                        
             return response()->json([
                 'favorites' => $this->syncFavorites($user, $validated['favorites'] ?? []),
                 // 'cart'      => $this->syncCart($user, $validated['cart'] ?? []),
+                'recentlyViewedProducts' => $this->syncRecentlyViewed($user, $validated['recentlyViewedProducts'] ?? []),
                 // Другие данные...
             ]);
 
@@ -169,8 +165,38 @@ class AuthSyncController extends Controller {
     }
 
     protected function syncRecentlyViewed(User $user, array $localRecentlyViewed): array {
-        // Аналогичная логика для корзины
-        // Можно добавить проверку наличия товаров
+        // 1. Получаем текущие данные из БД
+        $dbItems = RecentlyViewedProduct::where('user_id', $user->id)
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [$item->product_id => $item->viewed_at->getTimestampMs()];
+            })
+            ->toArray(); // { "33": 1747380000000, ... }
+
+        // 2. Объединяем данные (берём максимум из локальных и БД)
+        $merged = [];
+        foreach ($localRecentlyViewed as $productId => $timestamp) {
+            $merged[$productId] = max($timestamp, $dbItems[$productId] ?? 0);
+        }
+        // Добавляем записи из БД, которых нет в localStorage
+        foreach ($dbItems as $productId => $timestamp) {
+            if (!isset($merged[$productId])) {
+                $merged[$productId] = $timestamp;
+            }
+        }
+
+        // 3. Сохраняем TOP-6 самых свежих в БД
+        RecentlyViewedProduct::where('user_id', $user->id)->delete();
+        arsort($merged); // Сортируем по убыванию timestamp
+        $top6 = array_slice($merged, 0, 6, true);
+        foreach ($top6 as $productId => $timestamp) {
+            RecentlyViewedProduct::create([
+                'user_id' => $user->id,
+                'product_id' => $productId,
+                'viewed_at' => Carbon::createFromTimestampMs($timestamp),
+            ]);
+        }
+        return $top6;
     }
     
     // Защищённое получение массива

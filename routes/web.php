@@ -28,6 +28,7 @@ use App\Models\Order;
 
 use App\Http\Controllers\InitialDataController;
 use App\Http\Controllers\Auth\AuthSyncController;
+use App\Http\Controllers\RecentlyViewedController;
 
 use App\Models\User;
 
@@ -65,6 +66,8 @@ Route::middleware('web')->group(function () {
 
     // Синхронизация данных при авторизации
     Route::match(['GET', 'POST'], '/user/sync', [AuthSyncController::class, 'syncLocalData']);
+
+    Route::post('/recently-viewed', [RecentlyViewedController::class, 'store'])->middleware('api');
 });
 
 

@@ -86,6 +86,12 @@ class RecentlyViewedProduct extends Model {
     }
 
     public static function processRequest(int $userId, array $products): array {
+
+        \Log::debug('RecentlyViewedProduct processRequest:', [
+            '$userId' => $userId,
+            '$products' => $products,
+        ]);
+
         $items = collect($products)
             ->sortByDesc('timestamp')
             ->unique()

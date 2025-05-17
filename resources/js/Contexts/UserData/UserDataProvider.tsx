@@ -13,6 +13,7 @@ import { useLocalStorage } from '@/Hooks/useLocalStorage';
 type SyncData = {
   favorites?: number[];
   cart?: IProduct[];
+  recentlyViewedProducts?: TRecentlyViewedProducts;
 };
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
@@ -378,24 +379,25 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     };
 
     const addRecentlyViewedProd = useCallback(async (productId: number) => {
-        try {
-            // Оптимизация: пропускаем если уже загружается
-            if (state.isLoading) return { error: 'Already processing' };
+        
+        // Оптимизация: пропускаем если уже загружается
+        if (state.isLoading) return { error: 'Already processing' };
 
-            updateState({isLoading: true});
+        updateState({isLoading: true});
             
-            const timestamp = Date.now();
-            const updatedItems = { ...state.recentlyViewedProducts, [productId]: timestamp };
+        const timestamp = Date.now();
+        const updatedItems = { ...state.recentlyViewedProducts, [productId]: timestamp };
 
+        try {
             if (user) {
-                await axios.post(API_ENDPOINTS.RECENTLY_VIEWED, { 
+                await axios.post('/recently-viewed', { 
                     product_id: productId,
                     viewed_at: new Date(timestamp).toISOString()
                 });    
-            } else {
-                // localStorage.setItem('recently_viewed', JSON.stringify(updatedItems));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
-                updateRecentlyViewedLocalStorage(updatedItems);
-            }
+            } 
+
+            // localStorage.setItem('recently_viewed', JSON.stringify(updatedItems));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
+            const sorted = updateRecentlyViewedLocalStorage(updatedItems);
 
             updateState({ 
                 recentlyViewedProducts: updatedItems,
@@ -403,9 +405,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             });
 
             // Реальная реализация может вернуть undefined (если есть try-catch без return) - делаем return
-            return {
-                error: undefined
-            };
+            return { error: undefined };
         } catch (error) {
             const message = getErrorMessage(error);
             
@@ -418,7 +418,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 error: message 
             };
         }
-    }, [user, state.recentlyViewedProducts, state.isLoading]); 
+    }, [user, state.isLoading]); 
 
     // Добавляем ограничение количества товаров (элементов), например, последние 6:
     const MAX_ITEMS = 6;
