@@ -9,6 +9,7 @@ import { API_ENDPOINTS } from '@/Constants/api';
 import { getErrorMessage } from '@/Utils/error';
 import { Link } from '@inertiajs/react';
 import { formatPrice } from '@/Utils/priceFormatter';
+import useAppContext from '@/Hooks/useAppContext';
 
 interface IRecentlyViewedItem {
     productId: number;
@@ -16,6 +17,7 @@ interface IRecentlyViewedItem {
 }
 
 const RecentlyViewedProducts: React.FC = () => {
+    const { user } = useAppContext();
     const { ...state } = useUserDataContext();
 
     const products = Object.keys(state.recentlyViewedProducts)
@@ -52,7 +54,7 @@ const RecentlyViewedProducts: React.FC = () => {
 
                 const response = await axios.get(`${API_ENDPOINTS.RECENTLY_VIEWED}?ids=${productIds}`);
                 console.log('response', response.data.data);
-                setRecentlyViewedProducts(response.data?.data);
+                setRecentlyViewedProducts(response.data.data);
             } catch (error) {
                 // Игнорируем ошибку, если запрос был отменён
                 if (!axios.isCancel(error)) {
@@ -112,7 +114,25 @@ const RecentlyViewedProducts: React.FC = () => {
                                         </div>
                                         { product.date_end && ( 
                                             <div className="cardProduct-priceValidPeriod">акция действует до: { product.date_end }</div>
-                                        )}  
+                                        )}
+
+                                        { user && product.price_regular && product.price_with_rank_discount && product.price_actual && (product.price_with_rank_discount < product.price_actual) && (
+                                        <>    
+                                            <p className="margin-tb12px">
+                                            { user.client_type_id === 1
+                                                ? "моя цена лучше: "
+                                                : "наша цена: "}
+                                                
+                                            </p>
+                                            
+                                            <div className="d-flex padding-left16px">
+                                                <div className="basket-favorites__priceCurrentSale">{formatPrice(product.price_with_rank_discount)}&nbsp;<sup>&#8381;</sup></div>
+                                                {/* <div className="cardProduct-priceBeforSale">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div> */}
+                                                <div className="basket-favorites__priceDiscountInPercentage">- { product.percent_of_rank_discount }&#37;</div>
+                                            </div>
+                                        </>
+                                        )}   
+
                                     </div>
                                 </div>
                             )}

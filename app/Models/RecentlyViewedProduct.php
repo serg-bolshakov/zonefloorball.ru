@@ -28,6 +28,17 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RecentlyViewedProduct extends Model {
     use HasFactory;
 
+    protected $primaryKey = null; // Отключаем автоинкрементный id - удалили поле id в таблице, а Laravel по умолчанию ищет поле id для операций updateOrCreate()
+    public $incrementing = false; // Важно для составного ключа
+
+    // Указываем поля ключа
+    protected function setKeysForSaveQuery($query) {
+        $query
+            ->where('user_id', '=', $this->getAttribute('user_id'))
+            ->where('product_id', '=', $this->getAttribute('product_id'));
+        return $query;
+    }
+
     protected $fillable = ['user_id', 'product_id', 'viewed_at'];
 
     // Валидация JSON в Laravel: Автоматическая конвертация в Carbon при работе с полем

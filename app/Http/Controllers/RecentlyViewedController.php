@@ -47,11 +47,11 @@ class RecentlyViewedController extends Controller {
             ['viewed_at' => $viewedAt]
         );
 
-        \Log::debug('RecentlyViewedController:', [
+        /*\Log::debug('RecentlyViewedController:', [
             'method' => $request->method(),
             'data' => $request->all(),
             '$viewedAt' => $viewedAt
-        ]);
+        ]);*/
         // Простой ответ для проверки
         return response()->json([
             'status' => 'success',
@@ -59,6 +59,7 @@ class RecentlyViewedController extends Controller {
     }
 
     public function getProducts(Request $request) {
+        $userId = Auth::id();
         $validated = $request->validate([
             'ids' => [
                 'required',
@@ -66,7 +67,7 @@ class RecentlyViewedController extends Controller {
                 'regex:/^[\d,]+$/', // Только цифры и запятые
             ],
         ]);
-        // \Log::debug('validated:', ['validated' => $validated['ids']]);
+        \Log::debug('validated:', ['headers' => $validated['ids'], 'headers' => $request->headers->all(), '$userId' => $userId]);
 
         // Разбиваем строку на массив только после валидации
         $productIds = explode(',', $validated['ids']);

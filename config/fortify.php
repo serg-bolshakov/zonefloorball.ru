@@ -1,5 +1,5 @@
 <?php
-
+// config/fortify.php
 use Laravel\Fortify\Features;
 
 return [

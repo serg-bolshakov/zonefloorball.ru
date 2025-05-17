@@ -57,3 +57,6 @@ Route::get('/delivery-options', [DeliveryController::class, 'index']);
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);
 });
+Route::middleware('auth:sanctum')->get('/test-auth', function (Request $request) {
+    return ['user' => $request->user()];
+});
