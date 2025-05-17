@@ -17,7 +17,7 @@ class FavoritesController extends Controller {
             'user' => Auth::user(),
         ]);
 
-        $favoritesIds = Auth::user()?->favorites?->product_ids 
+        $favoritesIds = json_decode(Auth::user()?->favorites?->product_ids, '[]') 
          ?? json_decode($request->cookie('favorites', '[]'));
 
         $products = Product::with(['actualPrice', 'regularPrice', 'productReport', 'productShowCaseImage'])

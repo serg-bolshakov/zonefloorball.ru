@@ -84,7 +84,7 @@ class RecentlyViewedController extends Controller {
         
         $user = auth()->user();
         $products = RecentlyViewedProduct::getRecentlyViewedItems($productIds);
-        //\Log::debug('$products:', ['$products' => $products]);
+        \Log::debug('RecentlyViewedController:', ['$user' => $user]);
 
 
         /*if(!empty($productIds)) {

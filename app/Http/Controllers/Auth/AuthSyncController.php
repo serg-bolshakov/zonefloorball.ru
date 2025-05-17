@@ -186,7 +186,7 @@ class AuthSyncController extends Controller {
         }
 
         // 3. Сохраняем TOP-6 самых свежих в БД
-        RecentlyViewedProduct::where('user_id', $user->id)->delete();
+        // RecentlyViewedProduct::where('user_id', $user->id)->delete(); - решили оставлять в БД все записи, удаляются из БД самые старые записи (старше одного года)
         arsort($merged); // Сортируем по убыванию timestamp
         $top6 = array_slice($merged, 0, 6, true);
         foreach ($top6 as $productId => $timestamp) {
