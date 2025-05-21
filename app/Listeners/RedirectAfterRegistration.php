@@ -30,12 +30,7 @@ class RedirectAfterRegistration
             // 
         }
     */
-    /* это первый вариант - не прокатил
-        public function handle(Registered $event)
-        {
-            return Redirect::to('/email/verify');
-        }
-    */
+    
     // вторая попытка:
     public function handle(Registered $event)
     {

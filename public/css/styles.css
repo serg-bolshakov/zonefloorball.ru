@@ -4474,7 +4474,7 @@ select:hover {
   text-align: center;
   position: relative;
   animation: zoomIn 0.3s;
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  /* font-family: 'Helvetica Neue', Arial, sans-serif; */
 }
 
 /* Заголовок */

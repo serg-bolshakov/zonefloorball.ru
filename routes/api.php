@@ -48,7 +48,7 @@ Route::get('/grips-aside-filters', [GripsAsideFiltersController::class, 'index']
 Route::get('/eyewears-aside-filters', [EyewearsAsideFiltersController::class, 'index']);
 Route::get('/goalie-aside-filters', [GoalieAsideFiltersController::class, 'index']);
 Route::get('/catalog', [ProductController::class, 'catalogApi']);
-Route::match(['get', 'post'], '/products/cart', [CartController::class, 'sync'])->middleware('api');
+Route::post('/products/cart', [CartController::class, 'getCartProducts'])->middleware('api');
 Route::post('/products/favorites', [FavoritesProductsApiController::class, 'index']);
 Route::get('/products/recently-viewed', [RecentlyViewedController::class, 'getProducts'])->middleware('api');
 Route::match(['get', 'post'],'/orders/create', [OrderController::class, 'create'])->middleware('api');

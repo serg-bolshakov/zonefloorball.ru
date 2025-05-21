@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Cart;
 use App\Models\User;                                        // User — нужен для typehint в forUser(User $user)
+use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\Transport;
 use App\Services\DiscountService;
 use Inertia\Inertia;
+use App\Http\Resources\ProductCollection;
 
 class CartController extends Controller
 {    
@@ -45,99 +47,88 @@ class CartController extends Controller
         }
     }
 
-    // Реализуем API-методы:
-    public function sync(Request $request) {
-        $validated = $request->validate(Cart::rules()); 
-        $products = Cart::getCartItems($validated['products']);
+    // Реализуем API-методы: получаем товары корзины покупок пользователя
+    // ожидаем: { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
+    public function getCartProducts(Request $request) {
         
-        $user = auth()->user();
+        $validated = $request->validate(['products'  => ['sometimes', 'array']]);
+        $productQuantities = $validated['products']; // {84: 1, 89: 2}
+        
+        \Log::debug('CartController begin', [
+            '$validated' => $validated,
+            'productQuantities' => $productQuantities,
+        ]);
 
-        $response = [
-            'products' => $products->map(function ($product) use ($user, $validated) {
-                return $this->enrichProductData(
-                    $product,
-                    $validated['products'][$product->id] ?? 1,
-                    $user
-                );
-            }),
-            'cartTotal' => array_sum($validated['products'])
-        ];
-        //dd($response);
-        if($user) {
-            Cart::updateOrCreate(
-                ['user_id' => $user->id],
-                ['products' => $validated['products']]
-            );
-        }
+        $products = Product::with(['actualPrice', 'regularPrice', 'productReport', 'productShowCaseImage'])
+            ->where('product_status_id', '=', 1)
+            ->whereIn('id', array_keys($productQuantities))
+            ->get()
+            ->each(function ($product) use ($productQuantities) {
+                $product->quantity = $productQuantities[$product->id] ?? 0;
+            });
 
-        return response()->json($response);
+        \Log::debug('CartController processRequest:', [
+            '$products' => $products,
+        ]);
+        try { 
+            $response = [
+                'products' => new ProductCollection($products),
+                'cartTotal' => array_sum($validated['products'])
+            ];
+            \Log::debug('CartController: response', ['response' => $response]);
+            return response()->json($response);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка загрузки данных в RecentlyViewedController',
+                'details' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }  
     }
 
-    private function enrichProductData(Product $product, int $quantity, ?User $user) {
-        $data = [
-            'id' => $product->id,
-            'title' => $product->title,
-            'prod_url_semantic' => $product->prod_url_semantic,
-            'img_link' => $product->productShowCaseImage->img_link,
-            'quantity' => $quantity,
-            'on_sale' => $product->productReport->on_sale,
-            'article' => $product->article,
-            'price_actual' => $product->actualPrice->price_value  ?? NULL,
-            'price_regular' => $product->regularPrice->price_value  ?? NULL,
-        ];
+    // Добавление / обновление товара в корзину(е)
+    public function update(Request $request) {
+        
+        $validated = $request->validate([
+            'product_id' => 'required|integer|exists:products,id',
+            'quantity' => 'required|integer|min:1'
+        ]);
+                
+        $updated = Cart::where('user_id', Auth::id())
+            ->where('product_id', $validated['product_id'])
+            ->update([
+                'quantity' => $validated['quantity'],
+                'deleted_at' => null // Сбрасываем мягкое удаление
+        ]);
 
-        if($user) {
-            $data = array_merge($data, $this->calculateDiscount($product, $user));
+        // Если записи не было - создаём
+        if ($updated === 0) {
+            Cart::create([
+                'user_id' => Auth::id(),
+                'product_id' => $validated['product_id'],
+                'quantity' => $validated['quantity']
+            ]);
         }
 
-        return $data;
+        return response()->json([
+            'success' => true,
+            'action' => $updated ? 'updated' : 'created'
+        ]);
     }
 
-    private function calculateDiscount(Product $product, User $user) {
-        $discountData = [];
-        $rankDiscount = $user->rank->price_discount ?? 0;
+    public function delete(Request $request) {
+        $validated = $request->validate([
+            'product_id' => 'required|integer|exists:products,id'
+        ]);
 
-        // Работаем с примененим системы скидок:
-        $discountData['price_with_rank_discount'] = $discountData['percent_of_rank_discount'] = NULL;
-        $discountData['price_with_action_discount'] = $discountData['summa_of_action_discount'] = NULL; // это скидки по "акциям"
-        
-        // если в корзину идёт регулярная цена (без скидки), подсчитаем цену со скидкой, в зависимости от ранга покупателя: 
-        if($product->actualPrice->price_value == $product->regularPrice->price_value) {
-            if($rankDiscountPercent > 0) {
-                $discountData['price_with_rank_discount'] = round($product->regularPrice->price_value - ($product->regularPrice->price_value * ($rankDiscountPercent / 100))); 
-                $discountData['percent_of_rank_discount'] = $rankDiscountPercent;
-            }
-        } elseif($product->actualPrice->price_value < $product->regularPrice->price_value) {
-            // если есть специальная цена, нужно посмотреть какая цена меньше, ту и показываем => скидки не суммируем!
-            $actualPrice = $product->actualPrice->price_value;
-            $regularPrice = $product->regularPrice->price_value;
-            $possiblePriceWithDiscount = round($regularPrice - ($regularPrice * ($rankDiscountPercent / 100)));
-            if($possiblePriceWithDiscount < $actualPrice) {
-                $discountData['price_with_rank_discount'] = $possiblePriceWithDiscount;
-                $discountData['percent_of_rank_discount'] = $rankDiscountPercent;
-            } else {
-                // выводим для покупателя его выгоду от покупки товара по цене со кидкой по акции:
-                $discountData['summa_of_action_discount'] = $regularPrice - $actualPrice;
-            }
-        }
-        
-        $discountData['date_end'] = NULL;
-        if($product->actualPrice->price_value < $product->regularPrice->price_value) {
-            $discountData['price_special'] = $product->actualPrice->price_value;
-            $discountData['date_end'] = $product->actualPrice->date_end  ?? NULL;
-        } else {
-            $discountData['price_special'] = NULL;
+        // Когда пользователь сам удаляет товар из корзины - удадяем его "жёстко":
+        $deleted = Cart::where('user_id', Auth::id())
+            ->where('product_id', $validated['product_id'])
+            ->delete(); // Или update(['deleted_at' => now()]) для мягкого удаления
+
+        if (!$deleted) {
+            return response()->json(['error' => 'Товар не найден в корзине'], 404);
         }
 
-        return $discountData;
+        return response()->json(['success' => true]);
     }
-
-    /**
-     * 1. Пользователь добавляет товар → фронт отправляет: { "cart": {"84": {"quantity": 1}} }
-     * 2. Контроллер:
-     *  - Проверяет данные через Cart::rules(): $validated = $request->validate(Cart::rules()); // Вот тут!
-     *  - Находит/создает корзину через Cart::forUser()
-     *  - Сохраняет в БД как JSON
-     * 3. При следующем запросе: Laravel автоматически преобразует JSON из БД в массив PHP благодаря $casts.
-     */
 }

@@ -31,7 +31,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
         const loadData = async () => {
             axios.get('/api/initial-data')
                 .then(response => {
-                    // console.log(response);
+                    console.log(response.data.cart_changes.new_arrivals);
                     setUser(response.data.user);
                     setCategoriesMenuArr(response.data.categoriesMenuArr);
                     setAuthBlockContentFinal(response.data.authBlockContentFinal);
@@ -46,7 +46,9 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
                     toast.error('Произошла ошибка при загрузке данных. Пожалуйста, попробуйте позже.');
                 });
         };
+        
         loadData();
+        
     }, []);
 
     // console.log('APPProvider: user', user);

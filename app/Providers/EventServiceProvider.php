@@ -1,5 +1,5 @@
 <?php
-
+// app/Providers/EventServiceProvider.php
 namespace App\Providers;
 
 use App\Listeners\RedirectAfterRegistration;        // 09.01.2025 регистрируем слушатель RedirectAfterRegistration в EventServiceProvider (здесь)  для события Registered:

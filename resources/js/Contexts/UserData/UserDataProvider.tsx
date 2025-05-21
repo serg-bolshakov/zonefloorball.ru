@@ -79,7 +79,6 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         }, 500); // Задержка 500 мс
     };
 
-
     // Универсальные принципы для всех методов (addToCart и др.)
     // Шаблон получения состояния:
     const getCurrentData = <ExpectedType extends unknown>(): ExpectedType[] => {
@@ -239,8 +238,11 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 [productId]: (state.cart[productId] || 0) + quantity };
 
             if (user) {
-                await axios.post(API_ENDPOINTS.CART, { 
-                    products: newCart
+                console.log('productId', productId);
+                console.log('quantity', newCart[productId]);
+                await axios.post('/cart/items', { 
+                    product_id: productId,
+                    quantity: newCart[productId]
                 });    
             } else {
                 // localStorage.setItem('cart', JSON.stringify(newCart));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
@@ -296,17 +298,17 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
             // Сохранение на сервер (если пользователь авторизован) / localStorage
             if (user) {
-                await axios.post(API_ENDPOINTS.CART, { 
-                    cart: newCart // Отправляем обновлённый массив
+                await axios.delete('/cart/items', { 
+                    data: { product_id: productId } // Важно: axios.delete отправляет data в body
                 });    
-            } else {
-                localStorage.setItem('cart', JSON.stringify(newCart));
-            }
+            } 
+
+            localStorage.setItem('cart', JSON.stringify(newCart));
 
             return { cartTotal: calculateCartTotal(newCart) };
 
         } catch (error) {
-            // const message = handleError(error);
+            // Откат изменений при ошибке
             const message = getErrorMessage(error); 
             updateState({
                 error: message,
@@ -336,8 +338,11 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             newCart[productId] = quantity; // Изменяем количество
 
             if (user) {
-                await axios.post(API_ENDPOINTS.CART, { 
-                    cart: newCart
+                console.log('productId', productId);
+                console.log('quantity', newCart[productId]);
+                await axios.post('/cart/items', { 
+                    product_id: productId,
+                    quantity: newCart[productId]
                 });    
             } else {
                 // localStorage.setItem('cart', JSON.stringify(newCart));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
@@ -437,17 +442,17 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     const syncData = useCallback(async (manualData?: SyncData) => {
         console.log('newFavorites SyncData manualData', manualData);
         if (user) {
-            console.log('Syncing data for user:', user.id);
+            // console.log('Syncing data for user:', user.id);
 
             // Логика синхронизации...
             try {
                 // Если данные переданы вручную — используем их, иначе берём из localStorage
                 const data = manualData ?? {
                     favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
-                    // cart: getLocalStorageData('cart', []),
+                    cart: getLocalStorageData('cart', []),
                     recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
                 };
-                console.log(data);
+                console.log('Syncing data for user:', data);
                 const controller = new AbortController();
                 const response = await axios.post('/user/sync', data, {     // Route::match(['GET', 'POST'], '/user/sync', [AuthSyncController::class, 'syncLocalData']); - Синхронизация данных при авторизации
                     signal: controller.signal,
@@ -456,6 +461,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                         'Accept': 'application/json',
                     }
                 });
+
+                console.log('Syncing data responce:', response);
 
                 // Сохраняем БД-версию в контекст
                 setState(prev => ({

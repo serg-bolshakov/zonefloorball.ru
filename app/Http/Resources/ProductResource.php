@@ -39,6 +39,7 @@ class ProductResource extends JsonResource
             'expected_receipt_date' =>  $this->productReport->expected_receipt_date ?? null, 
             'on_preorder'           =>  $this->productReport->on_preorder ?? null,
             'preodered'             =>  $this->productReport->preodered ?? null,
+            'quantity'              =>  $this->quantity ?? null,
         ];
         
         // если пользователь авторизован посчитаем его скидки и добавим в ответ:

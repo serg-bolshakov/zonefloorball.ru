@@ -43,7 +43,8 @@
                     'categoriesInfo' => Category::all(),
                     
                     'authBlockContentFinal' => $userData['auth_content'],
-                    'cart' => $userData['cart'],
+                    'cart' => $user ? $this->getUserCart($user)['cart'] : [],
+                    'cart_changes' => $user ? $this->getUserCart($user) : [],
                     'favorites' => $user?->favorites?->product_ids 
                         ? $user->favorites->product_ids // json_decode($user->favorites->product_ids, true) - "декодирование" осуществили в модели Favorite через cast...
                         : [],
@@ -78,12 +79,12 @@
                     . '<br><a href="' . ($isProfilePage ? '/' : '/profile') . '">'
                     . ($isProfilePage ? 'выйти из профиля' : 'войти в профиль') 
                     . '</a> или <a href="/logout">выйти из системы</a>',
-                'cart' => Cart::where('user_id', $user->id)->pluck('content'),
+                // 'cart' => Cart::where('user_id', $user->id)->pluck('content'),
             ];
         }
 
         // эта функция выбирает товары, а нужно передать на фронт сторку id-шников
-        private function getFavoritesProducts(Request $request) {
+        /*private function getFavoritesProducts(Request $request) {
             \Log::debug('InitialDataController getFavoritesProducts', [
                 'session_id' => session()->getId(),
                 'cookies_received' => $request->cookies->all(),
@@ -103,15 +104,111 @@
             ->where('product_status_id', '=', 1)
             ->whereIn('id', $favoritesIds)
             ->get();   
-                /*\Log::debug('InitialDataController getFavoritesProducts', [
-                    '$favoritesIds' => $favoritesIds,
-                    '$favoritescookie' => $request->cookie('favorites', '[]'),
-                    'cookies' => $request->cookie,
-                    '$products' => $products,
-                ]);*/
             return new ProductCollection($products);
-        }
+        }*/
        
+        // метод получения данных корзины пользователя для записи в локальное хранилище при авторизации
+        private function getUserCart(User $user): array {
+
+            // 1. Подготовка данных
+            $result = [
+                'cart' => [],
+                'sold_out' => [],
+                'new_arrivals' => [],
+                'quantity_changes' => []
+            ];
+
+            // Загрузка данных: получаем все необходимые данные
+            $existingItems = Cart::where('user_id', $user->id)
+                ->get()
+                ->keyBy('product_id');
+                // метод >keyBy преобразует коллекцию в ассоциативный массив, где:Ключ = значение поля product_id, Значение = вся модель Cart
+                /* Допустим, в БД есть записи:
+                    
+                    php
+                    [
+                        ['user_id' => 1, 'product_id' => 13, 'quantity' => 6],
+                        ['user_id' => 1, 'product_id' => 25, 'quantity' => 2]
+                    ]
+                    После keyBy('product_id') получим:
+
+                    php
+                    [
+                        13 => ['user_id' => 1, 'product_id' => 13, 'quantity' => 6],
+                        25 => ['user_id' => 1, 'product_id' => 25, 'quantity' => 2]
+                    ]
+
+                    Зачем это нужно?
+                    Чтобы быстро искать записи по product_id без перебора всей коллекции:
+
+                    php
+                    $existingItems->get(13); // Вернёт запись с product_id=13
+
+                */
+
+            $productIds = $existingItems->keys()->toArray();
+
+            $products = Product::select('id') // Берём только ID товара
+                ->with(['productReport' => function ($query) {
+                    $query->select('product_id', 'on_sale'); // Только нужные поля связи
+                }])
+                ->whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
+
+            // 3. Обработка
+            foreach ($products as $productId => $product) {
+                $onSale = $product->productReport?->on_sale ?? 0;
+                $dbQty = $existingItems[$productId]->quantity ?? 0;
+
+                if ($onSale <= 0) {
+                    if ($dbQty > 0) $result['sold_out'][$productId] = $dbQty;
+                    continue;
+                }
+
+                $finalQty = min($dbQty, $onSale);
+                $result['cart'][$productId] = $finalQty;
+
+                if ($existingItems[$productId]->deleted_at ?? false) {
+                    $result['new_arrivals'][] = $productId;
+                }
+
+                if ($finalQty != $dbQty) {
+                    $result['quantity_changes'][$productId] = $dbQty;
+                }
+            }
+
+            // 4. Сохранение в БД 
+            DB::transaction(function () use ($user, $result) {
+
+                // Мягко удаляем товар из корзины покупок пользователя в БД, если товар закончился в продаже:
+                Cart::where('user_id', $user->id)
+                    ->whereIn('product_id', array_keys($result['sold_out']))
+                    ->update(['deleted_at' => now()]);
+
+                // Обновляем / актуализируем данные корзины в БД
+                Cart::upsert(
+                    collect($result['cart'])->map(function ($qty, $productId) use ($user) {
+                        return [
+                            'user_id' => $user->id,
+                            'product_id' => $productId,
+                            'quantity' => $qty,
+                            'deleted_at' => null,
+                            'updated_at' => now()
+                        ];
+                    })->values()->toArray(),
+                    ['user_id', 'product_id'],
+                    ['quantity', 'deleted_at', 'updated_at']
+                );
+            });
+
+            \Log::debug('getUserCart final', [
+                '$result' => $result,
+            ]);
+
+            return $result;
+        }
+        
         private function getBrandedCategoriesMenuArr($brandId = 0) {
             $res = [];
     

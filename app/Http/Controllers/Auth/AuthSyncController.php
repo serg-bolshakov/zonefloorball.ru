@@ -13,6 +13,8 @@ use App\Models\User;
 use App\Models\Favorite;
 use App\Models\RecentlyViewedProduct;
 use Illuminate\Support\Carbon; 
+use App\Models\Cart;
+use App\Models\Product;
 
 class AuthSyncController extends Controller {
 
@@ -35,18 +37,12 @@ class AuthSyncController extends Controller {
             'recentlyViewedProducts'    => ['sometimes', 'array'],
         ]);
 
-        
-        \Log::debug('AuthSyncController User recprods check', [
-            '$validated' => $validated,
-            '$validated[recentlyViewedProducts]_type' => gettype($validated['recentlyViewedProducts']),
-        ]);
-
         try {                        
             return response()->json([
                 'favorites' => $this->syncFavorites($user, $validated['favorites'] ?? []),
-                // 'cart'      => $this->syncCart($user, $validated['cart'] ?? []),
+                'cart'      => $this->syncCart($user, $validated['cart'] ?? [])['cart'],
                 'recentlyViewedProducts' => $this->syncRecentlyViewed($user, $validated['recentlyViewedProducts'] ?? []),
-                // Другие данные...
+                'cart_changes' => $this->syncCart($user, $validated['cart'] ?? []),
             ]);
 
         } catch (\Exception $e) {
@@ -57,15 +53,15 @@ class AuthSyncController extends Controller {
 
     protected function syncFavorites(User $user, array $localFavorites): array {
 
-        \Log::debug('AuthSyncController syncFavorites', [
+        /*\Log::debug('AuthSyncController syncFavorites', [
             '$localFavorites' => $localFavorites,
-        ]);
+        ]);*/
         // Получаем или создаём запись
         $favorites = $user->favorites()->firstOrNew();
 
-        \Log::debug('AuthSyncController syncFavorites', [
+        /*\Log::debug('AuthSyncController syncFavorites', [
             '$favorites' => $favorites,
-        ]);
+        ]);*/
 
         // Всегда получаем массив (явное преобразование)
         // $currentIds = json_decode($favorites->product_ids ?? '[]', true) ?? [];
@@ -165,9 +161,190 @@ class AuthSyncController extends Controller {
         return $merged;
     }
 
-    protected function syncCart(User $user, array $localCart): array {
-        // Аналогичная логика для корзины
-        // Можно добавить проверку наличия товаров
+    protected function syncCart(User $user, array $localCart): array {      // ожидаем: { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
+        
+        // 1. Подготовка данных
+        $result = [
+            'cart' => [],
+            'sold_out' => [],
+            'new_arrivals' => [],
+            'quantity_changes' => []
+        ];
+
+        \Log::debug('SyncCart data', [
+            '$result begin' => $result,
+        ]);
+
+        // 2. Загрузка данных: получаем все необходимые данные за 2 запроса
+        $existingItems = Cart::where('user_id', $user->id)
+            ->get()
+            ->keyBy('product_id');
+            // метод >keyBy преобразует коллекцию в ассоциативный массив, где:Ключ = значение поля product_id, Значение = вся модель Cart
+            /* Допустим, в БД есть записи:
+                
+                php
+                [
+                    ['user_id' => 1, 'product_id' => 13, 'quantity' => 6],
+                    ['user_id' => 1, 'product_id' => 25, 'quantity' => 2]
+                ]
+                После keyBy('product_id') получим:
+
+                php
+                [
+                    13 => ['user_id' => 1, 'product_id' => 13, 'quantity' => 6],
+                    25 => ['user_id' => 1, 'product_id' => 25, 'quantity' => 2]
+                ]
+
+                Зачем это нужно?
+                Чтобы быстро искать записи по product_id без перебора всей коллекции:
+
+                php
+                $existingItems->get(13); // Вернёт запись с product_id=13
+
+            */
+
+        \Log::debug('SyncCart step 2', [
+            '$existingItems' => $existingItems,
+        ]);
+
+        $productIds = array_unique(array_merge(             // получаем синхронизированный массив id-товаров корзины покупателей     
+            array_keys($localCart),
+            $existingItems->keys()->toArray()
+        ));
+
+        \Log::debug('SyncCart step 2', [
+            '$productIds' => $productIds,
+        ]);
+
+        /*$products = Product::with('productReport')
+            ->whereIn('id', $productIds)
+            // ->select('id')                                                                  // Оптимизация - берём только ID? - проверить, что подключются отчёты!
+            ->get()
+            ->keyBy('id');*/
+
+        $products = Product::select('id') // Берём только ID товара
+            ->with(['productReport' => function ($query) {
+                $query->select('product_id', 'on_sale'); // Только нужные поля связи
+            }])
+            ->whereIn('id', $productIds)
+            ->get()
+            ->keyBy('id');
+
+        \Log::debug('SyncCart step 2', [
+            '$products' => $products,
+        ]);
+
+
+        /*// 3. Обработка локальных данных
+        foreach ($localCart as $productId => $quantity) {
+            if (!isset($products[$productId])) continue;
+
+            $product = $products[$productId];
+            $onSale = $product->productReport?->on_sale ?? 0;
+
+            if ($onSale >= $quantity) {
+                $result['cart'][$productId] = $quantity;
+            } elseif ($onSale > 0) {
+                $result['cart'][$productId] = $onSale;
+                $result['quantity_changes'][$productId] = $quantity;
+            } else {
+                // $result['sold_out'][] = $productId;
+                $result['sold_out'][$productId] = $quantity;        // сохраняем сколько единиц товаров было у товарища в корзине
+            }
+        }
+
+        // 4. Обработка существующих записей
+        foreach ($existingItems as $productId => $cartItem) {
+            if (!isset($products[$productId])) continue;
+
+            $product = $products[$productId];                   // смотрим актуальные состояния товара, с которым сравниваем итерируемый товар корзины покупателя в БД
+            $onSale = $product->productReport?->on_sale ?? 0;   // реальное состояние товара для продажи
+            $quantity = $cartItem->quantity;                    // количество товара в БД в корзине покупателя
+
+            if ($onSale >= $quantity) {
+                if ($cartItem->deleted_at) {
+                    $result['new_arrivals'][] = $productId;     // подумать: может лучше: $result['new_arrivals'][$productId] = $quantity
+                }
+                $result['cart'][$productId] = max($result['cart'][$productId] ?? 0, $quantity);
+            } elseif ($onSale > 0) {
+                if ($cartItem->deleted_at) {
+                    $result['new_arrivals'][] = $productId;     // подумать: может лучше: $result['new_arrivals'][$productId] = $quantity
+                }
+                $result['cart'][$productId] = max($result['cart'][$productId] ?? 0, $onSale);
+                $result['quantity_changes'][$productId] = $quantity;
+            } else {
+                // if ($cartItem->deleted_at) {
+                if (!$cartItem->deleted_at) {
+                    $result['sold_out'][$productId] = $quantity;
+                }
+            }
+        }*/
+
+        // 3. Обработка
+        foreach ($products as $productId => $product) {
+            $onSale = $product->productReport?->on_sale ?? 0;
+            $localQty = $localCart[$productId] ?? 0;
+            $dbQty = $existingItems[$productId]->quantity ?? 0;
+            $maxQty = max($localQty, $dbQty);
+
+            if ($onSale <= 0) {
+                if ($dbQty > 0) $result['sold_out'][$productId] = $dbQty;
+                continue;
+            }
+
+            $finalQty = min($maxQty, $onSale);
+            $result['cart'][$productId] = $finalQty;
+
+            if ($existingItems[$productId]->deleted_at ?? false) {
+                $result['new_arrivals'][] = $productId;
+            }
+
+            if ($finalQty != $maxQty) {
+                $result['quantity_changes'][$productId] = $maxQty;
+            }
+        }
+
+        \Log::debug('SyncCart step 3', [
+            '$productIds' => 'sucsess',
+        ]);
+
+        
+        // 5. Сохранение в БД (4. Обновление корзины)
+        DB::transaction(function () use ($user, $result) {
+
+            // Мягко удаляем товар из корзины покупок пользователя в БД, если товар закончился в продаже:
+            Cart::where('user_id', $user->id)
+                ->whereIn('product_id', array_keys($result['sold_out']))
+                ->update(['deleted_at' => now()]);
+
+            /*// Обновляем/добавляем актуальные
+            foreach ($result['cart'] as $productId => $quantity) {
+                Cart::updateOrCreate(
+                    ['user_id' => $user->id, 'product_id' => $productId],
+                    ['quantity' => $quantity, 'deleted_at' => null]
+                );
+            }*/
+
+            Cart::upsert(
+                collect($result['cart'])->map(function ($qty, $productId) use ($user) {
+                    return [
+                        'user_id' => $user->id,
+                        'product_id' => $productId,
+                        'quantity' => $qty,
+                        'deleted_at' => null,
+                        'updated_at' => now()
+                    ];
+                })->values()->toArray(),
+                ['user_id', 'product_id'],
+                ['quantity', 'deleted_at', 'updated_at']
+            );
+        });
+
+        \Log::debug('SyncCart final', [
+            '$result' => $result,
+        ]);
+
+        return $result;
     }
 
     protected function syncRecentlyViewed(User $user, array $localRecentlyViewed): array {
@@ -179,7 +356,7 @@ class AuthSyncController extends Controller {
         
         // 1. Конвертируем локальные данные в формат [product_id => viewed_at]
         $localItems = collect($localRecentlyViewed)
-            ->map(fn ($ts, $productId) => [
+            ->map(fn ($ts, $productId) => [                         // В Laravel коллекциях map() всегда передаёт значение первым аргументом, а ключ — вторым.
                 'product_id' => $productId,
                 'viewed_at' => Carbon::createFromTimestampMs($ts)
             ]);
@@ -187,7 +364,29 @@ class AuthSyncController extends Controller {
         // 2. Получаем существующие записи из БД
         $existingItems = RecentlyViewedProduct::where('user_id', $user->id)
             ->get()
-            ->keyBy('product_id');
+            ->keyBy('product_id');      // метод преобразует коллекцию в ассоциативный массив, где:Ключ = значение поля product_id, Значение = вся модель RecentlyViewedProduct
+            /* Допустим, в БД есть записи:
+                
+                php
+                [
+                    ['user_id' => 1, 'product_id' => 13, 'viewed_at' => '2025-05-17'],
+                    ['user_id' => 1, 'product_id' => 25, 'viewed_at' => '2025-05-18']
+                ]
+                После keyBy('product_id') получим:
+
+                php
+                [
+                    13 => ['user_id' => 1, 'product_id' => 13, 'viewed_at' => '2025-05-17'],
+                    25 => ['user_id' => 1, 'product_id' => 25, 'viewed_at' => '2025-05-18']
+                ]
+
+                Зачем это нужно?
+                Чтобы быстро искать записи по product_id без перебора всей коллекции:
+
+                php
+                $existingItems->get(13); // Вернёт запись с product_id=13
+
+            */
 
         // 3. Объединяем данные, обновляя существующие
         foreach ($localItems as $item) {
@@ -207,48 +406,22 @@ class AuthSyncController extends Controller {
             ->orderByDesc('viewed_at')
             ->limit(6)
             ->get()
-            ->mapWithKeys(fn ($item) => [$item->product_id => $item->viewed_at->getTimestampMs()])
+            ->mapWithKeys(fn ($item) => [$item->product_id => $item->viewed_at->getTimestampMs()])  // Этот метод преобразует коллекцию в ассоциативный массив, задавая свои ключи и значения.
             ->toArray();
+        /*  $item — модель RecentlyViewedProduct.
+            Ключ = product_id (например, 13).
+            Значение = timestamp из viewed_at (например, 1715954321000).
 
-        /*// 1. Получаем текущие данные из БД
-            $dbItems = RecentlyViewedProduct::where('user_id', $user->id)
-                ->get()
-                ->mapWithKeys(function ($item) {
-                    return [$item->product_id => $item->viewed_at->getTimestampMs()];
-                })
-                ->toArray(); // { "33": 1747380000000, ... }
+            Результат: php
+            [
+                13 => 1715954321000,
+                25 => 1715954382000
+            ]
+            Зачем это нужно?
+            Чтобы фронтенд получил данные в том же формате, что и localStorage ({product_id: timestamp}).*/
+        
+        }
 
-            \Log::debug('AuthSyncController syncRecentlyViewed', [
-                '$dbItems' => $dbItems,
-            ]);
-
-            // 2. Объединяем данные (берём максимум из локальных и БД)
-            $merged = [];
-            foreach ($localRecentlyViewed as $productId => $timestamp) {
-                $merged[$productId] = max($timestamp, $dbItems[$productId] ?? 0);
-            }
-            // Добавляем записи из БД, которых нет в localStorage
-            foreach ($dbItems as $productId => $timestamp) {
-                if (!isset($merged[$productId])) {
-                    $merged[$productId] = $timestamp;
-                }
-            }
-
-            // 3. Сохраняем TOP-6 самых свежих в БД
-            // RecentlyViewedProduct::where('user_id', $user->id)->delete(); - решили оставлять в БД все записи, удаляются из БД самые старые записи (старше одного года)
-            arsort($merged); // Сортируем по убыванию timestamp
-            $top6 = array_slice($merged, 0, 6, true);
-            foreach ($top6 as $productId => $timestamp) {
-                RecentlyViewedProduct::create([
-                    'user_id' => $user->id,
-                    'product_id' => $productId,
-                    'viewed_at' => Carbon::createFromTimestampMs($timestamp),
-                ]);
-            }
-            return $top6;
-        */
-    }
-    
     // Защищённое получение массива
     private function safeJsonDecode(?string $json): array {
         if (empty($json)) {

@@ -85,6 +85,4 @@ class RecentlyViewedController extends Controller {
             ], 500);
         }  
     }
-
-    
 }

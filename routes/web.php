@@ -64,6 +64,13 @@ Route::middleware('web')->group(function () {
     // Получение товаров избранного
     Route::post('/products/favorites-get', [FavoritesController::class, 'getProducts']);
 
+    // Обновление корзины (сохранение в БД)
+    Route::match(['GET', 'POST'], '/cart/items', [CartController::class, 'update']);
+    // Route::post('/cart/items', [CartController::class, 'store']);   // The GET method is not supported for route cart/items. Supported methods: POST.
+
+    // Удаление товара из корзины (сохранение в БД)
+    Route::delete('/cart/items', [CartController::class, 'delete']);
+
     // Синхронизация данных при авторизации
     Route::match(['GET', 'POST'], '/user/sync', [AuthSyncController::class, 'syncLocalData']);
 

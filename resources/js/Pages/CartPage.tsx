@@ -92,7 +92,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
       
         // Для юрлиц
         return {
-          type: 'legal',
+          //type: 'legal',
           ...user,
           // Основные контактные данные
           phone: user.org_tel || '',
@@ -138,6 +138,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             setError(null);
 
             try {
+                console.log(cart);
                 const response = await axios.post(API_ENDPOINTS.CART, {
                     products: cart, // Отправляем текущую корзину
                     //_token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
@@ -149,9 +150,11 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     signal, // Передаём signal в конфиг axios
                 });
 
+                console.log(response);
+
                 // Проверяем, не был ли запрос отменён
                 if (!signal.aborted) {
-                    setCartProducts(response.data.products || []);
+                    setCartProducts(response.data.products?.data || []);
                 }
             } catch (error) {
                 // Игнорируем ошибку, если запрос был отменён
@@ -212,6 +215,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     }, [removeFromCart]);
 
     const calculateCartTotalAmount = useCallback((products: IProduct[]): number => {
+        console.log(products);
         return products.reduce((total, product) => {
             // Выбираем минимальную цену из доступных (акционная, ранговые скидки и т.д.)
             const effectivePrice = Math.min(
@@ -220,7 +224,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 product.price_actual ?? Infinity,
                 product.price_regular ?? Infinity
             );
-            
+            console.log(effectivePrice);
             return total + (effectivePrice * (product.quantity ?? 0));
         }, 0);
     }, []);
@@ -233,6 +237,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     }, []);
 
     // Использование:
+    console.log(cartProducts);
+    console.log(calculateCartTotalAmount(cartProducts));
     const memoizedcartAmount = useMemo(() => calculateCartTotalAmount(cartProducts), [cartProducts]);   // это уже излишество, наверное...
     const formattedAmount = useMemo(() => formatPrice(cartAmount), [cartAmount]);                       // это уже излишество, наверное...
     const memoizedProducts = useMemo(() => cartProducts, [cartProducts]);
@@ -401,43 +407,43 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                         </div>
                                         <p>по лучшей цене: </p>
                                         <div className="basket-row__priceValue d-flex">
-                                            {product.price_special && product.price_regular && product.price_actual ? (
-                                                <>
-                                                    <div className="basket-favorites__priceCurrentSale nobr">{formatPrice(product.price_special)} <sup>&#8381;</sup></div>
-                                                    <div className="cardProduct-priceBeforSale nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
-                                                    <div className="basket-favorites__priceDiscountInPercentage nobr">- {Math.round(100 - (product.price_special / product.price_regular) * 100)}%</div>
-                                                </>
-                                            ) : product.price_regular && product.price_actual && product.price_actual < product.price_regular ? (
-                                                <>
-                                                    <div className="basket-favorites__priceCurrentSale nobr">{formatPrice(product.price_actual)} <sup>&#8381;</sup></div>
-                                                    <div className="cardProduct-priceBeforSale nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
-                                                    <div className="basket-favorites__priceDiscountInPercentage nobr">- {Math.round(100 - (product.price_actual / product.price_regular) * 100)}%</div>
-                                                </>
-                                            ) : product.price_regular && (
-                                                    <div className="basket-favorites__priceCurrent nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
-                                            )}        
+                                        {product.price_special && product.price_regular && product.price_actual ? (
+                                            <>
+                                                <div className="basket-favorites__priceCurrentSale nobr">{formatPrice(product.price_special)} <sup>&#8381;</sup></div>
+                                                <div className="cardProduct-priceBeforSale nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
+                                                <div className="basket-favorites__priceDiscountInPercentage nobr">- {Math.ceil(100 - (product.price_special / product.price_regular) * 100)}%</div>
+                                            </>
+                                        ) : product.price_regular && product.price_actual && product.price_actual < product.price_regular ? (
+                                            <>
+                                                <div className="basket-favorites__priceCurrentSale nobr">{formatPrice(product.price_actual)} <sup>&#8381;</sup></div>
+                                                <div className="cardProduct-priceBeforSale nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
+                                                <div className="basket-favorites__priceDiscountInPercentage nobr">- {Math.ceil(100 - (product.price_actual / product.price_regular) * 100)}%</div>
+                                            </>
+                                        ) : product.price_regular && (
+                                                <div className="basket-favorites__priceCurrent nobr">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
+                                        )}            
+                                    </div>
 
-                                            { product.date_end && ( 
-                                                <div className="cardProduct-priceValidPeriod">акция действует до: { product.date_end }</div>
-                                            )}      
+                                    { product.date_end && ( 
+                                        <div className="cardProduct-priceValidPeriod">акция действует до: { product.date_end }</div>
+                                    )}
 
-                                            { user && product.price_with_rank_discount && product.price_regular && (
-                                                <>    
-                                                    <p className="margin-tb12px">
-                                                    { user.client_type_id === 1
-                                                        ? "но для меня цена лучше: "
-                                                        : "но для нас цена лучше: "}
-                                                        
-                                                    </p>
-                                                    
-                                                    <div className="d-flex padding-left16px">
-                                                        <div className="basket-favorites__priceCurrentSale">{formatPrice(product.price_with_rank_discount)}</div>
-                                                        <div className="cardProduct-priceBeforSale">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
-                                                        <div className="basket-favorites__priceDiscountInPercentage">- { product.percent_of_rank_discount }&#37;</div>
-                                                    </div>
-                                                </>
-                                            )}   
+                                    { user && product.price_with_rank_discount && product.price_regular && (
+                                    <>    
+                                        <p className="margin-tb12px">
+                                        { user.client_type_id === 1
+                                            ? "но для меня цена лучше: "
+                                            : "но для нас цена лучше: "}
+                                            
+                                        </p>
+                                        
+                                        <div className="d-flex padding-left16px">
+                                            <div className="basket-favorites__priceCurrentSale">{formatPrice(product.price_with_rank_discount)}</div>
+                                            <div className="cardProduct-priceBeforSale">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
+                                            <div className="basket-favorites__priceDiscountInPercentage">- { product.percent_of_rank_discount }&#37;</div>
                                         </div>
+                                    </>
+                                    )} 
                                         <div className="basket-row__product">
                                             <p className="basket-Pelem__text-inbasket">В корзине сейчас:</p>
                                             { product.percent_of_rank_discount && (

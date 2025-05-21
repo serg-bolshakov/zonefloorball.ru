@@ -54,11 +54,11 @@ const PriceBlock: React.FC<IPriceBlock> = ({product}) => {
     return (
         <div 
         id={`basketProductRowTotalAmount_${id}`}
-        className="basket-row__priceValue"
+        className="d-flex aline-items-center"
         data-discount={discount}
         data-amount={amount}
         >
-        {formatPrice(amount)} <sup>₽</sup>
+        {formatPrice(amount)}&nbsp;₽
         </div>
     );
 
