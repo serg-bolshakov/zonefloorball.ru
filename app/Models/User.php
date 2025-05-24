@@ -58,7 +58,6 @@ use Laravel\Sanctum\HasApiTokens;
     public function rank() {
         return $this->belongsTo(ClientRank::class, 'client_rank_id');
     }
-
     
     /* У авторизованного пользователя может быть одна JSON-строка избранного */
     public function favorites() {
@@ -72,5 +71,10 @@ use Laravel\Sanctum\HasApiTokens;
     public function recentlyViewedProducts() {
         // У пользователя много записей в этой таблице
         return $this->hasMany(RecentlyViewedProduct::class);
+    }
+
+    /* Получить права доступа пользователя */
+    public function access() {
+        return $this->belongsTo(UserAccess::class, 'user_access_id');
     }
 }

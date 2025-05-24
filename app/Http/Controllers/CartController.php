@@ -123,7 +123,7 @@ class CartController extends Controller
         // Когда пользователь сам удаляет товар из корзины - удадяем его "жёстко":
         $deleted = Cart::where('user_id', Auth::id())
             ->where('product_id', $validated['product_id'])
-            ->delete(); // Или update(['deleted_at' => now()]) для мягкого удаления
+            ->delete();
 
         if (!$deleted) {
             return response()->json(['error' => 'Товар не найден в корзине'], 404);

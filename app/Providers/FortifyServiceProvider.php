@@ -33,7 +33,7 @@ use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 // в контейнере служб Laravel. Обычно это должно быть сделано в методе register поставщика App\Providers\FortifyServiceProvider 
 // вашего приложения:     https://github.com/russsiq/laravel-docs-ru/blob/9.x/docs/fortify.md#customizing-authentication-redirects
 use Laravel\Fortify\Contracts\LogoutResponse;
-//use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\LoginResponse;
 
 // Выход из приложения (пытаюсь как-то сделать) https://github.com/russsiq/laravel-docs-ru/blob/9.x/docs/authentication.md#logging-out
 use Illuminate\Support\Facades\Auth;

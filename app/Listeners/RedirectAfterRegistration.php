@@ -1,5 +1,5 @@
 <?php
-
+// app/Listeners/RedirectAfterRegistration
 namespace App\Listeners;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
