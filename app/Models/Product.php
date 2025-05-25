@@ -96,4 +96,42 @@ class Product extends Model
         // Товар просмотрен многими пользователями (через записи)
         return $this->hasMany(RecentlyViewedProduct::class);
     }
+
+    /** Получить все заказы, где есть товар (через связанную таблицу order_items)
+     *  Связь: Товар → Заказы (многие-ко-многим)
+     * - ON DELETE CASCADE    -- Удаляем позиции заказа, если удалён сам заказ (для order_id: если заказ удалён, его позиции не нужны).
+     * - ON UPDATE CASCADE;   -- Обновляем order_id, если изменился id заказа
+     */
+    public function orders() {
+        // -- Для связи с orders: CONSTRAINT `fk_order_items_order`FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`) 
+        // Order::class	Модель товара	Указывает, с какой сущностью связываемся. 'order_items'	Промежуточная таблица. 'order_id'	Внешний ключ в order_items (Поле, ссылающееся на orders.id). 'product_id'	Внешний ключ в order_items (Поле, ссылающееся на products.id)
+        return $this->belongsToMany(Order::class, 'order_items', 'product_id', 'order_id')
+            ->withPivot('quantity', 'price', 'regular_price')
+            ->withTimestamps();                                                   // Если есть created_at/updated_at;
+    }
+
+    /**
+     * Получить все позиции заказов, где фигурирует этот товар
+     * (Связь "один товар → много записей в order_items")
+     */
+    public function orderItems() {
+        return $this->hasMany(OrderItem::class);        // Один товар → много записей в заказах (история продаж)
+    }
+
+    /** 1. Аналитика продаж:
+     *  $product = Product::find(1); $totalSold = $product->orderItems()->sum('quantity');
+     * 
+     *  2. Получить все заказы с этим товаром:
+     *  $orders = $product->orderItems()
+     *     ->with('order') // Жадная загрузка
+     *     ->get()
+     *     ->pluck('order'); // Коллекция заказов
+     * 
+     *  3. Популярные товары:
+     *  Product::withCount('orderItems')
+     *     ->orderByDesc('order_items_count')
+     *     ->limit(5)
+     *     ->get();
+     */
+
 }

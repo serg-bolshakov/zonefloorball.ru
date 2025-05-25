@@ -74,7 +74,22 @@ use Laravel\Sanctum\HasApiTokens;
     }
 
     /* Получить права доступа пользователя */
+    /**
+     * Связь: Пользователь → Права доступа
+     * - Не может быть NULL (RESTRICT при удалении)
+     * - Обновляется автоматически при изменении ID в user_accesses (CASCADE)
+     */
     public function access() {
         return $this->belongsTo(UserAccess::class, 'user_access_id');
+    }
+
+    /** Получить заказы пользователя
+     *  Связь: Пользователь → Заказы
+     */
+    # При вызове метода orders, Eloquent попытается найти модели Order, 
+    # у которой есть order_client_id, который соответствует столбцу id в модели User.
+    public function orders() {
+        // У пользователя может быть много записей в таблице orders
+        return $this->hasMany(Order::class, 'order_client_id');
     }
 }

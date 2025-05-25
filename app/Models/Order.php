@@ -110,6 +110,47 @@ class Order extends Model {
     {
         return $this->transport && $this->transport->code === 'pickup';
     }
+
+    /** Получить покупателя (автора заказа)
+     *  Связь: Заказ → Пользователь  
+     * - ON DELETE RESTRICT защищает от удаления пользователя с заказами.
+     * - ON UPDATE CASCADE автоматически обновит order_client_id при изменении users.id.
+     */
+    # При вызове метода user, Eloquent попытается найти модель User, 
+    # у которой есть id, который соответствует столбцу order_client_id в модели Order.
+    public function user() {
+        return $this->belongsTo(User::class, 'order_client_id')->withDefault([
+            'name' => 'Удалённый пользователь'      // пробуем для того, чтобы избежать null при обращении к $order->user, если связь не найдена!?
+        ]);
+    }
+
+    /** Получить ранг покупателя (автора заказа)
+     *  Связь: Заказ → Ранг пользователя  
+     * - ON DELETE RESTRICT защищает от удаления ранг покупателя.
+     * - ON UPDATE CASCADE автоматически обновит order_client_rank_id при изменении client_ranks.id.
+     */
+    # При вызове метода clientRank, Eloquent попытается найти модель ClientRank, 
+    # у которой есть id, который соответствует столбцу order_client_rank_id в модели Order.
+    public function clientRank() {
+        return $this->belongsTo(ClientRank::class, 'order_client_rank_id');
+    }
+
+    /** Получить товары заказа (через связанную таблицу order_items)
+     *  Связь: Заказ → Товары (многие-ко-многим)
+     * - ON DELETE RESTRICT  -- Запрещаем удалять товар, если он есть в заказах
+     * - ON UPDATE CASCADE;  -- Обновляем product_id в order_items при изменении id товара
+     */
+    public function products() {
+        // Product::class	Модель товара	Указывает, с какой сущностью связываемся. 'order_items'	Промежуточная таблица. 'order_id'	Внешний ключ в order_items. 'product_id'	Внешний ключ в order_items	
+        return $this->belongsToMany(Product::class, 'order_items', 'order_id', 'product_id')
+            ->withPivot('quantity', 'price', 'regular_price')   // Доп. поля из промежуточной таблицы
+            ->withTimestamps();                                 // Если есть created_at/updated_at
+    }
+
+    // Получить все позиции заказа (с количеством, ценой)
+    public function items() {
+        return $this->hasMany(OrderItem::class);                // Один заказ → много позиций
+    }
    
 }
 
