@@ -16,6 +16,7 @@
 
     <form action="/login" method="POST"> 
     @csrf
+        <input type="hidden" name="from" value="{{ url()->full() }}">
         <p class="registration-form__input-item"><span class="registration-form__title">Форма авторизации</span></p>
         <p class="registration-form__input-item"><span class="registration-form__star">*</span> - поля, обязательные для заполнения </p>
         

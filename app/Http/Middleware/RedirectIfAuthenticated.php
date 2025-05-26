@@ -21,6 +21,10 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
+                                                                    // а мы и не попадаем сюда!!! 25.05.2025        
+                                                                    \Log::debug('RedirectIfAuthenticated', [
+                                                                        'RedirectIfAuthenticated' => $request->all(),
+                                                                    ]);
                 return redirect(RouteServiceProvider::HOME);
             }
         }

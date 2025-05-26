@@ -57,11 +57,23 @@ class FortifyServiceProvider extends ServiceProvider
         */
                
         $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
+            public function toResponse($request) {
+                return redirect('/');
+            }
+        });
+
+        // 26.05.2025 решили задачу переадресации пользователя после авторизации на ту страницу, с которой он инициировал процесс авторизации: пробовал передать корректный URL через сессию,
+        // но в процессе авторизации происходила регенерация session_id и URL терялся. Задача решена путём передачи корректного URL
+        // через куки. Корректный URL для переадресации "отловили" в AuthServiceProvider - только там это можно сделать... как оказалось...
+        $this->app->instance(LoginResponse::class, new class implements LoginResponse {
             public function toResponse($request)
             {
-                session()->flash('flash', "Вы успешно вышли из системы.<br>До новых встреч!" );  // с помощью метода flash сохраняем элемент в сессию только для следующего запроса...  
-                // return redirect("$root");
-                return redirect('/');
+                $redirectUrl = $request->cookie('login_redirect', '/');
+                // $redirectUrl = session()->pull('login_original_url', '/');
+                // $redirectUrl = session('login_original_url', '/');
+                // session()->forget('login_original_url'); // Очищаем
+                
+                return redirect($redirectUrl);
             }
         });
     }
@@ -129,10 +141,10 @@ class FortifyServiceProvider extends ServiceProvider
 
             if ($user &&
                 Hash::check($request->password, $user->password)) {
-                    \Log::debug('Fortify auth success', [
+                    /*\Log::debug('Fortify auth success', [
                         'user_id' => $user->id,
                         'session_id' => session()->getId()
-                    ]);
+                    ]);*/
                 session()->flash('flash', "Вы авторизовались. Мы ждали вас, $user->name!");  // с помощью метода flash сохраняем элемент в сессию только для следующего запроса. - это тз прежнего - тоже пока настроить не могу... 
                 return $user;
             }
@@ -146,20 +158,6 @@ class FortifyServiceProvider extends ServiceProvider
             return view('auth.register');
         });
         
-        // 09.01.2025 Настраиваем переадресацию после регистрации: Здесь метод Fortify::redirects определяет, куда будет перенаправлен пользователь после успешной регистрации.
-        /* Не прокатило...
-        Fortify::redirects(function (Request $request) {
-            return redirect('/email/verify');
-        });
-        */
-        /*
-            // Редирект после успешной регистрации - попытка номер 2!
-            Fortify::redirectUsing(function (Request $request) {
-                return redirect('/email/verify');
-            });
-        */
-        
-        // 13.12.2024 - пока не работает почему-то... разбираюсь...
         // 07/01/2025 - всё работает! Это работает, когда юзер при логине, жмёт на ссылку "не помню пароль" и ему по электронной почте приходит ссылка на сброс пароля!!! Проходим по этой ссылке и попадаем сюда:
         Fortify::resetPasswordView(function (Request $request) { 
             return view('auth.reset-password', ['request' => $request]);
