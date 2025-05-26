@@ -31,6 +31,7 @@ use App\Http\Controllers\Auth\AuthSyncController;
 use App\Http\Controllers\RecentlyViewedController;
 
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 
 
@@ -44,6 +45,12 @@ use App\Models\User;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
+// Переопределяем logout для поддержки GET (из-за ошибки: the get method is not supported for route logout)
+Route::match(['get', 'post'], '/logout', function () {
+    Auth::logout();
+    return redirect('/');
+})->name('logout');
 
 /**
  * API-роуты (routes/api.php) используют api middleware group, где нет сессии
