@@ -56,11 +56,11 @@ class FortifyServiceProvider extends ServiceProvider
                 12/12/2024
         */
                
-        $this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
+        /*$this->app->instance(LogoutResponse::class, new class implements LogoutResponse {
             public function toResponse($request) {
                 return redirect('/');
             }
-        });
+        });*/
 
         // 26.05.2025 решили задачу переадресации пользователя после авторизации на ту страницу, с которой он инициировал процесс авторизации: пробовал передать корректный URL через сессию,
         // но в процессе авторизации происходила регенерация session_id и URL терялся. Задача решена путём передачи корректного URL
@@ -84,7 +84,7 @@ class FortifyServiceProvider extends ServiceProvider
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function logout(Request $request)
+    /*public function logout(Request $request)
     {
         Auth::logout();
         $request->session()->invalidate();
@@ -94,7 +94,7 @@ class FortifyServiceProvider extends ServiceProvider
         // dd($root);   - когда жмём логаут - сюда не приходим...
         // return redirect("$root");
         return redirect('/');
-    }
+    }*/
 
     /**
      * Bootstrap any application services.
