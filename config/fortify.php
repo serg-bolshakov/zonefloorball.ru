@@ -145,7 +145,7 @@ return [
     */
 
     'features' => [
-        // Features::registration(),
+        // Features::registration(),               // было закомментировано. 26.05.2025 раскомментировал...
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::updateProfileInformation(),
