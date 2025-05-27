@@ -55,15 +55,12 @@ const useCreateOrder = () => {
             ? API_ENDPOINTS.ORDER_CREATE
             : API_ENDPOINTS.ORDER_CREATE;
     
-          console.log('Sending POST to:', endpoint, 'with data:', {
-              ...orderData,
-              _token: getCookie('XSRF-TOKEN')
-          });
+          console.log('Sending POST to:', endpoint, 'with data:', { ...orderData });
 
           const response = await axios.post(endpoint, {
             ...orderData,
             paymentMethod: options.paymentMethod,
-            _token: getCookie('XSRF-TOKEN')
+            // _token: getCookie('XSRF-TOKEN')
           }, {
             signal: controller.signal,                  // controller.signal - это объект AbortSignal, который передаётся в axios (или fetch).
             headers: {

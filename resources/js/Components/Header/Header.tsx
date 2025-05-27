@@ -14,7 +14,8 @@ const Header: React.FC = () => {
 
     // Если categoriesMenuArr ещё не загружено, показываем заглушку
     if (!categoriesMenuArr) {
-        return <div>Загрузка данных...</div>;
+        //return <div>Загрузка данных...</div>;
+        return;
     }
 
     // console.table(user); // Вывод в консоль

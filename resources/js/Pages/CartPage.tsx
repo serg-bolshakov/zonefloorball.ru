@@ -65,8 +65,11 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const [deliveryData, setDeliveryData] = useState<IDeliverySelectionData>(initialDeliveryData);
 
     // Данные о покупателе:
+    console.log(user);
+
     // Проверка типа покупателя
     const getInitialCustomerData = (): TCustomer => {
+        console.log('getInitialCustomerData user', user);
         if (!user) {
           return {
             type: 'guest',
@@ -92,16 +95,13 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
       
         // Для юрлиц
         return {
-          //type: 'legal',
+          // type: 'legal' - свойство прописано в интерфейсе - здесь не нужно (будет дублирование и перезапись)...
           ...user,
-          // Основные контактные данные
-          phone: user.org_tel || '',
-          email: user.org_email || user.email || ''
         };
     };
       
     const [customerData, setCustomerData] = useState<TCustomer>(getInitialCustomerData);
-    
+    console.log('CartPage customerData', customerData);
     const toastConfig = {
         position: "top-right" as const,
         autoClose: 1500, // Уведомление закроется через секунду-другую...
@@ -138,7 +138,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             setError(null);
 
             try {
-                console.log(cart);
+                // console.log(cart);
                 const response = await axios.post(API_ENDPOINTS.CART, {
                     products: cart, // Отправляем текущую корзину
                     //_token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
@@ -150,7 +150,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     signal, // Передаём signal в конфиг axios
                 });
 
-                console.log(response);
+                // console.log(response);
 
                 // Проверяем, не был ли запрос отменён
                 if (!signal.aborted) {
@@ -215,7 +215,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     }, [removeFromCart]);
 
     const calculateCartTotalAmount = useCallback((products: IProduct[]): number => {
-        console.log(products);
+        // console.log(products);
         return products.reduce((total, product) => {
             // Выбираем минимальную цену из доступных (акционная, ранговые скидки и т.д.)
             const effectivePrice = Math.min(
@@ -224,7 +224,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 product.price_actual ?? Infinity,
                 product.price_regular ?? Infinity
             );
-            console.log(effectivePrice);
+            // console.log(effectivePrice);
             return total + (effectivePrice * (product.quantity ?? 0));
         }, 0);
     }, []);
@@ -237,8 +237,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     }, []);
 
     // Использование:
-    console.log(cartProducts);
-    console.log(calculateCartTotalAmount(cartProducts));
+    // console.log(cartProducts);
+    // console.log(calculateCartTotalAmount(cartProducts));
     const memoizedcartAmount = useMemo(() => calculateCartTotalAmount(cartProducts), [cartProducts]);   // это уже излишество, наверное...
     const formattedAmount = useMemo(() => formatPrice(cartAmount), [cartAmount]);                       // это уже излишество, наверное...
     const memoizedProducts = useMemo(() => cartProducts, [cartProducts]);
@@ -293,6 +293,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     };
 
     const openOrderConfirmationModal = () => {
+        // console.log('openOrderConfirmationModal', cartProducts);
         openModal(
           <OrderConfirmation
             products={cartProducts}

@@ -36,6 +36,9 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
   }) => {
     console.log(currentDeliveryAddress);
     const { user } = useAppContext();
+    console.log('OrderConfirmation user', user);
+    console.log('OrderConfirmation customerData', customerData);
+    
     const deliveryText = deliveryData.transportId === 1 
     ? `${currentDeliveryAddress}` 
     : deliveryData.transportId === 2 
