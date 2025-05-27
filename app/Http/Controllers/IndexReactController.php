@@ -1,4 +1,5 @@
 <?php
+    // app/Http/Controllers/IndexReactController.php
     namespace App\Http\Controllers;
     use Inertia\Inertia;
 
@@ -9,7 +10,7 @@
         public function index() {
             
             return Inertia::render('Home', [
-                'title' => 'UnihocZoneRussia Флорбольная экипировка.Всё для флорбола. Купить',
+                'title' => 'ZoneFloorball Флорбольная экипировка.Всё для флорбола. Купить',
                 'robots' => 'INDEX,FOLLOW',
                 'description' => 'Найти, выбрать и купить товары для флорбола для детей и взрослых. Всё для флорбола от ведущего мирового производителя.',
                 'keywords' => 'Клюшки для флорбола, обувь, очки, сумки и чехлы для взрослых и детей. Флорбольные ворота и мячи.',
