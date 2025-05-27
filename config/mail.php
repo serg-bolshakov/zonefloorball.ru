@@ -1,5 +1,5 @@
 <?php
-
+// config/mail.php
 return [
 
     /*

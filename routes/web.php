@@ -222,3 +222,11 @@ Route::get('/force-test-fav', function() {
     }
 });
 
+Route::get('/test-signature', function () {
+    $url = 'https://zonefloorball.ru/email/verify/308/17bd263fc7f4eead800bb7960b9f13d2ecf40dbb?expires=1748378114&signature=f492e8e4a3388ac393171841d499bac6e6dae30c4c97c25340770c9d314db888'; 
+    return [
+        'is_valid' => URL::hasValidSignature($url),
+        'host_mismatch' => parse_url($url, PHP_URL_HOST) !== parse_url(config('app.url'), PHP_URL_HOST)
+    ];
+});
+
