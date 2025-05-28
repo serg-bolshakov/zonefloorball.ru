@@ -145,7 +145,9 @@ return [
     */
 
     'features' => [
-        // Features::registration(),               // было закомментировано. 26.05.2025 раскомментировал...
+        // 09.01.2025 Обновим файл routes/web.php, чтобы использовать наш самописный контроллер для регистрации:
+        // затем отключаем стандартные маршруты Fortify config/fortify.php и найдите раздел features
+        // Features::registration(),               
         Features::resetPasswords(),
         Features::emailVerification(),
         Features::updateProfileInformation(),
