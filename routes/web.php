@@ -6,7 +6,6 @@ use App\Http\Controllers\CardController;
 use App\Http\Controllers\BasketController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\LkController;
 use App\Http\Controllers\ProfileController;
 // use Laravel\Fortify\Features;                                    // 06.01.2025  - 10.01.2025 - думаю, что это лишнее - можно будет удалить (осторожно)
 use App\Http\Controllers\RegisteredUserController;                  // 09.01.2025 Обновим файл routes/web.php, чтобы использовать наш самописный контроллер для регистрации:
@@ -32,8 +31,6 @@ use App\Http\Controllers\RecentlyViewedController;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-
-
 
 /*
 |--------------------------------------------------------------------------
@@ -98,7 +95,6 @@ Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardCo
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
 //Route::match(['get', 'post'], '/products/{category?}', ['App\\Http\\Controllers\\CatalogController', 'index']);
-Route::match(['get', 'post'], '/lk', [LkController::class, 'index']);
 Route::match(['get', 'post'], '/profile', [ProfileController::class, 'index'])->middleware(['verified']);
 
 Route::get('/email/verify', function () {
