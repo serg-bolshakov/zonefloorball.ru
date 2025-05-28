@@ -17,20 +17,11 @@ use Illuminate\Support\Facades\Auth;
 # вам часто будет требоваться взаимодействовать с текущим аутентифицированным пользователем. 
 # При обработке входящего запроса вы можете получить доступ к аутентифицированному пользователю с помощью метода user фасада Auth:
 
-# Посмотреть какие скидки для клиента доступны:
-use App\Services\DiscountService;
-
 use App\Traits\DateTrait;
 
 class ProfileController extends Controller
 {    
     use DateTrait;
-
-    protected $discountService;
-    public function __construct(DiscountService $discountService)
-    {
-        $this->discountService = $discountService;
-    }
 
     public function index(Request $request) {
         // если пользователь авторизован:
@@ -220,7 +211,7 @@ class ProfileController extends Controller
         } else {
             session()->flash('flash', 'Только зарегистрированные и авторизованные пользователи имеют доступ к этой странице. <br>Пожалуйста, авторизуйтесь...');
             return view('index.index', [
-                'title' => 'UnihocZoneRussia Флорбольная экипировка.Всё для флорбола. Купить',
+                'title' => 'ZoneFloorball Флорбольная экипировка.Всё для флорбола. Купить',
                 'robots' => 'INDEX,FOLLOW',
                 'description' => 'Найти, выбрать и купить товары для флорбола для детей и взрослых. Всё для флорбола от ведущего мирового производителя.',
                 'keywords' => 'Клюшки для флорбола, обувь, очки, сумки и чехлы для взрослых и детей. Флорбольные ворота и мячи.',
