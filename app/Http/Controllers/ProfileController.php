@@ -3,9 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
-use App\Models\Person;
-use App\Models\Organization;
 use App\Models\User;
 
 use Illuminate\Support\Facades\Hash;
@@ -17,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 # вам часто будет требоваться взаимодействовать с текущим аутентифицированным пользователем. 
 # При обработке входящего запроса вы можете получить доступ к аутентифицированному пользователю с помощью метода user фасада Auth:
 
+use Inertia\Inertia;
 use App\Traits\DateTrait;
 
 class ProfileController extends Controller
@@ -24,6 +22,7 @@ class ProfileController extends Controller
     use DateTrait;
 
     public function index(Request $request) {
+        
         // если пользователь авторизован:
         if(Auth::check()) {
             // получить к нему доступ можем и так: Auth::user() ... и так: $request->user()
@@ -169,48 +168,40 @@ class ProfileController extends Controller
                 
             // если авторизованный пользователь выбрал "просмотр заказа":
             if(isset($request->orderactionselected) && !empty($request->orderactionselected)) { $getRequest = 'orderactionselected'  ; $getRequestValue = $request->orderactionselected  ; }
-
-            // записываем в личный кабинет размер стандартной скидки согласно рангу пользователя
-
+            
+            $representPerson = null;
+            $title = '';
             
             // если авторизовано физическое лицо:
             if($user->client_type_id == '1') {
-                
+                $title = 'Мой личный кабинет';
                 $user->date_of_birth_view = 'Не указана';
                 if(!empty($user->date_of_birth)) { $user->date_of_birth_view = $this->date_ru($user->date_of_birth); }
 
                 $user->delivery_addr_on_default_view = 'не оформлен';
                 if(!empty($user->delivery_addr_on_default)) { $user->delivery_addr_on_default_view = $user->delivery_addr_on_default; }
-
-                return view('components.profile.person', [
-                    'title' => 'Мой личный кабинет',
-                    'robots' => 'NOINDEX,NOFOLLOW',
-                    'description' => '',
-                    'keywords' => '',
-                    'persInfo' => $user,
-                    'getRequest' => $getRequest,
-                    'getRequestValue' => $getRequestValue,
-                    'priceDiscountAccordingToTheRank' => $priceDiscountAccordingToTheRank,
-                ]);
             // если юридическое:
             } elseif($user->client_type_id == '2') {
+                $title = $user->name;
                 // нужно ещё "прикрепить" представителя организации:
                 $representPerson = User::find($user->this_id);
-                return view('components.profile.organization', [
-                    'title' => $user->name,
+            }
+            // dd($priceDiscountAccordingToTheRank);
+            // return view('components.profile.person', [
+                return Inertia::render('Profile/UserProfile', [
+                    'title' => $title,
                     'robots' => 'NOINDEX,NOFOLLOW',
                     'description' => '',
                     'keywords' => '',
-                    'orgInfo' => $user,
-                    'getRequest' => $getRequest,
-                    'getRequestValue' => $getRequestValue,
-                    'representPerson' => $representPerson,
+                    // 'user' => $user,
+                    // 'getRequest' => $getRequest,
+                    // 'getRequestValue' => $getRequestValue,
+                    // 'representPerson' => $representPerson,
                     'priceDiscountAccordingToTheRank' => $priceDiscountAccordingToTheRank,
-                ]); 
-            }
+                ]);
         } else {
             session()->flash('flash', 'Только зарегистрированные и авторизованные пользователи имеют доступ к этой странице. <br>Пожалуйста, авторизуйтесь...');
-            return view('index.index', [
+            return Inertia::render('Home', [
                 'title' => 'ZoneFloorball Флорбольная экипировка.Всё для флорбола. Купить',
                 'robots' => 'INDEX,FOLLOW',
                 'description' => 'Найти, выбрать и купить товары для флорбола для детей и взрослых. Всё для флорбола от ведущего мирового производителя.',
