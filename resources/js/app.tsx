@@ -14,6 +14,7 @@ if(element) {
             // Пробуем загрузить .tsx, если не получится — загружаем .jsx
             console.log(`На входе запрос компонента: ${name}`); // Отладка
             console.log(`Загрузка компонента: ${name}.tsx`); // Отладка
+            
             return import(`./Pages/${name}.tsx`)
             .then(module => {
                 console.log(`Компонент ${name} загружен:`, module.default); // Отладка

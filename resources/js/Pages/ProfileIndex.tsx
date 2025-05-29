@@ -1,4 +1,4 @@
-// resources/js/Pages/Profile/Index.tsx
+// resources/js/Pages/ProfileIndex.tsx
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
 import NavBarBreadCrumb from '@/Components/NavBarBreadCrumb';
@@ -20,7 +20,7 @@ interface IProfileProps {
     priceDiscountAccordingToTheRank: number;
 }
 
-const Index: React.FC<IProfileProps> = ({title, robots, description, keywords, priceDiscountAccordingToTheRank}) => {
+const ProfileIndex: React.FC<IProfileProps> = ({title, robots, description, keywords, priceDiscountAccordingToTheRank}) => {
     const { openModal, closeModal } = useModal();
     console.log('Profile/Index.tsx', priceDiscountAccordingToTheRank);
     
@@ -45,4 +45,4 @@ return (
 
 };
 
-export default Index;
+export default ProfileIndex;

@@ -188,7 +188,7 @@ class ProfileController extends Controller
             }
             // dd($priceDiscountAccordingToTheRank);
             // return view('components.profile.person', [
-                return Inertia::render('Profile/Index', [
+                return Inertia::render('ProfileIndex', [
                     'title' => $title,
                     'robots' => 'NOINDEX,NOFOLLOW',
                     'description' => '',
