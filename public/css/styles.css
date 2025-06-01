@@ -3547,7 +3547,7 @@ video {
 }
 
 .profile-changing-form {
-    display: none;
+    /* display: none; */
     width: 275px;
     border: 1px solid #cecece;
     border-radius: 8px;
@@ -4523,6 +4523,16 @@ select:hover {
   box-shadow: 0 2px 5px rgba(255, 51, 102, 0.3);
 }
 
+.modal-confirmation__button--agree {
+  background-color: #16a74b;
+  color: white;
+}
+
+.modal-confirmation__button--agree:hover {
+  background-color: #55e38e;
+  box-shadow: 0 2px 5px rgba(155, 246, 190, 0.3);
+}
+
 /* Анимации */
 /* @keyframes fadeIn {
   from { opacity: 0; }
@@ -4542,6 +4552,35 @@ select:hover {
 
 /* Иконка*/
 .modal-confirmation__icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 15px;
+  border: 4px solid #ff3366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff3366;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+/* Иконка - восклицательный знак*/
+.modal-confirmation__exclamation-mark {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 15px;
+  border: 4px solid #ff0000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff0000;
+  font-size: 30px;
+  font-weight: bold;
+}
+
+.confirmation__icon {
   width: 60px;
   height: 60px;
   margin: 0 auto 15px;

@@ -93,7 +93,11 @@ Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardCo
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
 //Route::match(['get', 'post'], '/products/{category?}', ['App\\Http\\Controllers\\CatalogController', 'index']);
-Route::match(['get', 'post'], '/profile', [ProfileController::class, 'index'])->middleware(['verified']);
+
+Route::match(['get', 'post'], '/profile', [ProfileController::class, 'index'])->middleware(['verified'])->name('profile');
+
+// Изменение/обновление данных пользователя
+Route::put('/profile', [ProfileController::class, 'update'])->middleware(['verified'])->name('names.update');
 
 Route::get('/email/verify', function () {
     return view('auth.verify-email');

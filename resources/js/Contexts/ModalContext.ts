@@ -3,7 +3,7 @@
 
 import { createContext, ReactNode } from 'react';
 
-export type TModalType = 'default' | 'confirm';
+export type TModalType = 'default' | 'confirm' | 'update';
 
 // Интерфейс для состояния модального окна
 export interface IModalState {

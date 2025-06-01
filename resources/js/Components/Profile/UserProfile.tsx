@@ -1,30 +1,27 @@
 // resources/js/Components/Profile/UserProfile.tsx
 
 import React, { useState } from 'react';
-import useAppContext from "@/Hooks/useAppContext";
-import { isIndividual, isLegal } from '@/Types/types';
+import { TUser } from '@/Types/types';
+import { isIndividualUser, isLegalUser } from '@/Types/types';
+import IndividualUserFields from './IndividualUserFields';
 
-interface UserProfileProps { priceDiscountAccordingToTheRank: number; }
+interface UserProfileProps { user: TUser; priceDiscountAccordingToTheRank: number; }
 
-const UserProfile: React.FC<UserProfileProps> = ({ priceDiscountAccordingToTheRank }) => {
-    const { user } = useAppContext();
+const UserProfile: React.FC<UserProfileProps> = ({ user, priceDiscountAccordingToTheRank }) => {
     
     if (!user) return <div>Пользователь не загружен</div>;
-
-    // Общие поля для всех типов пользователей
-    const [formData, setFormData] = useState({
-        name: user.name,
-        phone: isIndividual(user) ? user.pers_tel : isLegal(user) ? user.org_tel : '',
-        address: user.delivery_addr_on_default || ''
-    });
 
         return (
             <div className="cardProduct-line__block"> 
                 {/* Общие блоки для всех пользователей */}
                 <div className="cardProduct-block__title margin-bottom24px">
                     <h1 className="fs11 margin-bottom8px">Личный кабинет</h1>
-                    <h4 className="fs12">Моя партнёрская скидка в UnihocZoneRussia<span color="red"><strong>{priceDiscountAccordingToTheRank}</strong></span> %</h4>
+                    <h4 className="fs12">Моя партнёрская скидка в ZoneFloorball.RU: <span className='color-red'><strong>{priceDiscountAccordingToTheRank}</strong></span> %</h4>
                 </div>
+
+                {/* Условный рендеринг специфичных полей */}
+                {isIndividualUser(user) && <IndividualUserFields user={user} />}
+
             </div>
         );
 };

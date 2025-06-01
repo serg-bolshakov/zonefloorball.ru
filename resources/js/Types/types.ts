@@ -56,23 +56,26 @@ export interface IOrgUser extends IUserBase {
 
 // Создаём объединённый тип пользователя:
 export type TUser = IIndividualUser | IOrgUser | null;
-/* Пример того, как далее мы можем использовать юзера:
-    
-    function isIndividualUser(user: User): user is IIndividualUser {
-        return (user as IIndividualUser).date_of_birth !== undefined;
-    }
 
-    function isOrgUser(user: User): user is IOrgUser {
-        return (user as IOrgUser).org_inn !== undefined;
-    }
+// Пример того, как далее мы можем использовать юзера:
+export function isIndividualUser(user: TUser): user is IIndividualUser {
+    return user !== null && 
+        'client_type_id' in user && 
+        user.client_type_id === 1; // ID физлица
+}
 
-    // Вариант использования:
+export function isLegalUser(user: TUser): user is IOrgUser {
+    return user !== null && 
+        'client_type_id' in user && 
+        user.client_type_id === 2; // ID юрлица
+}
+
+/*  Вариант использования:
     if (isIndividualUser(user)) {
         // Работаем с физическим лицом
     } else if (isOrgUser(user)) {
         // Работаем с юридическим лицом
     }
-
 */
 
 export type TCustomer = IGuestCustomer | IIndividualUser | IOrgUser;

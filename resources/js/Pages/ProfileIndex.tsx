@@ -8,8 +8,6 @@ import { useUserDataContext } from "@/Hooks/useUserDataContext";
 import useModal from "@/Hooks/useModal";
 // import { usePage } from '@inertiajs/react';
 // import axios from 'axios';
-import { toast } from 'react-toastify';
-import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import UserProfile from '@/Components/Profile/UserProfile';
 
 interface IProfileProps {
@@ -22,9 +20,7 @@ interface IProfileProps {
 
 const ProfileIndex: React.FC<IProfileProps> = ({title, robots, description, keywords, priceDiscountAccordingToTheRank}) => {
     const { openModal, closeModal } = useModal();
-    console.log('Profile/Index.tsx', priceDiscountAccordingToTheRank);
-    
-
+    const { user } = useAppContext();
 return (
         <>
             <MainLayout>
@@ -36,7 +32,7 @@ return (
                 </Helmet>
 
                 <main>
-                    <UserProfile priceDiscountAccordingToTheRank={priceDiscountAccordingToTheRank} />
+                    <UserProfile user={user} priceDiscountAccordingToTheRank={priceDiscountAccordingToTheRank} />
                 </main>
 
             </MainLayout>    

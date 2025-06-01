@@ -452,7 +452,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     cart: getLocalStorageData('cart', []),
                     recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
                 };
-                console.log('Syncing data for user:', data);
+                // console.log('Syncing data for user:', data);
                 const controller = new AbortController();
                 const response = await axios.post('/user/sync', data, {     // Route::match(['GET', 'POST'], '/user/sync', [AuthSyncController::class, 'syncLocalData']); - Синхронизация данных при авторизации
                     signal: controller.signal,

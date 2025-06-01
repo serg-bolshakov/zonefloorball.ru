@@ -4,6 +4,8 @@ import React, { ReactNode, useEffect } from 'react';
 import { ConfirmModal } from './ConfirmModal';
 import { TModalType } from '@/Contexts/ModalContext';
 import { IConfirmModalProps } from './ConfirmModal';
+import { IUpdateModalProps } from './ProfileChangeConfirmationModal';
+import { ProfileChangeConfirmationModal } from './ProfileChangeConfirmationModal';
 
 interface IModalProps {
     isOpen: boolean;
@@ -42,6 +44,16 @@ const Modal: React.FC<IModalProps> = ({ isOpen, onClose, type = 'default', conte
                         title={confirmProps.title}
                         onConfirm={confirmProps.onConfirm}
                         onCancel={confirmProps.onCancel}
+                        onClose={onClose}
+                    />
+                );
+            case 'update':
+                const updateProps = props as IUpdateModalProps;
+                return (
+                    <ProfileChangeConfirmationModal
+                        title={updateProps.title}
+                        onConfirm={updateProps.onConfirm}
+                        onCancel={updateProps.onCancel}
                         onClose={onClose}
                     />
                 );

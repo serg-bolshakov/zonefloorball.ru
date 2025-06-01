@@ -1,5 +1,5 @@
 <?php
-
+// app/Http/Controllers/ProfileController.php
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -208,5 +208,21 @@ class ProfileController extends Controller
                 'keywords' => 'Клюшки для флорбола, обувь, очки, сумки и чехлы для взрослых и детей. Флорбольные ворота и мячи.',
             ]);
         }        
+    }
+
+    public function update(Request $request) {
+        $user = $request->user();
+        
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
+            'pers_surname' => ['nullable', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
+            'pers_tel' => ['nullable', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
+            // ... другие правила
+        ]);
+
+        $user->update($validated);
+
+        // return response()->json(['success' => 'Данные обновлены!']); // All Inertia requests must receive a valid Inertia response, however a plain JSON response was received. {"success":"Данные обновлены!"}
+        return response()->json(['user' => $user->fresh()]); // Отправляем обновленного пользователя
     }
 }

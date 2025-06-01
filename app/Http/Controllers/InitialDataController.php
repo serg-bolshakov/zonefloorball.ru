@@ -34,6 +34,7 @@
                     'user' => $user ? [
                         'id' => $user->id,
                         'name' => $user->name,
+                        'pers_surname' => $user->pers_surname,
                         'email' => $user->email,
                         'client_type_id' => $user->client_type_id,
                         'client_rank_id' => $user->client_rank_id,
