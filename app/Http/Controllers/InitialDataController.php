@@ -35,6 +35,7 @@
                         'id' => $user->id,
                         'name' => $user->name,
                         'pers_surname' => $user->pers_surname,
+                        'pers_tel' => $user->pers_tel,
                         'email' => $user->email,
                         'client_type_id' => $user->client_type_id,
                         'client_rank_id' => $user->client_rank_id,

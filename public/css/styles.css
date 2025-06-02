@@ -4579,17 +4579,3 @@ select:hover {
   font-size: 30px;
   font-weight: bold;
 }
-
-.confirmation__icon {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 15px;
-  border: 4px solid #ff3366;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ff3366;
-  font-size: 30px;
-  font-weight: bold;
-}

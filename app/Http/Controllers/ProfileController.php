@@ -211,18 +211,18 @@ class ProfileController extends Controller
     }
 
     public function update(Request $request) {
+ 
         $user = $request->user();
-        
+
         $validated = $request->validate([
-            'name' => ['required', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
-            'pers_surname' => ['nullable', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
-            'pers_tel' => ['nullable', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
+            'name'          => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],        // 'sometimes' - это значит: "валидировать поле только если оно присутствует в запросе".
+            'pers_surname'  => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],        // 'nullable'  - только если поля физически присутствуют во всех запросах.
+            'pers_tel'      => ['sometimes', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
             // ... другие правила
         ]);
 
         $user->update($validated);
 
-        // return response()->json(['success' => 'Данные обновлены!']); // All Inertia requests must receive a valid Inertia response, however a plain JSON response was received. {"success":"Данные обновлены!"}
         return response()->json(['user' => $user->fresh()]); // Отправляем обновленного пользователя
     }
 }
