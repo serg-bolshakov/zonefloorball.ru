@@ -211,14 +211,41 @@ class ProfileController extends Controller
     }
 
     public function update(Request $request) {
- 
+        
+        \Log::debug('ProfileController $request:', [
+            'data' => $request->all(),
+        ]);
+        
+        $validator = Validator::make($request->all(), [
+            'name' => ['nullable', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
+            'pers_surname' => ['nullable', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
+            'pers_tel' => ['nullable', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
+            'date_of_birth' => ['nullable', "regex:#^((19[5-9][0-9])|(20[0-1][0-9]))-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])$#"],
+
+        ]);
+
+        if ($validator->fails()) {
+            \Log::debug('Validation errors:', $validator->errors()->toArray());
+            return response()->json(['errors' => $validator->errors()], 422);
+        } 
+
         $user = $request->user();
 
         $validated = $request->validate([
-            'name'          => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],        // 'sometimes' - это значит: "валидировать поле только если оно присутствует в запросе".
-            'pers_surname'  => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],        // 'nullable'  - только если поля физически присутствуют во всех запросах.
+            'name'          => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],        
+            'pers_surname'  => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
             'pers_tel'      => ['sometimes', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
+            'date_of_birth' => ['nullable', "regex:#^((19[5-9][0-9])|(20[0-1][0-9]))-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])$#"], 
             // ... другие правила
+        ]);
+
+        // Явная обработка null
+        if ($request->has('date_of_birth') && $request->input('date_of_birth') === null) {
+            $validated['date_of_birth'] = null;
+        }
+
+        \Log::debug('ProfileController $validated:', [
+            'validated' => $validated,
         ]);
 
         $user->update($validated);

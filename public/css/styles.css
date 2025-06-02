@@ -1214,7 +1214,7 @@ input[type="checkbox"]:checked + label:before {
   
 input[type="checkbox"]:checked + label:after {
     left: 27px; /* Сдвигаем кружок вправо при активации чекбокса */
-  }
+}
      
 .submit {
     cursor: pointer;
@@ -4578,4 +4578,10 @@ select:hover {
   color: #ff0000;
   font-size: 30px;
   font-weight: bold;
+}
+
+/* Стиль для disabled поля */
+.disabled-field {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

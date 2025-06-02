@@ -36,6 +36,7 @@
                         'name' => $user->name,
                         'pers_surname' => $user->pers_surname,
                         'pers_tel' => $user->pers_tel,
+                        'date_of_birth' => $user->date_of_birth,
                         'email' => $user->email,
                         'client_type_id' => $user->client_type_id,
                         'client_rank_id' => $user->client_rank_id,
