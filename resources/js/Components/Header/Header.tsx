@@ -39,7 +39,10 @@ const Header: React.FC = () => {
                 <div className="header-top__line--welcome d-flex flex-sb flex-wrap">
                     <div className="header-top__line--left">
                         <span className="welcome__text">Добро пожаловать</span>&nbsp;
-                        <span className="welcome__invitation">в <Link href="https://www.unihoc.com/teams" target="_blank">команду</Link> UNIHOC</span>
+                        <span className="welcome__invitation">
+                            в команду Алетерс<sup className="tm-tooltip" data-tooltip="Зарегистрированная торговая марка">&reg;</sup>
+                        </span>
+                        <p className="margin-top8px fs12">Россия. Создано со знанием дела.</p>
                     </div>
                     <div className="fs12">
                         &mdash;&nbsp;Участие важно,<br />

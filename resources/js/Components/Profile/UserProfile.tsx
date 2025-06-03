@@ -13,15 +13,41 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, priceDiscountAccordingT
 
         return (
             <div className="cardProduct-line__block"> 
-                {/* Общие блоки для всех пользователей */}
-                <div className="cardProduct-block__title margin-bottom24px">
-                    <h1 className="fs11 margin-bottom8px">Личный кабинет</h1>
-                    <h4 className="fs12">Моя партнёрская скидка в ZoneFloorball.RU: <span className='color-red'><strong>{priceDiscountAccordingToTheRank}</strong></span> %</h4>
+                
+                <div className="cardProduct-block__title"> 
+                    {/* Общие блоки для всех пользователей */}
+                    <div className="cardProduct-block__title margin-bottom24px">
+                        <h1 className="fs11 margin-bottom8px">Личный кабинет</h1>
+                        <h4 className="fs12">Моя партнёрская скидка в ZoneFloorball.RU: <span className='color-red'><strong>{priceDiscountAccordingToTheRank}</strong></span> %</h4>
+                    </div>
+
+                    {/* Условный рендеринг специфичных полей */}
+                    {isIndividualUser(user) && <IndividualUserFields user={user} />}
                 </div>
 
-                {/* Условный рендеринг специфичных полей */}
-                {isIndividualUser(user) && <IndividualUserFields user={user} />}
-
+                <div className="avatarka-block">    
+                    <h4>Есть вопросы?</h4> 
+                    <p>Ваш флорбольный эксперт:</p>
+                    <div id="avatarkaimg" className="avatarka"></div>
+                    <p className="manager-name">Сергей Большаков</p>
+                    <div className="profile-info__line">
+                        <a href="mailto:unihoczonerussia@gmail.com">
+                            <img src="/storage/icons/gmail-logo-colored.jpg" alt="gmail-logo" title="Отправить письмо по электронной почте"/>
+                        </a>
+                        <a href="https://vk.com/unihoczonerussia">
+                            <img src="/storage/icons/vk-logo-colored.png" alt="vk-logo" title="Написать ВКонтакте"/>
+                        </a>
+                        <a href="whatsapp://send?phone=+79534156010" title="Написать в Whatsapp">
+                            <img src="/storage/icons/whatsapp-logo-colored.png" alt="whatsApp-logo" title="Написать в Whatsapp"/>
+                        </a>
+                        <a href="https://t.me/unihoczonerussia/">
+                            <img src="/storage/icons/telegram-logo-colored.png" alt="telegram-logo" title="Написать в Telegram"/>
+                        </a>
+                        <a href="tel:+79107955555" title="Позвонить директору">
+                            <img src="/storage/icons/telefon-logo.png" alt="telefon-logo" title="Позвонить директору"/>
+                        </a>
+                    </div>
+                </div>
             </div>
         );
 };

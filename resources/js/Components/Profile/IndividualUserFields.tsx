@@ -362,7 +362,7 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
                         <span className="productAddition-form__clearance">
                             Имя пишется буквами русского алфавита, должно быть длиной от 1 до 30 символов, может содержать пробел и дефис.
                         </span>
-                       
+                    
                         
                         <label className="fs12" htmlFor="surnameprofilechanging">Фамилия: </label>
                         <input
@@ -489,7 +489,7 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
                         <label htmlFor="deletebirthdayfromaccount" className="checkbox-label">
                             Удалить дату рождения из системы
                         </label>
-                           
+                        
                         <div className="d-flex flex-sa">
                             <button type="submit" className="changing-form__submit-btn" disabled={!checkChanges(['birthday'])}>Изменить</button>
                             <button 

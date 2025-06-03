@@ -8,6 +8,45 @@ sup {
     font-size: 0.75em; /* уменьшаем размер */
 }
 
+.trademark {  
+    font-size: 0.7em;  
+    vertical-align: super;  
+    line-height: 0;  
+} 
+
+.tm-tooltip {  
+    position: relative;  
+    cursor: pointer;  
+}  
+
+.tm-tooltip:hover::after {  
+    content: attr(data-tooltip);  
+    position: absolute;  
+    bottom: 100%;  
+    left: 50%;  
+    transform: translateX(-100%);  
+    /* background: #333;   */
+    background: red;
+    color: #fff;  
+    padding: 4px 8px;  
+    border-radius: 4px;  
+    font-size: 12px;  
+    white-space: nowrap;  
+    z-index: 100;  
+}  
+
+/* Стрелка */  
+.tm-tooltip:hover::before {  
+    content: "";  
+    position: absolute;  
+    bottom: calc(100% - 5px);  
+    left: 50%;  
+    transform: translateX(-100%);  
+    border: 5px solid transparent;  
+    /* border-top-color: #333;   */
+    border-top-color: red;
+}  
+
 i { font-style: italic; }
 
 .d-flex    { display: flex; }
