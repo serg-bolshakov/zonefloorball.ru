@@ -42,7 +42,7 @@ const Header: React.FC = () => {
                         <span className="welcome__invitation">
                             в команду Алетерс<sup className="tm-tooltip" data-tooltip="Зарегистрированная торговая марка">&reg;</sup>
                         </span>
-                        <p className="margin-top8px fs12">Россия. Создано со знанием дела.</p>
+                        <p className="margin-top8px fs12">Алетерс. Россия. Создано со знанием дела.</p>
                     </div>
                     <div className="fs12">
                         &mdash;&nbsp;Участие важно,<br />
