@@ -5,7 +5,6 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CardController;
 use App\Http\Controllers\BasketController;
 use App\Http\Controllers\PackageController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\ProfileController;
 // use Laravel\Fortify\Features;                                    // 06.01.2025  - 10.01.2025 - думаю, что это лишнее - можно будет удалить (осторожно)
 use App\Http\Controllers\RegisteredUserController;                  // 09.01.2025 Обновим файл routes/web.php, чтобы использовать наш самописный контроллер для регистрации:
