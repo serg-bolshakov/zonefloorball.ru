@@ -11,6 +11,7 @@ import { AnimatePresence, motion, stagger } from 'framer-motion';
 import { dateRu } from '@/Utils/dateFormatter';
 import AddressSection from './AddressSection';
 import { validateAddress } from '@/Utils/formFieldsValidation';
+import { Link } from '@inertiajs/react';
 
 interface IIndividualUserFieldsProps { user: IIndividualUser }
 
@@ -599,6 +600,18 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
                     </form>
                 </div>
             )}
+
+            <div className="profile-info__line">
+                <a href="/update-password">
+                <button type="button" className="forgot-password__form--btn">Сменить пароль</button>
+                </a>
+            </div>
+
+            <div className="profile-info__line">
+                <a href="/update-email">
+                <button type="button" className="forgot-password__form--btn">Изменить адрес почты</button>
+                </a>
+            </div>
         </>
     );
 
