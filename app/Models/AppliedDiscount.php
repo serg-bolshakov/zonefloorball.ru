@@ -17,7 +17,7 @@ class AppliedDiscount extends Model
     protected $fillable = [
         'order_id',
         'discount_id', // Добавьте это поле
-        'product_id',  // Если вы добавили это поле
+        'product_id',  // Если добавили это поле
         'product_quantity',
         'product_price_for_payment',
         'applied_value',
