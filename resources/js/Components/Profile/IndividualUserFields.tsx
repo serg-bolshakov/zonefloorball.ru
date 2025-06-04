@@ -9,20 +9,22 @@ import useModal from '@/Hooks/useModal';
 import useAppContext from '@/Hooks/useAppContext';
 import { AnimatePresence, motion, stagger } from 'framer-motion';
 import { dateRu } from '@/Utils/dateFormatter';
+import AddressSection from './AddressSection';
+import { validateAddress } from '@/Utils/formFieldsValidation';
 
 interface IIndividualUserFieldsProps { user: IIndividualUser }
 
-type TEditableField = 'names' | 'phone' | 'birthday' | 'address' | null;
+export type TEditableField = 'names' | 'phone' | 'birthday' | 'address' | null;
 
 const CONFIRMATION_TITLES: Record<Exclude<TEditableField, null>, string> = {       // Исключаем null
-    names: 'Подтвердите изменение Фамилии и/или Имени',
-    phone: 'Подтвердите изменение Вашего номера телефона',
+    names   : 'Подтвердите изменение Фамилии и/или Имени',
+    phone   : 'Подтвердите изменение Вашего номера телефона',
     birthday: 'Подтвердите изменение Даты рождения',
-    address: 'Подтвердите изменение Адреса',
+    address : 'Подтвердите изменение Адреса',
     // null обработаем отдельно
 } as const;
 
-type TFormData = {
+export type TFormData = {
     name: string;
     surname: string;
     phone: string;
@@ -34,6 +36,7 @@ type TFieldMapping = {
     surname: 'pers_surname';
     phone: 'pers_tel';
     birthday: 'date_of_birth';
+    address: 'delivery_addr_on_default';
     // ... другие поля
 };
 
@@ -115,24 +118,36 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
         setFormData(prev => ({ ...prev, [name]: value }));
     }, []);
 
+    const handleAddressChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = e.target.value;
+        setFormData(prev => ({ ...prev, address: value }));
+        
+        // Валидация в реальном времени
+        validateField('address', value);
+    };
+
     const [initialData, setInitialData] = useState<TFormData>({} as TFormData);
 
     const handleOpenForm = (formName: TEditableField) => {
         setActiveForm(formName);
         setErrors({});
-
+        
         // Всегда берём актуальные данные из контекста/пропсов
         setFormData({
             name: user?.name || '',
             surname: user?.pers_surname || '',
             phone: user?.pers_tel || '',
-            birthday: user?.date_of_birth || '', // null превращаем в пустую строку
-            address: user?.delivery_addr_on_default || ''
+            birthday: user?.date_of_birth || '',            // null превращаем в пустую строку
+            address: user?.delivery_addr_on_default || ''   // null превращаем в пустую строку
         });
 
         // Сохраняем текущие данные как исходные
         setInitialData({ ...formData });
     };
+
+    // Добавим отдельное состояние для чекбокса:
+    const [shouldDeleteBirthday, setShouldDeleteBirthday] = useState(false);
+    const [shouldDeleteData, setShouldDeleteData] = useState(false);
 
     // Сброс формы при закрытии (к исходным значениям)
     const handleCancel = () => {
@@ -144,6 +159,9 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
             address: user.delivery_addr_on_default || ''
         });
         setActiveForm(null);
+
+        shouldDeleteBirthday ? setShouldDeleteBirthday(false) : true;
+        shouldDeleteData ? setShouldDeleteData(false) : true;
     };
 
     const { openModal } = useModal(); 
@@ -166,45 +184,33 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
     // Конфигурация преобразования полей
     const getServerFieldName = (field: keyof TFieldMapping | string): string => {
         const mapping: Record<string, string> = {
-            surname : 'pers_surname',        // Клиентское 'surname' -> Серверное 'pers_surname'
-            phone   : 'pers_tel',            // Клиентское 'phone' -> Серверное 'pers_tel'       
+            surname : 'pers_surname',           // Клиентское 'surname' -> Серверное 'pers_surname'
+            phone   : 'pers_tel',               // Клиентское 'phone' -> Серверное 'pers_tel'       
             birthday: 'date_of_birth',
+            address: 'delivery_addr_on_default'
         };
-        return mapping[field] || field;     // Если поля нет в маппинге, возвращаем как есть
+        return mapping[field] || field;         // Если поля нет в маппинге, возвращаем как есть
     };
 
     const getConfirmationTitle = (formType: Exclude<TEditableField, null>): string => {
         return CONFIRMATION_TITLES[formType] || 'Подтвердите изменение данных';
     };
 
-    const getDynamicTitle = (
-            formType: Exclude<TEditableField, null>, // Исключаем null
-            oldValue: string,
-            newValue: string
-        ): string => {
-        const templates = {
-            names: `Изменение с "${oldValue}" на "${newValue}"`,
-            phone: `Новый номер: ${newValue}`,
-            birthday: `Новая дата: ${newValue}`,
-            address: `Новый адрес: ${newValue}`
-        } as const;
-
-        return templates[formType] || '';
-    };
-
-    // Добавим отдельное состояние для чекбокса:
-    const [shouldDeleteBirthday, setShouldDeleteBirthday] = useState(false);
-
     const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setShouldDeleteBirthday(e.target.checked);
     };
-    
+
+    const handleCheckboxAddressDelete = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setShouldDeleteData(e.target.checked);
+    };
+
     // Отправка формы
     const handleSubmit = async (e: React.FormEvent, fields: (keyof TFormData)[]) => {
         e.preventDefault();
-
+        console.log('handleSubmit fields', fields);
         // Проверяем, есть ли изменения (дублируем для безопасности) - сделали кнопку неактивной, если нет никаких изменени...
         const hasChanges = (fields: (keyof TFormData)[]): boolean => {
+            console.log('hasChanges', fields);
             const hasFormChanges = fields.some(field => 
                 formData[field] !== initialData[field]
             );
@@ -254,7 +260,9 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
         // Обработка удаления даты рождения
         if (shouldDeleteBirthday) {
             payload['date_of_birth'] = null; // Явное указание null для сервера
-        } 
+        } else if (shouldDeleteData) {
+            payload['delivery_addr_on_default'] = null; // Явное указание null для сервера
+        }
         // Обычные изменения
         else {
             fields.forEach(field => {
@@ -265,12 +273,12 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
         // Показываем модалку только если есть реальные изменения (сто тысяч раз проверили уже... :) )
         if (Object.keys(payload).length > 0) {
             openModal(null, 'update', {
-                title: shouldDeleteBirthday 
-                ? "Удалить дату рождения из профиля?" 
-                : (
+                title: 
+                    shouldDeleteBirthday ? "Удалить дату рождения из профиля?" : 
+                    shouldDeleteData     ? "Удалить данные адреса из профиля?" :
+                (
                     <div>
                         <h3>{getConfirmationTitle(activeFormNonNull)}</h3>
-                        {/* <p>{getDynamicTitle(activeFormNonNull, String(oldValue), String(newValue))}</p> */}
                         <AnimatePresence>
                             <motion.div 
                                 initial={{ opacity: 1 }}
@@ -297,6 +305,7 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
                             return acc;
                         }, {} as Record<string, string>);*/
                         
+                        console.log(payload);
                         const response = await axios.put('/profile', payload);
 
                         // Важное изменение: обновляем контекст
@@ -305,14 +314,22 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
                         }
 
                         shouldDeleteBirthday 
-                        ? toast.success('Дата рождения удалена!', { icon: '🎂' as ToastIcon, autoClose: 2000 })
+                        ? toast.success('Дата рождения удалена!', { icon: '🎂' as unknown as ToastIcon, autoClose: 2000 }) // не работает: иконка не всплывает, но и ошибок нет - пусть останется... :)
+                        : shouldDeleteData ? toast.success('Данные адреса удалены из профиля')
                         : toast.success('Данные обновлены!');
 
                         if (shouldDeleteBirthday) {
-                            setFormData(prev => ({ ...prev, birthday: '' })); // Сбрасываем значение
-                            setShouldDeleteBirthday(false); // Сбрасываем чекбокс
+                            setFormData(prev => ({ ...prev, birthday: '' }));   // Сбрасываем значение
+                            setShouldDeleteBirthday(false);                     // Сбрасываем чекбокс
                         }
-                        // shouldDeleteBirthday ? setShouldDeleteBirthday(false) : true;   // убираем чекбокс на удаление даты рождения из БД (если таковой был)
+                        
+                        if (shouldDeleteData) {
+                            setFormData(prev => ({ ...prev, address: '' }));    // Сбрасываем значение
+                            setShouldDeleteData(false);                         // Сбрасываем чекбокс
+                        }
+
+
+
                         setActiveForm(null);
                     } catch (error) {
                         if (axios.isAxiosError(error) && error.response?.data?.errors) {
@@ -324,13 +341,16 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
                     }
                 },
                 onCancel: () => {
-                    toast.success('Данные остались неизменными');
+                    toast.success('Данные сохранены без изменений');
                     handleCancel();
                 }
             });
         }
     };
 
+    // console.log( ((!!errors.address || !checkChanges(['address'])) && (shouldDeleteData && !formData.address)) || !(!!errors.address && checkChanges(['address']) && shouldDeleteData));    
+    // console.log( ((!!errors.address || !checkChanges(['address'])) && (shouldDeleteData && !formData.address)) );
+    // console.log( !(!!errors.address && checkChanges(['address']) && shouldDeleteData)  )
     return (
         <>
             {/* Поле имени и фамилии*/}
@@ -498,6 +518,82 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
                                 onClick={handleCancel}
                             >
                                 Не меняем
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+            {/* Блок адреса доставки по умолчанию*/}
+            {/*<AddressSection user={user} handleCancel={handleCancel} handleOpenForm={handleOpenForm} handleSubmit={handleSubmit} activeForm={activeForm} />*/}
+
+            <h4 className="fs11">Адрес доставки заказов (по умолчанию): </h4>
+            <div className="profile-info__line--title flex-sb fs12">
+                <p>{user.delivery_addr_on_default ? (user.delivery_addr_on_default) : 'Не указан'}</p>    
+                <img 
+                    src="/storage/icons/edit.png" 
+                    alt="edit-logo" 
+                    title="Редактировать адрес"
+                    onClick={() => activeForm === 'address' ? handleCancel() : handleOpenForm('address')}
+                />
+            </div>
+
+            {activeForm === 'address' && (
+                <div id="profilechangingdeliveryaddressdiv" className="profile-changing-form">
+                    <form onSubmit={(e) => handleSubmit(e, ['address'])}>
+                        <div id="editdeliveryaddressfieldinprofile" className="registration-form__input-item margin-tb4px">
+                            <label className="fs12" htmlFor="editdeliveryaddressfieldinprofilediv">
+                                Адрес доставки/получения заказов <br/>(по умолчанию): 
+                            </label>
+                            {/* Поле адреса */}
+                            <textarea
+                                id="editdeliveryaddressfieldinprofilediv"
+                                className={shouldDeleteData ? 'disabled-field registration-form__input-address margin-tb12px' : 'registration-form__input-address margin-tb12px'}
+                                // className='registration-form__input-address margin-tb12px'
+                                value={formData.address}
+                                onChange={handleAddressChange}
+                                disabled={shouldDeleteData}
+                            />
+                            <span className="productAddition-form__clearance">
+                                В этот адрес (если он будет здесь указан) будут отправляться заказы. 
+                                Адрес можно указать при выборе транспортной компании.
+                            </span>
+
+                            {errors.address && <div className="color-red margin-top12px">{errors.address}</div>}
+                        </div>
+
+                        <div>
+                            {/* Чекбокс удаления */}
+                            <input 
+                                type="checkbox" 
+                                id="deletedeliveryaddressfromaccount"
+                                name="shouldDeleteData"
+                                hidden
+                                checked={shouldDeleteData}
+                                onChange={handleCheckboxAddressDelete}
+                            />
+                            <label htmlFor="deletedeliveryaddressfromaccount" className="checkbox-label">
+                                Удалить данные адреса из системы
+                            </label>
+                        </div>
+
+                        {/* Кнопки */}
+                        <div className="d-flex flex-sa">
+                            <button 
+                                type="submit" 
+                                name='address'
+                                disabled={((!!errors.address || !checkChanges(['address'])) && (shouldDeleteData && !formData.address))}
+                                className="changing-form__submit-btn"
+                            >
+                                {shouldDeleteData ? 'Удалить' : 'Сохранить'}
+                            </button>
+
+                            <button 
+                                type="button" 
+                                className="changing-form__submit-btn"
+                                onClick={handleCancel}
+                            >
+                                Отмена
                             </button>
                         </div>
                     </form>

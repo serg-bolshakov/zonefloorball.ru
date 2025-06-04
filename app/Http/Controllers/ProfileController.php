@@ -221,7 +221,6 @@ class ProfileController extends Controller
             'pers_surname' => ['nullable', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
             'pers_tel' => ['nullable', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
             'date_of_birth' => ['nullable', "regex:#^((19[5-9][0-9])|(20[0-1][0-9]))-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])$#"],
-
         ]);
 
         if ($validator->fails()) {
@@ -235,7 +234,8 @@ class ProfileController extends Controller
             'name'          => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],        
             'pers_surname'  => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
             'pers_tel'      => ['sometimes', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
-            'date_of_birth' => ['nullable', "regex:#^((19[5-9][0-9])|(20[0-1][0-9]))-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])$#"], 
+            'date_of_birth' => ['nullable', "regex:#^((19[5-9][0-9])|(20[0-1][0-9]))-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])$#"],
+            'delivery_addr_on_default' => ['nullable', "regex:~^[а-яА-ЯёЁ\d\s.,\"!:\-()/№]+$~u"], 
             // ... другие правила
         ]);
 

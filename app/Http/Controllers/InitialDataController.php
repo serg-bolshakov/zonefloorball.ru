@@ -37,6 +37,7 @@
                         'pers_surname' => $user->pers_surname,
                         'pers_tel' => $user->pers_tel,
                         'date_of_birth' => $user->date_of_birth,
+                        'delivery_addr_on_default' => $user->delivery_addr_on_default,
                         'email' => $user->email,
                         'client_type_id' => $user->client_type_id,
                         'client_rank_id' => $user->client_rank_id,
