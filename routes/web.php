@@ -52,7 +52,7 @@ Route::match(['get', 'post'], '/logout', function () {
  * API-роуты (routes/api.php) используют api middleware group, где нет сессии
  * Web-роуты (routes/web.php) используют web middleware, который поддерживает сессии
  * Переносим Route::get('/initial-data', [InitialDataController::class, 'index']); в web.php
- */
+ */ 
 
 Route::middleware('web')->group(function () {
     // Инициализация данных
