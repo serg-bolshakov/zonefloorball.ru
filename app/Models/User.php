@@ -28,7 +28,7 @@ use Laravel\Sanctum\HasApiTokens;
      */
     protected $fillable = [
         'name', 
-        'email', 
+        'email', 'pers_email',
         'password', 
         'pers_surname', 'pers_tel', 'delivery_addr_on_default', 'date_of_birth', 'action_auth_id', 
         'is_taxes_pay', 'org_tel', 'org_inn', 'org_kpp', 'org_addr', 'client_type_id', 'client_rank_id', 'email_verified_at', 'this_id',

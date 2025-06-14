@@ -117,7 +117,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         if (currentFavorites.includes(productId)) {
             return {
                 favoritesTotal: currentFavorites.length,
-                error: 'Товар уже в избранном'
+                error: 'Товар уже есть в избранном'
             };
         }
 
@@ -229,7 +229,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
                 return {
                     cartTotal: calculateCartTotal(newCart),
-                    error: `Товар уже в корзине (теперь: ${newCart[productId]} шт.)` // Понятнее для пользователя
+                    error: `Товар уже есть в корзине (Добавили колиство. Теперь стало: ${newCart[productId]} шт.)` // Понятнее для пользователя
                 };
             }
             
@@ -238,8 +238,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 [productId]: (state.cart[productId] || 0) + quantity };
 
             if (user) {
-                console.log('productId', productId);
-                console.log('quantity', newCart[productId]);
+                // console.log('productId', productId);
+                // console.log('quantity', newCart[productId]);
                 await axios.post('/cart/items', { 
                     product_id: productId,
                     quantity: newCart[productId]
@@ -373,6 +373,34 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         }
     }, [user, state.cart]);
  
+    const clearCart = useCallback(async(): Promise<void> => {
+        try {
+            updateState({isLoading: true});
+
+            // Локальное очищение корзины (синхронно)
+            updateState({
+                cart: {},
+                cartTotal: 0,
+                isLoading: false
+            });
+
+            // Очистка на сервере (если пользователь авторизован)
+            if(user) {
+                await axios.delete('api/cart/clear');
+            }
+
+            // Очистка localStorage
+            localStorage.removeItem('cart');
+
+        } catch (error) {
+            const message = getErrorMessage(error);
+            updateState({
+                error: message,
+                isLoading: false
+            });
+        }
+    }, [user]);
+
     const getLocalStorageData = (key: string, defaultValue: any) => {
       try {
         const item = localStorage.getItem(key);
@@ -574,9 +602,9 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     // localStorage для гостей / Проверка при фокусе вкладки для авторизованных
         
     // После успешной авторизации пользователя: - это становится неактуальным, метод придётся удалить...
-    const fetchFavorites = useCallback(async () => {
+    /*const fetchFavorites = useCallback(async () => {
         if(!user) return;
-        /* становится неактуальным ... но требуется для синхронизации между открытыми вкладками - нужно будет подумать как настроить поток... а пока комментируем...
+        // становится неактуальным ... но требуется для синхронизации между открытыми вкладками - нужно будет подумать как настроить поток... а пока комментируем...
         try {
             // Синхронизируем локальные данные с БД
             const localData = {
@@ -607,10 +635,10 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             }
         } catch (error) {
             console.error('Ошибка загрузки данных:', getErrorMessage(error));
-        }*/
-    }, [user]);
+        }
+    }, [user]);*/
 
-    useEffect(() => {
+    /*useEffect(() => {
         const handleVisibilityChange = () => {
             if (!document.hidden) {
                 fetchFavorites(); // Только при возврате на вкладку
@@ -624,7 +652,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         };
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [user, fetchFavorites]);
+    }, [user, fetchFavorites]);*/
     // Почему это лучше: 0 лишних запросов пока пользователь неактивен, мгновенное обновление при переключении вкладок, простота (не требует WebSockets)...
 
     
@@ -640,7 +668,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         updateCart,
         removeFromCart,
         addRecentlyViewedProd,
-        // syncData
+        clearCart,
         // Будущие методы добавятся здесь
     }), [
         state.cart,
@@ -655,7 +683,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         updateCart,
         removeFromCart,
         addRecentlyViewedProd,
-        // syncData
+        clearCart
     ]);
 
     return (

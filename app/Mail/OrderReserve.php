@@ -1,4 +1,6 @@
 <?php
+// app/Mail/OrderReserve.php
+
 namespace App\Mail;
 
 use App\Models\Order;
@@ -6,7 +8,6 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\Seller;
 
-use App\Traits\OrderHelperTrait;
 use App\Traits\NumberToRussianTrait;
 
 use Illuminate\Bus\Queueable;
@@ -19,12 +20,11 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Address;          // 28.12.2024 https://github.com/russsiq/laravel-docs-ru/blob/9.x/docs/mail.md#configuring-the-sender
 use Barryvdh\DomPDF\Facade\Pdf;   
 
-use Illuminate\Support\Facades\Crypt;           // Используем для шифрования номера счёта и использования зашифрованной строки в URL. Это сделает URL менее предсказуемым, но при этом сохранит возможность расшифровки.
+// use Illuminate\Support\Facades\Crypt;           // Используем для шифрования номера счёта и использования зашифрованной строки в URL. Это сделает URL менее предсказуемым, но при этом сохранит возможность расшифровки.
 
 class OrderReserve extends Mailable
 {
     use Queueable, SerializesModels;
-    use OrderHelperTrait;
     use NumberToRussianTrait;
 
     protected $order;
@@ -45,10 +45,13 @@ class OrderReserve extends Mailable
         /**
      * Get the message envelope.
      */
-    public function envelope(): Envelope
+    public function envelope(): Envelope        // параметром в new Envelope - нужно передать либо именованный параметр subject:, либо массив
     {
+        $clientType = $this->buyer->client_type_id ?? 1; // По умолчанию физлицо
+        $prefix = $clientType == 1 ? 'Мой' : 'Наш';
+    
         return new Envelope(
-            subject: 'Флорбол. Мой заказ № ' . $this->order->order_number,
+            subject: "Флорбол. {$prefix} заказ № {$this->order->order_number}"
         );
     }
     
@@ -71,7 +74,7 @@ class OrderReserve extends Mailable
     public function buildPdf()
     {
         $content = view('emails.orders.reserve', $this->content()->with)->render();
-
+        \Log::debug('OrderReserve buildPdf:', [ 'content' => $content]);
         // Настройка dompdf
         $pdf = Pdf::loadHTML($content);
         $pdf->setOption('defaultFont', 'DejaVu Sans'); // Указываем шрифт
@@ -83,8 +86,13 @@ class OrderReserve extends Mailable
 
     public function buildPdfAndSave($relativePath)
     {
+        \Log::debug('OrderReserve buildPdfAndSave:', [ 'start' => 'staart',
+        '$relativePath' => $relativePath]);
+              
         // Подготавливаем данные
         $data = $this->prepareData();
+
+        \Log::debug('OrderReserve buildPdfAndSave:', [ 'data' => $data]);
 
         // Рендерим шаблон
         $content = view('emails.orders.reserve', $data)->render();
@@ -134,44 +142,56 @@ class OrderReserve extends Mailable
         $orderRecipient = $contactTelNum = $transport = $dataAboutGoodsForMailBody = $address = '';
 
         $orderWithTansport = Order::with(['transport'])->where('id', $this->order->id)->first();
-        if(!empty($orderWithTansport['transport']->delivery_way_view)) {
-            $transport = $orderWithTansport['transport']->delivery_way_view;
+        if(!empty($orderWithTansport['transport']->name)) {
+            $transport = $orderWithTansport['transport']->name;
         }
         
-        $orderDate = date('d.m.Y', $this->order->order_date);
-        
+        $orderDate = is_numeric($this->order->order_date) 
+            ? date('d.m.Y', $this->order->order_date)
+            : date('d.m.Y', strtotime($this->order->order_date));
+
         $buyerName = $this->buyer->pers_surname . ' ' . $this->buyer->name;
         $buyerTel = $this->buyer->pers_tel;
 
-        $productsArr = $this->getProductsArrayFromQuerySrting($this->order->order_content);
+        /** в модели Orders у нас есть: Получить все позиции заказа (с количеством, ценой)
+         *   public function items() {
+         *       return $this->hasMany(OrderItem::class);                // Один заказ → много позиций
+         *   }  
+         */
+        // Получаем массив позиций заказа через отношение items()
+        $itemsArr = $this->order->items()->with('product')->get();
+        
         $i = 1;
 
         $totalAmount = $totalDiscount = $totalAmountInRegularPrices = $totalOrderAmountNotFormatted = 0;
         
-        foreach($productsArr as $product) {
-            $prodInfo = Product::find($product[0]);           // С помощью специального метода find можно получить запись по ее id
+        foreach($itemsArr as $item) {
+
+            $prodInfo = Product::find($item->product_id);           // С помощью специального метода find можно получить запись по ее id
             $productArticle = $prodInfo->article;
             $productName = $prodInfo->title;
-            $productPrice = number_format((float)$product[2], 0,",", " ");
-            $productPriceRegular = number_format((float)$product[5], 0,",", " ");
-            $productAmount = (float)$product[1] * (float)$product[2];
+            $productPrice = number_format((float)$item->price, 0,",", " ");
+            $productPriceRegular = number_format((float)$item->regular_price, 0,",", " ");
+            $productAmount = (float)$item->quantity * (float)$item->price;
             $productAmountFormatted = number_format((float)$productAmount, 0,",", " ");
+
             // если цена идёт со скидкой
-            if($product[2] < $product[5]) {
-                $productDiscount = number_format((float)$product[4], 0,",", " ");
-                $dataAboutGoodsForMailBody .= '<tr><td style="text-align: center;">' . $i . '</td><td>' . $productArticle . '</td><td>' . $productName . '</td><td style="text-align: center;">' . $product[1] . '
+            if($item->price < $item->regular_price) {
+                $productDiscount = $item->applied_discount ?? $item->regular_price - $item->price; // с проверкой на null applied_discount (это поле пока не заполняем пока, как раз и должно быть null) - пока значение рассчитываем
+                $productDiscountFormatted = number_format((float)$productDiscount, 0,",", " ");
+                $dataAboutGoodsForMailBody .= '<tr><td style="text-align: center;">' . $i . '</td><td>' . $productArticle . '</td><td>' . $productName . '</td><td style="text-align: center;">' . $item->quantity . '
                 &nbsp;шт.</td><td style="text-align: right;">' . $productPrice . '</sup></td><td style="text-align: right;">' . $productAmountFormatted . 
-                '</td><td style="text-align: right;"><font color="red">' . $productDiscount . '&nbsp;<sup>&#8381;</sup></font></td></tr>';
+                '</td><td style="text-align: right;"><font color="red">' . $productDiscountFormatted . '&nbsp;<sup>&#8381;</sup></font></td></tr>';
                 $i++;
-                $totalDiscount += +$product[4];
+                $totalDiscount += +$item->applied_discount;
             } else {
-                $dataAboutGoodsForMailBody .= '<tr><td style="text-align: center;">' . $i . '</td><td>' . $productArticle . '</td><td>' . $productName . '</td><td style="text-align: center;">' . $product[1] . '
-                &nbsp;шт.</td><td style="text-align: right;">' . $productPrice . '</td><td style="text-align: center;">' . $productAmountFormatted . '</td><td> --- </td></tr>';
+                $dataAboutGoodsForMailBody .= '<tr><td style="text-align: center;">' . $i . '</td><td>' . $productArticle . '</td><td>' . $productName . '</td><td style="text-align: center;">' . $item->quantity . '
+                &nbsp;шт.</td><td style="text-align: right;">' . $productPrice . '</td><td style="text-align: center;">' . $productAmountFormatted . '</td><td>&nbsp;</td></tr>';
                 $i++;
             }
 
             $totalAmount += $productAmount;
-            $totalAmountInRegularPrices += $product[1] * $product[5]; 
+            $totalAmountInRegularPrices += $item->quantity * $item->regular_price; 
         }
 
         $productAmountFormatted = number_format((float)$totalAmount, 0,",", " ");
@@ -181,7 +201,7 @@ class OrderReserve extends Mailable
         } elseif($this->order->order_delivery_cost == '0') {
             $deliveryCostLine = '<li><strong>Получение товаров со склада (самовывоз)</strong>:&nbsp;бесплатно</li>';
         } else {
-            $discountTotalLine = '';
+            $deliveryCostLine = '';
         }
         
         $totalOrderAmount = number_format((float)($totalAmount + $this->order->order_delivery_cost), 0,",", " ");
@@ -216,10 +236,12 @@ class OrderReserve extends Mailable
             $orderAmountinRussian = '<p>Всего к оплате:&nbsp;<strong>' . $numberToRussian . '&nbsp;руб. 00 копеек</strong></p>';
         }
         
-        // Используем обновлённый order_url_semantic
-        $pdfUrl = asset($this->order->order_url_semantic);      // asset(), ДОЛЖНА автоматически добавить домен и правильный путь.
-        // Функция asset() генерирует полный URL на основе относительного пути. Например: Если order_url_semantic содержит storage/invoices/invoice_2_25_01_207_1b27f699.pdf, то asset($this->order->order_url_semantic) вернёт: http://ваш-домен/storage/invoices/invoice_2_25_01_207_1b27f699.pdf
-        // dd($pdfUrl);
+        // Используем обновлённый invoice_url
+        $pdfUrl = asset($this->order->invoice_url);      // asset(), ДОЛЖНА автоматически добавить домен и правильный путь.
+        // Функция asset() генерирует полный URL на основе относительного пути. Например: Если invoice_url содержит storage/invoices/invoice_2_25_01_207_1b27f699.pdf, то asset($this->order->invoice_url) вернёт: http://ваш-домен/storage/invoices/invoice_2_25_01_207_1b27f699.pdf
+        $invoiceUrl = asset('invoice/'  . $this->order->access_hash); 
+        $trackUrl = asset('order/track/'. $this->order->access_hash); 
+
         $data = [
             'orderNum'                  => $this->order->order_number           ,
             'orderDate'                 => $orderDate                           ,
@@ -237,7 +259,9 @@ class OrderReserve extends Mailable
             'totalAmountInRegularPricesFormattedNote' => $totalAmountInRegularPricesFormattedNote,
             'pathToImage' => 'storage/images/logo.png', // Путь к логотипу
             'orderAmountinRussian'      => $orderAmountinRussian                ,
-            'pdfUrl' => $pdfUrl,
+            'pdfUrl'                    => $pdfUrl,
+            'invoiceUrl'                => $invoiceUrl,
+            'trackUrl'                  => $trackUrl
         ];
 
         return $data;

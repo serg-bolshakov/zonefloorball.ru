@@ -17,11 +17,21 @@ interface OrderData<T extends TCustomer> {
     customer: T;
     delivery: IDeliverySelectionData;
     total: number;
-    paymentMethod?: 'online' | 'invoice';
+    paymentMethod?: 'online' | 'bank_transfer' | 'cash';
 }
 
 interface ValidationErrors {
   [field: string]: string[];
+}
+
+// Типы для ответа сервера
+interface OrderResponse {
+    status: 'success' | 'error';
+    orderId: string;
+    clearCart?: boolean;
+    pdfUrl?: string;
+    redirect?: string;
+    message?: string;
 }
 
 const useCreateOrder = () => {
@@ -33,11 +43,10 @@ const useCreateOrder = () => {
         orderData: OrderData<T>,
         options: {
             isReserve?: boolean;
-            paymentMethod?: 'online' | 'invoice';
-            onSuccess?: (orderId: string) => void;
-            //onValidationError?: (errors: Record<string, string[]>) => void;
+            paymentMethod?: 'online' | 'bank_transfer' | 'cash';
+            onSuccess?: (response: OrderResponse) => void;
           }
-    ) => {
+    ): Promise<OrderResponse> => {
 
         // Отменяем предыдущий запрос, если он есть
         controllerRef.current?.abort();
@@ -55,12 +64,9 @@ const useCreateOrder = () => {
             ? API_ENDPOINTS.ORDER_CREATE
             : API_ENDPOINTS.ORDER_CREATE;
     
-          console.log('Sending POST to:', endpoint, 'with data:', { ...orderData });
-
-          const response = await axios.post(endpoint, {
+          const response = await axios.post<OrderResponse>(endpoint, {
             ...orderData,
             paymentMethod: options.paymentMethod,
-            // _token: getCookie('XSRF-TOKEN')
           }, {
             signal: controller.signal,                  // controller.signal - это объект AbortSignal, который передаётся в axios (или fetch).
             headers: {
@@ -70,9 +76,11 @@ const useCreateOrder = () => {
           });
     
           if (!controller.signal.aborted) {
-            options.onSuccess?.(response.data.orderId);
+            options.onSuccess?.(response.data);
             return response.data;
           }
+
+          throw new Error('Request was aborted');
         } catch (err) {
           if (axios.isAxiosError(err)) {
             if (err.response?.status === 422) {

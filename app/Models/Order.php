@@ -5,6 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
+
 class Order extends Model {
     use HasFactory;
 
@@ -13,45 +17,55 @@ class Order extends Model {
         'order_client_type_id',
         'order_client_rank_id',
         'order_client_id',
-        'products_amount',
+        'total_product_amount',
         'order_delivery_cost',
         'is_order_amount_includes_taxes',
-        'order_payment_method_id',
+        'payment_method_id',
         'order_transport_id',
         'order_delivery_address',
         'order_recipient_names',
         'order_recipient_tel',
         'email',
-        'order_status_id',
+        'order_track_num',
+        'status_id',
         'is_client_informed',
         'is_tracking_by_client',
-        'order_content',
-        'order_url_semantic',
+        'invoice_url',
+        'invoice_url_expired_at',
+        'payment_method',
         'payment_status',
         'payment_details',
-        'pickup_point_id '
+        'pickup_point_id ',
+        'access_hash',
+        'access_expires_at'
         // ... другие поля
     ];
 
     protected $casts = [
-        'is_paid' => 'boolean',
-        'created_at' => 'datetime',
-        'updated_at' => 'datetime'
+        'order_date'                => 'datetime',
+        'is_paid'                   => 'boolean',
+        'invoice_url_expired_at'    => 'datetime',
+        'access_expires_at'         => 'datetime',
+        'created_at'                => 'datetime',
+        'updated_at'                => 'datetime',
+        'status_id'                 => 'integer',
+        'payment_method'            => PaymentMethod::class,
+        'payment_status'            => PaymentStatus::class,
+        'payment_details'           => 'array'
     ];
 
-    /**
-     * Статус заказа
+    /** Как это работает $casts в модели автоматически конвертирует:
+     *      // БД → Enum
+     *          $order->payment_method                          // 'online'  => PaymentMethod::ONLINE
+     *          $order->payment_status                          // 'pending' => PaymentStatus::PENDING
+     *      
+     *      // Enum → БД (при сохранении)
+     *          $order->payment_method = PaymentMethod::ONLINE; // Сохранится как 'online'
      */
 
-    # Если посмотреть со стороны заказа, то каждый заказ принадлежит одному статусу. 
-    # Это значит, что заказ можно связать со статусом отношением belongsTo:
 
-    public function status() {
-        return $this->belongsTo(OrderStatus::class, 'order_status_id');
-    }
-    # При вызове метода status, Eloquent попытается найти модель OrderStatus, 
-    # у которой есть id, который соответствует столбцу order_status_id в модели Order.
-
+    protected $dates = ['invoice_url_expired_at', 'access_expires_at'];
+    
     /**
      * Способ доставки
      */
@@ -59,6 +73,16 @@ class Order extends Model {
     # у которой есть id, который соответствует столбцу order_transport_id в модели Order.
     public function transport() {
         return $this->belongsTo(Transport::class, 'order_transport_id');
+    }
+
+    /**
+     * Метод для генерации URL для просмотра пользователя деталей счёта и отчёта о его движении:
+     */
+    public function getAccessUrlAttribute() {
+        return route('order.track', [
+            'order' => $this->id, 
+            'hash' => $this->access_hash
+        ]);
     }
 
     /**

@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 
 const toastConfig = {
     position: "top-right" as const,
-    autoClose: 3000, // Уведомление закроется через секунду
+    autoClose: 3000, // Уведомление закроется через секунду-другую...
     hideProgressBar: true,
     closeOnClick: true,
     pauseOnHover: true,
@@ -24,6 +24,7 @@ interface QuantityControlProps {
         error?: string;     
     }>;
     addToFavorites: (prodId: number) => Promise<{ favoritesTotal: number; error?: string }>;
+    removeFromCart: (prodId: number) => Promise<{ cartTotal: number; error?: string; }>;
 }
 
 export const QuantityControl: React.FC<QuantityControlProps> = ({ 
@@ -44,7 +45,8 @@ export const QuantityControl: React.FC<QuantityControlProps> = ({
          */
         on_sale,
         updateCart,
-        addToFavorites
+        addToFavorites,
+        removeFromCart
     }) => {
     // Инициализация состояния: при первом рендере localValue = initialValue (то есть product.quantity)
     const [localValue, setLocalValue] = useState(initialValue);
@@ -98,8 +100,8 @@ export const QuantityControl: React.FC<QuantityControlProps> = ({
             if(newValue === 0) {
                 // Товар закончился - удаляем и добавляем в избранное
                 await Promise.all([                                     // Случай с Promise.all используется когда нам нужно: а) выполнить несколько асинхронных операций параллельно; б) не требуется анализ индивидуальных результатов; в) важен факт успешного выполнения всех операций
-                    updateCart(prodId, 0),
-                    addToFavorites(prodId)
+                    addToFavorites(prodId),
+                    removeFromCart(prodId)
                 ]);
                 toast.info('Товар закончился и перемещён в Избранное', toastConfig);
             } else {

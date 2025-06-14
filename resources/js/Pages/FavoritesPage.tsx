@@ -89,61 +89,6 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                 toast.success('Товар оставлен в Избранном', toastConfig);
             }
         });
-        // Показываем модальное окно подтверждения
-        /*openModal(
-            <div className="bg-white rounded-lg p-6 max-w-md mx-auto">
-                <h3 className="text-lg font-medium mb-4">Удалить из избранного?</h3>
-                <div className="flex justify-end space-x-3">
-                    <button
-                        onClick={() => {
-                            // При отмене просто закрываем модалку
-                            useModal().closeModal();
-                            toast.success('Товар оставлен в Избранном', toastConfig);
-                        }}
-                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
-                    >
-                        Нет, оставить
-                    </button>
-                    <button
-                        onClick={async () => {
-                            try {
-                            // При подтверждении выполняем удаление
-                            const result = await removeFromFavorites(productId);
-                            useModal().closeModal();
-                            
-                            if (result.error) {
-                                toast.error(result.error);
-                            } else {
-                                toast.success('Товар удалён из Избранного...', toastConfig);
-                            }
-                            } catch (error) {
-                            useModal().closeModal();
-                            toast.error('Ошибка при удалении');
-                            }
-                        }}
-                        className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded"
-                    >
-                        Да, удалить
-                    </button>
-                </div>
-            </div>
-        );*/
-
-        // 3. Удаление с обработкой состояния
-        /*try {
-            const result = await removeFromFavorites(productId);
-            
-            if (result.error) {
-                toast.error(result.error);
-            } else {
-                toast.success('Товар удалён из Избранного...', toastConfig);
-            }
-            
-            return result;
-        } catch (error) {
-            toast.error('Ошибка при удалении');
-            return { error: 'Не удалось выполнить действие' };
-        }*/
         
     }, [removeFromFavorites, openModal]);
 

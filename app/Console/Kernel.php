@@ -28,6 +28,11 @@ class Kernel extends ConsoleKernel
             })->daily();
         */
 
+        // команда для проверки просрочки оплаты счетов: Аннулирует неоплаченные резервы
+        $schedule->command('reservations:check-expired')
+            ->dailyAt('08:00') // Проверка каждое утро
+            ->timezone('Europe/Moscow');
+
     }
 
     /**

@@ -61,7 +61,7 @@ class ProductResource extends JsonResource
             'percent_of_rank_discount' => null,
             'summa_of_action_discount' => null,
             'price_special' => null,
-            'date_end' => $this->actualPrice->date_end ?? null
+            'date_end' => $this->actualPrice->date_end ?? null,
         ];
         
         if (!$user) {
@@ -85,6 +85,7 @@ class ProductResource extends JsonResource
             } else {
                 // выводим для покупателя его выгоду от покупки товара по цене со кидкой по акции:
                 $discountData['summa_of_action_discount'] = $regularPrice - $actualPrice;
+                $discountData['price_with_action_discount'] = $actualPrice;
             }
         }
 

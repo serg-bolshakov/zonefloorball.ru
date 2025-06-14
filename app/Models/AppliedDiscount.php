@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AppliedDiscount extends Model
 {
@@ -14,15 +15,27 @@ class AppliedDiscount extends Model
      *
      * @var array
      */
+
     protected $fillable = [
         'order_id',
-        'discount_id', // Добавьте это поле
-        'product_id',  // Если добавили это поле
-        'product_quantity',
-        'product_price_for_payment',
-        'applied_value',
-        'product_price_regular',
-        'created_at',
-        'updated_at,'
+        'order_item_id',
+        'discount_id',
+        'target_type',
+        'target_id',
+        'discount_amount',  // Общая сумма скидки (не за единицу!)
+        'original_amount',  // Сумма до скидки
     ];
+
+    // Связи
+    public function order(): BelongsTo {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function orderItem(): BelongsTo {
+        return $this->belongsTo(OrderItem::class);
+    }
+
+    public function discount(): BelongsTo {
+        return $this->belongsTo(Discount::class);
+    }
 }

@@ -15,6 +15,7 @@ use App\Http\Controllers\SiteMapController;
 use App\Http\Controllers\IndexReactController;
 use App\Http\Controllers\CatalogReactController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductCardController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\CartController;
@@ -135,7 +136,7 @@ Route::get('/generate-sitemap', [SiteMapXmlController::class, 'generate']);
 // Маршрут для HTML-карты сайта:
 Route::get('/sitemap', [SiteMapController::class, 'index']);
 
-Route::post('/sync-orders-list', function (Request $request) {
+/*Route::post('/sync-orders-list', function (Request $request) {
     // Получаем данные из запроса
     // $ordersIdsArr = json_decode($request->input('orderslistfromlocalstorageinheader')); - это не работает! json_decode по умолчанию преобразует JSON-строку в объект (stdClass), а не в ассоциативный массив.
     // Используем второй параметр json_decode, чтобы преобразовать JSON в ассоциативный массив:
@@ -153,4 +154,15 @@ Route::post('/sync-orders-list', function (Request $request) {
     
     // Возвращаем JSON-ответ
     return response()->json($ordersIdsArr);
-});
+});*/
+
+// Просмотр счёта (публичная)
+/*Route::get('/invoice/{order}/{hash}', [OrderController::class, 'showInvoice'])
+    ->name('order.invoice');*/
+
+Route::get('/invoice/{order:access_hash}', [OrderController::class, 'showInvoice'])         // {order:access_hash} автоматически ищет заказ по хешу.
+    ->name('order.invoice');
+
+// Отслеживание заказа (публичная)
+Route::get('/order/track/{order:access_hash}', [OrderController::class, 'trackOrder'])      // {order:access_hash} автоматически ищет заказ по хешу.
+    ->name('order.track');

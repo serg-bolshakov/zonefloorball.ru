@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Cart;
-use App\Models\User;                                        // User — нужен для typehint в forUser(User $user)
+use App\Models\User;                                       
 use Illuminate\Support\Facades\Auth;
 use App\Models\Product;
 use App\Models\Transport;
@@ -130,5 +130,16 @@ class CartController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    // Функция очистки корзины пользователя (после оформления покупки или после нажатия кнопки (очистить корзину))
+    public function clearCart(Request $request) {
+        // Жёсткое удаление всех товаров корзины пользователя
+        $deleted = Cart::where('user_id', Auth::id())->delete();
+
+        return response()->json([
+            'success' => true,
+            'deleted_count' => $deleted
+        ]);
     }
 }

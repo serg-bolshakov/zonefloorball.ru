@@ -32,6 +32,8 @@ import useAppContext from "@/Hooks/useAppContext";
     import OrderConfirmation from "@/Components/OrderCheckoutModals/OrderConfirmation";
     import { IGuestCustomerData } from "@/Types/orders";
     import useCreateOrder from "@/Hooks/useCreateOrder";
+    import { router } from '@inertiajs/react';
+    import { useForm } from '@inertiajs/react';
 
 interface IHomeProps {  
     title: string;
@@ -43,9 +45,9 @@ interface IHomeProps {
 
 const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, transports}) => {
     const { openModal, closeModal } = useModal();
-
+    
     const { user } = useAppContext();
-    const { cart, cartTotal, updateCart, addToFavorites, removeFromCart } = useUserDataContext();
+    const { cart, cartTotal, updateCart, addToFavorites, removeFromCart, clearCart } = useUserDataContext();
     const [cartProducts, setCartProducts] = useState<IProduct[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -65,11 +67,11 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const [deliveryData, setDeliveryData] = useState<IDeliverySelectionData>(initialDeliveryData);
 
     // Данные о покупателе:
-    console.log(user);
+    // console.log(user);
 
     // Проверка типа покупателя
     const getInitialCustomerData = (): TCustomer => {
-        console.log('getInitialCustomerData user', user);
+        // console.log('getInitialCustomerData user', user);
         if (!user) {
           return {
             type: 'guest',
@@ -101,7 +103,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     };
       
     const [customerData, setCustomerData] = useState<TCustomer>(getInitialCustomerData);
-    console.log('CartPage customerData', customerData);
+    // console.log('CartPage customerData', customerData);
     const toastConfig = {
         position: "top-right" as const,
         autoClose: 1500, // Уведомление закроется через секунду-другую...
@@ -141,7 +143,6 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 // console.log(cart);
                 const response = await axios.post(API_ENDPOINTS.CART, {
                     products: cart, // Отправляем текущую корзину
-                    //_token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
                 }, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -149,8 +150,6 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     },
                     signal, // Передаём signal в конфиг axios
                 });
-
-                // console.log(response);
 
                 // Проверяем, не был ли запрос отменён
                 if (!signal.aborted) {
@@ -202,16 +201,24 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     }, [addToFavorites]);
 
     const handleRemoveFromCartClick = useCallback(async (productId: number) => {
-        try {
-            const result = await removeFromCart(productId);    
-            if (result.error) {
-                toast.error(result.error, toastConfig);
-            } else {
-                toast.success('Товар успешно удалён из Корзины...', toastConfig);
+        openModal(null, 'confirm', {
+            title: "Удалить из Корзины?",
+            onConfirm: async () => {
+                try {
+                    const result = await removeFromCart(productId);    
+                    if (result.error) {
+                        toast.error(result.error, toastConfig);
+                    } else {
+                        toast.success('Товар успешно удалён из Корзины...', toastConfig);
+                    }
+                } catch(error) {
+                    toast.error('Не удалось удалить из Корзины', toastConfig);
+                }
+            },
+            onCancel: () => {
+                toast.success('Товар оставлен в Корзине', toastConfig);
             }
-        } catch(error) {
-            toast.error('Не удалось добавить в Избранное', toastConfig);
-        }
+        });
     }, [removeFromCart]);
 
     const calculateCartTotalAmount = useCallback((products: IProduct[]): number => {
@@ -332,16 +339,28 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
 
     const { createOrder, isLoading: isOrderCreating } = useCreateOrder();
 
+    const submittingRef = useRef<boolean>(false);
+    
     const handleOrderAction = async (
         actionType: 'reserve' | 'pay',
         customerData: TCustomer
     ) => {
+        
+        if (submittingRef.current) return; // Защита от повторного нажатия
+        submittingRef.current = true;
+
         try {
             const orderData = {
                 products: cartProducts.map(p => ({
                     id: p.id,
                     quantity: p.quantity ?? 0,
-                    price: p.price_actual ?? 0
+                    price: p.price_actual ?? 0,
+                    price_regular: p.price_regular ?? 0,
+                    price_with_rank_discount: p.price_with_rank_discount ?? 0,      // имеет значение только у авторизованных пользователей, если применена скидка согласно рангу
+                    price_with_action_discount: p.price_with_action_discount ?? 0,  // имеет значение только у авторизованных пользователей, если применена скидка согласно рангу
+                    percent_of_rank_discount: p.percent_of_rank_discount ?? 0,      // имеет значение только у авторизованных пользователей: размер скидки в процентах (int) согласно рангу пользователя
+                    summa_of_action_discount: p.summa_of_action_discount ?? 0,      // имеет значение только у авторизованных пользователей, если применена скидка на товар (не скидка по рангу)
+                    price_special: p.price_special ?? 0,                            // price_special есть только у авторизованных пользователей и равна = price: p.price_actual для гостей и всех, всех, всех
                 })),
                 customer: {
                     ...customerDataRef.current,
@@ -353,14 +372,26 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     
             await createOrder(orderData, {
                 isReserve: actionType === 'reserve',
-                paymentMethod: actionType === 'pay' ? 'online' : 'invoice',
-                onSuccess: (orderId) => {
-                    toast.success(`Заказ #${orderId} успешно ${actionType === 'pay' ? 'оплачен' : 'зарезервирован'}`);
-                    // Дополнительные действия после успеха
+                paymentMethod: actionType === 'pay' ? 'online' : 'bank_transfer',
+
+                onSuccess: (res) => {
+                
+                    // 1. Закрываем модалку
+                    closeModal();
+                    toast.success(`Заказ успешно ${actionType === 'pay' ? 'оплачен' : 'оформлен'}`);
+                        // Не сбрасываем isSubmitting тут - форма уже закрыта
+
+                    // 2. Редирект через 1.5 || 2 секунды + Очистка корзины...
+                    setTimeout(() => {
+                        router.visit(res?.redirect || '/'); // Редирект через Inertia
+                        clearCart();                        // Обновляем стейт. Очищаем корзину
+                    }, 2000);
                 }
             });
         } catch (error) {
             toast.error(`Ошибка при ${actionType === 'pay' ? 'оплате' : 'резервировании'}`);
+        } finally {
+            submittingRef.current = false;
         }
     };
 
@@ -462,6 +493,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                                     on_sale={product.on_sale ?? 0}
                                                     updateCart={ updateCart }
                                                     addToFavorites={ addToFavorites }
+                                                    removeFromCart={ removeFromCart }
                                                 />
                                                 <a className="basket-row__priceValue">&nbsp;&nbsp;шт.,&nbsp;&nbsp;</a>
                                                 <a className="basket-row__priceValue">&nbsp;&nbsp;на сумму:&nbsp;&nbsp;</a>

@@ -48,12 +48,13 @@ Route::get('/grips-aside-filters', [GripsAsideFiltersController::class, 'index']
 Route::get('/eyewears-aside-filters', [EyewearsAsideFiltersController::class, 'index']);
 Route::get('/goalie-aside-filters', [GoalieAsideFiltersController::class, 'index']);
 Route::get('/catalog', [ProductController::class, 'catalogApi']);
-Route::post('/products/cart', [CartController::class, 'getCartProducts'])->middleware('api');
+Route::match(['get', 'post'],'/products/cart', [CartController::class, 'getCartProducts'])->middleware('api');
 Route::post('/products/favorites', [FavoritesProductsApiController::class, 'index']);
 Route::get('/products/recently-viewed', [RecentlyViewedController::class, 'getProducts'])->middleware('api');
 Route::match(['get', 'post'],'/orders/create', [OrderController::class, 'create'])->middleware('api');
 Route::get('/warehouses', [WarehouseController::class, 'index']);
 Route::get('/delivery-options', [DeliveryController::class, 'index']);
+Route::delete('/cart/clear', [CartController::class, 'clearCart'])->middleware('auth:sanctum');
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route works!']);
 });

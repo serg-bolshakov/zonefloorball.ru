@@ -42,7 +42,7 @@ export interface UserDataContextType extends UserDataState {
         error?: string;     
     }>;
     
-    clearCart?: () => Promise<void>;
+    clearCart: () => Promise<void>;
 
     // Заказы
     reloadOrders?: () => Promise<void>;

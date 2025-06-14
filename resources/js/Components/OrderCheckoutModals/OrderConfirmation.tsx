@@ -8,6 +8,7 @@ import ProductItem from "@/Components/Cart/ProductItem";
 import { motion } from 'framer-motion';
 import { isGuest, isIndividual, isLegal } from '@/Types/types';
 import { GuestCustomerInfo } from "../Cart/OrderConfirmation/GuestCustomerInfo";
+import { useState } from "react";
 
 interface IOrderConfirmationProps {
     products: IProduct[];
@@ -18,7 +19,7 @@ interface IOrderConfirmationProps {
     cartAmount: number;
     regularTotal: number;
     onReserve: () => void;
-    onPay: () => void;
+    onPay: () => Promise<void>;
     onBack: () => void;
 }
 
@@ -34,10 +35,28 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     onPay,
     onBack
   }) => {
-    console.log(currentDeliveryAddress);
+    
+    const [currentAction, setCurrentAction] = useState<'pay' | 'reserve' | null>(null); // Локальный isProcessing управляет UI
+
+    const handleAction = async (type: 'pay' | 'reserve') => {
+        if (currentAction) return;
+        setCurrentAction(type);
+        try {
+            await (type === 'pay' ? onPay() : onReserve());
+        } finally {
+            setCurrentAction(null);
+        }
+    };
+
+    // Отдельные флаги для кастомизации UI
+    const isProcessing = currentAction !== null;
+    const isPaying = currentAction === 'pay';
+    const isReserving = currentAction === 'reserve';
+
+    // console.log(currentDeliveryAddress);
     const { user } = useAppContext();
-    console.log('OrderConfirmation user', user);
-    console.log('OrderConfirmation customerData', customerData);
+    // console.log('OrderConfirmation user', user);
+    // console.log('OrderConfirmation customerData', customerData);
     
     const deliveryText = deliveryData.transportId === 1 
     ? `${currentDeliveryAddress}` 
@@ -68,7 +87,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
             }
         }
     };
-    
+
     return (
         <>
             <div className="basket-order__confirmation">
@@ -133,23 +152,27 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                     
                     { user && (
                         <motion.button 
+                        disabled={isProcessing}
                         whileHover={buttonAnimation.hover}  
                         whileTap={buttonAnimation.tap}
                         onClick={onReserve}
                         className="registration-form__submit-btn"
                         >
-                        Зарезервировать
+                            Зарезервировать
                         </motion.button>
                     )}
                     
                     <motion.button 
-                    whileHover={buttonAnimation.hover}  
-                    whileTap={buttonAnimation.tap}
-                    {...(pulseAnimation)}
-                    onClick={onPay}
-                    className="registration-form__submit-btn  primary"
+                        disabled={isProcessing}     // хотя... Framer Motion автоматически игнорирует анимации при disabled
+                        {...(!isProcessing && {
+                            ...pulseAnimation,
+                            whileHover: buttonAnimation.hover,
+                            whileTap: buttonAnimation.tap
+                        })}
+                        onClick={() => handleAction('pay')}
+                        className="registration-form__submit-btn  primary"
                     >
-                    Оплатить
+                        {isPaying ? 'Оплачиваем...' : 'Оплатить'}
                     </motion.button>
                 </div>
                 

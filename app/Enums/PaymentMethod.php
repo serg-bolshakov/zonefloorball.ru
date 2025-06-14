@@ -1,21 +1,38 @@
 <?php
-
+    //  app/Enums/PaymentMethod.php
     namespace App\Enums;
 
     use Illuminate\Http\Request; 
 
-    enum PaymentMethod: int {
-        case ONLINE = 2;            // Оплата онлайн (картой)
-        case BANK_TRANSFER = 4;     // Банковский перевод (для юрлиц: type === 'legal')
+    enum PaymentMethod: string {         // Изменяем на string-based enum
         
+        case ONLINE = 'online';
+        case BANK_TRANSFER = 'bank_transfer';
+        case CASH = 'cash';
+    
+        public function label(): string {
+            return match($this) {
+                self::ONLINE => 'Онлайн-оплата',
+                self::BANK_TRANSFER => 'Банковский перевод',
+                self::CASH => 'Наличные'
+            };
+        }
+    
         public static function forRequest(Request $request): self {
-            // Используем input() с точечной нотацией для вложенных полей
-            $paymentMethod = $request->input('paymentMethod');
-            $customerType = $request->input('customer.type');   // Ключевое изменение! 
-            // Не $request->customer->type
-
-            return ($paymentMethod === 'invoice' && $customerType === 'legal')
-                ? self::BANK_TRANSFER
-                : self::ONLINE;
+            return match(true) {
+                // Юрлица + выбор "по счету" → банковский перевод
+                $request->input('paymentMethod') === 'invoice' 
+                    && $request->input('customer.type') === 'legal' => self::BANK_TRANSFER,
+                    
+                // Явный выбор наличных → cash
+                $request->input('paymentMethod') === 'cash' => self::CASH,
+                
+                // Все остальные случаи → онлайн
+                default => self::ONLINE
+            };
         }
     }
+
+    // Методы enum:
+    // PaymentMethod::ONLINE->value     // 'online'
+    // PaymentMethod::ONLINE->label()   // 'Онлайн-оплата'

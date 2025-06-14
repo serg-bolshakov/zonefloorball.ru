@@ -1,10 +1,40 @@
 // resources/js/Utils/dateFormatter.ts
 
-export const dateRu = (dateString: string | null | undefined, showTime: boolean = false): string => {
-    if (!dateString) return '-';
+import { MONTHS_GENITIVE } from "@/Constants/months";
+
+/**
+ * Конвертирует дату из формата 'DD.MM.YYYY HH:mm' в 'YYYY-MM-DDTHH:mm:SS',
+ * чтобы Date.parse() смог её распознать.
+ */
+const convertToIsoFormat = (dateString: string): string => {
+    if (!dateString) return '';
     
-    const timestamp = Date.parse(dateString);
-    if (isNaN(timestamp)) return '-';
+    const [datePart, timePart] = dateString.split(' ');
+    const [day, month, year] = datePart.split('.');
+    
+    return `${year}-${month}-${day}T${timePart}:00`;
+};
+
+
+
+/**
+ * Форматирует дату в читаемый вид ("13 июня 2025" или "Сегодня в 16:07").
+ * Поддерживает форматы: ISO-8601 ('2025-06-13T16:07') и 'DD.MM.YYYY HH:mm'.
+ */
+export const dateRu = (dateString: string | null | undefined, showTime: boolean = false): string => {
+
+    if (!dateString) return '-';
+
+    console.log('dateFormatter', Date.parse(dateString));
+
+    // Конвертируем дату, если она в формате 'DD.MM.YYYY HH:mm' - для отслеживания заказа мы принимаем строку вида: '13.06.2025 16:07'
+    const isoDateString = dateString.includes('.') 
+        ? convertToIsoFormat(dateString) 
+        : dateString;
+
+    
+    const timestamp = Date.parse(isoDateString);
+    if (isNaN(timestamp)) return 'Дата не определена';
 
     const date = new Date(timestamp);
     const now = new Date();
@@ -28,7 +58,8 @@ export const dateRu = (dateString: string | null | undefined, showTime: boolean 
     ];
 
     const day = date.getDate();
-    const month = months[date.getMonth() + 1];
+    // const month = months[date.getMonth() + 1];       // Вынесли за пределы функции months в константы, чтобы массив не создавался при каждом вызове... проверяем...
+    const month = MONTHS_GENITIVE[date.getMonth() + 1];
     const year = date.getFullYear();
 
     let result = `${day} ${month} ${year}`;
