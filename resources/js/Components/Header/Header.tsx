@@ -265,9 +265,13 @@ const Header: React.FC = () => {
                     </span>
 
                     <div className="header-icon__block">
-                        {ordersCount > 0 && ( <div className="header-orders__counter header-logo__counter color-blue">{ ordersCount }</div> )}
-                        <Link className="" href="/profile?getorders=all"><img src="/storage/icons/orders-in-blue.png" alt="orders-icon" title="Покупки / Заказы" /></Link>
-                        <p><Link className="header-icon" href="/profile?getorders=all">Заказы</Link></p>
+                        {user && ordersCount > 0 && ( <div className="header-orders__counter header-logo__counter color-blue">{ ordersCount }</div> )}
+                        {user && (
+                            <>
+                                <Link className="" href="/profile?getorders=all"><img src="/storage/icons/orders-in-blue.png" alt="orders-icon" title="Покупки / Заказы" /></Link>
+                                <p><Link className="header-icon" href="/profile?getorders=all">Заказы</Link></p>
+                            </>
+                        )}
                     </div>
 
                     <motion.div  className="header-icon__block" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>

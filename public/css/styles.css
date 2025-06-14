@@ -4639,6 +4639,11 @@ select:hover {
         color: #666;
         margin-bottom: 24px;
     }
+
+    .order-total {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+    }
 }
 
 /* Стили для статуса заказа */
@@ -4652,6 +4657,7 @@ select:hover {
         display: flex;
         align-items: center;
         margin-bottom: 8px;
+        margin: 8px;
         
         h3 {
             margin: 0 12px 0 0;

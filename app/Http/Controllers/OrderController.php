@@ -518,7 +518,7 @@ class OrderController extends Controller {
                     'description' => '',
                     'keywords' => '',         
                     'order' => [
-                        'id' => $order->id,
+                        // 'id' => $order->id,
                         'number' => $order->order_number,
                         'date' => $order->order_date->format('d.m.Y H:i'),
                         'status' => [

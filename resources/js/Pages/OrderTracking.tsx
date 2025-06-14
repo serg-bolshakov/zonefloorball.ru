@@ -102,7 +102,7 @@ const OrderTracking: React.FC<IOrderTrackProps> = ({title, robots, description, 
             <div className="order-tracking-container">
                 <h1 className="order-title">Заказ №{order.number}</h1>
                 <p className="order-date">Дата: {dateRu(order.date)}</p>
-                <p className="order-date">Общая стоимость заказа: {formatPrice(totalAmount)}&nbsp;<sup>&#8381;</sup></p>
+                <p className="order-total">Общая стоимость заказа: <span className="color-green">{formatPrice(totalAmount)}&nbsp;<sup>&#8381;</sup></span></p>
                 
                 {/* Статус заказа с прогресс-баром */}
                 <OrderStatusTimeline status={order.status} />
