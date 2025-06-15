@@ -82,7 +82,7 @@ const OrderTracking: React.FC<IOrderTrackProps> = ({title, robots, description, 
     };
 
     const totalAmount = order.items.reduce(
-        (sum, item) => sum + (item.price * item.quantity - item.discount), 
+        (sum, item) => sum + (item.price * item.quantity), 
         0
     ) + order.delivery.cost;
 

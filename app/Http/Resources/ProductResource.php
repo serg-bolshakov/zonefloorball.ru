@@ -15,7 +15,8 @@ class ProductResource extends JsonResource
      * @return array<string, mixed>
      */
 
-     public function toArray(Request $request): array {
+    public function toArray(Request $request): array {
+        \Log::debug('ProductResource request:', ['request' => $request->all()]);
        
         $user = Auth::user() ?? null;
         // \Log::debug('ProductResource validated:', ['headers' => $request->headers->all(), '$userssss' => $user]);

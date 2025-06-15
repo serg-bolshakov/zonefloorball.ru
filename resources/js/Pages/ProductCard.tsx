@@ -54,6 +54,9 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
     // Оптимизация рендеринга: useCallback для функции закрытия (Остановка распространения события для контента модалки)
     const closeModal = useCallback(() => setIsModalOpen(false), []);
 
+    console.log('prodInfo', prodInfo);
+    console.log('prodInfo.price_with_rank_discount', prodInfo.price_with_rank_discount);
+
     try {
         
         return (
@@ -133,7 +136,13 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                         />
                             
                             {prodInfo.actualPrice && (
-                                <PriceBlock actualPrice={prodInfo.actualPrice} regularPrice={prodInfo.regularPrice} />
+                                <PriceBlock 
+                                    actualPrice={prodInfo.actualPrice} 
+                                    regularPrice={prodInfo.regularPrice}
+                                    price_regular={prodInfo.price_regular ?? null}
+                                    price_with_rank_discount={prodInfo.price_with_rank_discount ?? null}
+                                    percent_of_rank_discount={prodInfo.percent_of_rank_discount ?? null}
+                                />
                             )}
                                 
                             <div className="card-product__detail-status-block">

@@ -21,7 +21,7 @@
         public static function forRequest(Request $request): self {
             return match(true) {
                 // Юрлица + выбор "по счету" → банковский перевод
-                $request->input('paymentMethod') === 'invoice' 
+                $request->input('paymentMethod') === 'bank_transfer' 
                     && $request->input('customer.type') === 'legal' => self::BANK_TRANSFER,
                     
                 // Явный выбор наличных → cash

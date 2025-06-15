@@ -297,130 +297,6 @@ class OrderController extends Controller {
             // 'password' => Hash::make(Str::random(32))                         // Временный пароль: не думаю, что может пригодиться... да и HASH нужно импортировать... если всё-таки понадобится... не забыть...
         ]);
     }    
-        
-    /*
-    
-        $orderData = $this->prepareOrderData($request, $user);
-    
-    
-    
-    
-        if ($this->isGuestOrder($request, $user)) {
-            return $this->handleGuestOrder($request, $orderData);
-        }
-
-        return $this->handleAuthenticatedOrder($request, $user, $orderData);
-    
-        $orderRecipientNames = '';
-        if    (isset($user->client_type_id) && ($user->client_type_id == '1')) {$orderRecipientNames = $user->pers_surname . ' ' . $user->name; }
-        elseif(isset($user->client_type_id) && ($user->client_type_id == '2')) {$orderRecipientNames = $user->name;   }
-        else { $orderRecipientNames = $this->request->customer->lastName . ' ' . $this->request->customer->firstName; }
-
-        $orderRecipientTel = '';
-        if    (isset($user->client_type_id) && ($user->client_type_id == '1')) {$orderRecipientTel = $user->pers_tel; }
-        elseif(isset($user->client_type_id) && ($user->client_type_id == '2')) {
-            if(isset($representPerson) && !empty($representPerson)) {
-                $orderRecipientTel = $representPerson->pers_tel; 
-            } else {
-                $orderRecipientTel = $representPerson->org_tel; 
-            }  // надо будет подумать какой телефон здесь указывать
-        }
-
-        // если заказ размещает незарегистрированный пользователь - мы создаём нового "человека" (неавторизованного), получаем его id и используем этот id для идентификации заказа
-        if(!Auth::check() && $this->request->customer->type === 'guest') {
-            $newUnregisterdCustomer = new User;
-            $newUnregisterdCustomer->client_rank_id = 8;                // Не зарегистрированный
-            $newUnregisterdCustomer->user_access_id = 6;                // guest   
-            $newUnregisterdCustomer->name = $this->request->customer->firstName;
-            $newUnregisterdCustomer->pers_surname = $this->request->customer->lastName;
-            $newUnregisterdCustomer->pers_tel = $this->request->customer->phone;
-            $newUnregisterdCustomer->delivery_addr_on_default = $this->request->delivery->address;
-            $newUnregisterdCustomer->action_auth_id = "0";
-            $newUnregisterdCustomer->save();
-            $newUnregisterdCustomerId = $newUnregisterdCustomer->id;    // Получаем id нового user-а
-
-            // добавляем в БД новый заказ и получаем его id, который можно будет сразу использовать... 
-            $newOrder = new Order;
-            $newOrder->order_number = $orderNumber;
-            $newOrder->order_client_type_id = 1;                // person - Физическое лицо
-            $newOrder->order_client_rank_id = 8;                // Не зарегистрированный
-            $newOrder->order_client_id = $newUnregisterdCustomerId;
-            $newOrder->products_amount = $this->request->products_amount;
-            $newOrder->order_delivery_cost = $this->request->delivery->price;
-            // $newOrder->is_order_amount_includes_taxes => по умолчанию 0
-            $newOrder->order_payment_method_id = $orderPaymentMethodId;
-            $newOrder->order_transport_id = $this->request->delivery->transportId;
-            $newOrder->order_delivery_address = $this->request->delivery->address;
-            $newOrder->order_recipient_names = $orderRecipientNames;
-            $newOrder->order_recipient_tel = $this->request->customer->phone;
-            $newOrder->email = $this->request->customer->email;
-            $newOrder->order_status_id = $orderStatusId;
-            $newOrder->order_content = $this->request->orderContent;    // нужно будет сформировать json-строку!!!
-            $newOrder->save();
-            $newOrderId = $newOrder->id;
-
-            // ставим в резерв, оформленные в заказе товары (id, quantity), - нужно "распарсить" $orderContent:
-            // $this->makeReserveForOrderedProducts($this->request->orderContent);
-
-            // логируем полученные покупателем скидки: вызываем сервис для логирования (применения - закомментировал) скидок:
-            // если они есть...
-            $discountService = new DiscountService();
-            $discountService->applyDiscount($newOrder, $newUnregisterdCustomer);
-
-            // Создаём экземпляр Mailable
-            $orderMail = new OrderReserve($newOrder, $newUnregisterdCustomer);
-
-            // Генерируем уникальное имя для PDF
-            $sanitizedOrderNumber = $orderMail->sanitizeOrderNumber($orderNumber);
-            $salt = $orderMail->encryptOrderNumber($sanitizedOrderNumber);
-            $relativePath = 'storage/invoices/invoice_' . $sanitizedOrderNumber . '_' . $salt . '.pdf';
-
-            // Сохраняем путь к PDF в базу данных
-            $newOrder->order_url_semantic = $relativePath;
-            $newOrder->save();
-
-            // Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
-            $orderMail = new OrderReserve($newOrder, $newUnregisterdCustomer);
-
-            // Генерируем и сохраняем PDF
-            $orderMail->buildPdfAndSave($relativePath);
-
-            // Отправляем заказ ...
-            Mail::to('serg.bolshakov@gmail.com')->send($orderMail);
-            
-            return response()->json([
-                'status' => 'success',
-                'newOrderId' => $newOrderId,
-            ]);
-        } elseif(!empty($user)) {
-            // создаём заказ от авторизованного(!) пользователя: добавляем в БД новый заказ и получаем его id, который можно будет сразу использовать... 
-            }
-    }
-
-    protected function prepareOrderData($validated, User $user = null): array {
-        $orderClientTypeId = $user ? $user->client_type_id : 1;
-               
-        return [
-            'order_number' => $this->generateOrderNumber($orderClientTypeId),
-            /*'order_content' => $this->createOrderContentJSON($validated['products']),
-            'order_status_id' => $this->resolveOrderStatusId($request),
-            'payment_method_id' => $this->resolvePaymentMethod($request),
-            'recipient_info' => $this->getRecipientInfo($request, $user)*/
-       // ];       
-    //}
-
-    /*protected function handleGuestOrder(Request $request, array $orderData) {
-        $customer = $this->createGuestCustomer($request);
-        $order = $this->createOrder($request, $orderData, $customer);
-        
-        $this->processOrder($order, $customer);
-        
-        return response()->json([
-            'status' => 'success',
-            'order_id' => $order->id,
-            'invoice_url' => $order->order_url_semantic
-        ]);
-    }*/
 
     private function generateOrderNumber(int $orderClientTypeId): string {
         $currentTime = time();  // значение текущего времени
@@ -459,11 +335,6 @@ class OrderController extends Controller {
         }
         return $orderClientTypeId . '-' . date('y') . '-' . date('m') . '/' . $countOrdersThisMonth;
     }
-
-    /*private function createOrderContentJSON ($orderContent) {
-        //&productId_3=3&quantityProdId_3=1&priceProdId_3=340&discountTypeProdId=2&discountSummProdId=10&prodPriceRegular=350&productId_5=5&quantityProdId_5=1&priceProdId_5=3490&discountTypeProdId=1&discountSummProdId=500&prodPriceRegular=3990&productId_8=8&quantityProdId_8=1&priceProdId_8=14540&discountTypeProdId=2&discountSummProdId=450&prodPriceRegular=14990&productId_9=9&quantityProdId_9=1&priceProdId_9=3870&discountTypeProdId=2&discountSummProdId=120&prodPriceRegular=3990
-        //&productId_5=5&quantityProdId_5=1&priceProdId_5=3490&discountTypeProdId=1&discountSummProdId=500&prodPriceRegular=3990
-    }*/
     
     /**
      * Определяет метод оплаты на основе запроса
@@ -474,7 +345,7 @@ class OrderController extends Controller {
     private function resolvePaymentMethod(Request $request): string {
 
         $request->validate([
-            'paymentMethod' => ['required', 'in:online,bank_transfer,cash,invoice'],
+            'paymentMethod' => ['required' , 'in:online,bank_transfer,cash'],
             'customer.type' => ['sometimes', 'in:legal,individual,guest']
         ]);
         

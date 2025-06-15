@@ -16,6 +16,13 @@ export interface IProductCardGeneralProps extends IProductItemFromDB {
     productReport: IProductReportFromDB;
     productUnit: IProductUnitFromDB;
     productPromoImages: IImageItemFromDB[];
+    price_with_rank_discount?: number | null;
+    price_actual?: number | null;
+    price_regular?: number | null;
+    price_with_action_discount?: number | null;
+    percent_of_rank_discount?: number | null;
+    summa_of_action_discount?: number | null;
+    price_special?: number | null;
 }
 
 export interface IProductCardResponse {

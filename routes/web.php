@@ -2,7 +2,6 @@
 // routes/web.php
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\BrandController;
-use App\Http\Controllers\CardController;
 use App\Http\Controllers\BasketController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\ProfileController;

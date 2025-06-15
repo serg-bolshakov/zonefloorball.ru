@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Inertia\Inertia;
 use App\Models\Product;
 use App\Services\ProductCard\ProductCardServiceFactory;
+use App\Http\Resources\ProductResource;
 
 class ProductCardController extends Controller
 {    
@@ -17,61 +18,77 @@ class ProductCardController extends Controller
     }
         
     protected function getResponseData($prodUrlSemantic) {
-        $prodInfo = Product::with(['actualPrice', 'regularPrice', 'category', 'brand', 'size', 'properties', 
+        // Получаем продукт с нужными отношениями
+        $product = Product::with(['actualPrice', 'regularPrice', 'category', 'brand', 'size', 'properties', 
         'productMainImage', 'productCardImgOrients', 'actualPrice', 'regularPrice', 'productShowCaseImage', 
         'properties', 'productReport', 'productUnit', 'productPromoImages'])->where('prod_url_semantic', $prodUrlSemantic)->first();
         
-        if($prodInfo['actualPrice']->price_value < $prodInfo['regularPrice']->price_value) {
-            $prodInfo['price_special'] = $prodInfo['actualPrice']->price_value;
+        \Log::debug('CardController:', [ 'product' => $product->category_id]);
+
+        if($product['actualPrice']->price_value < $product['regularPrice']->price_value) {
+            $product['price_special'] = $product['actualPrice']->price_value;
         } else {
-            $prodInfo['price_special'] = null;
+            $product['price_special'] = null;
         }
+
+        // Создаем экземпляр ProductResource и преобразуем продукт
+        $productResource = new ProductResource($product);
+        $prodInfo = $productResource->toArray(request());
+        \Log::debug('CardController:', [ 'prodInfo' => $prodInfo]);
         
-        $categoryId = $prodInfo->category_id;
+        $categoryId = $product->category_id;
         $similarProductsService = ProductCardServiceFactory::create($categoryId, $prodInfo);    // Выбираем сервис для выборки в карточку товара аналогичных товаров, разных размеров/цветов...
         $propVariants = $similarProductsService->getSimilarProps();                             // Получаем различные варианты исполнения просматриваемого товара (размеры/цвета/модели...)
 
         // dd($propVariants);
         return [
-            'title' => $prodInfo->tag_title,
+            'title' => $product->tag_title,
             'robots' => 'INDEX,FOLLOW',
-            'description' => $prodInfo->meta_name_description,
-            'keywords' => $prodInfo->meta_name_keywords,
+            'description' => $product->meta_name_description,
+            'keywords' => $product->meta_name_keywords,
             'propVariants' => $propVariants,
             'prodInfo' => [
-                'id' => $prodInfo->id,
-                'article' => $prodInfo->article,
-                'title' => $prodInfo->title,
-                'category_id' => $prodInfo->category_id,
-                'brand_id' => $prodInfo->brand_id,
-                'model' => $prodInfo->model,
-                'marka' => $prodInfo->marka,
-                'size_id' => $prodInfo->size_id,
-                'product_unit_id' => $prodInfo->product_unit_id,
-                'colour' => $prodInfo->colour,
-                'material' => $prodInfo->material,
-                'weight' => $prodInfo->weight,
-                'prod_desc' => $prodInfo->prod_desc,
-                'prod_url_semantic' => $prodInfo->prod_url_semantic,
-                'tag_title' => $prodInfo->tag_title,
-                'meta_name_description' => $prodInfo->meta_name_description,
-                'meta_name_keywords' => $prodInfo->meta_name_keywords,
-                'iff_id' => $prodInfo->iff_id,
-                'product_status_id' => $prodInfo->product_status_id,
+                'id' => $product->id,
+                'article' => $product->article,
+                'title' => $product->title,
+                'category_id' => $product->category_id,
+                'brand_id' => $product->brand_id,
+                'model' => $product->model ?? null,
+                'marka' => $product->marka ?? null,
+                'size_id' => $product->size_id,
+                'product_unit_id' => $product->product_unit_id,
+                'colour' => $product->colour,
+                'material' => $product->material,
+                'weight' => $product->weight,
+                'prod_desc' => $product->prod_desc,
+                'prod_url_semantic' => $product->prod_url_semantic,
+                'tag_title' => $product->tag_title,
+                'meta_name_description' => $product->meta_name_description,
+                'meta_name_keywords' => $product->meta_name_keywords,
+                'iff_id' => $product->iff_id,
+                'product_status_id' => $product->product_status_id,
                 // Отношения в camelCase:
-                'actualPrice' => $prodInfo->actualPrice,
-                'regularPrice' => $prodInfo->regularPrice,
-                'category' => $prodInfo->category,
-                'brand' => $prodInfo->brand,
-                'size' => $prodInfo->size,
-                'properties' => $prodInfo->properties,
-                'productMainImage' => $prodInfo->productMainImage,
-                'productCardImgOrients' => $prodInfo->productCardImgOrients[0],
-                'productShowCaseImage' => $prodInfo->productShowCaseImage,
-                'priceSpecial' => $prodInfo->priceSpecial,
-                'productReport' => $prodInfo->productReport,
-                'productUnit' => $prodInfo->productUnit,
-                'productPromoImages' => $prodInfo->productPromoImages
+                'actualPrice' => $product->actualPrice,
+                'regularPrice' => $product->regularPrice,
+                'category' => $prodInfo['category'],
+                'brand' => $product->brand ?? null,
+                'size' => $product->size,
+                'properties' => $product->properties,
+                'productMainImage' => $product->productMainImage,
+                'productCardImgOrients' => $product->productCardImgOrients[0],
+                'productShowCaseImage' => $product->productShowCaseImage,
+                'priceSpecial' => $product->priceSpecial,
+                'productReport' => $product->productReport,
+                'productUnit' => $product->productUnit,
+                'productPromoImages' => $product->productPromoImages,
+                // Ниже полученные данные из ProductResource будут использоваться на фронте для расчёта цены предложения для авторизованных пользователей
+                'price_actual'                  => $prodInfo['price_actual']               ?? null,
+                'price_regular'                 => $prodInfo['price_regular']              ?? null,
+                'price_with_rank_discount'      => $prodInfo['price_with_rank_discount']   ?? null,
+                'price_with_action_discount'    => $prodInfo['price_with_action_discount'] ?? null,
+                'percent_of_rank_discount'      => $prodInfo['percent_of_rank_discount']   ?? null,
+                'summa_of_action_discount'      => $prodInfo['summa_of_action_discount']   ?? null,
+                'price_special'                 => $prodInfo['price_special']              ?? null
             ]
         ];
     }
