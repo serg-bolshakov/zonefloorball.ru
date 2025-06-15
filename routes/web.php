@@ -91,7 +91,6 @@ Route::match(['get', 'post'], '/products/{category?}', [ProductController::class
 Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardController::class, 'index']);
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
-//Route::match(['get', 'post'], '/products/{category?}', ['App\\Http\\Controllers\\CatalogController', 'index']);
 
 Route::match(['get', 'post'], '/profile', [ProfileController::class, 'index'])->middleware(['verified'])->name('profile');
 

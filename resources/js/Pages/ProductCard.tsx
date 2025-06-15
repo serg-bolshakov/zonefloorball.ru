@@ -55,7 +55,8 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
     const closeModal = useCallback(() => setIsModalOpen(false), []);
 
     console.log('prodInfo', prodInfo);
-    console.log('prodInfo.price_with_rank_discount', prodInfo.price_with_rank_discount);
+    console.log('propVariants', propVariants);
+    console.log('prodInfo.category_id', prodInfo.category_id);
 
     try {
         
@@ -130,10 +131,13 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                         </section>
 
                         <section className="cardProduct-props">
-                        <PropVariants 
-                            propVariants={propVariants} 
-                            categoryId={prodInfo.category.id} // Передаём категорию
-                        />
+                        
+                            {propVariants && prodInfo.category_id && (
+                                <PropVariants 
+                                    propVariants={propVariants} 
+                                    categoryId={prodInfo.category_id} // Передаём категорию
+                                />
+                            )}
                             
                             {prodInfo.actualPrice && (
                                 <PriceBlock 

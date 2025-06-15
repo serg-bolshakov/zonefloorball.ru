@@ -87,7 +87,7 @@ class ProductController extends Controller
         
         // Пагинация
         $products = $filteredQuery->paginate($perPage, ['*'], 'page', $page);
-        
+        // dump(new ProductCollection($products));
         // dd($products);
         // Формируем данные для ответа
         $responseData = [

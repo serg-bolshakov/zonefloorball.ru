@@ -64,6 +64,7 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     
     const [currentSortBy, setCurrentSortBy] = useState(sortBy);
     const [currentSortOrder, setCurrentSortOrder] = useState(sortOrder);
+    // console.log(products);
 
     // Чтение параметров из URL при загрузке страницы
     useEffect(() => {

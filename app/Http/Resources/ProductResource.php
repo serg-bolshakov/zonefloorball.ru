@@ -45,6 +45,7 @@ class ProductResource extends JsonResource
         
         // если пользователь авторизован посчитаем его скидки и добавим в ответ:
         if (!empty($user)) {
+            \Log::debug('ProductResources toArray', ['$user Debug' => $user]);
             $data = array_merge($data, $this->calculateDiscounts($user));
         }
 

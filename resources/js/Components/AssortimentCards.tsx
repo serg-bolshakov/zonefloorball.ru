@@ -3,6 +3,7 @@ import React from "react";
 import { Link, usePage } from '@inertiajs/react';
 import { IProductsResponse } from "../Types/types";
 // import { useId } from 'react';      // useId доступен только в React 18 и выше
+import useAppContext from "@/Hooks/useAppContext";
 
 interface AssortimentCardsProps {
     products: IProductsResponse;
@@ -11,7 +12,7 @@ interface AssortimentCardsProps {
 const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
     // const generateId = useId(); // Используем useId
     // console.log('Products:', products); // Выводим продукты в консоль
-    
+    const { user } = useAppContext();
     const totalPages = products.meta.last_page;
     const currentPage = products.meta.current_page;
     const maxPagesToShow = 3; // Максимальное количество отображаемых страниц
@@ -68,7 +69,6 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
         return (totalPages > 1) ? pages : [];   // пагинацию возвращаем, если количество страниц больше одной...
     };
 
-
     // Функция для форматирования цены
     const formatPrice = (price: number): string => {
         return price.toLocaleString('ru-RU', {
@@ -104,52 +104,74 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                                 <div className="assortiment-card_productName">
                                     <Link href={`/products/card/${product.prod_url_semantic}`}>{product.title}</Link>
                                 </div>
+                               
                                 <div className="assortiment-card_productPrice">
                                     {/* Логика отображения цены */}
                                     {product.prod_status !== 2 ? (
-                                        product.price_actual !== product.price_regular ? (
+                                        user && product.price_with_rank_discount && product.price_regular ? (
                                             <>
-                                                {product.price_actual !== null && product.price_actual !== undefined ? (
-                                                    <p className="priceCurrentSale">
-                                                        <span className="nobr">
-                                                            {formatPrice(product.price_actual)} <sup>&#8381;</sup>
-                                                        </span>
-                                                    </p>
-                                                ) : (
-                                                    <p>Цена не указана</p>
-                                                )}
-                                                
-                                                {product.price_regular !== null && product.price_regular !== undefined ? (
-                                                    <p className="priceBeforSale">
-                                                        <span className="nobr">
-                                                            {formatPrice(product.price_regular)} <sup>&#8381;</sup>
-                                                        </span>
-                                                    </p>
-                                                ) : (
-                                                    <p>Цена не указана</p>
-                                                )}
-
-                                                {product.price_regular !== null && product.price_regular !== undefined && product.price_actual !== null && product.price_actual !== undefined ? (
-                                                    <p className="priceDiscountInPercentage">
-                                                        <span className="nobr">
-                                                            - {Math.ceil(100 - (product.price_actual / product.price_regular) * 100)}%
-                                                        </span>
-                                                    </p>
-                                                ) : (
-                                                    <p></p>
-                                                )}
+                                                <p className="priceCurrentSale">
+                                                    <span className="nobr">
+                                                        {formatPrice(product.price_with_rank_discount)} <sup>&#8381;</sup>
+                                                    </span>
+                                                </p>
+                                                <p className="priceBeforSale">
+                                                    <span className="nobr">
+                                                        {formatPrice(product.price_regular)} <sup>&#8381;</sup>
+                                                    </span>
+                                                </p>
+                                                <p className="priceDiscountInPercentage">
+                                                    <span className="nobr">
+                                                        - {product.percent_of_rank_discount}%
+                                                    </span>
+                                                </p>
                                             </>
-                                        ) : (
-                                            product.price_regular !== null && product.price_regular !== undefined ? (
-                                            <p className="priceCurrent"><span className="nobr">{formatPrice(product.price_regular)}</span><sup>&#8381;</sup></p>
+                                        ) :
+                                            product.price_actual !== product.price_regular ? (
+                                                <>
+                                                    {product.price_actual !== null && product.price_actual !== undefined && (
+                                                        <p className="priceCurrentSale">
+                                                            <span className="nobr">
+                                                                {formatPrice(product.price_actual)} <sup>&#8381;</sup>
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                    
+                                                    {product.price_regular !== null && product.price_regular !== undefined && (
+                                                        <p className="priceBeforSale">
+                                                            <span className="nobr">
+                                                                {formatPrice(product.price_regular)} <sup>&#8381;</sup>
+                                                            </span>
+                                                        </p>
+                                                    )}
+
+                                                    {product.price_regular !== null && product.price_regular !== undefined && product.price_actual !== null && product.price_actual !== undefined && (
+                                                        <p className="priceDiscountInPercentage">
+                                                            <span className="nobr">
+                                                                - {Math.ceil(100 - (product.price_actual / product.price_regular) * 100)}%
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                </>
                                             ) : (
-                                                <p>Цена не указана</p>
-                                            )
-                                        )              
+                                                product.price_regular !== null && product.price_regular !== undefined ? (
+                                                <p className="priceCurrent"><span className="nobr">{formatPrice(product.price_regular)}</span><sup>&#8381;</sup></p>
+                                                ) : (
+                                                    <p>Цена не указана</p>
+                                                )
+                                            )   
+
                                     ) : (
                                         <p></p>
                                     )}
                                 </div>
+                                { user && (
+                                    <p className="fs14">
+                                        { user.client_type_id === 1
+                                        ? "... это моя специальная цена..."
+                                        : "... это наша специальная цена..."}
+                                     </p>
+                                )}
                             </div>
                         </div>             
                     ))}
