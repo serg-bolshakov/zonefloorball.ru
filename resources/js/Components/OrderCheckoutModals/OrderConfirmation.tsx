@@ -1,26 +1,29 @@
 // resources/js/Components/OrderCheckoutModals/OrderConfirmation.tsx
 import { IProduct } from "@/Types/types";
 import { IDeliverySelectionData } from "@/Types/delivery";
-import { TCustomer } from "@/Types/types";
+import { TCartCustomer } from "@/Types/cart";
 import useAppContext from "@/Hooks/useAppContext";
 import { formatPrice } from '@/Utils/priceFormatter';
 import ProductItem from "@/Components/Cart/ProductItem";
 import { motion } from 'framer-motion';
-import { isGuest, isIndividual, isLegal } from '@/Types/types';
+// import { isGuest, isIndividual, isLegal } from '@/Types/types';
+import { isIndividualUser, isLegalUser } from "@/Types/types";
 import { GuestCustomerInfo } from "../Cart/OrderConfirmation/GuestCustomerInfo";
+import { IndividualCustomerInfo } from "../Cart/OrderConfirmation/IndividualCustomerInfo";
 import { useState } from "react";
 
 interface IOrderConfirmationProps {
     products: IProduct[];
     deliveryData: IDeliverySelectionData;
     currentDeliveryAddress: string;
-    customerData: TCustomer;
+    customerData: TCartCustomer;
     cartTotal: number;
     cartAmount: number;
     regularTotal: number;
     onReserve: () => void;
     onPay: () => Promise<void>;
     onBack: () => void;
+    onCancel: () => void;
 }
 
 const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
@@ -33,7 +36,8 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     regularTotal,
     onReserve,
     onPay,
-    onBack
+    onBack,
+    onCancel
   }) => {
     
     const [currentAction, setCurrentAction] = useState<'pay' | 'reserve' | null>(null); // Локальный isProcessing управляет UI
@@ -53,10 +57,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     const isPaying = currentAction === 'pay';
     const isReserving = currentAction === 'reserve';
 
-    // console.log(currentDeliveryAddress);
     const { user } = useAppContext();
-    // console.log('OrderConfirmation user', user);
-    // console.log('OrderConfirmation customerData', customerData);
     
     const deliveryText = deliveryData.transportId === 1 
     ? `${currentDeliveryAddress}` 
@@ -88,6 +89,8 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
         }
     };
 
+    console.log('products', products);
+
     return (
         <>
             <div className="basket-order__confirmation">
@@ -97,6 +100,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                 <div className="basket-order__product-items">
                     {products.map((product, index) => (
                         <ProductItem 
+                            user={user}
                             key={product.id}
                             product={product}
                             index={index}
@@ -106,7 +110,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                 <p className="order-form__total-price-p">Всего товаров ({cartTotal}) на сумму: {formatPrice(cartAmount)}&nbsp;<sup>&#8381;</sup></p>
                 {cartAmount < regularTotal && (
                     <>
-                        <div className="fs12 basket-res__no-delivery">
+                        <div className="d-flex flex-sb flex-wrap fs12">
                             <p className="">Скидка на товары составила:</p>
                             <p className="color-red">
                             {formatPrice(discountAmount)}<sup>₽</sup> (или {discountPercent}%)
@@ -122,15 +126,16 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                 </div>
                 
                 {/* Данные получателя */}
-                {isGuest(customerData) ? (
+                
+                {isIndividualUser(user) ? (
+                    <IndividualCustomerInfo customer={customerData} />
+                ) : isLegalUser(user) ? (
+                    <IndividualCustomerInfo customer={customerData} />
+                ) : (
                     <GuestCustomerInfo 
                         customer={customerData} 
                         deliveryData={deliveryData}
                     />
-                ) : isIndividual(customerData) ? (
-                    <IndividualCustomerInfo customer={customerData} />
-                ) : (
-                    <LegalCustomerInfo customer={customerData} />
                 )}
 
                 {/* Итог */}
@@ -141,24 +146,37 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
 
                 {/* Кнопки действий */}
                 <div className="d-flex flex-sa">
-                    <motion.button 
-                    whileHover={buttonAnimation.hover}  
-                    whileTap={buttonAnimation.tap}
-                    onClick={onBack}
-                    className="registration-form__submit-btn"
-                    >
-                    Назад
-                    </motion.button>
+                    {!user && (
+                        <motion.button 
+                            whileHover={buttonAnimation.hover}  
+                            whileTap={buttonAnimation.tap}
+                            onClick={onBack}
+                            className="order-confirmation__submit-btn"
+                        >
+                        Назад
+                        </motion.button>
+                    )}
+
+                    {user && (
+                        <motion.button 
+                            whileHover={buttonAnimation.hover}  
+                            whileTap={buttonAnimation.tap}
+                            onClick={onCancel}
+                            className="order-confirmation__submit-btn"
+                        >
+                        Отмена
+                        </motion.button>
+                    )}
                     
                     { user && (
                         <motion.button 
-                        disabled={isProcessing}
-                        whileHover={buttonAnimation.hover}  
-                        whileTap={buttonAnimation.tap}
-                        onClick={onReserve}
-                        className="registration-form__submit-btn"
+                            disabled={isProcessing}
+                            whileHover={isProcessing ? {} : buttonAnimation.hover}  
+                            whileTap={isProcessing ? {} : buttonAnimation.tap}
+                            onClick={onReserve}
+                            className="order-confirmation__submit-btn"
                         >
-                            Зарезервировать
+                            Отложить{/* Заказать / Зарезервировать */}
                         </motion.button>
                     )}
                     
@@ -170,7 +188,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                             whileTap: buttonAnimation.tap
                         })}
                         onClick={() => handleAction('pay')}
-                        className="registration-form__submit-btn  primary"
+                        className="order-confirmation__submit-btn primary"
                     >
                         {isPaying ? 'Оплачиваем...' : 'Оплатить'}
                     </motion.button>

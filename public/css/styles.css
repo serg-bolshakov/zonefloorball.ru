@@ -70,7 +70,7 @@ i { font-style: italic; }
 .color-green { color: green; }
 
 .z-50  { z-index: 50; }
-
+.gap-2 { gap: 8px;   }
 .inset-0 { inset: 0; }
 
 .bg-black_90 { background-color: rgba(0, 0, 0, 0.9); }
@@ -2663,7 +2663,67 @@ a.registration-form__submit-btn, .order-btn {
     font-size: 12.5px;
     font-weight: 500;
 }
-  
+ 
+.order-confirmation__submit-btn {
+    cursor: pointer;
+    border: 1px solid #cecece;
+    background: #f6f6f6;
+    box-shadow: inset 0px 20px 20px #ffffff;
+    border-radius: 8px;
+    padding: 12px 8px; /* Увеличим вертикальный padding */
+    margin: 8px 4px; /* Увеличим отступы */
+    min-width: 120px; /* Заменим width на min-width */
+    width: auto; /* Позволит кнопкам расширяться */
+    font-family: 'Inter';
+    font-size: 14px; /* Чуть увеличим шрифт */
+    font-weight: 500;
+    color: black;
+    text-align: center;
+    flex: 1; /* Добавим для гибкости */
+    white-space: nowrap; /* Текст не переносится */
+}
+
+.order-confirmation__submit-btn:hover {
+    box-shadow: inset 0px -20px 20px #ffffff;
+}
+
+.order-confirmation__submit-btn:active {
+    margin-top: 9px;
+    margin-bottom: 7px;
+    transform: scale(0.98); /* Лучше чем zoom */
+}
+
+.order-confirmation__submit-btn:focus {
+    outline: none;
+}
+
+/* Для мобильных */
+@media (max-width: 576px) {
+    .order-confirmation__submit-btn {
+        padding: 10px 6px;
+        font-size: 13px;
+        min-width: 100px;
+        margin: 4px 2px;
+    }
+    
+    .d-flex.flex-sa {
+        flex-wrap: wrap; /* Разрешим перенос на маленьких экранах */
+    }
+}
+
+.primary {
+    background: #4a6bff;
+    color: white;
+    border-color: #3a5bef;
+}
+
+/* Для disabled кнопок */
+.order-confirmation__submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+
 .registration-error {
     color: red;
     font-size: 11px;

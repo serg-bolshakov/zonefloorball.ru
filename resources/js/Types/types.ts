@@ -18,16 +18,6 @@ export interface IUserBase {
     action_auth_id: number | null;
 }
 
-// Гость - покупатель
-export interface IGuestCustomer {
-    type: 'guest';
-    firstName: string;
-    lastName: string;
-    phone: string;
-    email: string; 
-    deliveryAddress?: string;
-}
-
 // создаём интерфейсы для юридических и физических лиц, которые будут расширять базовый интерфейс:
 export interface IIndividualUser extends IUserBase {
     type: 'individual';
@@ -36,6 +26,7 @@ export interface IIndividualUser extends IUserBase {
     pers_tel: string | null;
     pers_email: string | null;
     bonuses?: number;
+    deliveryAddress?: string;
 }
 
 export interface IOrgUser extends IUserBase {
@@ -52,6 +43,17 @@ export interface IOrgUser extends IUserBase {
     org_repres_justification: string | null;
     org_bank_acc: string | null;
     org_bank_bic: string | null;
+}
+
+
+// Гость - покупатель
+export interface IGuestCustomer {
+    type: 'guest';
+    firstName: string;
+    lastName: string;
+    phone: string;
+    email: string; 
+    deliveryAddress?: string;
 }
 
 // Создаём объединённый тип пользователя:

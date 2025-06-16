@@ -7,7 +7,9 @@ import { DEFAULT_WAREHOUSE } from '@/Config/constants';
 
 interface DeliverySelectorProps {
   transports: ITransport[];
-  initialTransportId?: number; //Добавляем пропс initialTransportId (для сохранения выбора)
+  // initialTransportId?: number; //Добавляем пропс initialTransportId (для сохранения выбора)
+  selectedTransportId: number;              // Теперь это контролируемое значение
+  onTransportChange: (id: number) => void;  // Только изменение ID
   onSelect: (data: {
     transportId: number;
     address: string;
@@ -16,9 +18,16 @@ interface DeliverySelectorProps {
   }) => void;
 }
 
-const DeliverySelector = ({ transports, initialTransportId = 0, onSelect }: DeliverySelectorProps) => {
+const DeliverySelector = ({ transports, selectedTransportId, onTransportChange, onSelect }: DeliverySelectorProps) => {
   
-  const [selectedTransportId, setSelectedTransportId] = useState(initialTransportId);
+  
+  console.log('Received props:', {
+    selectedTransportId,
+    onTransportChange,
+    onSelect
+  });
+  
+  // const [selectedTransportId, setSelectedTransportId] = useState(initialTransportId);    // Убираем внутренний useState для selectedTransportId
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [postDeliveryPrice, setPostDeliveryPrice] = useState<number>(0);
 
@@ -59,7 +68,7 @@ const DeliverySelector = ({ transports, initialTransportId = 0, onSelect }: Deli
                 <li 
                   key={transport.id}
                   onClick={() => {
-                    setSelectedTransportId(transport.id);
+                    onTransportChange(transport.id); // Используем переданный setter
                     setIsDropdownOpen(false);
                     transport.code === 'pickup' || transport.code === 'local' 
                     ? onSelect({

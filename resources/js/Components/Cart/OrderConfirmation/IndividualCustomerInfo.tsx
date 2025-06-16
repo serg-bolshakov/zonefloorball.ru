@@ -1,13 +1,11 @@
-//resources/js/Components/Cart/OrderConfirmation/GuestCustomerInfo.tsx
+//resources/js/Components/Cart/OrderConfirmation/IndividualCustomerInfo.tsx
 import { TCartCustomer } from "@/Types/cart";
-import { IDeliverySelectionData } from "@/Types/delivery";
 
-interface GuestCustomerInfoProps {
+interface IndividualCustomerInfoProps {
     customer: TCartCustomer;
-    deliveryData: IDeliverySelectionData
 }
 
-export const GuestCustomerInfo = ({ customer, deliveryData }: GuestCustomerInfoProps) => (
+export const IndividualCustomerInfo = ({ customer }: IndividualCustomerInfoProps) => (
     <>
         {/* Данные получателя */}
         <div className="d-flex flex-sb margin-tb12px">
