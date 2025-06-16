@@ -85,7 +85,6 @@ Route::match(['get', 'post'], '/', [IndexReactController::class, 'index'])->name
 Route::match(['get', 'post'], '/products/cart', [CartController::class, 'index']);
 // Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'index']);
 Route::match(['get', 'post'], '/products/{category?}', [ProductController::class, 'index']);
-
 Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardController::class, 'index']);
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
