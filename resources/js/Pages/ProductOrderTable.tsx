@@ -4,8 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import { IProductsResponse, IProduct } from '@/Types/types';
 import { formatPrice } from '@/Utils/priceFormatter';
-import { Pagination } from '@/Components/Pagination';
+// import { Pagination } from '@/Components/Pagination';
 import useAppContext from '@/Hooks/useAppContext';
+import { ProductTableRow } from '@/Components/ProductOrderTable/ProductTableRow';
 
 interface ProductOrderTableProps {
     initialProducts: IProductsResponse;
