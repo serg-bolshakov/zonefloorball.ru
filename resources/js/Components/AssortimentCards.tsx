@@ -2,7 +2,6 @@
 import React from "react";
 import { Link, usePage } from '@inertiajs/react';
 import { IProductsResponse } from "../Types/types";
-// import { useId } from 'react';      // useId доступен только в React 18 и выше
 import useAppContext from "@/Hooks/useAppContext";
 
 interface AssortimentCardsProps {

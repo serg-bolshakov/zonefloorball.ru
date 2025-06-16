@@ -12,7 +12,6 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SiteMapXmlController;
 use App\Http\Controllers\SiteMapController;
 use App\Http\Controllers\IndexReactController;
-use App\Http\Controllers\CatalogReactController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductCardController;
@@ -86,7 +85,6 @@ Route::match(['get', 'post'], '/', [IndexReactController::class, 'index'])->name
 Route::match(['get', 'post'], '/products/cart', [CartController::class, 'index']);
 // Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'index']);
 Route::match(['get', 'post'], '/products/{category?}', [ProductController::class, 'index']);
-// Route::match(['get', 'post'],'/products/catalog', [CatalogReactController::class, 'index']);
 
 Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardController::class, 'index']);
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
