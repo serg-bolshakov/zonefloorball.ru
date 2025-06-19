@@ -17,6 +17,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductCardController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\ProductsTableController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -53,6 +54,14 @@ Route::match(['get', 'post'], '/logout', function () {
  * Переносим Route::get('/initial-data', [InitialDataController::class, 'index']); в web.php
  */
 
+// Для SSR-рендеринга таблицы
+Route::get('/profile/products-table', [ProductsTableController::class, 'index'])
+  ->middleware(['auth', 'verified']);
+
+// Для API (пагинация/фильтры)
+Route::get('/api/profile/products-table', [ProductsTableController::class, 'productsCatalogApi'])
+  ->middleware('auth');
+
 Route::middleware('web')->group(function () {
     // Инициализация данных
     Route::get('/api/initial-data', [InitialDataController::class, 'index']);
@@ -79,11 +88,9 @@ Route::middleware('web')->group(function () {
     Route::post('/recently-viewed', [RecentlyViewedController::class, 'store'])->middleware('api');
 });
 
-
 // Маршруты для Inertia.js
 Route::match(['get', 'post'], '/', [IndexReactController::class, 'index'])->name('home');
 Route::match(['get', 'post'], '/products/cart', [CartController::class, 'index']);
-// Route::match(['get', 'post'], '/products/favorites', [FavoritesController::class, 'index']);
 Route::match(['get', 'post'], '/products/{category?}', [ProductController::class, 'index']);
 Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardController::class, 'index']);
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);

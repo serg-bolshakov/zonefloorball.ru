@@ -234,6 +234,7 @@ export interface IProductsResponse {
         per_page: number;
         to: number;
         total: number;
+        links: [{ url: string | null; label: string; active: boolean }]; 
     };
 }
 

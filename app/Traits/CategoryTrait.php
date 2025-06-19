@@ -11,7 +11,7 @@ trait CategoryTrait {
         $routeUri = $_SERVER['REQUEST_URI'];
         $routeUri = explode('?', $routeUri);
         $routeUri = $routeUri[0];
-
+        // dd(basename($routeUri));
         return basename($routeUri);
     }
 
@@ -34,8 +34,10 @@ trait CategoryTrait {
     }
 
     public function getCategoryIdViaUrl() {
+        
         $categoryUrlSemantic = $this->getCategoryUrlSemantic();
-        //dd($categoryUrlSemantic);
+        // dd($categoryUrlSemantic);
+        
         $categoryId = DB::table('categories')
             ->select('id')
             ->where('url_semantic', '=', $categoryUrlSemantic)

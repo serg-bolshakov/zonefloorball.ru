@@ -600,18 +600,6 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
                     </form>
                 </div>
             )}
-
-            <div className="profile-info__line">
-                <a href="/update-password">
-                <button type="button" className="forgot-password__form--btn">Сменить пароль</button>
-                </a>
-            </div>
-
-            <div className="profile-info__line">
-                <a href="/update-email">
-                <button type="button" className="forgot-password__form--btn">Изменить адрес почты</button>
-                </a>
-            </div>
         </>
     );
 

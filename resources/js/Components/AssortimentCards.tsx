@@ -175,36 +175,36 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                         </div>             
                     ))}
                 
-                    {/* Пагинация */}
-                    <div className="pagination-products">
-                    {products.links.prev && (
-                        <Link href={getPageUrl(currentPage - 1)} className="pagination-link">
-                            &lt;&lt;
-                        </Link>
-                    )}
-                    
-                    {getPageNumbers().map((page, index) => (
-                        page === '...' ? (
-                            <span key={index + 'page-span' + page} className="pagination-link">...</span>
-                        ) : (
-                            <Link
-                                key={'page' + page}
-                                href={getPageUrl(page)} 
-                                className={`pagination-link ${currentPage === page ? 'activeProduct' : ''}`}
-                                preserveScroll // Сохраняет позицию скролла
-                                preserveState // Сохраняет состояние компонента
-                            >
-                                {page}
+                    {/* Пагинация - вынес в родительский компонент - сравним, где будет лучше (на телефоне посмотрим)*/}
+                    {/* <div className="pagination-products">
+                        {products.links.prev && (
+                            <Link href={getPageUrl(currentPage - 1)} className="pagination-link">
+                                &lt;&lt;
                             </Link>
-                        )
-                    ))}
+                        )}
+                        
+                        {getPageNumbers().map((page, index) => (
+                            page === '...' ? (
+                                <span key={index + 'page-span' + page} className="pagination-link">...</span>
+                            ) : (
+                                <Link
+                                    key={'page' + page}
+                                    href={getPageUrl(page)} 
+                                    className={`pagination-link ${currentPage === page ? 'activeProduct' : ''}`}
+                                    preserveScroll // Сохраняет позицию скролла
+                                    preserveState // Сохраняет состояние компонента
+                                >
+                                    {page}
+                                </Link>
+                            )
+                        ))}
 
-                    {products.links.next && (
-                        <Link href={getPageUrl(currentPage + 1)} className="pagination-link">
-                            &gt;&gt;
-                        </Link>
-                    )}
-                    </div>
+                        {products.links.next && (
+                            <Link href={getPageUrl(currentPage + 1)} className="pagination-link">
+                                &gt;&gt;
+                            </Link>
+                        )}
+                    </div> */}
                 </>
             ) : (
                 <p>Товары не найдены. Попробуйте изменить условия поиска или выберите категорию интересующего вас товара.</p>

@@ -14,7 +14,9 @@ import AsideEyewearsWithFilters from '@/Components/Catalog/AsideEyewearsWithFilt
 import AsideGoalieWithFilters from '@/Components/Catalog/AsideGoalieWithFilters';
 import AssortimentCards from '../Components/AssortimentCards';
 import { Inertia, Method } from '@inertiajs/inertia';
-// import { usePage } from '@inertiajs/react';
+import { CompactPagination } from '@/Components/CompactPagination';
+import { router } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 // import axios from 'axios';
 
 interface ICatalogProps {
@@ -32,6 +34,7 @@ interface ICatalogProps {
     sortBy?: string;
     sortOrder?: string;
     categoryId?: number;
+    categoryInfo: any,
 }
 
 const defaultProducts: IProductsResponse = {
@@ -50,6 +53,11 @@ const defaultProducts: IProductsResponse = {
         per_page: 6,
         to: 1,
         total: 0,
+        links: [{
+            url: null, 
+            label: '', 
+            active: false
+        }],
     },
 };
 
@@ -64,7 +72,8 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     
     const [currentSortBy, setCurrentSortBy] = useState(sortBy);
     const [currentSortOrder, setCurrentSortOrder] = useState(sortOrder);
-    // console.log(products);
+    console.log('Catalog products', products);
+    const currentPage = products.meta.current_page;
 
     // Чтение параметров из URL при загрузке страницы
     useEffect(() => {
@@ -94,14 +103,26 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     };
     
     const handleOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const newSortOrder = e.target.value;
+        /*const newSortOrder = e.target.value;
         setCurrentSortOrder(newSortOrder);
 
         const url = new URL(window.location.href);
         url.searchParams.set('sortOrder', newSortOrder);
         url.searchParams.set('page', products.meta.current_page.toString()); // Добавляем текущую страницу
 
-        window.location.href = url.toString();
+        window.location.href = url.toString();*/
+
+        const params = {
+            // perPage: e.target.value,
+            sortBy,                                     // сохраняем текущую сортировку
+            sortOrder: e.target.value,                  // сохраняем выбранное направление сортировки
+            // category: categoryInfo?.url_semantic,    // сохраняем категорию
+            page: products.meta.current_page.toString() // Добавляем текущую страницу
+        };
+
+        router.get(url.toString(), params, {
+            preserveScroll: true
+        });
     };
 
     const getAsideComponent = () => {
@@ -126,7 +147,66 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                 return <AsideAccordionAll />;
         }
     };
+    
+    // Функция для формирования URL с учетом параметров сортировки
+    const getPageUrl = (page: number | string) => {
+        const params = new URLSearchParams({
+            ...Object.fromEntries(searchParams.entries()), // Передаем все существующие параметры 
+            page: page.toString(),
+        });
 
+        return `?${params.toString()}`;
+    };
+
+    // Получаем текущие query-параметры из URL
+    const { url } = usePage();
+    // console.log('url:', url); // Отладочное сообщение: url: /products/sticks?page=9&sortBy=actual_price&sortOrder=desc
+    
+    // Создаем абсолютный URL на основе текущего местоположения
+    const absoluteUrl = new URL(window.location.origin + url);
+    // console.log('absoluteUrl:', absoluteUrl); // Отладочное сообщение: absoluteUrl: объект: URL {origin: 'http://127.0.0.1:8000', protocol: 'http:', username: '', password: '', host: '127.0.0.1:8000', …}
+    
+    const totalPages = products.meta.last_page;
+    const maxPagesToShow = 3; // Максимальное количество отображаемых страниц
+    const searchParams = new URLSearchParams(absoluteUrl.search);
+    // console.log('Object.fromEntries(searchParams.entries()):', Object.fromEntries(searchParams.entries())); // Отладочное сообщение: Object.fromEntries(searchParams.entries()): {hook[0]: 'neutral'}
+        
+    // Функция для формирования пагинации страниц
+    const getPageNumbers = () => {
+        const pages = [];
+        let startPage = Math.max(2, currentPage - Math.floor(maxPagesToShow / 2));
+        let endPage = Math.min(totalPages - 1, startPage + maxPagesToShow - 1);
+
+        // Добавляем первую страницу
+        pages.push(1);
+
+        // Добавляем многоточие, если текущий блок страниц не начинается с 3
+        if (startPage > 2) {
+            if(startPage === 3) {
+                pages.push(2);    
+            } else {
+                pages.push('...');
+            }
+        }
+
+        // Добавляем страницы вокруг текущей
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        // Добавляем многоточие, если текущий блок страниц не заканчивается на totalPages - 1
+        if (endPage < totalPages - 1) {
+            pages.push('...');
+        }
+
+        // Добавляем последнюю страницу, если totalPages > 1
+        if (totalPages > 1) {
+            pages.push(totalPages);
+        }
+
+        return (totalPages > 1) ? pages : [];   // пагинацию возвращаем, если количество страниц больше одной...
+    };
+    
     return (
         <>
             <MainLayout>
@@ -146,18 +226,45 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                     </section>
                     <NavBarBreadCrumb />
                     {/* Сортировка */}
-                    <div className="sorting-container">
+                    {/* <div className="sorting-container">
                         <div className="sorting">
                             <span>Товары </span>
                             <select className="text-align-left" value={currentSortOrder} onChange={handleOrderChange}>
                                 <option value="asc"> ▲ по возрастанию цены</option> 
                                 <option value="desc">  ▼ начиная с самых дорогих по цене</option>
                             </select>
-                            {/* <select value={currentSortBy} onChange={handleSortChange}>
-                                <option value="actual_price">цене</option>
-                            </select> */}
                         </div>
+                    </div> */}
+                    
+                    <div className="table-controls">
+                
+                        {/* Сортировка и поиск */}
+                        <span className='pagination-info'>Товары отсортированы: </span>
+                        <select className="text-align-left"
+                            value={sortOrder}
+                            onChange={handleOrderChange}
+                        >
+                            <option value="asc"> ▲ по возрастанию цены</option> 
+                            <option value="desc"> ▼ по убыванию цены</option>
+                        </select>
+
+                        {/* Компактная пагинация */}
+                        <CompactPagination 
+                            meta={products.meta}
+                            getPageUrl={getPageUrl}
+                        />
+
+                        {/* <input
+                            type="text"
+                            disabled
+                            placeholder="Поиск в каталоге"
+                            // onChange={(e) => setSearchQuery(e.target.value)}
+                            className="search-input"
+                        /> */}
+
                     </div>
+
+
                     <div className="products-content">
                         <aside className="aside-with-filters">
                         <div className="category-description">
@@ -169,6 +276,38 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                             <AssortimentCards products={products} />
                         </section>
                     </div>
+
+                    {/* Пагинация */}
+                    <div className="pagination-products">
+                    {products.links.prev && (
+                        <Link href={getPageUrl(currentPage - 1)} className="pagination-link">
+                            &lt;&lt;
+                        </Link>
+                    )}
+                    
+                    {getPageNumbers().map((page, index) => (
+                        page === '...' ? (
+                            <span key={index + 'page-span' + page} className="pagination-link">...</span>
+                        ) : (
+                            <Link
+                                key={'page' + page}
+                                href={getPageUrl(page)} 
+                                className={`pagination-link ${currentPage === page ? 'activeProduct' : ''}`}
+                                preserveScroll // Сохраняет позицию скролла
+                                preserveState // Сохраняет состояние компонента
+                            >
+                                {page}
+                            </Link>
+                        )
+                    ))}
+
+                    {products.links.next && (
+                        <Link href={getPageUrl(currentPage + 1)} className="pagination-link">
+                            &gt;&gt;
+                        </Link>
+                    )}
+                    </div>          
+
                 </main>
 
             </MainLayout>    

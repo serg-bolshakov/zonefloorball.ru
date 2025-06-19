@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { TUser } from '@/Types/types';
 import { isIndividualUser, isLegalUser } from '@/Types/types';
 import IndividualUserFields from './IndividualUserFields';
+import { Link } from '@inertiajs/react';
 
 interface UserProfileProps { user: TUser; priceDiscountAccordingToTheRank: number; }
 
@@ -12,43 +13,62 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, priceDiscountAccordingT
     if (!user) return <div>Пользователь не загружен</div>;
 
         return (
-            <div className="cardProduct-line__block"> 
-                
-                <div className="cardProduct-block__title"> 
-                    {/* Общие блоки для всех пользователей */}
-                    <div className="cardProduct-block__title margin-bottom24px">
-                        <h1 className="fs11 margin-bottom8px">Личный кабинет</h1>
-                        <h4 className="fs12">Моя партнёрская скидка в ZoneFloorball.RU: <span className='color-red'><strong>{priceDiscountAccordingToTheRank}</strong></span> %</h4>
-                    </div>
+            <>
+              <div className="d-flex flex-sb">
+                <Link href="/products/catalog"><button className="order-confirmation__submit-btn w-110px">Вернуться в главное меню</button></Link>
+                <Link href="/profile/products-table"><button className="order-confirmation__submit-btn primary w-110px">Создать оптовый заказ</button></Link>
+              </div>
 
-                    {/* Условный рендеринг специфичных полей */}
-                    {isIndividualUser(user) && <IndividualUserFields user={user} />}
-                </div>
+              <div className="cardProduct-line__block"> 
 
-                <div className="avatarka-block">    
-                    <h4>Есть вопросы?</h4> 
-                    <p>Ваш флорбольный эксперт:</p>
-                    <div id="avatarkaimg" className="avatarka"></div>
-                    <p className="manager-name">Сергей Большаков</p>
-                    <div className="profile-info__line">
-                        <a href="mailto:unihoczonerussia@gmail.com">
-                            <img src="/storage/icons/gmail-logo-colored.jpg" alt="gmail-logo" title="Отправить письмо по электронной почте"/>
-                        </a>
-                        <a href="https://vk.com/unihoczonerussia">
-                            <img src="/storage/icons/vk-logo-colored.png" alt="vk-logo" title="Написать ВКонтакте"/>
-                        </a>
-                        <a href="whatsapp://send?phone=+79534156010" title="Написать в Whatsapp">
-                            <img src="/storage/icons/whatsapp-logo-colored.png" alt="whatsApp-logo" title="Написать в Whatsapp"/>
-                        </a>
-                        <a href="https://t.me/unihoczonerussia/">
-                            <img src="/storage/icons/telegram-logo-colored.png" alt="telegram-logo" title="Написать в Telegram"/>
-                        </a>
-                        <a href="tel:+79107955555" title="Позвонить директору">
-                            <img src="/storage/icons/telefon-logo.png" alt="telefon-logo" title="Позвонить директору"/>
-                        </a>
-                    </div>
-                </div>
-            </div>
+                  <div className="cardProduct-block__title"> 
+                      {/* Общие блоки для всех пользователей */}
+                      <div className="cardProduct-block__title margin-bottom24px">
+                          <h1 className="fs11 margin-bottom8px">Личный кабинет</h1>
+                          <h4 className="fs12">Моя партнёрская скидка в ZoneFloorball.RU: <span className='color-red'><strong>{priceDiscountAccordingToTheRank}</strong></span> %</h4>
+                      </div>
+
+                      {/* Условный рендеринг специфичных полей */}
+                      {isIndividualUser(user) && <IndividualUserFields user={user} />}
+
+                      <div className="profile-info__line">
+                          <a href="/update-password">
+                          <button type="button" className="forgot-password__form--btn">Сменить пароль</button>
+                          </a>
+                      </div>
+
+                      <div className="profile-info__line">
+                          <a href="/update-email">
+                          <button type="button" className="forgot-password__form--btn">Изменить адрес почты</button>
+                          </a>
+                      </div>
+                  </div>
+
+                  <div className="avatarka-block">    
+                      <h4>Есть вопросы?</h4> 
+                      <p>Ваш флорбольный эксперт:</p>
+                      <div id="avatarkaimg" className="avatarka"></div>
+                      <p className="manager-name">Сергей Большаков</p>
+                      <div className="profile-info__line">
+                          <a href="mailto:unihoczonerussia@gmail.com">
+                              <img src="/storage/icons/gmail-logo-colored.jpg" alt="gmail-logo" title="Отправить письмо по электронной почте"/>
+                          </a>
+                          <a href="https://vk.com/unihoczonerussia">
+                              <img src="/storage/icons/vk-logo-colored.png" alt="vk-logo" title="Написать ВКонтакте"/>
+                          </a>
+                          <a href="whatsapp://send?phone=+79534156010" title="Написать в Whatsapp">
+                              <img src="/storage/icons/whatsapp-logo-colored.png" alt="whatsApp-logo" title="Написать в Whatsapp"/>
+                          </a>
+                          <a href="https://t.me/unihoczonerussia/">
+                              <img src="/storage/icons/telegram-logo-colored.png" alt="telegram-logo" title="Написать в Telegram"/>
+                          </a>
+                          <a href="tel:+79107955555" title="Позвонить директору">
+                              <img src="/storage/icons/telefon-logo.png" alt="telefon-logo" title="Позвонить директору"/>
+                          </a>
+                      </div>
+                  </div>
+              </div>
+            </>
         );
 };
 
