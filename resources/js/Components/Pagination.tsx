@@ -1,5 +1,6 @@
 //resources/js/Components/Pagination.tsx - компонент пагинации страниц
 import { Link } from "@inertiajs/react";
+import { IProductsResponse } from "@/Types/types";
 
 interface PaginationProps {
   meta: {
@@ -8,9 +9,10 @@ interface PaginationProps {
     links: Array<{ url: string | null; label: string; active: boolean }>;
   };
   getPageUrl: (page: number | string) => string;
+  products: IProductsResponse;        // Добавляем продукты - products обязателен — это не просто массив, а объект с пагинацией...
 }
 
-export const Pagination: React.FC<PaginationProps> = ({ meta, getPageUrl }) => {
+export const Pagination: React.FC<PaginationProps> = ({ meta, getPageUrl, products }) => {
 
     const totalPages = meta.last_page;
     const currentPage = meta.current_page;
@@ -55,20 +57,37 @@ export const Pagination: React.FC<PaginationProps> = ({ meta, getPageUrl }) => {
 
 
     return (
-    <div className="pagination">
-      {meta.links.map((link, index) => (
-        <Link
-          key={index}
-          href={link.url ? getPageUrl(link.label) : '#'}
-          className={`pagination-link ${link.active ? 'active' : ''} ${!link.url ? 'disabled' : ''}`}
-          preserveScroll
-        >
-          {/* Красивые labels вместо чисел */}
-          {link.label.includes('Previous') ? '‹' : 
-           link.label.includes('Next') ? '›' : 
-           link.label}
-        </Link>
-      ))}
-    </div>
+    <>
+      {/* Пагинация */}
+        <div className="pagination-products">
+            {products.links.prev && (
+                <Link href={getPageUrl(currentPage - 1)} className="pagination-link">
+                    &lt;&lt;
+                </Link>
+            )}
+            
+            {getPageNumbers().map((page, index) => (
+                page === '...' ? (
+                    <span key={index + 'page-span' + page} className="pagination-link">...</span>
+                ) : (
+                    <Link
+                        key={'page' + page}
+                        href={getPageUrl(page)} 
+                        className={`pagination-link ${currentPage === page ? 'activeProduct' : ''}`}
+                        preserveScroll // Сохраняет позицию скролла
+                        preserveState // Сохраняет состояние компонента
+                    >
+                        {page}
+                    </Link>
+                )
+            ))}
+
+            {products.links.next && (
+                <Link href={getPageUrl(currentPage + 1)} className="pagination-link">
+                    &gt;&gt;
+                </Link>
+            )}
+        </div>          
+    </>
   );
 };

@@ -232,7 +232,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
         ...additionalParams
     });
 
-    // ДЕЛАЕМ ПАГИНАЦИЮ:
+    // ДЕЛАЕМ ПАГИНАЦИЮ внизу таблицы:
 
     // Получаем текущие query-параметры из URL
     const { url } = usePage();
@@ -244,7 +244,6 @@ const ProductTable: React.FC<ProductTableProps> = ({
 
     const searchParams = new URLSearchParams(absoluteUrl.search);
     // console.log('Object.fromEntries(searchParams.entries()):', Object.fromEntries(searchParams.entries())); // Отладочное сообщение: Object.fromEntries(searchParams.entries()): {hook[0]: 'neutral'}
-
 
     // Функция для формирования URL с учетом параметров сортировки
     const getPageUrl = (page: number | string) => {
@@ -502,6 +501,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
             <Pagination 
                 meta={products.meta}
                 getPageUrl={getPageUrl}
+                products={products}
             />
         </div>
     );
