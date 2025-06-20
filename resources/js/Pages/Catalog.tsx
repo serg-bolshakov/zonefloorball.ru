@@ -297,7 +297,7 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                         /> */}
 
                         {/* Поиск в каталоге */}
-                    <div className="d-flex">
+                    <div className="d-flex flex-wrap">
                         {/* <span className='pagination-info'>Поиск </span> */}
                         {/* <select 
                         value={searchType}
