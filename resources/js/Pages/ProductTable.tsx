@@ -531,7 +531,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                         {(product.price_actual ?? 0) < (product.price_regular ?? 0) ? (
                                             <>
                                                 <div className="color-red margin-bottom8px">
-                                                    {formatPrice(product.price_actual ?? 0)} <sup>&#8381;</sup>
+                                                    {formatPrice(product.price_actual ?? 0)}&nbsp;<sup>&#8381;</sup>
                                                 </div>
                                                 <div className="cardProduct-priceDiscountInPercentage nobr">
                                                     -&nbsp;{Math.ceil(100 - ((product.price_actual ?? 0) / (product.price_regular ?? 1) * 100))}%
@@ -539,7 +539,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                             </>
                                         ) : (
                                             <div>
-                                                {formatPrice((product.price_regular ?? 0))} <sup>&#8381;</sup>
+                                                {formatPrice((product.price_regular ?? 0))}&nbsp;<sup>&#8381;</sup>
                                             </div>
                                         )}
                                     </td>
