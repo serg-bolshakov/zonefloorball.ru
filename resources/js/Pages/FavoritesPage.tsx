@@ -43,6 +43,11 @@ const defaultProducts: IProductsResponse = {
         per_page: 6,
         to: 1,
         total: 0,
+        links: [{
+            url: null, 
+            label: '', 
+            active: false
+        }],
     },
 };
 

@@ -68,7 +68,7 @@ export const Pagination: React.FC<PaginationProps> = ({ meta, getPageUrl, produc
             
             {getPageNumbers().map((page, index) => (
                 page === '...' ? (
-                    <span key={index + 'page-span' + page} className="pagination-link">...</span>
+                    <span key={index + 'page-span' + page} className="pagination-link" aria-label="ellipsis">...</span>
                 ) : (
                     <Link
                         key={'page' + page}

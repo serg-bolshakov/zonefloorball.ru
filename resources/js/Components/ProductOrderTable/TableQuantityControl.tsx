@@ -1,4 +1,4 @@
-// resources/js/Components/Cart/QuantityControl.tsx
+// resources/js/Components/ProductOrderTable/TableQuantityControl.tsx
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import { useState, useEffect } from 'react';
@@ -14,7 +14,7 @@ const toastConfig = {
     transition: Bounce, // Используем Slide, Zoom, Flip, Bounce для этого тоста
 }
 
-interface QuantityControlProps {
+interface TableQuantityControlProps {
     prodId:number
     prodTitle: string
     value: number;
@@ -27,7 +27,7 @@ interface QuantityControlProps {
     removeFromCart: (prodId: number) => Promise<{ cartTotal: number; error?: string; }>;
 }
 
-export const QuantityControl: React.FC<QuantityControlProps> = ({ 
+export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({ 
         prodId,
         prodTitle,
         value: initialValue,  // деструктуризация с переименованием: возьми свойство value из полученных пропсов и и сохрани его в локальную переменную initialValue
@@ -78,8 +78,8 @@ export const QuantityControl: React.FC<QuantityControlProps> = ({
         ↓ triggers re-render
         */
 
-    // Проверка остатков при монтировании (не был ли распродан товар, пока пользователь отсутствовал...)
-    useEffect (() => {
+    // Проверка остатков при монтировании (не был ли распродан товар, пока пользователь отсутствовал...) - пока комментирую: это не корзина, как оказалось... :) если оставить, то отсутствующий товар, сразу летит в избранное и выводятся сообщения...
+    /*useEffect (() => {
         if(initialValue > 0 && on_sale === 0) {
             // Товар полностью закончился
             toast.warning(`К сожалению товар ${ prodTitle } закончился, мы перенесли его в Избранное...`, toastConfig);
@@ -89,7 +89,70 @@ export const QuantityControl: React.FC<QuantityControlProps> = ({
             toast.warning(`Количество товаров ${ prodTitle } в корзине изменилось...`, toastConfig);
             handleUpdate(on_sale);
         }
-    }, [initialValue, on_sale]);
+    }, [initialValue, on_sale]);*/
+
+    // Хранение состояния выбора: (на будущее)
+    const [actionType, setActionType] = useState<'cart' | 'preorder'>('cart');
+
+    const handleUpdate = async (newValue: number) => {
+        
+        if (actionType === 'cart') {
+            if (newValue < 0 || newValue > on_sale || isUpdating) return;
+            
+            try {
+                setIsUpdating(true);
+
+                // Оптимистичное обновление
+                setLocalValue(newValue);
+                
+                if(newValue === 0) {
+                    // Товар закончился - удаляем и добавляем в избранное
+                    await Promise.all([                                     // Случай с Promise.all используется когда нам нужно: а) выполнить несколько асинхронных операций параллельно; б) не требуется анализ индивидуальных результатов; в) важен факт успешного выполнения всех операций
+                        // addToFavorites(prodId),
+                        removeFromCart(prodId)
+                    ]);
+                    // toast.info('Товар закончился и перемещён в Избранное', toastConfig);
+                    toast.info('Товар удалён из Корзины', toastConfig);
+                } else {
+                    const result = await updateCart(prodId, newValue);     // Случай с result используется когда: а) нужно проверить конкретный результат операции; б) требуется дополнительная обработка ответа; в) важно обработать возможные ошибки специфическим образом;
+                    if(result.error) throw new Error(result.error);
+                    toast.success(`«${prodTitle}»: ${newValue} шт.`, toastConfig);
+                }
+            } catch(error) {
+                setLocalValue(initialValue);    // Откат при ошибке
+                toast.error(
+                    error instanceof Error ? error.message : 'Ошибка обновления',
+                    toastConfig
+                );
+            } finally {
+                setIsUpdating(false);
+            }
+        } else {
+            // Логика предзаказа
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseInt(e.target.value) || 0;
+        setLocalValue(Math.max(1, Math.min(on_sale, value)));
+
+        // Автосохранение через 2 секунды бездействия
+        if (timeoutId) clearTimeout(timeoutId);
+        setTimeoutId(
+            setTimeout(() => {
+                if (value !== initialValue && value >= 1 && value <= on_sale) {
+                    handleUpdate(value);
+                }
+            }, 5000)
+        );
+    };
+
+    const handleBlur = () => {
+        if (timeoutId) clearTimeout(timeoutId);
+        if(localValue !== initialValue) {
+            handleUpdate(localValue);
+        }
+    };
 
     // Оптимизация ввода с клавиатуры
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -98,60 +161,42 @@ export const QuantityControl: React.FC<QuantityControlProps> = ({
         }
     };
 
-    const handleUpdate = async (newValue: number) => {
-        if(newValue < 0 || newValue > on_sale) return;
-        
-        try {
-            setIsUpdating(true);
-            
-            if(newValue === 0) {
-                // Товар закончился - удаляем и добавляем в избранное
-                await Promise.all([                                     // Случай с Promise.all используется когда нам нужно: а) выполнить несколько асинхронных операций параллельно; б) не требуется анализ индивидуальных результатов; в) важен факт успешного выполнения всех операций
-                    addToFavorites(prodId),
-                    removeFromCart(prodId)
-                ]);
-                toast.info('Товар закончился и перемещён в Избранное', toastConfig);
-            } else {
-                const result = await updateCart(prodId, newValue);     // Случай с result используется когда: а) нужно проверить конкретный результат операции; б) требуется дополнительная обработка ответа; в) важно обработать возможные ошибки специфическим образом;
-                if(result.error) throw new Error(result.error);
-                setLocalValue(newValue);
-            }
-        } catch(error) {
-            toast.error('Не удалось обновить количество', toastConfig);
-            setLocalValue(initialValue);
-        } finally {
-            setIsUpdating(false);
-        }
-    };
+    // Дебаунс "лёгкой" версии
+    const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseInt(e.target.value) || 0;
-        setLocalValue(Math.max(1, Math.min(on_sale, value)));
-    };
-
-    const handleBlur = () => {
-        if(localValue !== initialValue) {
-            handleUpdate(localValue);
-        }
-    };
+    // Не забываем очищать таймер
+    useEffect(() => {
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, []);
 
     return (
-    <div className="basket-row__quantity">
-        <button className="basket-row__quantity-minus" onClick={() => handleUpdate(localValue - 1)} disabled={isUpdating || localValue <= 1}>-</button>
-        <input 
-        className="basket-row__quantity-number"
-        // type="number" 
-        value={localValue}
-        onChange={handleChange}
-        onBlur={handleBlur}
-        onKeyDown={handleKeyDown}
-        min={1}
-        max={on_sale}
-        disabled={isUpdating}
-        />
-        <button className="basket-row__quantity-plus" onClick={() => handleUpdate(localValue + 1)} disabled={isUpdating || localValue >= on_sale}>+</button>
-        {isUpdating && <span className="loading-indicator">...</span>}
-    </div>
+        <>
+            <div className="quantity-control">
+                <button 
+                    onClick={() => handleUpdate(localValue - 1)}
+                    disabled={isUpdating && localValue <= 1}
+                >
+                −
+                </button>
+                
+                <input
+                    value={localValue}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    onKeyDown={handleKeyDown}
+                />
+                
+                <button
+                    onClick={() => handleUpdate(localValue + 1)}
+                    disabled={isUpdating || localValue >= on_sale}
+                >
+                +
+                </button>
+                {isUpdating && <span className="loading-indicator">...</span>}
+            </div>
+        </>
     ); 
 };
 

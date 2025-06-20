@@ -1,4 +1,4 @@
-// resources/js/Components/ProductOrderTable/ProductTableRow.tsx - Компонент строки таблицы
+// resources/js/Components/ProductOrderTable/ProductTableRow.tsx - Компонент строки таблицы - Не используется
 import { IProduct } from "@/Types/types";
 import { useState, useEffect } from "react";
 import { Link } from "@inertiajs/react";

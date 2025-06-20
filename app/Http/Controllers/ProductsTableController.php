@@ -51,6 +51,9 @@ class ProductsTableController extends Controller
     }
 
     protected function getResponseData(Request $request) {
+        
+        // dd($request);
+        
         // Получаем данные из URL
         $categoryId = $this->urlParser->getCategoryId();            // не работает корректно для http://127.0.0.1:8000/profile/products-table?category=balls&page=1 -> возвращает null 
         // Получаем информацию о категории
@@ -80,6 +83,19 @@ class ProductsTableController extends Controller
             ->orderBy($sortBy, $sortOrder)
         ;
 
+        $searchTerm = $request->input('search');
+        $searchType = $request->input('searchType', 'article'); // По умолчанию поиск по артикулу
+
+        if ($searchTerm) {
+            $query->where(function($q) use ($searchTerm, $searchType) {
+                if ($searchType === 'article') {
+                    $q->where('article', 'LIKE', "%{$searchTerm}%");
+                } else {
+                    $q->where('title', 'LIKE', "%{$searchTerm}%");
+                }
+            });
+        }
+
         // Применяем подзапросы для цен
         $this->applyPriceSubqueries($query);
        
@@ -88,6 +104,7 @@ class ProductsTableController extends Controller
 
         // Применяем фильтры
         $filteredQuery = $filterService->applyFilters($filters);
+        // dd($filteredQuery);
         
         // Пагинация
         $products = $filteredQuery->paginate($perPage, ['*'], 'page', $page);
@@ -107,6 +124,8 @@ class ProductsTableController extends Controller
             //'filters' => $filters,
             'sortBy' => $sortBy,
             'sortOrder' => $sortOrder,
+            'search' => $request->input('search', ''),
+            'searchType' => $request->input('searchType', 'article'),
             'categoryId' => $categoryId,
             'categoryInfo' => $categoryInfo,
         ];
