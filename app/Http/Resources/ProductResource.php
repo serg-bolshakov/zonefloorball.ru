@@ -16,10 +16,11 @@ class ProductResource extends JsonResource
      */
 
     public function toArray(Request $request): array {
-        \Log::debug('expected_receipt_date:', ['request' => $this->productReport->expected_receipt_date ?? null]);
+        // \Log::debug('expected_receipt_date:', ['request' => $this->productReport->expected_receipt_date ?? null]);
        
         $user = Auth::user() ?? null;
         // \Log::debug('ProductResource validated:', ['headers' => $request->headers->all(), '$userssss' => $user]);
+        
         $data = [
             'id' => $this->id,
             'title' => $this->title,
@@ -49,7 +50,7 @@ class ProductResource extends JsonResource
             $data = array_merge($data, $this->calculateDiscounts($user));
         }
 
-        \Log::debug('ProductResources toArray', ['$newdata' => $data]);
+       // \Log::debug('ProductResources toArray', ['$newdata' => $data]);
 
         return $data;      
     }

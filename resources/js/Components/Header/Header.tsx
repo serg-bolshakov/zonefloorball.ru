@@ -268,8 +268,8 @@ const Header: React.FC = () => {
                         {user && ordersCount > 0 && ( <div className="header-orders__counter header-logo__counter color-blue">{ ordersCount }</div> )}
                         {user && (
                             <>
-                                <Link className="" href="/profile?getorders=all"><img src="/storage/icons/orders-in-blue.png" alt="orders-icon" title="Покупки / Заказы" /></Link>
-                                <p><Link className="header-icon" href="/profile?getorders=all">Заказы</Link></p>
+                                <Link className="" href="/profile/orders"><img src="/storage/icons/orders-in-blue.png" alt="orders-icon" title="Покупки / Заказы" /></Link>
+                                <p><Link className="header-icon" href="/profile/orders">Заказы</Link></p>
                             </>
                         )}
                     </div>

@@ -18,6 +18,8 @@ use App\Models\ProductReport;
 use App\Models\ProductReservation;
 use App\Models\User;
 use Illuminate\Http\Request;
+use App\Http\Resources\OrderResource; 
+use App\Http\Resources\OrderCollection;
 
 # для отправки по электронной почте уведомления продавцу, что формлен новый заказ, импортируем:
 use App\Mail\NewOrder;
@@ -282,7 +284,7 @@ class OrderController extends Controller {
         if (Auth::check()) {
             return Auth::user();
         }
-        \Log::debug('OrderController !authed:', [ '!authed' => '!authed',]);
+        // \Log::debug('OrderController !authed:', [ '!authed' => '!authed',]);
 
         return User::create([
             'client_type_id' => 1,                                              // Физлицо
@@ -438,6 +440,46 @@ class OrderController extends Controller {
         } catch (\Exception $e) {
             return response()->json([
                 'error' => 'Ошибка загрузки данных для просмотра статуса заказа в OrderController@trackOrder',
+                'details' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
+        
+    }
+
+    // Получение всех заказов клиента
+    public function getOrders(Request $request) {
+        
+        // Получение клиента
+        $user = Auth::user();
+        if (!$user) { return ; }
+        
+        try {
+
+            $perPage    = (int)$request->input('perPage', 10);
+            $page       = (int)$request->input('page', 1);
+            $sortBy     = $request->input('sortBy', 'order_date');
+            $sortOrder  = $request->input('sortOrder', 'desc');
+
+            // Создаём базовый запрос
+            $query = Order::query()->where('order_client_id', $user->id)->orderBy($sortBy, $sortOrder);
+
+            // Пагинация
+            $orders = $query->paginate($perPage, ['*'], 'page', $page);
+
+            $title = $user->client_type_id == '1' ? 'Мои заказы' : 'Наши заказы';
+            // dd($orders);
+            return Inertia::render('Orders', [
+                'title' => $title,
+                'robots' => 'NOINDEX,NOFOLLOW',
+                'description' => '',
+                'keywords' => '',
+                'orders' => new OrderCollection($orders),  // Inertia.js использует JSON для передачи данных между Laravel и React. Когда мы передаём объект OrderCollection, он сериализуется в JSON. В процессе сериализации некоторые свойства объекта LengthAwarePaginator (например, lastPage, total, perPage и т.д.) могут быть преобразованы в массивы, если они имеют сложную структуру или если в процессе сериализации происходит дублирование данных - это проблема: в react мы получаем не значения, а массиивы значений (дублирование), что приводит к проблемам при рендеринге данных
+                'sortBy' => $sortBy,
+                'sortOrder' => $sortOrder,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка загрузки данных для просмотра выюорки заказов в OrderController@getOrder',
                 'details' => config('app.debug') ? $e->getMessage() : null
             ], 500);
         }
