@@ -97,7 +97,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
     // Фильтрация товаров (при выборе "Предзаказ"): (на будущее)
-    const filteredProducts = actionType === 'preorder' 
+    /*const filteredProducts = actionType === 'preorder' 
         ? products.data.filter(p => p.on_preorder > 0)
         : products.data;
     
@@ -115,7 +115,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
             preserveScroll: true,
             preserveState: true
         });
-    };
+    };*/
 
     // console.log('categoriesMenuArr', categoriesMenuArr);
     // console.log('products.meta.per_page', products.meta.per_page);
