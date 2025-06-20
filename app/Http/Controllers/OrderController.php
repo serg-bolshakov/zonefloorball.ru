@@ -240,7 +240,7 @@ class OrderController extends Controller {
                     // Отправляем заказ ...
                     try {
                         // Mail::to($user->email)->send($orderMail);
-                        Mail::to('serg.bolshakov@gmail.com')->send($orderMail);
+                        Mail::to('serg.bolshakov@gmail.com')->cc('ivk@mts.ru')->send($orderMail);
                     } catch (\Exception $e) {
                         Log::error('Failed to send order email: '.$e->getMessage());
                     }
