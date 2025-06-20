@@ -514,9 +514,9 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                         />
                                     </td>  
                                     <td>
-                                        <a href={`/products/card/${product.prod_url_semantic}/`}>
+                                        <Link href={`/products/card/${product.prod_url_semantic}/`}>
                                             {product.title}
-                                        </a>
+                                        </Link>
                                     </td>  
                                     <td>
                                         <input 
