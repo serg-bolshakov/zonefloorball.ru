@@ -82,10 +82,19 @@ class ProductController extends Controller
 
         if ($searchTerm) {
             $query->where(function($q) use ($searchTerm, $searchType) {
+                $terms = explode(' ', trim($searchTerm));
+                
                 if ($searchType === 'article') {
                     $q->where('article', 'LIKE', "%{$searchTerm}%");
                 } else {
-                    $q->where('title', 'LIKE', "%{$searchTerm}%");
+                    foreach ($terms as $term) {
+                        if (strlen($term) >= 3) { // Ищем только слова от 3 символов
+                            $q->where(function($subQuery) use ($term) {
+                                $subQuery->where('title', 'LIKE', "%{$term}%")
+                                        ->orWhere('meta_name_description', 'LIKE', "%{$term}%");
+                            });
+                        }
+                    }
                 }
             });
         }

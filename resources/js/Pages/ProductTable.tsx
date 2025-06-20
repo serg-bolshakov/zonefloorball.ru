@@ -429,17 +429,19 @@ const ProductTable: React.FC<ProductTableProps> = ({
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                        placeholder={searchType === 'article' ? 'Введите артикул и нажмите "Ввод" (Enter)' : 'Введите название и нажмите "Ввод" (Enter)'}
+                        placeholder={searchType === 'article' 
+                            ? 'Например: 24051' 
+                            : 'Например: клюшка unihoc 36mm'}
                         className="search-input"
                     />
                     
-                    {/* <button 
+                    <button 
                     onClick={handleSearch}
                     disabled={!searchTerm.trim()}
                     className="search-button"
                     >
                     Найти
-                    </button> */}
+                    </button>
                     
                     {/* Индикация активного поиска: */}
                     {searchTerm && (
