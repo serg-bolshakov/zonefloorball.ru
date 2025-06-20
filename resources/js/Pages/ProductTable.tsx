@@ -100,7 +100,8 @@ const ProductTable: React.FC<ProductTableProps> = ({
     /*const filteredProducts = actionType === 'preorder' 
         ? products.data.filter(p => p.on_preorder > 0)
         : products.data;
-    
+    */
+
     const handleSearch = () => {
         const params = {
             page: 1, // Всегда сбрасываем на первую страницу
@@ -115,7 +116,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
             preserveScroll: true,
             preserveState: true
         });
-    };*/
+    };
 
     // console.log('categoriesMenuArr', categoriesMenuArr);
     // console.log('products.meta.per_page', products.meta.per_page);
@@ -409,63 +410,63 @@ const ProductTable: React.FC<ProductTableProps> = ({
                 </div>
 
                 <div className="search-controls">
-                        <span className='pagination-info'>Поиск </span>
-                        <select 
-                        value={searchType}
-                        onChange={(e) => {
-                            setSearchType(e.target.value as 'article' | 'title');
-                            // Можно автоматически запускать поиск при смене типа
-                            if (searchTerm) handleSearch();
-                        }}
-                        className="search-type-select"
-                        >
-                        <option value="article">По артикулу</option>
-                        <option value="title">По названию</option>
-                        </select>
-                        
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            placeholder={searchType === 'article' ? 'Введите артикул и нажмите "Ввод" (Enter)' : 'Введите название и нажмите "Ввод" (Enter)'}
-                            className="search-input"
-                        />
-                        
-                        {/* <button 
-                        onClick={handleSearch}
-                        disabled={!searchTerm.trim()}
-                        className="search-button"
-                        >
-                        Найти
-                        </button> */}
-                        
-                        {/* Индикация активного поиска: */}
-                        {searchTerm && (
-                            <div className="active-search-info">
-                                Поиск {searchType === 'article' ? 'по артикулу' : 'по названию'}:&nbsp; 
-                                <strong>{searchTerm}</strong>
-                            </div>
-                        )}
+                    <span className='pagination-info'>Поиск </span>
+                    <select 
+                    value={searchType}
+                    onChange={(e) => {
+                        setSearchType(e.target.value as 'article' | 'title');
+                        // Можно автоматически запускать поиск при смене типа
+                        if (searchTerm) handleSearch();
+                    }}
+                    className="search-type-select"
+                    >
+                    <option value="article">По артикулу</option>
+                    <option value="title">По названию</option>
+                    </select>
+                    
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                        placeholder={searchType === 'article' ? 'Введите артикул и нажмите "Ввод" (Enter)' : 'Введите название и нажмите "Ввод" (Enter)'}
+                        className="search-input"
+                    />
+                    
+                    {/* <button 
+                    onClick={handleSearch}
+                    disabled={!searchTerm.trim()}
+                    className="search-button"
+                    >
+                    Найти
+                    </button> */}
+                    
+                    {/* Индикация активного поиска: */}
+                    {searchTerm && (
+                        <div className="active-search-info">
+                            Поиск {searchType === 'article' ? 'по артикулу' : 'по названию'}:&nbsp; 
+                            <strong>{searchTerm}</strong>
+                        </div>
+                    )}
 
-                        {(searchTerm || searchType !== 'article') && (
-                            <button 
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setSearchType('article');
-                                    router.get('/profile/products-table', {
-                                        page: 1,
-                                        perPage: products.meta.per_page,
-                                        sortBy,
-                                        sortOrder
-                                    });
-                                }}
-                                className="clear-search-button"
-                            >
-                                Сбросить
-                            </button>
-                        )}
-                    </div>
+                    {(searchTerm || searchType !== 'article') && (
+                        <button 
+                            onClick={() => {
+                                setSearchTerm('');
+                                setSearchType('article');
+                                router.get('/profile/products-table', {
+                                    page: 1,
+                                    perPage: products.meta.per_page,
+                                    sortBy,
+                                    sortOrder
+                                });
+                            }}
+                            className="clear-search-button"
+                        >
+                            Сбросить
+                        </button>
+                    )}
+                </div>
                 
                 <div className="user-lk__scroll-table">
                     <table>

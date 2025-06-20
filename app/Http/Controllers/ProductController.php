@@ -76,6 +76,20 @@ class ProductController extends Controller
             ->orderBy($sortBy, $sortOrder)
         ;
 
+        // Поиск по каталогу
+        $searchTerm = $request->input('search');
+        $searchType = $request->input('searchType', 'title'); // По умолчанию поиск по наименованию товара
+
+        if ($searchTerm) {
+            $query->where(function($q) use ($searchTerm, $searchType) {
+                if ($searchType === 'article') {
+                    $q->where('article', 'LIKE', "%{$searchTerm}%");
+                } else {
+                    $q->where('title', 'LIKE', "%{$searchTerm}%");
+                }
+            });
+        }
+
         // Применяем подзапросы для цен
         $this->applyPriceSubqueries($query);
        
@@ -109,7 +123,10 @@ class ProductController extends Controller
             //'filters' => $filters,
             'sortBy' => $sortBy,
             'sortOrder' => $sortOrder,
+            'search' => $request->input('search', ''),
+            'searchType' => $request->input('searchType', 'title'),
             'categoryId' => $categoryId,
+            'categoryInfo' => $categoryInfo ?? '',
         ];
         //dd($responseData);
         return $responseData;

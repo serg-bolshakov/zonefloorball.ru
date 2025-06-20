@@ -17,6 +17,7 @@ import { Inertia, Method } from '@inertiajs/inertia';
 import { CompactPagination } from '@/Components/CompactPagination';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
+import { ICategoryItemFromDB } from '../Types/types';
 // import axios from 'axios';
 
 interface ICatalogProps {
@@ -33,8 +34,10 @@ interface ICatalogProps {
     filters?: Record<string, string>;   // Добавляем фильтры
     sortBy?: string;
     sortOrder?: string;
+    search: string;
+    searchType: 'article' | 'title';
     categoryId?: number;
-    categoryInfo: any,
+    categoryInfo?: ICategoryItemFromDB;
 }
 
 const defaultProducts: IProductsResponse = {
@@ -67,8 +70,39 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     filters  = {},              // Значение по умолчанию
     sortBy = 'actual_price',
     sortOrder = 'asc',
+    search: initialSearch = '',
+    searchType: initialSearchType = 'title',
     categoryId,
 }) => {
+
+    // Инициализируем состояние из пропсов (которые приходят из URL через Inertia)
+    const [searchTerm, setSearchTerm] = useState(initialSearch);
+    const [searchType, setSearchType] = useState<'article' | 'title'>(initialSearchType);
+
+    console.log(searchTerm);
+    console.log(searchType);
+
+    // Синхронизация при изменении URL (если пользователь нажимает "Назад")
+    useEffect(() => {
+        setSearchTerm(initialSearch);
+        setSearchType(initialSearchType);
+    }, [initialSearch, initialSearchType]);
+
+    const handleSearch = () => {
+        const params = {
+            page: 1, // Всегда сбрасываем на первую страницу
+            perPage: products.meta.per_page,
+            sortBy,
+            sortOrder,
+            search: searchTerm.trim(),
+            searchType
+        };
+        
+        router.get('/products/catalog', params, {
+            preserveScroll: true,
+            preserveState: true
+        });
+    };
     
     const [currentSortBy, setCurrentSortBy] = useState(sortBy);
     const [currentSortOrder, setCurrentSortOrder] = useState(sortOrder);
@@ -262,8 +296,67 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                             className="search-input"
                         /> */}
 
+                        {/* Поиск в каталоге */}
+                    <div className="d-flex">
+                        {/* <span className='pagination-info'>Поиск </span> */}
+                        {/* <select 
+                        value={searchType}
+                        onChange={(e) => {
+                            setSearchType(e.target.value as 'article' | 'title');
+                            // Можно автоматически запускать поиск при смене типа
+                            if (searchTerm) handleSearch();
+                        }}
+                        className="search-type-select"
+                        >
+                        <option value="article">По артикулу</option>
+                        <option value="title">По названию</option>
+                        </select>
+                         */}
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                            placeholder={searchType === 'article' ? 'Поиск по артикулу товара' : 'Поиск по наименованию товара'}
+                            className="search-input"
+                        />
+                        
+                        <button 
+                        onClick={handleSearch}
+                        disabled={!searchTerm.trim()}
+                        className="search-button"
+                        >
+                        Найти
+                        </button>
+                        
+                        {/* Индикация активного поиска: */}
+                        {searchTerm && (
+                            <div className="active-search-info">
+                                Поиск {searchType === 'article' ? 'по артикулу' : 'по названию'}:&nbsp; 
+                                <strong>{searchTerm}</strong>
+                            </div>
+                        )}
+
+                        {(searchTerm || searchType !== 'title') && (
+                            <button 
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    setSearchType('title');
+                                    router.get('/products/catalog', {
+                                        page: 1,
+                                        perPage: products.meta.per_page,
+                                        sortBy,
+                                        sortOrder
+                                    });
+                                }}
+                                className="clear-search-button"
+                            >
+                                Сбросить
+                            </button>
+                        )}
                     </div>
 
+                    </div>
 
                     <div className="products-content">
                         <aside className="aside-with-filters">
