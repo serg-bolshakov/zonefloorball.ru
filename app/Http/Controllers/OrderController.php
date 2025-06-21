@@ -80,7 +80,7 @@ class OrderController extends Controller {
             $order = DB::transaction(function () use ($request) {
                 // 1. Создаём/получаем пользователя
                     $user = $this->resolveUser($request);
-                    \Log::debug('OrderController user:', [ 'user_id' => $user->id,  ]);
+                    // \Log::debug('OrderController user:', [ 'user_id' => $user->id,  ]);
                 
                 // 2. Генерируем номер заказа
                     $clientType = $user->client_type_id ?? 1; // По умолчанию физлицо
@@ -126,7 +126,7 @@ class OrderController extends Controller {
                     \Log::debug('orderRecipientEmailrderRecipientTel:', [ 'orderRecipientEmail' => $orderRecipientEmail]);
 
                 // 3. Создаём заказ
-                    \Log::debug('OrderStatus::PENDING', [ 'OrderStatus::PENDING' => OrderStatus::PENDING]);
+                    // \Log::debug('OrderStatus::PENDING', [ 'OrderStatus::PENDING' => OrderStatus::PENDING]);
                     $orderData = [
                         'order_number'              => $orderNumber,
                         'order_client_type_id'      => $user->client_type_id ?? 1,
@@ -155,12 +155,17 @@ class OrderController extends Controller {
 
                     foreach ($request->input('products') as $item) {
                         // 1. Создаём позицию заказа
-                        
+
+                            // выбираем цену, которая была зафиксирована на момент продажу товара (с учётом возможной скидки за ранг пользоателя):
+                            $productFinalPrice = (isset($item['price_with_rank_discount']) && $item['price_with_rank_discount'] < $item['price']) 
+                                ? $item['price_with_rank_discount']
+                                : $item['price'];
+
                         OrderItem::create([
                             'order_id'      => $order->id,
                             'product_id'    => $item['id'],
                             'quantity'      => $item['quantity'],
-                            'price'         => $item['price'],
+                            'price'         => $productFinalPrice,
                             'regular_price' => $item['price_regular'] ?? $item['price'] // Если нет regular, используем price
                         ]);
 
@@ -242,7 +247,8 @@ class OrderController extends Controller {
                     // Отправляем заказ ...
                     try {
                         // Mail::to($user->email)->send($orderMail);
-                        Mail::to('serg.bolshakov@gmail.com')->cc('ivk@mts.ru')->send($orderMail);
+                        // Mail::to('serg.bolshakov@gmail.com')->cc('ivk@mts.ru')->send($orderMail);
+                        Mail::to('serg.bolshakov@gmail.com')->send($orderMail);
                     } catch (\Exception $e) {
                         Log::error('Failed to send order email: '.$e->getMessage());
                     }
@@ -279,7 +285,7 @@ class OrderController extends Controller {
     }      
         
     private function resolveUser($request): ?User {
-        \Log::debug('OrderController request:', [ 'user' => $request->all(),]);
+        // \Log::debug('OrderController request:', [ 'user' => $request->all(),]);
 
         if (Auth::check()) {
             return Auth::user();
@@ -406,7 +412,7 @@ class OrderController extends Controller {
                             }) ?? [] // Возвращаем пустой массив если history null
                         ],
                         'items' => $order->items->map(function($item) {
-                            dd($item);
+                            // dd($item);
                             return [
                                 'product' => [
                                     'id' => $item->product_id,

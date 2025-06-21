@@ -452,6 +452,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 products_amount: cartAmount,
                 total: cartAmount + deliveryData.price
             };
+
+            console.log('orderData', orderData);
     
             await createOrder(orderData, {
                 isReserve: actionType === 'reserve',
@@ -477,6 +479,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             submittingRef.current = false;
         }
     };
+
+    console.log('cartAmount', cartAmount);
 
     return (    
         <MainLayout>

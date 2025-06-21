@@ -19,6 +19,7 @@ class OrderResource extends JsonResource
     public function toArray(Request $request): array {
                
         $user = Auth::user() ?? null;
+        // dd($this);
         
         $data = [
             'id' => $this->id,

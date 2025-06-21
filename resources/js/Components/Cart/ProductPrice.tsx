@@ -2,7 +2,6 @@
 import { formatPrice } from '@/Utils/priceFormatter';
 import { TUser } from '@/Types/types';
 
-
 const ProductPrice = ({ 
     user,
     actual, 
@@ -32,7 +31,7 @@ const ProductPrice = ({
             <div> сегодня отличная цена: <span className='color-green'>{formatPrice(regular)}&nbsp;<sup>₽</sup></span></div>
       )}
 
-      {user && rank_discount < actual && (
+      {user && (rank_discount > 0 && rank_discount < actual) && (
           user.client_type_id === 1 ? (        
             <div>а моя цена лучше: <span className='color-red'>{formatPrice(rank_discount)}&nbsp;<sup>₽</sup></span></div>
           ) : (

@@ -56,6 +56,8 @@ const useCreateOrder = () => {
         const controller = new AbortController();       // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
         controllerRef.current = controller;
 
+        console.log(orderData);
+
         try {
           setIsLoading(true);
           //setError(null);
