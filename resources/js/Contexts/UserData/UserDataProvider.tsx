@@ -18,7 +18,7 @@ type SyncData = {
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
     
-    const { user, cart, favorites, orders } = useAppContext();
+    const { user, cart, favorites, orders, ordersTotal } = useAppContext();
     
     const [state, setState] = useState<UserDataState>({
         cart                    : {},  // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  

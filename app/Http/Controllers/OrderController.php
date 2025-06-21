@@ -406,6 +406,7 @@ class OrderController extends Controller {
                             }) ?? [] // Возвращаем пустой массив если history null
                         ],
                         'items' => $order->items->map(function($item) {
+                            dd($item);
                             return [
                                 'product' => [
                                     'id' => $item->product_id,
@@ -454,6 +455,8 @@ class OrderController extends Controller {
         if (!$user) { return ; }
         
         try {
+
+            // dd($user->orders()->count() ?? '0');
 
             $perPage    = (int)$request->input('perPage', 10);
             $page       = (int)$request->input('page', 1);

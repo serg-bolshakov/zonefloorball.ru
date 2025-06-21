@@ -3,6 +3,7 @@ import { formatPrice } from "@/Utils/priceFormatter";
 
 export const OrderItemsTable: React.FC<{ items: IOrderItem[] }> = ({ items }) => {
     const hasDiscount = items.some(item => item.discount > 0);
+    console.log(items);
     
     return (
         <div className="order-items-scroll">
@@ -25,7 +26,7 @@ export const OrderItemsTable: React.FC<{ items: IOrderItem[] }> = ({ items }) =>
                             <td>{item.quantity}</td>
                             <td>{formatPrice(item.price)}</td>
                             {hasDiscount && (
-                                <td>{item.discount > 0 ? `-${formatPrice(item.discount)}` : '-'}</td>
+                                <td>{item.discount > 0 ? `-${formatPrice(item.discount)}` : ''}</td>
                             )}
                             <td>{formatPrice(item.quantity * item.price)}</td>
                         </tr>

@@ -6,9 +6,10 @@ import { motion } from 'framer-motion';
 
 const Header: React.FC = () => {
     const { user, categoriesMenuArr, authBlockContentFinal } = useAppContext();
-    const { orders, favorites, cartTotal } = useUserDataContext();
+    const { orders, favorites, cartTotal, ordersTotal } = useUserDataContext();
     // Считаем количества
-    const ordersCount = orders.length;
+    // const ordersCount = orders.length;
+    const ordersCount = ordersTotal;
     const favoritesCount = favorites.length;
     const cartCount = cartTotal;
 
@@ -32,6 +33,8 @@ const Header: React.FC = () => {
     } else if (!Array.isArray(zone)) {
         return <div>Данные zone не загружены или имеют неверный формат.</div>;
     }
+
+    console.log(ordersCount);
 
     return (
         <>

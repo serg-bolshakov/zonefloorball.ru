@@ -20,10 +20,10 @@
     class InitialDataController extends Controller {
         public function index(Request $request) {
 
-            \Log::debug('InitialDataController Session Check', [
+            /*\Log::debug('InitialDataController Session Check', [
                 'request' => $request->all(),
                 'user' => Auth::user(),
-            ]);
+            ]);*/
             
             try {
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();
@@ -52,7 +52,8 @@
                     'favorites' => $user?->favorites?->product_ids 
                         ? $user->favorites->product_ids // json_decode($user->favorites->product_ids, true) - "декодирование" осуществили в модели Favorite через cast...
                         : [],
-                    'orders' => [] // Заполняется отдельным запросом
+                    'orders' => $user ? $user->orders : [], 
+                    'orders_qty' => $user ? $user->orders()->count() : '0'
                 ]);
                     
             } catch (\Exception $e) {

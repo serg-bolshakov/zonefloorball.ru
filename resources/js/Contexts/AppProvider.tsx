@@ -51,7 +51,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
         
     }, []);
 
-    // console.log('APPProvider: user', user);
+    console.log('APPProvider: user', orders);
 
     const contextValue: IAppContextType = {
         user, setUser,
