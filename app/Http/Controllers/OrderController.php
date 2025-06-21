@@ -155,7 +155,6 @@ class OrderController extends Controller {
 
                     foreach ($request->input('products') as $item) {
                         // 1. Создаём позицию заказа
-
                             // выбираем цену, которая была зафиксирована на момент продажу товара (с учётом возможной скидки за ранг пользоателя):
                             $productFinalPrice = (isset($item['price_with_rank_discount']) && $item['price_with_rank_discount'] < $item['price']) 
                                 ? $item['price_with_rank_discount']
