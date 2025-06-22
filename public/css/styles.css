@@ -2676,7 +2676,7 @@ a.registration-form__submit-btn, .order-btn {
     background: #f6f6f6;
     box-shadow: inset 0px 20px 20px #ffffff;
     border-radius: 8px;
-    padding: 12px 8px; /* Увеличим вертикальный padding */
+    padding: 8px 8px; /* Увеличим вертикальный padding */
     margin: 8px 4px; /* Увеличим отступы */
     min-width: 120px; /* Заменим width на min-width */
     width: auto; /* Позволит кнопкам расширяться */
@@ -2729,6 +2729,37 @@ a.registration-form__submit-btn, .order-btn {
     cursor: not-allowed;
 }
 
+.back-btn {
+    cursor: pointer;
+    border: 1px solid #cecece;
+    background: #f6f6f6;
+    box-shadow: inset 0px 20px 20px #ffffff;
+    border-radius: 8px;
+    padding: 12px 8px; /* Увеличим вертикальный padding */
+    margin: 8px 4px; /* Увеличим отступы */
+    max-width: 150px; /* Заменим width на min-width */
+    font-family: 'Inter';
+    font-size: 14px; /* Чуть увеличим шрифт */
+    font-weight: 500;
+    color: black;
+    text-align: center;
+    flex: 1; /* Добавим для гибкости */
+    white-space: nowrap; /* Текст не переносится */
+}
+
+.back-btn:hover {
+    box-shadow: inset 0px -20px 20px #ffffff;
+}
+
+.back-btn:active {
+    margin-top: 9px;
+    margin-bottom: 7px;
+    transform: scale(0.98); /* Лучше чем zoom */
+}
+
+.back-btn:focus {
+    outline: none;
+}
 
 .registration-error {
     color: red;

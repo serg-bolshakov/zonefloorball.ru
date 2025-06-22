@@ -182,6 +182,7 @@ const Orders: React.FC<IOrdersProps> = ({
         return `?${params.toString()}`;
     };
 
+    console.log(orders.data.length);
 
     return (
         <MainLayout>
@@ -193,68 +194,78 @@ const Orders: React.FC<IOrdersProps> = ({
             </Helmet>
 
             <div className="orders-container">
-                <h1 className='margin-bottom12px'>История заказов</h1>
+                
+                <div className="d-flex aline-items-center flex-sb">
+                    <h1 className='margin-bottom12px'>История заказов</h1>
+                    <Link href="/profile/products-table"><button className="order-confirmation__submit-btn primary">Создать новый заказ</button></Link>
+                </div>
 
-                <div className="table-controls">
-                    {/* Селект количества строк */}
-                    <div className="pagination">
-                        <select 
-                        value={orders.meta.per_page} 
-                        onChange={handlePerPageChange}
+                {orders.meta.last_page > 1 && (
+                    <div className="table-controls">
+                        {/* Селект количества строк */}
+                        <div className="pagination">
+                            <select 
+                            value={orders.meta.per_page} 
+                            onChange={handlePerPageChange}
+                            >
+                            {[10, 25, 50, 100, 250, 500].map(size => (
+                                <option key={size} value={size}>Смотрим по {size} строк</option>
+                            ))}
+                            <option value={orders.meta.total}>Показать все</option>
+                            </select>
+                        </div>
+
+                        {orders.meta.last_page > 1 && (
+                            <CompactPagination 
+                                meta={orders.meta}
+                                getPageUrl={getPageUrl}
+                            />
+                        )}
+
+                        {/* Сортировка и поиск */}
+                        <select className="text-align-left"
+                            value={sortOrder}
+                            onChange={handleOrderChange}
                         >
-                        {[10, 25, 50, 100, 250, 500].map(size => (
-                            <option key={size} value={size}>Смотрим по {size} строк</option>
-                        ))}
-                        <option value={orders.meta.total}>Показать все</option>
+                            <option value="asc"> ▲ начиная с самых ранних</option> 
+                            <option value="desc"> ▼ начиная с поледних</option>
                         </select>
                     </div>
+                )}
 
-                    {orders.meta.last_page > 1 && (
-                        <CompactPagination 
-                            meta={orders.meta}
-                            getPageUrl={getPageUrl}
-                    />
-                    )}
-
-                    {/* Сортировка и поиск */}
-                    <select className="text-align-left"
-                        value={sortOrder}
-                        onChange={handleOrderChange}
-                    >
-                        <option value="asc"> ▲ начиная с самых ранних</option> 
-                        <option value="desc"> ▼ начиная с поледних</option>
-                    </select>
-                </div>
-                
-                <div className="user-lk__scroll-table">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th title="Номер заказа">Номер</th>  
-                                <th>Дата заказа</th>
-                                <th title="Стоимость заказа">Цена</th>
-                                <th>Статус</th>
-                                <th>Просмотр</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {orders.data.map((order, index) => (
-                                <tr key={order.id}>
-                                    <td className="td-center">{order.number}</td>  
-                                    <td className="td-center">{dateRu(order.order_date)}</td>  
-                                    <td className="td-center">{formatPrice(order.cost)}</td>
-                                    <td className="td-center">{order.status }</td>
-                                    <td className="td-center"><Link  className='header-logo__img' href={`/order/track/${order.hash}`}><img
-                                            src='/storage/icons/search.png' 
-                                            alt='check-order' 
-                                            title='Посмотреть заказ' 
-                                        /></Link>
-                                    </td>
+                {orders.data.length > 0 ? (
+                    <div className="user-lk__scroll-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th title="Номер заказа">Номер</th>  
+                                    <th>Дата заказа</th>
+                                    <th title="Стоимость заказа">Цена</th>
+                                    <th>Статус</th>
+                                    <th>Просмотр</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>  
+                            </thead>
+                            <tbody>
+                                {orders.data.map((order, index) => (
+                                    <tr key={order.id}>
+                                        <td className="td-center">{order.number}</td>  
+                                        <td className="td-center">{dateRu(order.order_date)}</td>  
+                                        <td className="td-center">{formatPrice(order.cost)}</td>
+                                        <td className="td-center">{order.status }</td>
+                                        <td className="td-center"><Link  className='header-logo__img' href={`/order/track/${order.hash}`}><img
+                                                src='/storage/icons/search.png' 
+                                                alt='check-order' 
+                                                title='Посмотреть заказ' 
+                                            /></Link>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <h2 className='margin-bottom12px'>Заказов пока не было...</h2>
+                )}  
             </div>
         </MainLayout> 
     );

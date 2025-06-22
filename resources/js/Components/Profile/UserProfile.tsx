@@ -15,8 +15,18 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, priceDiscountAccordingT
         return (
             <>
               <div className="d-flex flex-sb">
-                <Link href="/products/catalog"><button className="order-confirmation__submit-btn w-110px">Вернуться в главное меню</button></Link>
-                <Link href="/profile/products-table"><button className="order-confirmation__submit-btn primary w-110px">Создать оптовый заказ</button></Link>
+                {/* <Link href="/products/catalog"><button className="order-confirmation__submit-btn w-110px">Вернуться в главное меню</button></Link> */}
+                
+                <Link 
+                  href="/products/catalog" 
+                  as="button"
+                  className="back-btn"
+                  method="get"
+                  replace // Важно! Не добавляет новую запись в историю
+                >
+                  ← в главное меню
+                </Link>
+
               </div>
 
               <div className="cardProduct-line__block"> 
