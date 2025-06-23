@@ -1,7 +1,7 @@
 // resources/js/Components/ProductOrderTable/TableQuantityControl.tsx
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { position } from '@pnotify/animate';
 import useModal from '@/Hooks/useModal';
 
@@ -62,6 +62,16 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
     // Инициализация состояния: при первом рендере localValue = initialValue (то есть product.quantity)
     const [localValue, setLocalValue] = useState(initialValue);
     const [isUpdating, setIsUpdating] = useState(false);
+    
+    // Дебаунс "лёгкой" версии
+    const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
+
+    // Не забываем очищать таймер
+    useEffect(() => {
+        return () => {
+            if (timeoutId) clearTimeout(timeoutId);
+        };
+    }, [timeoutId]);
 
     // Синхронизируем при изменении пропсов: если родительский компонент обновит product.quantity, это значение "протечёт" в локальное состояние
     useEffect(() => {
@@ -105,12 +115,17 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
     // Хранение состояния выбора: (на будущее)
     const [actionType, setActionType] = useState<'cart' | 'preorder'>('cart');
 
+    // Получаем ссылку на <input> с помощью useRef. Сначала создадим ref и привяжем её к инпуту:
+    const inputRef = useRef<HTMLInputElement>(null);
+
     const handleUpdate = async (newValue: number) => {
+        if (isUpdating) return; // Защита от повторных вызовов
+        console.log("Updating:", { prodId, newValue }); // Отладка
         
         if (actionType === 'cart') {
-            if (newValue < 0 || newValue > on_sale || isUpdating) return;
+            if (newValue < 0 || newValue > on_sale) return;
             
-            try {
+            /*try {
                 setIsUpdating(true);
 
                 // Оптимистичное обновление
@@ -119,7 +134,6 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                 if(newValue === 0) {
                     // Товар закончился - удаляем и добавляем в избранное
                     await Promise.all([                                     // Случай с Promise.all используется когда нам нужно: а) выполнить несколько асинхронных операций параллельно; б) не требуется анализ индивидуальных результатов; в) важен факт успешного выполнения всех операций
-                        // addToFavorites(prodId),
                         removeFromCart(prodId)
                     ]);
                     // toast.info('Товар закончился и перемещён в Избранное', toastConfig);
@@ -129,6 +143,23 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                     if(result.error) throw new Error(result.error);
                     toast.success(`«${prodTitle}» в корзине, в количестве: ${newValue} шт.`, toastConfig);
                 }
+            }*/
+           
+           try {
+                setIsUpdating(true);
+                const result = newValue === 0
+                    ? await removeFromCart(prodId)
+                    : await updateCart(prodId, newValue);
+                
+                if (result.error) throw new Error(result.error);
+                
+                setLocalValue(newValue); // Обновляем состояние только после успеха
+                toast.success(
+                    newValue === 0 
+                        ? 'Товар удалён из Корзины' 
+                        : `«${prodTitle}» в корзине: ${newValue} шт.`,
+                    toastConfig
+                );
             } catch(error) {
                 setLocalValue(initialValue);    // Откат при ошибке
                 toast.error(
@@ -145,23 +176,30 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value) || 0;
-        setLocalValue(Math.max(0, Math.min(on_sale, value)));
+        const clampedValue = Math.max(0, Math.min(on_sale, value));
+        setLocalValue(clampedValue);
 
-        // Автосохранение через 2 секунды бездействия
         if (timeoutId) clearTimeout(timeoutId);
         setTimeoutId(
             setTimeout(() => {
-                if (value !== initialValue && value >= 0 && value <= on_sale) {
-                    handleUpdate(value);
+                if (clampedValue !== initialValue) {
+                    handleUpdate(clampedValue).then(() => {
+                        // Теряем фокус ТОЛЬКО после успешного сохранения
+                        inputRef.current?.blur();
+                    });
                 }
-            }, 5000)
+            }, 2000)
         );
     };
 
     const handleBlur = () => {
-        if (timeoutId) clearTimeout(timeoutId);
-        if(localValue !== initialValue) {
-            handleUpdate(localValue);
+        if (timeoutId) {
+        clearTimeout(timeoutId); // Очищаем таймер, если он есть
+        setTimeoutId(undefined);
+        }
+        // Если значение не менялось — не вызываем handleUpdate
+        if (localValue !== initialValue) {
+            handleUpdate(localValue); // Сохраняем только если значение изменилось
         }
     };
 
@@ -189,19 +227,11 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
     // Оптимизация ввода с клавиатуры
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
-            handleBlur();
+            e.preventDefault(); // Предотвращаем возможное дублирование
+            if (timeoutId) clearTimeout(timeoutId); // Отменяем pending-таймер
+            inputRef.current?.blur(); // Снимаем фокус вручную (вызовёт handleBlur)
         }
     };
-
-    // Дебаунс "лёгкой" версии
-    const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout>();
-
-    // Не забываем очищать таймер
-    useEffect(() => {
-        return () => {
-            if (timeoutId) clearTimeout(timeoutId);
-        };
-    }, []);
 
     return (
         <>
@@ -214,6 +244,7 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                 </button>
                 
                 <input
+                    ref={inputRef}
                     value={localValue}
                     onChange={handleChange}
                     onBlur={handleBlur}
