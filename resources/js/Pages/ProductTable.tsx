@@ -307,7 +307,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
         return `?${params.toString()}`;
     };
 
-    console.log(products.data);
+    // console.log(products.data);
 
     return (
         <MainLayout>
@@ -471,7 +471,9 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                     page: 1,
                                     perPage: products.meta.per_page,
                                     sortBy,
-                                    sortOrder
+                                    sortOrder,
+                                    preserveScroll: true,
+                                    preserveState: true
                                 });
                             }}
                             className="clear-search-button"
