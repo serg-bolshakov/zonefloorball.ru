@@ -506,8 +506,8 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                 {/* <th>Действие</th> */}
                                 <th title="На нашем складе">Склад</th>
                                 <th title="Зарезервировано">Резерв</th>
-                                <th title="Доступно для предзаказа">Предзаказ</th>
-                                <th title="Ожидаемая дата поставки на склад продавца">Поставка</th>
+                                {/* <th title="Доступно для предзаказа">Предзаказ</th>
+                                <th title="Ожидаемая дата поставки на склад продавца">Поставка</th> */}
                                 <th title="Артикульный номер товара">Артикул</th>
                                 <th className="hide-column">id</th>
                             </tr>
@@ -589,8 +589,8 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                                                                                                 
                                             <td  className="td-right">{product.in_stock}</td>
                                             <td  className="td-right">{product.reserved}</td>
-                                            <td  className="td-right">{product.on_preorder}</td>
-                                            <td  className="td-right">{product.expected_receipt_date}</td>
+                                            {/* <td  className="td-right">{product.on_preorder}</td>
+                                            <td  className="td-right">{product.expected_receipt_date}</td> */}
                                             <td  className="td-right">{product.article}</td>
                                             <td className="hide-column">{product.id}</td>
                                         </tr>
