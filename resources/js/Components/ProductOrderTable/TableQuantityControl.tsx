@@ -1,8 +1,9 @@
 // resources/js/Components/ProductOrderTable/TableQuantityControl.tsx
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { position } from '@pnotify/animate';
+import useModal from '@/Hooks/useModal';
 
 
 const toastConfig = {
@@ -56,6 +57,8 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
         addToFavorites,
         removeFromCart
     }) => {
+
+    const { openModal, closeModal } = useModal();
     // Инициализация состояния: при первом рендере localValue = initialValue (то есть product.quantity)
     const [localValue, setLocalValue] = useState(initialValue);
     const [isUpdating, setIsUpdating] = useState(false);
@@ -162,6 +165,27 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
         }
     };
 
+    const handleRemoveFromCartClick = useCallback(async (productId: number) => {
+            openModal(null, 'confirm', {
+                title: "Удалить из Корзины?",
+                onConfirm: async () => {
+                    try {
+                        const result = await removeFromCart(productId);    
+                        if (result.error) {
+                            toast.error(result.error, toastConfig);
+                        } else {
+                            toast.success('Товар успешно удалён из Корзины...', toastConfig);
+                        }
+                    } catch(error) {
+                        toast.error('Не удалось удалить из Корзины', toastConfig);
+                    }
+                },
+                onCancel: () => {
+                    toast.success('Товар оставлен в Корзине', toastConfig);
+                }
+            });
+        }, [removeFromCart]);
+
     // Оптимизация ввода с клавиатуры
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -203,6 +227,10 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                 +
                 </button>
                 {isUpdating && <span className="loading-indicator">...</span>}
+
+                {localValue > 0 && 
+                    <img className="w-6 cursor-pointer margin-left12px"  onClick={() => handleRemoveFromCartClick(prodId)} src="/storage/icons/icon-trash.png" alt="icon-trash" title="Удалить товар из корзины" />  
+                }
             </div>
         </>
     ); 

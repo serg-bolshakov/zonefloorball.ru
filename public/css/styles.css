@@ -78,6 +78,7 @@ i { font-style: italic; }
 
 .max-w-4xl      {max-width: 4vmax; } 
 
+
 .max-h-80vh     {max-height: 80vh; }
 .max-h-85vh     {max-height: 85vh; }
 .max-h-90vh     {max-height: 90vh; }
@@ -4294,6 +4295,7 @@ a.changing-form__submit-btn:hover {
 /* w-2 h-2 rounded-full transition-all */
 .w-2            { width: 0.5rem;}
 .w-4            { width: 1rem;}
+.w-6            { width: 1.5rem;}
 .h-2            { height: 0.5rem;}
 .rounded-full   { border-radius: 50%; }
 .transition-all { transition: all;}
