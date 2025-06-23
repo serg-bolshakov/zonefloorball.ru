@@ -55,6 +55,7 @@ i { font-style: italic; }
 .d-none    { display: none; }
 .flex-sb   { justify-content: space-between;}
 .flex-sa   { justify-content: space-around; }
+.flex-content-right { justify-content: right; }
 .flex-jc-center    {justify-content: center;}
 .flex-wrap { flex-wrap: wrap; }
 .aline-items-center {align-items: center;}
@@ -5221,9 +5222,9 @@ select {
 }
 
 .quantity-control input {
-  width: 50px;
+  width: 40px;
   text-align: center;
-  padding: 6px;
+  padding: 5px;
   border: 1px solid #ddd;
   border-radius: 4px;
 }

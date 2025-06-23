@@ -307,6 +307,8 @@ const ProductTable: React.FC<ProductTableProps> = ({
         return `?${params.toString()}`;
     };
 
+    console.log(products.data);
+
     return (
         <MainLayout>
             <Helmet>
@@ -321,8 +323,17 @@ const ProductTable: React.FC<ProductTableProps> = ({
                 {/* Панель управления */}
                 <div className="d-flex flex-sb aline-items-center">
                     <h1 className="h1-tablename">Товарный ассортимент</h1>
-                    <Link href="/products/catalog"><button className="order-confirmation__submit-btn w-110px primary">Вернуться в главное меню</button></Link>
+                    <Link 
+                        href="/products/catalog" 
+                        as="button"
+                        className="back-btn"
+                        method="get"
+                        replace // Важно! Не добавляет новую запись в историю
+                    >
+                        ← в главное меню
+                    </Link>
                 </div>
+                
                 
                 <div className="table-controls">
                     
@@ -475,96 +486,102 @@ const ProductTable: React.FC<ProductTableProps> = ({
                         <thead>
                             <tr>
                                 <th title="Изображение товара">Фото</th>  
-                                <th>Наименование</th>
-                                <th title="Рекомендованная розничная цена">РРЦ</th>
-                                <th>Цена</th>
-                                <th>В продаже</th>
                                 <th>
-                                    <div className="action-header">
+                                    <div className="action-header td-left">
                                         <select 
-                                        value="cart" 
-                                        onChange={(e) => {}}
-                                        className="action-select"
-                                        disabled // Пока не реализовано
+                                            value="cart" 
+                                            onChange={(e) => {}}
+                                            className="action-select"
+                                            // disabled // Пока не реализовано
                                         >
                                         <option value="cart">В корзину</option>
                                         <option value="preorder">Предзаказ</option>
                                         </select>
                                     </div>
                                 </th>
+                                <th title="Доступное для покупки количество един товара">В продаже</th>
+                                <th title="Рекомендованная розничная цена">РРЦ</th>
                                 {/* <th>Действие</th> */}
                                 <th title="На нашем складе">Склад</th>
                                 <th title="Зарезервировано">Резерв</th>
                                 <th title="Доступно для предзаказа">Предзаказ</th>
                                 <th title="Ожидаемая дата поставки на склад продавца">Поставка</th>
-                                <th>Артикул</th>
+                                <th title="Артикульный номер товара">Артикул</th>
                                 <th className="hide-column">id</th>
-                                <th>Бренд</th>
-                                <th>№</th>
                             </tr>
                         </thead>
                         <tbody>
                             {products.data.map((product, index) => (
                                 <tr key={product.id}>
                                     <td className="table-img">
-                                        <img 
-                                            src={`/storage/${product.img_link}`} 
-                                            alt={product.title} 
-                                            title={product.title} 
-                                        />
+                                        <Link href={`/products/card/${product.prod_url_semantic}/`}>
+                                            <img 
+                                                src={`/storage/${product.img_link}`} 
+                                                alt={product.title} 
+                                                title={`По клику на изображение, переход в карточку товара: ${product.title}`}
+                                            />
+                                        </Link>
                                     </td>  
                                     <td>
                                         <Link href={`/products/card/${product.prod_url_semantic}/`}>
                                             {product.title}
                                         </Link>
-                                    </td>  
-                                    <td>
-                                        <input 
-                                            type="text" 
-                                            readOnly 
-                                            className="td-right user-productTable__input-price user-productTable__targetInput-priceCorrection" 
-                                            name="regularPrice" 
-                                            value={product.price_regular && formatPrice(product.price_regular)}
-                                        />
-                                    </td>
-                                    <td className="td-right">
-                                        {(product.price_actual ?? 0) < (product.price_regular ?? 0) ? (
-                                            <>
-                                                <div className="color-red margin-bottom8px">
-                                                    {formatPrice(product.price_actual ?? 0)}&nbsp;<sup>&#8381;</sup>
+                                        <div className="margin-top8px">
+                                            {(product.price_with_rank_discount !== null) ? 
+                                            // здесь логика следующая: product.actual_price - есть всегда - значение равно регулярной цене или сцециальной акционной цене (что из них меньше)
+                                            // product.price_with_rank_discount !== null - появляется только в том случае, если пользователь авторизован и такая цена меньше product.actual_price - выводим ее!
+                                            (
+                                                <>
+                                                    <div className='d-flex margin-bottom8px'>
+                                                        <span  className="color-red margin-bottom8px">{formatPrice(product.price_with_rank_discount ?? 0)}&nbsp;<sup>&#8381;</sup></span>
+                                                        <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{product.percent_of_rank_discount}%</span>
+                                                    </div>
+                                                </>
+                                            ) : ( 
+                                            
+                                                (product.price_actual ?? 0) < (product.price_regular ?? 0) ? (
+                                                    <>
+                                                        <div className='d-flex margin-bottom8px'>
+                                                            <span  className="color-red margin-bottom8px">{formatPrice(product.price_actual ?? 0)}&nbsp;<sup>&#8381;</sup></span>
+                                                            <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_actual ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
+                                                        </div>
+                                                        {/* <div className="cardProduct-priceDiscountInPercentage nobr">
+                                                            -&nbsp;{Math.ceil(100 - ((product.price_actual ?? 0) / (product.price_regular ?? 1) * 100))}%
+                                                        </div> */}
+                                                    </>
+                                            ) : (
+                                                <div>
+                                                    {formatPrice((product.price_regular ?? 0))}&nbsp;<sup>&#8381;</sup>
                                                 </div>
-                                                <div className="cardProduct-priceDiscountInPercentage nobr">
-                                                    -&nbsp;{Math.ceil(100 - ((product.price_actual ?? 0) / (product.price_regular ?? 1) * 100))}%
+                                            ))}
+                                            <div className="">
+                                                <TableQuantityControl
+                                                    prodId={product.id}
+                                                    prodTitle={ product.title }
+                                                    value={quantities[product.id] || 0}
+                                                    on_sale={product.on_sale ?? 0}
+                                                    updateCart={ updateCart }
+                                                    addToFavorites={ addToFavorites }
+                                                    removeFromCart={ removeFromCart }
+                                                />
                                             </div>
-                                            </>
-                                        ) : (
-                                            <div>
-                                                {formatPrice((product.price_regular ?? 0))}&nbsp;<sup>&#8381;</sup>
-                                            </div>
-                                        )}
-                                    </td>
-                                    
+                                        </div>
+                                    </td>  
+
                                     <td className="td-center">{product.on_sale}</td>
-                                    <td>
-                                        <TableQuantityControl
-                                            prodId={product.id}
-                                            prodTitle={ product.title }
-                                            value={quantities[product.id] || 0}
-                                            on_sale={product.on_sale ?? 0}
-                                            updateCart={ updateCart }
-                                            addToFavorites={ addToFavorites }
-                                            removeFromCart={ removeFromCart }
-                                        />
+
+                                    <td  className="td-right line-through">
+                                        <div>
+                                            {formatPrice((product.price_regular ?? 0))}&nbsp;<sup>&#8381;</sup>
+                                        </div>
                                     </td>
-                                   
-                                    <td>{product.in_stock}</td>
-                                    <td>{product.reserved}</td>
-                                    <td>{product.on_preorder}</td>
-                                    <td>{product.expected_receipt_date}</td>
-                                    <td>{product.article}</td>
+                                                                                                           
+                                    <td  className="td-right">{product.in_stock}</td>
+                                    <td  className="td-right">{product.reserved}</td>
+                                    <td  className="td-right">{product.on_preorder}</td>
+                                    <td  className="td-right">{product.expected_receipt_date}</td>
+                                    <td  className="td-right">{product.article}</td>
                                     <td className="hide-column">{product.id}</td>
-                                    <td>{product.brand}</td>
-                                    <td id="numberoflines">{index + 1}</td>
                                 </tr>
                             ))}
                         </tbody>

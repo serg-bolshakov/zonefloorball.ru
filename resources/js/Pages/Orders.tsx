@@ -194,9 +194,19 @@ const Orders: React.FC<IOrdersProps> = ({
             </Helmet>
 
             <div className="orders-container">
-                
-                <div className="d-flex aline-items-center flex-sb">
-                    <h1 className='margin-bottom12px'>История заказов</h1>
+                <h1 className='margin-bottom12px'>История заказов</h1>
+                <div className="d-flex aline-items-center">
+                    
+                    <Link 
+                        href="/products/catalog" 
+                        as="button"
+                        className="back-btn"
+                        method="get"
+                        replace // Важно! Не добавляет новую запись в историю
+                    >
+                        ← в главное меню
+                    </Link>
+
                     <Link href="/profile/products-table"><button className="order-confirmation__submit-btn primary">Создать новый заказ</button></Link>
                 </div>
 

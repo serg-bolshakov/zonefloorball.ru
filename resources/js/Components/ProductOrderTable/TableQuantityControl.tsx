@@ -2,16 +2,24 @@
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import { useState, useEffect } from 'react';
+import { position } from '@pnotify/animate';
 
 
 const toastConfig = {
-    position: "top-right" as const,
+    position: "top-center" as const,
+    // position: "absolute" as const,
     autoClose: 3000, // Уведомление закроется через секунду-другую...
     hideProgressBar: true,
     closeOnClick: true,
     pauseOnHover: true,
     draggable: true,
     transition: Bounce, // Используем Slide, Zoom, Flip, Bounce для этого тоста
+    style: {
+        margin: '50% auto',
+        maxWidth: '90%',
+        borderRadius: '8px',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)'
+    }
 }
 
 interface TableQuantityControlProps {
@@ -116,7 +124,7 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                 } else {
                     const result = await updateCart(prodId, newValue);     // Случай с result используется когда: а) нужно проверить конкретный результат операции; б) требуется дополнительная обработка ответа; в) важно обработать возможные ошибки специфическим образом;
                     if(result.error) throw new Error(result.error);
-                    toast.success(`«${prodTitle}»: ${newValue} шт.`, toastConfig);
+                    toast.success(`«${prodTitle}» в корзине, в количестве: ${newValue} шт.`, toastConfig);
                 }
             } catch(error) {
                 setLocalValue(initialValue);    // Откат при ошибке
@@ -176,7 +184,7 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
             <div className="quantity-control">
                 <button 
                     onClick={() => handleUpdate(localValue - 1)}
-                    disabled={isUpdating && localValue <= 1}
+                    disabled={(isUpdating && localValue <= 1) || localValue == 0}
                 >
                 −
                 </button>
