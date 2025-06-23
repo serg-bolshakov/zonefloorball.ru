@@ -5123,6 +5123,24 @@ select:hover {
         flex-direction: column;
         gap: 4px;
     }
+
+    /* Увеличенные кнопки */
+    .quantity-control button, 
+    .quantity-control input {
+        min-width: 48px;
+        min-height: 48px;
+        font-size: 18px;
+    }
+
+    /* Кнопка "ОК" */
+    .ok-button {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 0 12px;
+        margin-left: 8px;
+    }
 }
 
 .order-actions {
@@ -5363,4 +5381,21 @@ thead th:hover::after {
     text-decoration: none;
     transition: background 0.2s;
     height: 50%;
+}
+
+/* Кнопка "ОК" */
+.ok-button {
+    display: flex;
+    background:#007BFF;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 7px 12px;
+    margin-left: 8px;
+    cursor: pointer;    
+}
+
+.ok-button:hover {
+  background:#2196F3;
+  transition: background 0.2s;
 }

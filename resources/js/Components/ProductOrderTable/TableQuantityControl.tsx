@@ -73,6 +73,9 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
         };
     }, [timeoutId]);
 
+    // состояние для отслеживания фокуса и динамической смены кнопки:
+    const [isInputFocused, setIsInputFocused] = useState(false);
+
     // Синхронизируем при изменении пропсов: если родительский компонент обновит product.quantity, это значение "протечёт" в локальное состояние
     useEffect(() => {
         if (initialValue !== localValue) {
@@ -188,14 +191,16 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                         inputRef.current?.blur();
                     });
                 }
-            }, 2000)
+            }, 5000)
         );
     };
 
     const handleBlur = () => {
+        setIsInputFocused(false);
+
         if (timeoutId) {
-        clearTimeout(timeoutId); // Очищаем таймер, если он есть
-        setTimeoutId(undefined);
+            clearTimeout(timeoutId); // Очищаем таймер, если он есть
+            setTimeoutId(undefined);
         }
         // Если значение не менялось — не вызываем handleUpdate
         if (localValue !== initialValue) {
@@ -233,6 +238,10 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
         }
     };
 
+    const handleFocus = () => {
+        setIsInputFocused(true);
+    };
+
     return (
         <>
             <div className="quantity-control">
@@ -249,6 +258,7 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                     onChange={handleChange}
                     onBlur={handleBlur}
                     onKeyDown={handleKeyDown}
+                    onFocus={handleFocus}
                 />
                 
                 <button
@@ -259,9 +269,23 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                 </button>
                 {isUpdating && <span className="loading-indicator">...</span>}
 
-                {localValue > 0 && 
-                    <img className="w-6 cursor-pointer margin-left12px"  onClick={() => handleRemoveFromCartClick(prodId)} src="/storage/icons/icon-trash.png" alt="icon-trash" title="Удалить товар из корзины" />  
-                }
+                {localValue > 0 && (
+                    isInputFocused ? (
+                            <div 
+                                className="ok-button"
+                                onClick={() => inputRef.current?.blur()} // Вызовет handleBlur
+                            >
+                                OK
+                            </div>
+                    ) : (
+                        <img 
+                            className="w-6 cursor-pointer margin-left12px" 
+                            onClick={() => handleRemoveFromCartClick(prodId)} 
+                            src="/storage/icons/icon-trash.png" 
+                            alt="Удалить"
+                        />
+                    )
+                )}
             </div>
         </>
     ); 
