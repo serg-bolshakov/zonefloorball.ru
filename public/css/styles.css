@@ -193,6 +193,25 @@ strong {
         width: 100%;
     }
 
+    /* Увеличенные кнопки */
+    .quantity-control button, 
+    .quantity-control input {
+        min-width: 24px;
+        min-height: 24px;
+        font-size: 18px;
+    }
+
+    /* Кнопка "ОК" */
+    .ok-button {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 0 12px;
+        margin-left: 8px;
+        transition: opacity 0.3s;
+    }
+
 }
 
 @media (max-width: 640px) {
