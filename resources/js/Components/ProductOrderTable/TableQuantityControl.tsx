@@ -145,13 +145,13 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value) || 0;
-        setLocalValue(Math.max(1, Math.min(on_sale, value)));
+        setLocalValue(Math.max(0, Math.min(on_sale, value)));
 
         // Автосохранение через 2 секунды бездействия
         if (timeoutId) clearTimeout(timeoutId);
         setTimeoutId(
             setTimeout(() => {
-                if (value !== initialValue && value >= 1 && value <= on_sale) {
+                if (value !== initialValue && value >= 0 && value <= on_sale) {
                     handleUpdate(value);
                 }
             }, 5000)

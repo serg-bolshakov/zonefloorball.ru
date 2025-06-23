@@ -489,7 +489,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                             <tr>
                                 <th title="Изображение товара">Фото</th>  
                                 <th>
-                                    <div className="action-header td-left margin-left24px">
+                                    <div className="action-header td-left">
                                         <select 
                                             value="cart" 
                                             onChange={(e) => {}}
@@ -499,9 +499,10 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                         <option value="cart">В корзину</option>
                                         <option value="preorder">Предзаказ</option>
                                         </select>
+                                        <span className='product-qty-on-sale margin-left12px nobr'>В продаже</span>
                                     </div>
                                 </th>
-                                <th title="Доступное для покупки количество един товара">В продаже</th>
+                                {/* <th title="Доступное для покупки количество един товара">В продаже</th> */}
                                 <th title="Рекомендованная розничная цена">РРЦ</th>
                                 {/* <th>Действие</th> */}
                                 <th title="На нашем складе">Склад</th>
@@ -526,9 +527,12 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                                 </Link>
                                             </td>  
                                             <td>
-                                                <Link href={`/products/card/${product.prod_url_semantic}/`}>
-                                                    {product.title}
-                                                </Link>
+                                                <div className="margin-bottom12px">
+                                                    <Link href={`/products/card/${product.prod_url_semantic}/`}>
+                                                        {product.title}
+                                                    </Link>
+                                                </div>
+                                                
                                                 <div className="margin-top8px">
                                                     <div className="d-flex">
                                                         {(product.price_with_rank_discount !== null) ? 
@@ -577,9 +581,9 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                                 </div>
                                             </td>  
 
-                                            <td className="td-center">
-                                            <div className=" product-qty-on-sale">{product.on_sale}</div>    
-                                            </td>
+                                            {/* <td className="td-center">
+                                                <div className=" product-qty-on-sale">{product.on_sale}</div>    
+                                            </td> */}
 
                                             <td  className="td-right line-through">
                                                 <div>
