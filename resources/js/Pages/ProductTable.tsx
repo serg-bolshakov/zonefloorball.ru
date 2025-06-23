@@ -489,7 +489,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                             <tr>
                                 <th title="Изображение товара">Фото</th>  
                                 <th>
-                                    <div className="action-header td-left">
+                                    <div className="action-header td-left margin-left24px">
                                         <select 
                                             value="cart" 
                                             onChange={(e) => {}}
