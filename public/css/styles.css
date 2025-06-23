@@ -5235,7 +5235,10 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #faf4f2;
+  /* background: #3a5bef;
+  color: white; */
+  /* background: #faf4f2; */
+  background: white;
   border: 1px solid #e2e8f0;
   border-radius: 4px;
   cursor: pointer;
