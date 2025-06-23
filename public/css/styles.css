@@ -86,9 +86,8 @@ i { font-style: italic; }
 
 .object-contain {object-fit: contain;}
 
-.b-r-8 {
-    border-radius: 8px;
-}
+.b-r-8 { border-radius: 8px; }
+.b-r-24 { border-radius: 24px; }
 
 .bg-test {
     background-color: yellow;
@@ -3526,7 +3525,7 @@ a.registration-form__submit-btn, .order-btn {
 
 .table-img img {
     width: 80px;
-    border-radius: 4px;  
+    border-radius: 8px;  
     border: 1px solid rgba(0, 0, 0, 0.2);
     overflow: hidden;
     object-fit: contain;
