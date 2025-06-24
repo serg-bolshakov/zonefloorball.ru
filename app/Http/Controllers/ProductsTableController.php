@@ -76,15 +76,30 @@ class ProductsTableController extends Controller
         $page       = (int)$request->input('page', 1);
         $sortBy     = $request->input('sortBy', 'actual_price');
         $sortOrder  = $request->input('sortOrder', 'asc');
+        
+        $searchTerm = $request->input('search');
+        $searchType = $request->input('searchType', 'article'); // По умолчанию поиск по артикулу
 
+        $actionType = $request->input('actionType', 'cart');    // По умолчанию: пользователь наполняет корзину (альтернатива: создаёт предзаказ (preorder))
+        
         // Создаём базовый запрос
         $query = Product::query()
-            ->with(['category', 'brand', 'properties', 'productShowCaseImage',])            
+            ->with(['category', 'brand', 'properties', 'productShowCaseImage', 'productReport'])            
             ->orderBy($sortBy, $sortOrder)
         ;
 
-        $searchTerm = $request->input('search');
-        $searchType = $request->input('searchType', 'article'); // По умолчанию поиск по артикулу
+        if ($actionType === 'cart') {
+            // Только товары в наличии (on_sale > 0)
+            $query->whereHas('productReport', function($q) {
+                $q->where('on_sale', '>', 0);
+            });
+        } elseif ($actionType === 'preorder') {
+            // Только товары для предзаказа (on_order > 0)
+            $query->whereHas('productReport', function($q) {
+                $q->where('on_order', '>', 0);
+            });
+        }
+    
 
         if ($searchTerm) {
             $query->where(function($q) use ($searchTerm, $searchType) {

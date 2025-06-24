@@ -34,6 +34,7 @@ interface ProductTableProps {
     sortOrder?: string;
     search: string;
     searchType: 'article' | 'title';
+    actionType: 'cart' | 'preorder';
     categoryId?: number | null;
     categoryInfo?: ICategoryItemFromDB;
 }
@@ -77,6 +78,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
     sortOrder = 'asc',
     search: initialSearch = '',
     searchType: initialSearchType = 'article',
+    actionType: initialActionType = 'cart',
     categoryId,
     categoryInfo,
 }) => {
@@ -84,12 +86,16 @@ const ProductTable: React.FC<ProductTableProps> = ({
     // Инициализируем состояние из пропсов (которые приходят из URL через Inertia)
     const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [searchType, setSearchType] = useState<'article' | 'title'>(initialSearchType);
+    
+    // Какое действие выполняет пользователь (создаёт предварительный заказ или "накладывает" в корзину для покупки в настоящий момент)
+    const [actionType, setActionType] = useState<'cart' | 'preorder'>(initialActionType);
 
     // Синхронизация при изменении URL (если пользователь нажимает "Назад")
     useEffect(() => {
         setSearchTerm(initialSearch);
         setSearchType(initialSearchType);
-    }, [initialSearch, initialSearchType]);
+        setActionType(initialActionType);
+    }, [initialSearch, initialSearchType, initialActionType]);
 
     const { user, categoriesMenuArr } = useAppContext();
     const { cart, addToCart, updateCart, addToFavorites, removeFromCart, clearCart } = useUserDataContext();
