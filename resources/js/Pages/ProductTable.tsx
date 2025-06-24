@@ -502,7 +502,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                             className="action-select"
                                             // disabled // Пока не реализовано
                                         >
-                                        <option value="cart">В корзину</option>
+                                        <option value="cart">В корзин(е/у)</option>
                                         <option value="preorder">Предзаказ</option>
                                         </select>
                                         <span className='product-qty-on-sale margin-left12px nobr'>В продаже</span>

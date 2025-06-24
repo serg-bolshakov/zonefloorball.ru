@@ -88,18 +88,17 @@ class ProductsTableController extends Controller
             ->orderBy($sortBy, $sortOrder)
         ;
 
-        if ($actionType === 'cart') {
-            // Только товары в наличии (on_sale > 0)
-            $query->whereHas('productReport', function($q) {
-                $q->where('on_sale', '>', 0);
-            });
-        } elseif ($actionType === 'preorder') {
+        if ($actionType === 'preorder') {
             // Только товары для предзаказа (on_order > 0)
             $query->whereHas('productReport', function($q) {
                 $q->where('on_order', '>', 0);
             });
+        } else {
+            // Только товары в наличии (on_sale > 0)
+            $query->whereHas('productReport', function($q) {
+                $q->where('on_sale', '>', 0);
+            });
         }
-    
 
         if ($searchTerm) {
             $query->where(function($q) use ($searchTerm, $searchType) {
