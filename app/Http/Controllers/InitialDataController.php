@@ -20,18 +20,19 @@
     class InitialDataController extends Controller {
         public function index(Request $request) {
 
-            /*\Log::debug('InitialDataController Session Check', [
-                'request' => $request->all(),
-                'user' => Auth::user(),
-            ]);*/
+            /* \Log::debug('URL Check', [
+                'current_path' => $request->path(),                                     // api/initial-data
+                'referer' => $request->header('referer'),                               // http://127.0.0.1:8000/profile
+                'is_profile' => $request->is('profile') ||                              // true
+                            str_contains($request->header('referer'), '/profile')
+            ]);*/ 
             
             try {
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();
                 # Метод url вернет URL без строки запроса, а метод fullUrl, включая строку запроса:
-                $userData = $this->getUserAuthData($user, $request->url());
+                $userData = $this->getUserAuthData($user, $request);
                 
-                // dd($this->getUserOrdersIdsArr($user));
-
+                
                 return response()->json([
                     'user' => $user ? [
                         'id' => $user->id,
@@ -66,7 +67,7 @@
         }
 
         // Выносим работу с пользователем в отдельный метод
-        private function getUserAuthData(?User $user, string $currentUrl): array {
+        private function getUserAuthData(?User $user, Request $request): array {
             if (!$user) {
                 return [
                     'auth_content' => 'Дорогой гость, вы можете: <br><span>'
@@ -78,40 +79,17 @@
                 ];
             }
 
-            $isProfilePage = preg_match('#/profile[/]?$#', $currentUrl);
             
+            $isProfile = $request->is('profile') || ($request->header('referer') && str_contains($request->header('referer'), '/profile'));
+           
             return [
                 'auth_content' => $user->name . ',<br>мы рады общению. Вы можете: '
-                    . '<br><a href="' . ($isProfilePage ? '/' : '/profile') . '">'
-                    . ($isProfilePage ? 'выйти из профиля' : 'войти в профиль') 
+                    . '<br><a href="' . ($isProfile ? '/' : '/profile') . '">'
+                    . ($isProfile ? 'выйти из профиля' : 'войти в профиль') 
                     . '</a> или <a href="/logout">выйти из системы</a>',
                 // 'cart' => Cart::where('user_id', $user->id)->pluck('content'),
             ];
         }
-
-        // эта функция выбирает товары, а нужно передать на фронт сторку id-шников
-        /*private function getFavoritesProducts(Request $request) {
-            \Log::debug('InitialDataController getFavoritesProducts', [
-                'session_id' => session()->getId(),
-                'cookies_received' => $request->cookies->all(),
-                'user_id' => auth()->id()
-            ]);
-            $favoritesIds = json_decode(Auth::user()?->favorites->product_ids) ?? [];
-            
-            \Log::debug('InitialDataController $favoritesIds', [
-                '$favoritesIds' => $favoritesIds,
-            ]);
-
-            if (empty($favoritesIds)) {
-                return [];
-            } 
-
-            $products = Product::with(['actualPrice', 'regularPrice', 'productReport', 'productShowCaseImage'])
-            ->where('product_status_id', '=', 1)
-            ->whereIn('id', $favoritesIds)
-            ->get();   
-            return new ProductCollection($products);
-        }*/
        
         // метод получения данных корзины пользователя для записи в локальное хранилище при авторизации
         private function getUserCart(User $user): array {

@@ -97,17 +97,14 @@ class FavoritesController extends Controller {
                         : []
                 );
 
-            /*\Log::debug('User in FavoritesController getProducts', [
+            \Log::debug('User in FavoritesController getProducts', [
                 'favoritesIds' => $favoritesIds,
                 'type' => gettype($favoritesIds)
-            ]);*/
+            ]);
 
             $products = Product::with(['actualPrice', 'regularPrice', 'productReport', 'productShowCaseImage'])
                 ->where('product_status_id', '=', 1)
-                // ->whereIn('id', $favoritesIds)
-                ->when(!empty($favoritesIds), function($query) use ($favoritesIds) {
-                    $query->whereIn('id', $favoritesIds);
-                })
+                ->whereIn('id', $favoritesIds)
                 ->get();   
         
             return  new ProductCollection($products);
