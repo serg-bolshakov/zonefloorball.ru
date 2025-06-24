@@ -18,7 +18,7 @@ type SyncData = {
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
     
-    const { user, cart, favorites, orders, ordersTotal } = useAppContext();
+    const { user, cart, favorites, orders } = useAppContext();
     
     const [state, setState] = useState<UserDataState>({
         cart                    : {},  // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
@@ -386,7 +386,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
             // Очистка на сервере (если пользователь авторизован)
             if(user) {
-                await axios.delete('api/cart/clear');
+                await axios.delete('/api/cart/clear');
             }
 
             // Очистка localStorage
@@ -465,6 +465,19 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             localStorage.setItem('recently_viewed', JSON.stringify(sorted));
             return sorted;
     };
+
+    const addOrder = useCallback(async (orderId: number): Promise<void>  => {
+        
+        // 1. текущее состояние
+        const currentOrdersIds = state.orders;
+
+        // 2. Создаём новый массив
+        const newOrders = [...currentOrdersIds, orderId];                 // добавляет новый заказ в массив существующих заказов 
+
+        // 3. Оптимистичное обновление UI
+        updateState({ orders: newOrders });
+       
+    }, [user, state.orders, updateState]);
   
     // синхронизация данных локального хранилища и БД при авторизации пользователя (когда логинится, например)
     const syncData = useCallback(async (manualData?: SyncData) => {
@@ -614,6 +627,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         removeFromCart,
         addRecentlyViewedProd,
         clearCart,
+        addOrder
         // Будущие методы добавятся здесь
     }), [
         state.cart,
@@ -628,7 +642,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         updateCart,
         removeFromCart,
         addRecentlyViewedProd,
-        clearCart
+        clearCart,
+        addOrder
     ]);
 
     return (

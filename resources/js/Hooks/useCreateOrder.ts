@@ -27,9 +27,8 @@ interface ValidationErrors {
 // Типы для ответа сервера
 interface OrderResponse {
     status: 'success' | 'error';
-    orderId: string;
+    orderId: number;
     clearCart?: boolean;
-    pdfUrl?: string;
     redirect?: string;
     message?: string;
 }

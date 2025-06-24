@@ -10,6 +10,7 @@ class UserOrdersCountController extends Controller
 {
     public function index()
     {
+        /*
         // если пользователь авторизован:
         if(Auth::check()) {
             // Получаем пользователя с загруженным отношением rank: $user = Auth::user()->load('rank'); // $user = $request->user()->with('rank')->first();
@@ -25,6 +26,6 @@ class UserOrdersCountController extends Controller
         }
 
         // Если пользователь не авторизован, возвращаем 0
-        return response()->json(['ordersCount' => 0], 200);
+        return response()->json(['ordersCount' => 0], 200);*/
     }
 }

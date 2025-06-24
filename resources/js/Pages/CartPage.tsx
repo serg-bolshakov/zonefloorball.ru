@@ -49,7 +49,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const { openModal, closeModal } = useModal();
     
     const { user } = useAppContext();
-    const { cart, cartTotal, updateCart, addToFavorites, removeFromCart, clearCart } = useUserDataContext();
+    const { cart, cartTotal, updateCart, addToFavorites, removeFromCart, clearCart, addOrder } = useUserDataContext();
     const [cartProducts, setCartProducts] = useState<IProduct[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
@@ -466,9 +466,15 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     toast.success(`Заказ успешно ${actionType === 'pay' ? 'оплачен' : 'оформлен'}`);
                         // Не сбрасываем isSubmitting тут - форма уже закрыта
 
-                    // 2. Редирект через 1.5 || 2 секунды + Очистка корзины...
+                    // 2. Выбираем данные нового заказа для обновления состояния:
+                    const newOrder = {
+
+                    };    
+
+                    // 3. Редирект через 1.5 || 2 секунды + Очистка корзины...
                     setTimeout(() => {
                         router.visit(res?.redirect || '/'); // Редирект через Inertia
+                        addOrder(res.orderId);
                         clearCart();                        // Обновляем стейт. Очищаем корзину
                     }, 2000);
                 }

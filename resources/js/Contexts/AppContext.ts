@@ -5,6 +5,7 @@ import { createContext } from "react";
 import { TUser } from "../Types/types";
 import { ICategoriesMenuArr, ICategoryItemFromDB } from "../Types/types";
 import { TCart } from "./UserData/UserDataContext";
+import { IOrder } from "@/Pages/Orders";
 
 // Экспортируем тип, чтобы его можно было использовать в других файлах
 export interface IAppContextType {
@@ -22,14 +23,14 @@ export interface IAppContextType {
     favorites      : number[] | [];
     cartTotal      : number | 0; 
     favoritesTotal : number | 0; 
-    orders         : string[] | [];
+    orders         : IOrder[] | [];
     ordersTotal    : number | 0; 
 
     setCart: (cart: TCart | {}) => void;
     setFavorites: (favorites: number[] | []) => void;
     setCartTotal: (cartTotal: number | 0) => void;
     setFavoritesTotal: (favoritesTotal: number | 0) => void;
-    setOrders: (orders: string[] | []) => void;
+    setOrders: (orders: IOrder[] | []) => void;
     setOrdersTotal: (ordersTotal: number | 0) => void;
 }
 

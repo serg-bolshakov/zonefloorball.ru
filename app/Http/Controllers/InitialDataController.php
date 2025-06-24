@@ -30,6 +30,8 @@
                 # Метод url вернет URL без строки запроса, а метод fullUrl, включая строку запроса:
                 $userData = $this->getUserAuthData($user, $request->url());
                 
+                // dd($this->getUserOrdersIdsArr($user));
+
                 return response()->json([
                     'user' => $user ? [
                         'id' => $user->id,
@@ -52,8 +54,7 @@
                     'favorites' => $user?->favorites?->product_ids 
                         ? $user->favorites->product_ids // json_decode($user->favorites->product_ids, true) - "декодирование" осуществили в модели Favorite через cast...
                         : [],
-                    'orders' => $user ? $user->orders : [], 
-                    'orders_qty' => $user ? $user->orders()->count() : '0'
+                    'orders' => $user ? $this->getUserOrdersIdsArr($user) : [], 
                 ]);
                     
             } catch (\Exception $e) {
@@ -355,4 +356,14 @@
             return $categoriesMenuArr;
         }
         
+        // метод получения данных корзины пользователя для записи в локальное хранилище при авторизации
+        private function getUserOrdersIdsArr(User $user): array {
+
+            // Загрузка данных: получаем все необходимые данные
+            $existingItems = Order::where('order_client_id', $user->id)->pluck('id');
+             
+            $ordersIds = $existingItems->toArray();
+
+            return $ordersIds;
+        }
     }

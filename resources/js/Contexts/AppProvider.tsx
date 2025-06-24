@@ -22,7 +22,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
     const [favorites, setFavorites] = useState<number[]>([]);
     const [cartTotal, setCartTotal] = useState<number>(0);
     const [favoritesTotal, setFavoritesTotal] = useState<number>(0);
-    const [orders, setOrders] = useState<string[]>([]);
+    const [orders, setOrders] = useState<number[]>([]);
     const [ordersTotal, setOrdersTotal] = useState<number>(0);
 
     // Загрузка данных при монтировании компонента

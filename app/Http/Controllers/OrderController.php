@@ -260,16 +260,13 @@ class OrderController extends Controller {
             \Log::debug('order for return:', [ 'order for return' => $order['order']]);
 
             return response()->json([
-            'status' => 'success',
-            'order' => $order['order'],
-            // 'pdf_url' => $order['pdfLink'],
-            'clearCart' => true, // Флаг для фронта
-            'orderNumber' => $order['order']->order_number,
-            // 'pdfUrl' => $invoiceUrl,
-            // 'redirect' => route('order.show', $order->id),
-            'redirect' => null, // Фронт сам решит куда редиректить
-            'message' => 'Заказ успешно создан'
-        ]);
+                'status' => 'success',
+                'orderId' => $order['order']->id,
+                // 'order' => $order['order'],
+                'clearCart' => true, // Флаг для фронта
+                'redirect' => null,  // Фронт сам решит куда редиректить
+                'message' => 'Заказ успешно создан'
+            ]);
         
         } catch (\Throwable $e) {     // \Throwable — это базовый интерфейс в PHP, который реализуют: Все исключения (\Exception) и Ошибки (\Error, например TypeError)
             Log::error('Order failed: '.$e->getMessage());

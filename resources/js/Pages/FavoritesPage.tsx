@@ -240,8 +240,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
 
             <div className="basket-wrapper">
                 <h1 className="basketTitle padding-top24px">Избранное ({favorites.length}) .</h1>
-                <p>Всё самое лучшее здесь...</p>
-                
+                                
                 {error && (
                     <div className="error-message">
                         Ошибка: {error}. Попробуйте обновить страницу.
@@ -251,7 +250,9 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                 {isLoading ? (
                     <div></div>
                 ) : favoriteProducts?.length > 0 ? (
+                    
                     <div id="favoritesproductsblock">
+                        <p>Всё самое лучшее здесь...</p>
                         {memoizedProducts.map(product => (
                             <div key={product.id} className="basket-row__product">
                                 <div className="basket-row__block">
@@ -284,18 +285,20 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                                                     }
                                                 }}
                                             >
-                                            <img className="favorites-img__addtobasket cursor-pointer" data-addtobasketfromfavoritesid={ product.id } 
-                                                data-addtobasketfromfavoritesarticle={ product.article }
-                                                data-addtobasketfromfavoritesname={ product.title }
-                                                data-addtobasketfromfavoritesprice={ product.price_regular }
-                                                data-addtobasketfromfavoritesurl={ product.prod_url_semantic }
-                                                data-addtobasketfromfavoritesimglink={ product.img_link }
-                                                data-addtobasketfromfavoritesallowed={ product.on_sale }
-                                                src="/storage/icons/icon-shoppingcart.png" 
-                                                onClick={() => handleAddToCartClick(product.id, 1, product.on_sale)}
-                                                alt="icon-shoppingcart" 
-                                                title="Добавить выбранный товар в Корзину для покупок"
-                                            />
+                                            {(product.on_sale ?? 0) > 0 && (
+                                                <img className="favorites-img__addtobasket cursor-pointer" data-addtobasketfromfavoritesid={ product.id } 
+                                                    data-addtobasketfromfavoritesarticle={ product.article }
+                                                    data-addtobasketfromfavoritesname={ product.title }
+                                                    data-addtobasketfromfavoritesprice={ product.price_regular }
+                                                    data-addtobasketfromfavoritesurl={ product.prod_url_semantic }
+                                                    data-addtobasketfromfavoritesimglink={ product.img_link }
+                                                    data-addtobasketfromfavoritesallowed={ product.on_sale }
+                                                    src="/storage/icons/icon-shoppingcart.png" 
+                                                    onClick={() => handleAddToCartClick(product.id, 1, product.on_sale)}
+                                                    alt="icon-shoppingcart" 
+                                                    title="Добавить выбранный товар в Корзину для покупок"
+                                                />
+                                            )}
                                             </motion.div>
                                         </div> 
 

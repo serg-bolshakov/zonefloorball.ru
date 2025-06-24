@@ -42,23 +42,38 @@ class FavoritesController extends Controller {
     }
 
     public function update(Request $request) {
-        \Log::debug('FavoritesController:', [
+        /* \Log::debug('FavoritesController:', [
             'data' => $request->all(),
-        ]);
+        ]); */
         
         $validated = $request->validate([
-            'favorites' => 'required|array',
+            // 'favorites' => 'required|array',
+            'favorites' => 'present|array', // Принимает и [], и [1,2,3]
         ]);
+        
+        /*  present — проверяет, что поле есть в запросе (даже если оно пустое).
+            array — гарантирует, что значение будет массивом. */
+        
+
+        /* \Log::debug('FavoritesController:', [
+            'validated' => $validated,
+        ]); */
         
         $user = Auth::user();
 
-
         if ($user) {
             // Сохраняем в БД для авторизованных
-            $user->favorites()->updateOrCreate(
-                ['user_id' => $user->id],
-                ['product_ids' => json_encode($validated['favorites'])]
-            );
+
+            if (!empty($validated['favorites'])) {
+                // обновляем/создаём
+                $user->favorites()->updateOrCreate(
+                    ['user_id' => $user->id],
+                    ['product_ids' => json_encode($validated['favorites'])]
+                );
+            } else {
+                // Если массив пуст — удаляем запись из БД
+                $user->favorites()->delete();
+            } 
         }
         
         // Возвращаем обновлённый список + куку для неавторизованных
@@ -71,15 +86,29 @@ class FavoritesController extends Controller {
     public function getProducts (Request $request) {
                 
         try {
-            $favoritesIds = $request->ids ?? json_decode(Auth::user()?->favorites->product_ids | []);
-            $user = Auth::user();
+            // $favoritesIds = $request->ids ?? json_decode(Auth::user()?->favorites->product_ids | []);
+            // $user = Auth::user();
 
-            // \Log::debug('User in FavoritesController getProducts', ['passed_user' => $user,]);
+            $favoritesIds = $request->ids 
+                ? (array)$request->ids  // Если пришло из запроса
+                : (
+                    Auth::user()?->favorites 
+                        ? json_decode(Auth::user()->favorites->product_ids, true) ?? [] // json_decode() без второго параметра true возвращает объект, а не массив.
+                        : []
+                );
+
+            /*\Log::debug('User in FavoritesController getProducts', [
+                'favoritesIds' => $favoritesIds,
+                'type' => gettype($favoritesIds)
+            ]);*/
 
             $products = Product::with(['actualPrice', 'regularPrice', 'productReport', 'productShowCaseImage'])
-            ->where('product_status_id', '=', 1)
-            ->whereIn('id', $favoritesIds)
-            ->get();   
+                ->where('product_status_id', '=', 1)
+                // ->whereIn('id', $favoritesIds)
+                ->when(!empty($favoritesIds), function($query) use ($favoritesIds) {
+                    $query->whereIn('id', $favoritesIds);
+                })
+                ->get();   
         
             return  new ProductCollection($products);
 
