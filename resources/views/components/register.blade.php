@@ -1,5 +1,6 @@
 <div>
     <!-- Very little is needed to make a happy life. - Marcus Aurelius -->
+     Файл нужно удалить! Он не используется
 </div>
 
 <div class="registration registration-addition">
