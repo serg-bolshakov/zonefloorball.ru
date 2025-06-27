@@ -10,15 +10,23 @@ import useModal from "@/Hooks/useModal";
 // import axios from 'axios';
 import UserProfile from '@/Components/Profile/UserProfile';
 
+interface IRepresentPerson {
+    org_rep_name?: string;
+    org_rep_surname?: string;
+    org_rep_email?: string;
+    org_rep_phone?: string;
+}
+
 interface IProfileProps {
     title: string;
     robots: string;
     description: string;
     keywords: string;
     priceDiscountAccordingToTheRank: number;
+    representPerson?: IRepresentPerson | null; // Опционально, может быть null
 }
 
-const ProfileIndex: React.FC<IProfileProps> = ({title, robots, description, keywords, priceDiscountAccordingToTheRank}) => {
+const ProfileIndex: React.FC<IProfileProps> = ({title, robots, description, keywords, priceDiscountAccordingToTheRank, representPerson}) => {
     const { openModal, closeModal } = useModal();
     const { user } = useAppContext();
 return (
@@ -32,7 +40,7 @@ return (
                 </Helmet>
 
                 <main>
-                    <UserProfile user={user} priceDiscountAccordingToTheRank={priceDiscountAccordingToTheRank} />
+                    <UserProfile user={user} priceDiscountAccordingToTheRank={priceDiscountAccordingToTheRank} representPerson={representPerson} />
                 </main>
 
             </MainLayout>    

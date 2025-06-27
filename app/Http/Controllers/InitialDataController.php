@@ -29,10 +29,8 @@
             
             try {
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();
-                # Метод url вернет URL без строки запроса, а метод fullUrl, включая строку запроса:
                 $userData = $this->getUserAuthData($user, $request);
-                
-                
+
                 return response()->json([
                     'user' => $user ? [
                         'id' => $user->id,
@@ -44,6 +42,10 @@
                         'email' => $user->email,
                         'client_type_id' => $user->client_type_id,
                         'client_rank_id' => $user->client_rank_id,
+                        'org_inn' => $user->org_inn,
+                        'org_kpp' => $user->org_kpp,
+                        'org_addr' => $user->org_addr,
+                        'org_tel' => $user->org_tel,
                     ] : null,
                     
                     'categoriesMenuArr' => $this->getCategoriesMenu(),

@@ -170,6 +170,21 @@ class ProfileController extends Controller
                 if(isset($request->orderactionselected) && !empty($request->orderactionselected)) { $getRequest = 'orderactionselected'  ; $getRequestValue = $request->orderactionselected  ; }
             
             $representPerson = null;*/
+
+            // если авторизованный пользователь - организация (ИП), нам нужно получить представителя, если такой есть
+            $representPerson = $user->this_id 
+                ? User::find($user->this_id)?->only(['name', 'pers_surname', 'pers_email', 'pers_tel'])
+                : null;
+
+            if ($representPerson) {
+                $representPerson = [
+                    'org_rep_name' => $representPerson['name'],
+                    'org_rep_surname' => $representPerson['pers_surname'],
+                    'org_rep_email' => $representPerson['pers_email'],
+                    'org_rep_phone' => $representPerson['pers_tel']
+                ];
+            }
+
             $title = 'Профиль';
             
             /* // если авторизовано физическое лицо:
@@ -197,7 +212,7 @@ class ProfileController extends Controller
                     // 'user' => $user,
                     // 'getRequest' => $getRequest,
                     // 'getRequestValue' => $getRequestValue,
-                    // 'representPerson' => $representPerson,
+                    'representPerson' => $representPerson,
                     'priceDiscountAccordingToTheRank' => $priceDiscountAccordingToTheRank,
                 ]);
         } else {
@@ -213,44 +228,154 @@ class ProfileController extends Controller
 
     public function update(Request $request) {
         
-        \Log::debug('ProfileController $request:', [
-            'data' => $request->all(),
-        ]);
-        
-        $validator = Validator::make($request->all(), [
-            'name' => ['nullable', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
-            'pers_surname' => ['nullable', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
-            'pers_tel' => ['nullable', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
-            'date_of_birth' => ['nullable', "regex:#^((19[5-9][0-9])|(20[0-1][0-9]))-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])$#"],
-        ]);
-
-        if ($validator->fails()) {
-            \Log::debug('Validation errors:', $validator->errors()->toArray());
-            return response()->json(['errors' => $validator->errors()], 422);
-        } 
-
         $user = $request->user();
 
-        $validated = $request->validate([
-            'name'          => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],        
-            'pers_surname'  => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
-            'pers_tel'      => ['sometimes', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
-            'date_of_birth' => ['nullable', "regex:#^((19[5-9][0-9])|(20[0-1][0-9]))-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])$#"],
-            'delivery_addr_on_default' => ['nullable', "regex:~^[а-яА-ЯёЁ\d\s.,\"!:\-()/№]+$~u"], 
-            // ... другие правила
-        ]);
+        // Кастомные сообщения
+        $messages = [
+            'required' => 'Поле обязательно для заполнения.',
+            'name.max' => 'Название не может превышать :max символов.',
+            'name.regex' => 'Допустимы только буквы, цифры и стандартные символы пунктуации.',
+            'inn' => 'ИНН содержит ошибку. Проверьте правильность ввода.',
+            'org_inn.digits_between' => 'ИНН должен содержать от 10 или 12 цифр.',
+            'org_inn.unique'    => 'Пользователь с данным ИНН уже зарегистрирован в системе.',
+            'pers_surname.max' => 'Фамилия не может превышать :max символов.',
+            'pers_surname.regex' => 'Фамилия должна содержать только русские буквы и дефисы.',
+            'pers_tel.regex' => 'Телефон должен быть в формате: +7 (XXX) XXX-XX-XX',
+            'org_tel.regex' => 'Телефон должен быть в формате: +7 (XXX) XXX-XX-XX',
+            'date_of_birth.regex' => 'Неверный формат даты рождения (ГГГГ-ММ-ДД).',
+            'delivery_addr_on_default.regex' => 'Адрес содержит недопустимые символы.',
+            'delivery_addr_on_default.max'   => 'Длина адреса по нашему мнению не может превышать :max символов! Если мы ошибаемся, - пожалуйста, напишите нам сообщение и отправьте его по электронной почте.',
+            'org_addr.regex' => 'Адрес содержит недопустимые символы.',
+            'org_addr.max'   => 'Длина адреса по нашему мнению не может превышать :max символов! Если мы ошибаемся, - пожалуйста, напишите нам сообщение и отправьте его по электронной почте.',
+        ];
+        
+        // Правила валидации
+        $rules = [
+            'name' => [
+                'sometimes', 
+                'string', 
+                'max:255', 
+                'regex:~^[a-zA-Zа-яА-ЯёЁ\d\s\',."!:)(№/-]+$~u'
+            ],
+            'org_inn' => [
+                'nullable',
+                'digits_between:10,12', // Для ИНН (10 или 12 цифр)
+                'inn',
+                Rule::unique('users', 'org_inn')->ignore($user->id)->whereNull('deleted_at')
+            ],
+            'pers_surname' => [
+                'sometimes',
+                'string',
+                'max:30',
+                'regex:~^[а-яА-ЯёЁ\s\'-]+$~u'
+            ],
+            'pers_tel' => [
+                'sometimes',
+                'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'
+            ],
+            'date_of_birth' => [
+                'nullable',
+                'regex:~^((19[5-9][0-9])|(20[0-1][0-9]))-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])$~'
+            ],
+            'delivery_addr_on_default' => [
+                'nullable',
+                'max:255',
+                'regex:~^[а-яА-ЯёЁ\d\s.,"!:\-()/№]+$~u'
+            ],
+            'org_addr' => [
+                'nullable',
+                'max:255', 
+                'regex:~^[а-яА-ЯёЁ\d\s.,"!:\-()/№]+$~u'
+            ],
+            'org_tel' => [
+                'sometimes',
+                'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'
+            ],
+        ];
 
-        // Явная обработка null
+        // Валидация
+        $validator = Validator::make($request->all(), $rules, $messages);
+
+        if ($validator->fails()) {
+            \Log::debug('Validation failed', [
+                'errors' => $validator->errors()->toArray(),
+                'input' => $request->all()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка валидации',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Обработка null-значений
+        $validated = $validator->validated();
         if ($request->has('date_of_birth') && $request->input('date_of_birth') === null) {
             $validated['date_of_birth'] = null;
         }
 
-        \Log::debug('ProfileController $validated:', [
-            'validated' => $validated,
-        ]);
+        try {
+            $user->update($validated);
+            
+            return response()->json([
+                'success' => true,
+                'user' => $user->fresh(),
+                'message' => 'Данные успешно обновлены'
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Update failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'validated' => $validated
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Ошибка сервера при обновлении',
+                'error' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
 
-        $user->update($validated);
+        /*
+            $validated = $request->validate([
+                // 'name'          => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],        
+                // так как поле name одно и для физ, и для юр лиц меняем регурярку на расширенный вариант:
+                'name'                      => ['sometimes', 'string', 'max:255', 'regex:~^[a-zA-Zа-яА-ЯёЁ\d\s\',."!:)(№/-]+$~u'],
+                'pers_surname'              => ['sometimes', 'string', 'max:30', 'regex:/^[а-яА-ЯёЁ\s\'-]+$/u'],
+                'pers_tel'                  => ['sometimes', 'regex:/^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/'],
+                'date_of_birth'             => ['nullable', "regex:#^((19[5-9][0-9])|(20[0-1][0-9]))-(0[1-9]|1[012])-(0[1-9]|1[0-9]|2[0-9]|3[01])$#"],
+                'delivery_addr_on_default'  => ['nullable', "regex:~^[а-яА-ЯёЁ\d\s.,\"!:\-()/№]+$~u"], 
+                // ... другие правила
+            ]);
 
-        return response()->json(['user' => $user->fresh()]); // Отправляем обновленного пользователя
+            // Явная обработка null
+            if ($request->has('date_of_birth') && $request->input('date_of_birth') === null) {
+                $validated['date_of_birth'] = null;
+            }
+
+            \Log::debug('ProfileController $validated:', [
+                'validated' => $validated,
+            ]);
+
+            try {
+                $user->update($validated);
+            } catch (\Exception $e) {
+                \Log::error('Update failed', [
+                    'error' => $e->getMessage(),
+                    'validated' => $validated
+                ]);
+                return response()->json(['error' => 'Update failed'], 500);
+            }
+
+            return response()->json(['user' => $user->fresh()]); // Отправляем обновленного пользователя
+        */
+    }
+
+    public function destroy(Request $request) {
+        $request->user()->delete(); // Мягкое удаление // Помечает как удалённого
+        auth()->logout();
+        return redirect('/')->with('message', 'Профиль удалён');
     }
 }

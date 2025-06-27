@@ -17,13 +17,17 @@ export type TCartIndividualCustomer = Omit<TCartGuestCustomer, 'type'> & {
 
 export type TCartLegalCustomer = {
     type: 'legal';
-    orgName: string;
-    inn?: string;
-    kpp?: string;
+    orgname: string;
+    phone: string;
+    inn: string;
+    kpp: string;
+    deliveryAddress: string;
+    legalAddress: string;
+    email: string;
 };
 
 // Объединённый тип
 export type TCartCustomer = 
   | TCartGuestCustomer
-  | TCartIndividualCustomer;
-//  | TCartLegalCustomer;
+  | TCartIndividualCustomer
+  | TCartLegalCustomer;

@@ -4,6 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 
+use Illuminate\Support\Facades\Validator;
+use App\Services\InnValidator;
+
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -19,6 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Validator::extend('inn', function ($attribute, $value, $parameters) {
+            return InnValidator::validate($value);
+        });
     }
 }

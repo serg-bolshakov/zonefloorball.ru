@@ -166,19 +166,12 @@ export type TSecondLevel = Record<number,  Record<number, ICategoryMenuItem>>;
 // Record — это встроенный тип TypeScript, который позволяет описать объект с динамическими ключами. Синтаксис: Record<KeyType, ValueType>
 
 // Интерфейс для первого уровня: объект с ключами "NoName", "unihoc", "zone", "UnihocZoneRussia". Каждое значение — это объект с числовыми ключами (второй уровень).
-
 export interface ICategoriesMenuArr {
     NoName: TSecondLevel;
     unihoc: TSecondLevel;
     zone: TSecondLevel;
     UnihocZoneRussia: TSecondLevel;
 }
-
-// Интерфейс для состояния модального окна
-// export interface IModalState {
-//     isOpen: boolean;
-//     content: ReactNode | null; // ReactNode — это тип для любого React-элемента (компонент, строка, число и т.д.)
-// }
 
 export interface IProduct extends IProductReportFromDB {
     id: number;                                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
@@ -200,9 +193,9 @@ export interface IProduct extends IProductReportFromDB {
     iff_id?: number | null;
     product_ean?: number | null;
     actual_price?: number;
-    price_actual?: number;                    // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    price_actual?: number;                          // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     regular_price?: number;
-    price_regular?: number;                   // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    price_regular?: number;                         // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     product_status_id?: number | null;
     prod_status?: number | null;                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     img_link?: string | null;                        // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards

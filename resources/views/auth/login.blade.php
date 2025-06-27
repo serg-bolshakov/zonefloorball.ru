@@ -51,8 +51,8 @@
         </div>
 
         <div class="d-flex flex-sa">
-            <button type="submit" class="registration-form__submit-btn" name="regsubbtn" value="regsubmit">Вперёд!</button>
-            <a href="/" class="registration-form__submit-btn" >Отменить</a>
+            <a href="/" class="registration-form__submit-btn" >Отмена</a>
+            <button type="submit" class="registration-form__submit-btn" name="regsubbtn" value="regsubmit">Вперёд</button>
         </div>
         
     </form>

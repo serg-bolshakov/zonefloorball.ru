@@ -4,13 +4,27 @@ import React, { useState } from 'react';
 import { TUser } from '@/Types/types';
 import { isIndividualUser, isLegalUser } from '@/Types/types';
 import IndividualUserFields from './IndividualUserFields';
+import LegalUserFields from './LegalUserFields';
 import { Link } from '@inertiajs/react';
 
-interface UserProfileProps { user: TUser; priceDiscountAccordingToTheRank: number; }
+interface IRepresentPerson {
+    org_rep_name?: string;
+    org_rep_surname?: string;
+    org_rep_email?: string;
+    org_rep_phone?: string;
+}
 
-const UserProfile: React.FC<UserProfileProps> = ({ user, priceDiscountAccordingToTheRank }) => {
+interface UserProfileProps {
+    user: TUser;
+    priceDiscountAccordingToTheRank: number;
+    representPerson?: IRepresentPerson | null; // Опционально, может быть null
+  } 
+
+const UserProfile: React.FC<UserProfileProps> = ({ user, priceDiscountAccordingToTheRank, representPerson }) => {
     
     if (!user) return <div>Пользователь не загружен</div>;
+    console.log(isLegalUser(user));
+    console.log('representPerson', representPerson);
 
         return (
             <>
@@ -34,12 +48,18 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, priceDiscountAccordingT
                   <div className="cardProduct-block__title"> 
                       {/* Общие блоки для всех пользователей */}
                       <div className="cardProduct-block__title margin-bottom24px">
-                          <h1 className="fs11 margin-bottom8px">Личный кабинет</h1>
-                          <h4 className="fs12">Моя партнёрская скидка в ZoneFloorball.RU: <span className='color-red'><strong>{priceDiscountAccordingToTheRank}</strong></span> %</h4>
+                          <h1 className="fs11 margin-bottom8px">
+                            {isIndividualUser(user) ? 'Личный кабинет' : 'Бизнес пространство'}
+                          </h1>
+                          <h4 className="fs12">
+                            {isIndividualUser(user) ? 'Моя' : 'Наша'} партнёрская скидка в ZoneFloorball.RU: 
+                            &nbsp;<span className='color-red'><strong>{priceDiscountAccordingToTheRank}</strong></span> %
+                          </h4>
                       </div>
 
                       {/* Условный рендеринг специфичных полей */}
                       {isIndividualUser(user) && <IndividualUserFields user={user} />}
+                      {isLegalUser(user) && <LegalUserFields user={user} representPerson={representPerson} />}
 
                       <div className="profile-info__line">
                           <a href="/update-password">

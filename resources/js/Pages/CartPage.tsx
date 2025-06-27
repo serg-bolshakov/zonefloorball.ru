@@ -36,6 +36,7 @@ import useAppContext from "@/Hooks/useAppContext";
     import IndividualCustomerDataModalForm from "@/Components/OrderCheckoutModals/IndividualCustomerDataModalForm";
     import { isIndividualUser } from "@/Types/types";
     import { IGuestCustomer } from "@/Types/types";
+    import { isLegalUser } from "@/Types/types";
 
 interface IHomeProps {  
     title: string;
@@ -69,26 +70,9 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const [deliveryData, setDeliveryData] = useState<IDeliverySelectionData>(initialDeliveryData);
     const [selectedTransportId, setSelectedTransportId] = useState(0);
 
-    // Данные о покупателе:
-    // console.log(user);
-
     // Проверка типа покупателя
     const getInitialCustomerData = (user: TUser | null): TCartCustomer => {
       
-        // Простая проверка по client_type_id   
-        /* if (user.client_type_id === 1) {
-            const individualUser = user as IIndividualUser; // Явное приведение
-            return {
-                type: 'individual',
-                firstName: individualUser.name,
-                lastName: individualUser.pers_surname || '',
-                phone: individualUser.pers_tel || '',
-                email: individualUser.pers_email || user.email || '',
-                deliveryAddress: individualUser.delivery_addr_on_default || '',
-                bonuses: (user as IIndividualUser).bonuses || undefined
-            };
-        }*/
-
         if (isIndividualUser(user)) {       // Теперь TS знает, что user - IIndividualUser
             return {
                 type: 'individual',
@@ -101,13 +85,18 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             };
         }
        
-        // Для юрлиц
-        /*if (user.client_type_id === 2) {
+        if(isLegalUser(user)) {
             return {
-                ...user,
-                type: 'legal'
-            } as IOrgUser;
-        }*/
+                type: 'legal',
+                orgname: user.name,
+                phone: user.org_tel || '',
+                inn: user.org_inn || '',
+                kpp: user.org_kpp || '',
+                deliveryAddress: user.delivery_addr_on_default || '',
+                legalAddress: user.org_addr || '',
+                email: user.org_email || '',
+            }
+        }
 
         return {                            // if(!user)...
             type: 'guest',
