@@ -34,7 +34,6 @@ hr    { height: 1px; border: none; color: #dddddd; background: #dddddd; margin: 
 <img src="{{ $pathToImage }}" alt="Логотип компании" style="max-width: 56px; float: right;">
 @endif
 <p>Счёт действителен для оплаты в течение 3-х банковских дней.</p>
-<p>Товары, указанные в счёте, зарезервированы для вас на складе по указанным в счёте ценам. Благодарим за обращение в нашу компанию. Надеемся на взаимовыгодное сотрудничество.</p>
 <p><strong>Образец заполнения платежного поручения</strong></p>
 <ul>
 <li><strong>Банк получателя: </strong>{{ $recepientBankName }}</li>
@@ -69,9 +68,16 @@ hr    { height: 1px; border: none; color: #dddddd; background: #dddddd; margin: 
 </thead>
 <tbody>{!! $dataAboutGoodsForMailBody !!}
 <tr><td colspan="5" style="text-align: right; border: none !important;"><strong>Стоимость доставки/получения заказа:</strong></td><td style="text-align: right;">{!! $deliveryCost !!}</td><td></td></tr> 
-<tr><td colspan="5" style="text-align: right; border: none !important;"><strong>Итого:</strong></td><td style="text-align: right;">{!! $totalOrderAmount !!}</td><td style="text-align: right;"><font color="red">{!! $totalDiscount !!}&nbsp;<sup>&#8381;</sup></font></td></tr>
-<tr><td colspan="5" style="text-align: right; border: none !important;"><strong>Без налога (НДС)</strong></td><td></td><td></td></tr>
-<tr><td colspan="5" style="text-align: right; border: none !important;"><strong>Всего к оплате</strong></td><td style="text-align: right;">{!! $totalOrderAmount !!}</td><td></td></tr>
+<tr><td colspan="5" style="text-align: right; border: none !important;"><strong>Итого:</strong></td><td style="text-align: right;">{!! $totalOrderAmount !!}</td>
+<td style="text-align: right;">
+    @if($totalDiscount != 0)
+        <font color="red">{!! $totalDiscount !!}&nbsp;<sup>&#8381;</sup></font>
+    @else
+        &nbsp;<!-- Неразрывный пробел, если нужно сохранить ячейку непустой -->
+    @endif
+</td></tr>
+<tr><td colspan="5" style="text-align: right; border: none !important;"><strong>{!! $isSellerPayVATNote !!}</strong></td><td style="text-align: right; border: none !important;"></td><td style="text-align: right; border: none !important;"></td></tr>
+{{-- <tr><td colspan="5" style="text-align: right; border: none !important;"><strong>Всего к оплате</strong></td><td style="text-align: right;">{!! $totalOrderAmount !!}</td><td></td></tr> --}}
 </tbody>
 </table>
 {!! $orderAmountinRussian !!}
@@ -84,15 +90,15 @@ hr    { height: 1px; border: none; color: #dddddd; background: #dddddd; margin: 
 <li><strong>Адрес доставки/получения заказа</strong>:&nbsp;{{ $deliveryAddress }}</li>
 </ul>
 <hr>
-<div>
-<a href="{{ $pdfUrl }}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; width: 120px; font-size: 16px; margin: 10px 0; cursor: pointer; border-radius: 8px;">Поделиться</a>
-<a href="{{ $pdfUrl }}" style="background-color: blue; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; width: 120px; font-size: 16px; margin: 10px 0 10px 20px; cursor: pointer; border-radius: 8px;"> Оплатить </a>
-</div>
 {{-- закомментировал пока <h3>ИТОГО стоимость заказа: {{ $totalOrderAmount }}&nbsp;<sup>&#8381;</sup></h3>
-{!! $isBuyerPayVATNote !!}
+{!! $isSellerPayVATNote !!}
 {!! $orderAmountinRussian !!}
 <hr> --}}
+@if($trackUrl)
+<p>Товары, указанные в счёте, зарезервированы для вас на складе по указанным в счёте ценам. Благодарим за обращение в нашу компанию. Надеемся на взаимовыгодное сотрудничество.</p>
+<p>Отслеживание заказа: <a href="{{ $trackUrl }}">Статус заказа</a></p>
 <hr>
-<p>С уважением, интернет-магазин флорбольной экипировки<br><a href="https://unihoczone.ru">UnihocZoneRussia</a></p>
+@endif
+<p>С уважением, интернет-магазин флорбольной экипировки<br><a href="https://zonefloorball.ru">ZoneFloorball.RU</a></p>
 </body>
 </html>

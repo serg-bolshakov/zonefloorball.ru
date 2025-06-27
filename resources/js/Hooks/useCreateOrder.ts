@@ -2,13 +2,14 @@
 import { useCallback, useState } from 'react';
 import axios from 'axios';
 import { IDeliverySelectionData } from '@/Types/delivery';
-import { TCustomer } from '@/Types/types';
+// import { TCustomer } from '@/Types/types';
 import { getCookie } from '@/Utils/cookies';
 import { API_ENDPOINTS } from '@/Constants/api';
 import { toast } from 'react-toastify';
 import { useRef } from 'react';
+import { TCartCustomer } from '@/Types/cart';
 
-interface OrderData<T extends TCustomer> {
+interface OrderData<T extends TCartCustomer> {
     products: Array<{
       id: number;
       quantity: number;
@@ -38,7 +39,15 @@ const useCreateOrder = () => {
     //const [error, setError] = useState<string | null>(null);
     const controllerRef = useRef<AbortController | null>(null);
 
-    const createOrder = useCallback(async <T extends TCustomer>(
+
+    /**
+     * Создаёт заказ с данными корзины.
+     * @template T - Конкретный тип покупателя (гость/физлицо/юрлицо)
+     * @param orderData - Данные заказа, соответствующие TCartCustomer
+     * @param options - Дополнительные параметры оформления
+     */
+
+    const createOrder = useCallback(async <T extends TCartCustomer>(
         orderData: OrderData<T>,
         options: {
             isReserve?: boolean;
@@ -56,6 +65,7 @@ const useCreateOrder = () => {
         controllerRef.current = controller;
 
         console.log(orderData);
+        console.log('options.paymentMethod', options.paymentMethod);
 
         try {
           setIsLoading(true);

@@ -19,14 +19,7 @@ interface DeliverySelectorProps {
 }
 
 const DeliverySelector = ({ transports, selectedTransportId, onTransportChange, onSelect }: DeliverySelectorProps) => {
-  
-  
-  console.log('Received props:', {
-    selectedTransportId,
-    onTransportChange,
-    onSelect
-  });
-  
+    
   // const [selectedTransportId, setSelectedTransportId] = useState(initialTransportId);    // Убираем внутренний useState для selectedTransportId
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [postDeliveryPrice, setPostDeliveryPrice] = useState<number>(0);

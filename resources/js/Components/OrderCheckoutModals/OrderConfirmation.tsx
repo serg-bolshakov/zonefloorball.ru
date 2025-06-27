@@ -1,7 +1,7 @@
 // resources/js/Components/OrderCheckoutModals/OrderConfirmation.tsx
 import { IProduct } from "@/Types/types";
 import { IDeliverySelectionData } from "@/Types/delivery";
-import { TCartCustomer } from "@/Types/cart";
+import { TCartCustomer, TCartGuestCustomer, TCartIndividualCustomer, TCartLegalCustomer } from "@/Types/cart";
 import useAppContext from "@/Hooks/useAppContext";
 import { formatPrice } from '@/Utils/priceFormatter';
 import ProductItem from "@/Components/Cart/ProductItem";
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { isIndividualUser, isLegalUser } from "@/Types/types";
 import { GuestCustomerInfo } from "../Cart/OrderConfirmation/GuestCustomerInfo";
 import { IndividualCustomerInfo } from "../Cart/OrderConfirmation/IndividualCustomerInfo";
+import { LegalCustomerInfo } from "../Cart/OrderConfirmation/LegalCustomerInfo";
 import { useState } from "react";
 
 interface IOrderConfirmationProps {
@@ -20,7 +21,7 @@ interface IOrderConfirmationProps {
     cartTotal: number;
     cartAmount: number;
     regularTotal: number;
-    onReserve: () => void;
+    onReserve: () => Promise<void>;
     onPay: () => Promise<void>;
     onBack: () => void;
     onCancel: () => void;
@@ -60,10 +61,10 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     const { user } = useAppContext();
     
     const deliveryText = deliveryData.transportId === 1 
-    ? `${currentDeliveryAddress}` 
-    : deliveryData.transportId === 2 
-        ? `Доставка средствами продавца по городу Нижнему Новгороду по адресу: ${currentDeliveryAddress}`
-        : `Доставка: ${currentDeliveryAddress}`
+        ? `${currentDeliveryAddress}` 
+        : deliveryData.transportId === 2 
+            ? `Доставка средствами продавца по городу Нижнему Новгороду по адресу: ${currentDeliveryAddress}`
+            : `Доставка: ${currentDeliveryAddress}`
     ;
 
     const discountAmount = regularTotal - cartAmount;
@@ -74,13 +75,13 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
 
     // Анимации кнопок (вынесем в константы):
     const buttonAnimation = {
-        hover: { scale: 1.1 },
+        hover: { scale: 0.9 },
         tap: { scale: 0.9 }
     };
       
     const pulseAnimation = {
         animate: {
-            scale: [1, 1.03, 1],
+            scale: [1, 0.95, 1],
             transition: { 
                 repeat: Infinity, 
                 repeatDelay: 2,
@@ -89,7 +90,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
         }
     };
 
-    console.log('products', products);
+    // console.log('products', products);
 
     return (
         <>
@@ -128,12 +129,12 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                 {/* Данные получателя */}
                 
                 {isIndividualUser(user) ? (
-                    <IndividualCustomerInfo customer={customerData} />
+                    <IndividualCustomerInfo customer={customerData  as TCartIndividualCustomer} />
                 ) : isLegalUser(user) ? (
-                    <IndividualCustomerInfo customer={customerData} />
+                    <LegalCustomerInfo customer={customerData as TCartLegalCustomer} />
                 ) : (
                     <GuestCustomerInfo 
-                        customer={customerData} 
+                        customer={customerData as TCartGuestCustomer} 
                         deliveryData={deliveryData}
                     />
                 )}
@@ -168,66 +169,33 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                         </motion.button>
                     )}
                     
-                    { user && (
+                    { (isIndividualUser(user) || isLegalUser(user)) && (
                         <motion.button 
                             disabled={isProcessing}
                             whileHover={isProcessing ? {} : buttonAnimation.hover}  
                             whileTap={isProcessing ? {} : buttonAnimation.tap}
-                            onClick={onReserve}
+                            onClick={() => handleAction('reserve')}
                             className="order-confirmation__submit-btn"
                         >
-                            Отложить{/* Заказать / Зарезервировать */}
+                            { isIndividualUser(user) && ( isReserving ? 'Создаём резерв' : 'Отложить' )}
+                            { isLegalUser(user) && ( isReserving ? 'Готовим счёт' : 'Получить счёт' )}
                         </motion.button>
                     )}
-                    
-                    <motion.button 
-                        disabled={isProcessing}     // хотя... Framer Motion автоматически игнорирует анимации при disabled
-                        {...(!isProcessing && {
-                            ...pulseAnimation,
-                            whileHover: buttonAnimation.hover,
-                            whileTap: buttonAnimation.tap
-                        })}
-                        onClick={() => handleAction('pay')}
-                        className="order-confirmation__submit-btn primary"
-                    >
-                        {isPaying ? 'Оплачиваем...' : 'Оплатить'}
-                    </motion.button>
-                </div>
-                
-
-                {/* 
-                <div className="order-form__total-price-p d-flex flex-sb margin-tb12px">
-                    <span className="basket-order__product-clearance-span">Получатель: </span>
-                    <span id="orderBuyerNames" className="basket-order__product-clearance-span">{user.pers_surname ?? ''}&nbsp;{user.name ?? ''}</span>
-                </div>     
-                
-                <div className="order-form__total-price-p d-flex flex-sb margin-tb12px">
-                    <span className="basket-order__product-clearance-span">Телефон получателя: </span>
-                    <span id="orderBuyerTelNum" className="basket-order__product-clearance-span">{user.pers_tel ?? ''}}</span>
-                </div>           
-            
-                <p className="order-form__delivery-cost-p">Адрес доставки/получения заказа:</p>
-                <div id="basketCheckRecipientInfoAddr" className ="basket-order__product-item" name="address"></div>
-            
-                <div className="d-flex flex-sb margin-tb12px">
-                    <span className="basket-order__product-clearance-span">Итоговая стоимость заказа:</span>
-                    <span id="orderTotalAmount" className="basket-order__product-clearance-span"></span>
-                </div> 
-
-                <div id='basketdivforhiddeninputsmakingneworder' className="d-none"></div> */}
-
-                {/* Этот инпут будет хранить значение нажатой кнопки. */}
-                {/* <input type="hidden" id="actionButton" name="actionButton" value="" />
-
-                <div className="d-flex flex-sa">
-                    { !user ? ( 
-                        <button id="idmakereserveinbasket" type="" class="registration-form__submit-btn" name="namemakereserveinbasket" value="1">Зарезервировать</button>
-                    ) : ( 
-                        <button id="idmakereserveinbasket" type="submit" className="registration-form__submit-btn" name="namemakereserveinbasket" value="1">Зарезервировать</button>
+                    { !isLegalUser(user) && (
+                        <motion.button 
+                            disabled={isProcessing}     // хотя... Framer Motion должен автоматически игнорировать анимации при disabled
+                            {...(!isProcessing && {
+                                ...pulseAnimation,
+                                whileHover: buttonAnimation.hover,
+                                whileTap: buttonAnimation.tap
+                            })}
+                            onClick={() => handleAction('pay')}
+                            className="order-confirmation__submit-btn primary"
+                        >
+                            {isPaying ? 'Оплачиваем...' : 'Оплатить'}
+                        </motion.button>
                     )}
-                    <button id="idpayfororderinbasket" type="submit" className="registration-form__submit-btn" name="idpayfororderinbasket" value="1">Оплатить</button>
-                </div> */}
-                
+                </div>
             </div>
         </>
     );

@@ -37,8 +37,8 @@ use App\Enums\OrderStatus;                  // создали класс-пер�
 use App\Enums\PaymentMethod;
 
 /* Если вы не хотите использовать метод validate запроса, то вы можете создать экземпляр валидатора вручную, 
-   используя фасад Validator. Метод make фасада генерирует новый экземпляр валидатора: */
-use Illuminate\Support\Facades\Validator;
+   используя фасад Validator. Метод make фасада генерирует новый экземпляр валидатора: 
+use Illuminate\Support\Facades\Validator;*/
 
 use App\Services\WorkingDaysService;        // Сервис для расчёта рабочих дней
 use Illuminate\Support\Str;                 // класс генерирует криптографически безопасную строку
@@ -80,7 +80,7 @@ class OrderController extends Controller {
             $order = DB::transaction(function () use ($request) {
                 // 1. Создаём/получаем пользователя
                     $user = $this->resolveUser($request);
-                    // \Log::debug('OrderController user:', [ 'user_id' => $user->id,  ]);
+                    \Log::debug('OrderController user:', [ 'user_id' => $user->id,  ]);
                 
                 // 2. Генерируем номер заказа
                     $clientType = $user->client_type_id ?? 1; // По умолчанию физлицо
@@ -95,30 +95,27 @@ class OrderController extends Controller {
                     };
                     \Log::debug('OrderController orderRecipientNames:', [ 'orderRecipientNames' => $orderRecipientNames]);
 
+                    // если авторизованный пользователь - организация (ИП), нам нужно получить представителя, если такой есть
+                    $representPerson = $user->this_id 
+                        ? User::find($user->this_id)?->only(['name', 'pers_surname', 'pers_email', 'pers_tel'])
+                        : null;
+
+                    \Log::debug('OrderController representPerson:', [ 'representPerson' => $representPerson]);
+
                     $orderRecipientTel = match ($user->client_type_id) {
                         1 => $user->pers_tel,
                         2 => $user->representPerson->pers_tel ?? $user->org_tel,
                         default => $request->input('customer.phone')
                     };
                     \Log::debug('OrderController orderRecipientTel:', [ 'orderRecipientTel' => $orderRecipientTel]);
-                    
-                    /* $orderRecipientTel = '';
-                    if    (isset($user->client_type_id) && ($user->client_type_id == '1')) {$orderRecipientTel = $user->pers_tel; }
-                    elseif(isset($user->client_type_id) && ($user->client_type_id == '2')) {
-                        if(isset($representPerson) && !empty($representPerson)) {
-                            $orderRecipientTel = $representPerson->pers_tel; 
-                        } else {
-                            $orderRecipientTel = $representPerson->org_tel; 
-                        }  // надо будет подумать какой телефон здесь указывать
-                    } */
 
                     $orderRecipientEmail = null;
                     if    (isset($user->client_rank_id) && ($user->client_rank_id == '8')) {$orderRecipientEmail = $user->pers_email; }
                     elseif(isset($user->client_type_id) && ($user->client_type_id == '2')) {
-                        if(isset($representPerson) && !empty($representPerson)) {
-                            $orderRecipientEmail = $representPerson->pers_email; 
+                        if(isset($representPerson) && !empty($representPerson['pers_email'])) {
+                            $orderRecipientEmail = $representPerson['pers_email']; 
                         } else {
-                            $orderRecipientEmail = $representPerson->org_email; 
+                            $orderRecipientEmail = $user->org_email; 
                         }  
                     } else {
                         $orderRecipientEmail = $user->pers_email;
@@ -126,7 +123,7 @@ class OrderController extends Controller {
                     \Log::debug('orderRecipientEmailrderRecipientTel:', [ 'orderRecipientEmail' => $orderRecipientEmail]);
 
                 // 3. Создаём заказ
-                    // \Log::debug('OrderStatus::PENDING', [ 'OrderStatus::PENDING' => OrderStatus::PENDING]);
+                    \Log::debug('OrderStatus::PENDING', [ 'OrderStatus::PENDING' => OrderStatus::PENDING]);
                     $orderData = [
                         'order_number'              => $orderNumber,
                         'order_client_type_id'      => $user->client_type_id ?? 1,
@@ -220,7 +217,12 @@ class OrderController extends Controller {
                 // 8. Генерируем PDF и отправляем письма
 
                     // 8.1 Создаём экземпляр Mailable
-                    $orderMail = new OrderReserve($order, $user);
+                    // $orderMail = new OrderReserve($order, $user);
+                    $orderMail = match ($user->client_type_id) {
+                        1 => new OrderReserve($order, $user),
+                        2 => new OrderInvoice($order, $user),
+                        default => new OrderReserve($order, $user)
+                    };
                     
                     // 8.2 Генерируем уникальное имя для PDF
                     $sanitizedOrderNumber = $orderMail->sanitizeOrderNumber($orderNumber);
@@ -238,7 +240,12 @@ class OrderController extends Controller {
                     }
 
                     // 8.4 Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
-                    $orderMail = new OrderReserve($order, $user);
+                    // $orderMail = new OrderReserve($order, $user);
+                    $orderMail = match ($user->client_type_id) {
+                        1 => new OrderReserve($order, $user),
+                        2 => new OrderInvoice($order, $user),
+                        default => new OrderReserve($order, $user)
+                    };
 
                     // 8.5 Генерируем и сохраняем PDF
                     $orderMail->buildPdfAndSave($relativePath);
@@ -253,8 +260,6 @@ class OrderController extends Controller {
                     }
                 
                 return compact('order');
-
-                // return compact('order', 'pdfLink');
             });
 
             \Log::debug('order for return:', [ 'order for return' => $order['order']]);

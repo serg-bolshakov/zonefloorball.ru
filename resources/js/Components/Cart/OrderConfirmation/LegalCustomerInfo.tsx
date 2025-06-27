@@ -1,16 +1,16 @@
-//resources/js/Components/Cart/OrderConfirmation/IndividualCustomerInfo.tsx
-import { TCartIndividualCustomer } from "@/Types/cart";
+//resources/js/Components/Cart/OrderConfirmation/LegalCustomerInfo.tsx
+import { TCartLegalCustomer } from "@/Types/cart";
 
-interface IndividualCustomerInfoProps {
-    customer: TCartIndividualCustomer;
+interface LegalCustomerInfoProps {
+    customer: TCartLegalCustomer;
 }
 
-export const IndividualCustomerInfo = ({ customer }: IndividualCustomerInfoProps) => (
+export const LegalCustomerInfo = ({ customer }: LegalCustomerInfoProps) => (
     <>
         {/* Данные получателя */}
         <div className="d-flex flex-sb margin-tb12px">
             <span>Получатель:</span>
-            <span>{customer.lastName} {customer.firstName}</span>
+            <span>{customer.orgname}</span>
         </div>
 
         <div className="d-flex flex-sb margin-tb12px">

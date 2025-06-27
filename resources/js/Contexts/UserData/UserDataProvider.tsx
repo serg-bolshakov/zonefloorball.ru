@@ -481,7 +481,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
   
     // синхронизация данных локального хранилища и БД при авторизации пользователя (когда логинится, например)
     const syncData = useCallback(async (manualData?: SyncData) => {
-        console.log('newFavorites SyncData manualData', manualData);
+        // console.log('newFavorites SyncData manualData', manualData);
         if (user) {
             // console.log('Syncing data for user:', user.id);
 
@@ -503,7 +503,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     }
                 });
 
-                console.log('Syncing data responce:', response);
+                // console.log('Syncing data responce:', response);
 
                 // Сохраняем БД-версию в контекст
                 setState(prev => ({

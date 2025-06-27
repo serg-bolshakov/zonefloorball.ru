@@ -34,8 +34,6 @@ const Header: React.FC = () => {
         return <div>Данные zone не загружены или имеют неверный формат.</div>;
     }
 
-    console.log(ordersCount);
-
     return (
         <>
             <header>

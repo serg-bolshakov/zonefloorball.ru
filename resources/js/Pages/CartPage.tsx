@@ -25,6 +25,8 @@ import useAppContext from "@/Hooks/useAppContext";
     import useModal from "@/Hooks/useModal";
     import AuthWarningModal from '../Components/OrderCheckoutModals/AuthWarningModal'; 
     import { TCartCustomer } from "@/Types/cart";
+    import { TCartLegalCustomer } from "@/Types/cart";
+    import { TCartIndividualCustomer } from "@/Types/cart";
     import { TUser } from "@/Types/types";
     import GuestCustomerDataModalForm from "@/Components/OrderCheckoutModals/GuestCustomerDataModalForm";
     import { ITransport, IDeliverySelectionData } from "@/Types/delivery";
@@ -37,6 +39,7 @@ import useAppContext from "@/Hooks/useAppContext";
     import { isIndividualUser } from "@/Types/types";
     import { IGuestCustomer } from "@/Types/types";
     import { isLegalUser } from "@/Types/types";
+    import LegalCustomerDataModalForm from "@/Components/OrderCheckoutModals/LegalCustomerDataModalForm";
 
 interface IHomeProps {  
     title: string;
@@ -71,7 +74,10 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const [selectedTransportId, setSelectedTransportId] = useState(0);
 
     // Проверка типа покупателя
-    const getInitialCustomerData = (user: TUser | null): TCartCustomer => {
+    const getInitialCustomerData = (
+        user: TUser | null,
+        deliveryData: { address?: string } = {}
+    ): TCartCustomer => {
       
         if (isIndividualUser(user)) {       // Теперь TS знает, что user - IIndividualUser
             return {
@@ -81,7 +87,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 phone: user.pers_tel || '',
                 email: user.pers_email || user.email || '',
                 deliveryAddress: user.delivery_addr_on_default || '',
-                bonuses: (user as IIndividualUser).bonuses || undefined
+                // bonuses: (user as IIndividualUser).bonuses || undefined
+                bonuses: user.bonuses                       // isIndividualUser уже гарантирует тип
             };
         }
        
@@ -94,7 +101,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 kpp: user.org_kpp || '',
                 deliveryAddress: user.delivery_addr_on_default || '',
                 legalAddress: user.org_addr || '',
-                email: user.org_email || '',
+                email: user.email || ''
             }
         }
 
@@ -196,17 +203,6 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     useEffect(() => {
         const newCustomerData = getInitialCustomerData(user);
         setCustomerData(newCustomerData);
-        
-        // Проверки при использовании
-        if ('client_type_id' in newCustomerData) {
-            if (newCustomerData.client_type_id === 1) {
-                console.log('Физлицо:', newCustomerData);
-            } else if (newCustomerData.client_type_id === 2) {
-                console.log('Юрлицо:', newCustomerData);
-            }
-        } else {
-            console.log('Гость');
-        }
     }, [user]);
 
     const handleFavoriteClick = useCallback(async (productId: number) => {
@@ -328,8 +324,49 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         openModal(
             <IndividualCustomerDataModalForm 
                 initialDeliveryAddress={deliveryData.address}
-                initialCustomerData={customerData}
+                initialCustomerData={customerData as TCartIndividualCustomer}
                 onSubmit={(data) => {       //  при сабмите формы физлица обновляем:
+                    
+                    // 3. Обновляем ref-ы (чтобы модалка получила актуальные данные)
+                    customerDataRef.current = data;
+                    deliveryAddressRef.current = data.deliveryAddress;
+                    
+                    // Обновляем стейты (асинхронно)
+                    // 1. стейт данных пользователя:
+                    setCustomerData(data);
+
+                    // 2. Обновляем стейт доставки (если изменился адрес)
+                    if (deliveryData.address !== data.deliveryAddress) {
+                        setDeliveryData(prev => ({
+                        ...prev,
+                        address: data.deliveryAddress, // только адрес
+                        }));
+                    }
+
+                    // 3. Теперь deliveryDataRef.current тоже актуален
+                    deliveryDataRef.current = {
+                        ...deliveryDataRef.current,
+                        address: data.deliveryAddress,
+                    };
+                    
+                    // 4. Открываем модалку подтверждения
+                    openOrderConfirmationModal();   // Вызываем без параметров
+                }}
+                onCancel={() => handleCancelClick()}
+            />
+        )
+    };
+
+    // При оформлении заказа авторизованным юридическим лицом: Модалка с формой данных авторизованного юридического лица
+    const handleContinueAsLegal = () => {
+        closeModal();
+        // console.log('Customer Data', customerData);
+        // console.log('deliveryData.address', deliveryData.address);
+        openModal(
+            <LegalCustomerDataModalForm 
+                initialDeliveryAddress={deliveryData.address}
+                initialCustomerData={customerData as TCartLegalCustomer}
+                onSubmit={(data) => {       //  при сабмите формы юрлица обновляем:
                     
                     // 3. Обновляем ref-ы (чтобы модалка получила актуальные данные)
                     customerDataRef.current = data;
@@ -383,20 +420,16 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     // Обработчик кнопки "Оформить заказ"
     const handleCheckoutClick = () => {
         if (user) {                         // Авторизованный пользователь
-          if (user.client_type_id === 1) { 
-            console.log('Customer Data', customerData);
-            handleContinueAsIndividual(); 
-        }
+            if (isIndividualUser(user)) { 
+                handleContinueAsIndividual(); 
+            } else if (isLegalUser(user)) {
+                handleContinueAsLegal();
+            }
         } else {
           // Гость
           openModal(
             <AuthWarningModal 
               onContinueAsGuest={handleContinueAsGuest}
-              /*onAuthRedirect={() => {
-                closeModal();
-                // После авторизации данные возьмутся из user
-                openOrderConfirmationModal();
-              }}*/
             />
           );
         }
@@ -475,7 +508,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         }
     };
 
-    console.log('cartAmount', cartAmount);
+    // console.log('cartAmount', cartAmount);
 
     return (    
         <MainLayout>
@@ -649,7 +682,10 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                         <section> {/* заводим блок кнопок для оплаты заказа или получения счёта: */}
                             <div className='basket-res__total'>
                                 <motion.button onClick={returnBack} className="basket-button" whileHover={{ scale: 1.1 }}  
-                                    whileTap={{ scale: 0.9 }}>Ещё подумаю</motion.button>
+                                    whileTap={{ scale: 0.9 }}
+                                >
+                                    {isLegalUser(user) ? 'Назад' : 'Ещё подумаю'} 
+                                </motion.button>
                                 <motion.button 
                                     className="basket-button" 
                                     whileHover={{ scale: 1.1 }}  

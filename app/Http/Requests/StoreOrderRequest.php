@@ -1,5 +1,5 @@
 <?php
-
+// app/Http/Requests/StoreOrderRequest.php
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
@@ -30,14 +30,14 @@ class StoreOrderRequest extends FormRequest
             'products.*.id'             => 'required|integer',
             'products.*.quantity'       => 'required|integer|min:1',
             'products.*.price'          => 'required|numeric|min:1',
-            'paymentMethod'             => 'required|string|in:online,invoice,card,cash',
+            'paymentMethod'             => 'required|string|in:online,bank_transfer,cash',
             'products_amount'           => 'required|numeric',
             'total'                     => 'required|numeric|min:1',
         ];
 
         if ($this->input('customer.type') === 'legal') {
             // ... правила для юрлиц
-            $rules['customer.companyName'] = 'required|string|max:100';
+            $rules['customer.orgname']          = 'required|string|max:100';
         } else if ($this->input('customer.type') === 'individual') {
             // ... правила для зарегистрированных и авторизованных физлиц
         } else {
@@ -76,8 +76,8 @@ class StoreOrderRequest extends FormRequest
             // 'customer.passportNumber' => '...',
             
             // Для юрлиц (legal)
-            'customer.companyName.required' => 'Название компании обязательно для юрлиц.',
-            'customer.companyName.max' => 'Название компании не должно превышать :max символов.',
+            'customer.orgname.required'     => 'Название компании обязательно для юрлиц.',
+            'customer.orgname.max'          => 'Название компании не должно превышать :max символов.',
             
             // Доставка и продукты
             'delivery.address.max'          => 'Поле address слишком длинное.',

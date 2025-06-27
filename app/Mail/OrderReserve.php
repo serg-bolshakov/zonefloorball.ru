@@ -20,8 +20,6 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Address;          // 28.12.2024 https://github.com/russsiq/laravel-docs-ru/blob/9.x/docs/mail.md#configuring-the-sender
 use Barryvdh\DomPDF\Facade\Pdf;   
 
-// use Illuminate\Support\Facades\Crypt;           // Используем для шифрования номера счёта и использования зашифрованной строки в URL. Это сделает URL менее предсказуемым, но при этом сохранит возможность расшифровки.
-
 class OrderReserve extends Mailable
 {
     use Queueable, SerializesModels;
@@ -42,7 +40,7 @@ class OrderReserve extends Mailable
         $this->buyer = $user;
     }
 
-        /**
+    /**
      * Get the message envelope.
      */
     public function envelope(): Envelope        // параметром в new Envelope - нужно передать либо именованный параметр subject:, либо массив
@@ -120,22 +118,19 @@ class OrderReserve extends Mailable
         ];
     }
 
-    public function sanitizeOrderNumber($orderNumber)
-    {
+    public function sanitizeOrderNumber($orderNumber) {
         // Заменяем недопустимые символы на подчёркивание
         return preg_replace('/[\/\- ]/', '_', $orderNumber);
     }
 
-    public function encryptOrderNumber($orderNumber)
-    {
-        // return Crypt::encryptString($orderNumber);
+    public function encryptOrderNumber($orderNumber) {
         return substr(md5($orderNumber . uniqid()), 0, 8); // первые 8 символов хеша
     }
 
-    public function decryptOrderNumber($encryptedOrderNumber)
-    {
-        return Crypt::decryptString($encryptedOrderNumber);
-    }
+    /*public function decryptOrderNumber($encryptedOrderNumber)
+        {
+            return Crypt::decryptString($encryptedOrderNumber);
+    }*/
     
     protected function prepareData()
     {
@@ -183,7 +178,7 @@ class OrderReserve extends Mailable
                 &nbsp;шт.</td><td style="text-align: right;">' . $productPrice . '</sup></td><td style="text-align: right;">' . $productAmountFormatted . 
                 '</td><td style="text-align: right;"><font color="red">' . $productDiscountFormatted . '&nbsp;<sup>&#8381;</sup></font></td></tr>';
                 $i++;
-                $totalDiscount += +$item->applied_discount;
+                $totalDiscount += +$productDiscount;
             } else {
                 $dataAboutGoodsForMailBody .= '<tr><td style="text-align: center;">' . $i . '</td><td>' . $productArticle . '</td><td>' . $productName . '</td><td style="text-align: center;">' . $item->quantity . '
                 &nbsp;шт.</td><td style="text-align: right;">' . $productPrice . '</td><td style="text-align: center;">' . $productAmountFormatted . '</td><td>&nbsp;</td></tr>';

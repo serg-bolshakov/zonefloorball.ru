@@ -1,18 +1,17 @@
-//recources/js/Components/OrderCheckoutModals/IndividualCustomerDataModalForm.tsx
+//recources/js/Components/OrderCheckoutModals/LegalCustomerDataModalForm.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import useModal from "@/Hooks/useModal";
 
-import { TCartIndividualCustomer } from '@/Types/cart';
+import { TCartLegalCustomer } from '@/Types/cart';
 import { motion } from 'framer-motion';
 
-interface IndividualCustomerDataModalForm {
+interface LegalCustomerDataModalForm {
     initialDeliveryAddress: string;
-    initialCustomerData: TCartIndividualCustomer;
-    onSubmit: (data: TCartIndividualCustomer) => void;
+    initialCustomerData: TCartLegalCustomer;
+    onSubmit: (data: TCartLegalCustomer) => void;
     onCancel: () => void;
 }
 
-const IndividualCustomerDataModalForm: React.FC<IndividualCustomerDataModalForm> = ({
+const LegalCustomerDataModalForm: React.FC<LegalCustomerDataModalForm> = ({
     initialDeliveryAddress,
     initialCustomerData,
     onSubmit,
@@ -22,26 +21,28 @@ const IndividualCustomerDataModalForm: React.FC<IndividualCustomerDataModalForm>
     // console.log(initialDeliveryAddress);
     // console.log(initialCustomerData);
     
-    const [formData, setFormData] = useState<TCartIndividualCustomer>({
-        type: 'individual',
-        firstName: initialCustomerData.firstName,
-        lastName: initialCustomerData.lastName,
+    const [formData, setFormData] = useState<TCartLegalCustomer>({
+        type: 'legal',
+        orgname: initialCustomerData.orgname,
+        inn: initialCustomerData.inn,
+        kpp: initialCustomerData.kpp,
         phone: initialCustomerData.phone,
         email: initialCustomerData.email,
         deliveryAddress: initialDeliveryAddress && initialDeliveryAddress.trim() !== '' 
             ? initialDeliveryAddress 
             : initialCustomerData.deliveryAddress,
+        legalAddress: initialCustomerData.deliveryAddress
     });
     
     // console.log('formData', formData);
     // console.log('formData deliveryAddress', initialDeliveryAddress ?? initialCustomerData.deliveryAddress);
     // console.log('initialCustomerData.deliveryAddress', initialCustomerData.deliveryAddress);
 
-    const [errors, setErrors] = useState<Partial<TCartIndividualCustomer>>({});
+    const [errors, setErrors] = useState<Partial<TCartLegalCustomer>>({});
     const addressRef = useRef<HTMLDivElement>(null);
 
     // Валидация полей
-    const validateField = (name: keyof TCartIndividualCustomer, value: string): boolean => {
+    const validateField = (name: keyof TCartLegalCustomer, value: string): boolean => {
         let isValid = true;
         let error = '';
 
@@ -69,7 +70,7 @@ const IndividualCustomerDataModalForm: React.FC<IndividualCustomerDataModalForm>
             validateField('deliveryAddress', newAddress);
         }
     };
- 
+
     // Сабмит формы
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -84,53 +85,35 @@ const IndividualCustomerDataModalForm: React.FC<IndividualCustomerDataModalForm>
     return (
         <>
             <form onSubmit={handleSubmit}>
-                <p className="registration-form__input-item"><span className="registration-form__title">Информация о получателе заказа</span></p>
+                <p className="registration-form__input-item"><span className="registration-form__title">Проверяем данные получателя</span></p>
 
                 <p className="registration-form__input-item">
-                    <label className="label" htmlFor="firstName">Имя: <span className="registration-error">*</span></label>
+                    <label className="label">Заказчик: <span className="registration-error">*</span></label>
                     <input 
-                        id="firstName" 
-                        name="firstName" 
                         type="text" 
                         className="registration-form__input"
-                        value={formData.firstName} 
-                        readOnly disabled required 
+                        value={formData.orgname} 
+                        readOnly disabled
                     />
                 </p>
 
                 <p className="registration-form__input-item">
-                    <label className="label" htmlFor="lastName">Фамилия: <span className="registration-error">*</span></label>
+                    <label className="label">ИНН: <span className="registration-error">*</span></label>
                     <input 
-                        id="lastName" 
-                        name="lastName"
                         type="text"
                         className="registration-form__input"
-                        value={formData.lastName}
-                        readOnly disabled required 
+                        value={formData.inn}
+                        readOnly disabled
                     />
                 </p>
    
                 <p className="registration-form__input-item">
-                    <label className="label" htmlFor="phone">Телефон: <span className="registration-error">*</span></label>
-                    <input 
-                        id="phone" 
-                        name="phone"
-                        type="tel"
-                        className="registration-form__input"
-                        value={formData.phone}
-                        readOnly disabled required 
-                    />
-                </p>
-
-                <p className="registration-form__input-item">
-                    <label className="label" htmlFor="email">Email (для чека, статуса заказа): <span className="registration-error">*</span></label>
+                    <label className="label">Email (для счёта, статуса заказа): <span className="registration-error">*</span></label>
                     <input
-                        id="email"
-                        name="email"
                         type="email"
                         className="registration-form__input"
                         value={formData.email}
-                        readOnly disabled required 
+                        readOnly disabled
                     />
                 </p>
 
@@ -156,7 +139,7 @@ const IndividualCustomerDataModalForm: React.FC<IndividualCustomerDataModalForm>
                                         
                     <span className="productAddition-form__clearance">Адрес доставки/получения должен быть указана русском языке, либо он "подгружается" из данных, введённых при выборе способа доставки.</span>
                 </div>
-                
+             
                 <div className="registration-form__input-item d-flex flex-sb padding-left8px padding-right24px">
                     <motion.button 
                             whileHover={{ scale: 1.1 }}  
@@ -164,7 +147,7 @@ const IndividualCustomerDataModalForm: React.FC<IndividualCustomerDataModalForm>
                             type="button" className="order-btn"
                             onClick={onCancel}
                         >
-                        Отменить
+                        Отмена
                     </motion.button>
 
                     <motion.button 
@@ -181,14 +164,13 @@ const IndividualCustomerDataModalForm: React.FC<IndividualCustomerDataModalForm>
                         type='submit'
                         className="order-btn"
                     >
-                        Вперёд
+                        Верно
                     </motion.button>
                     
                 </div>
-            
-            </form>
+            </form> 
         </>
     );
 };
 
-export default IndividualCustomerDataModalForm;
+export default LegalCustomerDataModalForm;

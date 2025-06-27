@@ -126,7 +126,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
         const loadData = async () => {
             axios.get('/api/initial-data')
                 .then(response => {
-                    console.log(response.data.cart_changes.new_arrivals);
+                    // console.log(response.data.cart_changes.new_arrivals);
                     setUser(response.data.user);
                     setCategoriesMenuArr(response.data.categoriesMenuArr);
                     setAuthBlockContentFinal(response.data.authBlockContentFinal);
@@ -136,7 +136,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
                     setOrders(response.data.orders);
                 })
                 .catch(error => {
-                    console.error('Ошибка при загрузке данных в AppProvider.tsx: ', error);
+                    // console.error('Ошибка при загрузке данных в AppProvider.tsx: ', error);
                     // Добавляем уведомление об ошибке
                     toast.error('Произошла ошибка при загрузке данных. Пожалуйста, попробуйте позже.');
                 });
@@ -146,7 +146,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
         
     }, []);
 
-    console.log('APPProvider: user', orders);
+    // console.log('APPProvider: user', orders);
 
     const contextValue: IAppContextType = {
         user, setUser,
