@@ -31,6 +31,8 @@ export const CompactPagination: React.FC<PaginationProps> = ({ meta, getPageUrl 
             
             {/* Селект страниц */}
             <select
+                id={`page-selector-${current_page}`}
+                aria-label="Выбор страницы"
                 value={current_page}
                 onChange={(e) => {
                 const url = getPageUrl(e.target.value);
@@ -40,7 +42,7 @@ export const CompactPagination: React.FC<PaginationProps> = ({ meta, getPageUrl 
             >
                 {Array.from({ length: last_page }, (_, i) => i + 1).map(page => (
                 <option key={page} value={page}>
-                    Страница {page}
+                    Стр. {page}
                 </option>
                 ))}
             </select>

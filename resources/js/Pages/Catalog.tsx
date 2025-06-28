@@ -271,32 +271,8 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                     </div> */}
                     
                     <div className="table-controls">
-                
-                        {/* Сортировка и поиск */}
-                        <span className='pagination-info'>Товары отсортированы: </span>
-                        <select className="text-align-left"
-                            value={sortOrder}
-                            onChange={handleOrderChange}
-                        >
-                            <option value="asc"> ▲ по возрастанию цены</option> 
-                            <option value="desc"> ▼ по убыванию цены</option>
-                        </select>
-
-                        {/* Компактная пагинация */}
-                        <CompactPagination 
-                            meta={products.meta}
-                            getPageUrl={getPageUrl}
-                        />
-
-                        <Link 
-                            href="/profile/products-table" 
-                            className="new-order-button"
-                        >
-                            Создать заказ
-                        </Link>
-
                         {/* Поиск в каталоге */}
-                        <div className="d-flex flex-sb w-250px">
+                        <div className="d-flex flex-sb">
                             {/* <span className='pagination-info'>Поиск </span> */}
                             {/* <select 
                             value={searchType}
@@ -329,12 +305,12 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                             </button>
                         
                             {/* Индикация активного поиска: */}
-                            {searchTerm && (
+                            {/* {searchTerm && (
                                 <div className="active-search-info">
                                     Поиск {searchType === 'article' ? 'по артикулу' : 'по названию'}:&nbsp; 
                                     <strong>{searchTerm}</strong>
                                 </div>
-                            )}
+                            )} */}
 
                             {(searchTerm || searchType !== 'title') && (
                                 <button 
@@ -353,6 +329,35 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                                     Сбросить
                                 </button>
                             )}
+                        </div>
+                        
+                        {/* Сортировка */}
+                        <div className="d-flex">
+                            {/* Компактная пагинация */}
+                            <div className="">
+                                <CompactPagination 
+                                    meta={products.meta}
+                                    getPageUrl={getPageUrl}
+                                />
+                            </div>
+                            {/* <span className='pagination-info'>Товары отсортированы: </span> */}
+
+                            <select className="text-align-left margin-left8px"
+                                value={sortOrder}
+                                onChange={handleOrderChange}
+                            >
+                                {/* <option value="asc"> ▲ по возрастанию цены</option> 
+                                <option value="desc"> ▼ по убыванию цены</option> */}
+                                <option value="asc"> Цена ▲ </option> 
+                                <option value="desc"> Цена ▼ </option>
+                            </select>
+
+                            <Link 
+                                href="/profile/products-table" 
+                                className="new-order-button"
+                            >
+                                Создать заказ
+                            </Link>
                         </div>
                     </div>
 
