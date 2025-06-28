@@ -328,6 +328,13 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                         >
                         Найти
                         </button>
+
+                        <Link 
+                        href="/profile/products-table" 
+                        className="new-order-button"
+                        >
+                            Новый заказ
+                        </Link>
                         
                         {/* Индикация активного поиска: */}
                         {searchTerm && (
