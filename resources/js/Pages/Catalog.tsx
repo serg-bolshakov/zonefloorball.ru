@@ -289,72 +289,71 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                         />
 
                         <Link 
-                        href="/profile/products-table" 
-                        className="new-order-button"
+                            href="/profile/products-table" 
+                            className="new-order-button"
                         >
                             Создать заказ
                         </Link>
 
                         {/* Поиск в каталоге */}
-                        <div className="d-flex flex-wrap">
-                        {/* <span className='pagination-info'>Поиск </span> */}
-                        {/* <select 
-                        value={searchType}
-                        onChange={(e) => {
-                            setSearchType(e.target.value as 'article' | 'title');
-                            // Можно автоматически запускать поиск при смене типа
-                            if (searchTerm) handleSearch();
-                        }}
-                        className="search-type-select"
-                        >
-                        <option value="article">По артикулу</option>
-                        <option value="title">По названию</option>
-                        </select>
-                         */}
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            placeholder={searchType === 'article' ? 'Поиск по артикулу товара' : 'Поиск по наименованию товара'}
-                            className="search-input"
-                        />
-                        
-                        <button 
-                        onClick={handleSearch}
-                        disabled={!searchTerm.trim()}
-                        className="search-button"
-                        >
-                        Найти
-                        </button>
-                        
-                        {/* Индикация активного поиска: */}
-                        {searchTerm && (
-                            <div className="active-search-info">
-                                Поиск {searchType === 'article' ? 'по артикулу' : 'по названию'}:&nbsp; 
-                                <strong>{searchTerm}</strong>
-                            </div>
-                        )}
-
-                        {(searchTerm || searchType !== 'title') && (
-                            <button 
-                                onClick={() => {
-                                    setSearchTerm('');
-                                    setSearchType('title');
-                                    router.get('/products/catalog', {
-                                        page: 1,
-                                        perPage: products.meta.per_page,
-                                        sortBy,
-                                        sortOrder
-                                    });
-                                }}
-                                className="clear-search-button"
+                        <div className="d-flex flex-sb w-250px">
+                            {/* <span className='pagination-info'>Поиск </span> */}
+                            {/* <select 
+                            value={searchType}
+                            onChange={(e) => {
+                                setSearchType(e.target.value as 'article' | 'title');
+                                // Можно автоматически запускать поиск при смене типа
+                                if (searchTerm) handleSearch();
+                            }}
+                            className="search-type-select"
                             >
-                                Сбросить
+                            <option value="article">По артикулу</option>
+                            <option value="title">По названию</option>
+                            </select>
+                            */}
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                                placeholder={searchType === 'article' ? 'Поиск по артикулу товара' : 'Поиск по наименованию товара'}
+                                className="search-input"
+                            />
+                        
+                            <button 
+                                onClick={handleSearch}
+                                disabled={!searchTerm.trim()}
+                                className="search-button"
+                            >
+                                Найти
                             </button>
-                        )}
-                    </div>
+                        
+                            {/* Индикация активного поиска: */}
+                            {searchTerm && (
+                                <div className="active-search-info">
+                                    Поиск {searchType === 'article' ? 'по артикулу' : 'по названию'}:&nbsp; 
+                                    <strong>{searchTerm}</strong>
+                                </div>
+                            )}
 
+                            {(searchTerm || searchType !== 'title') && (
+                                <button 
+                                    onClick={() => {
+                                        setSearchTerm('');
+                                        setSearchType('title');
+                                        router.get('/products/catalog', {
+                                            page: 1,
+                                            perPage: products.meta.per_page,
+                                            sortBy,
+                                            sortOrder
+                                        });
+                                    }}
+                                    className="clear-search-button"
+                                >
+                                    Сбросить
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div className="products-content">
