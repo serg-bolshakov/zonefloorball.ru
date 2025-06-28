@@ -5364,7 +5364,8 @@ select {
 }
 
 .new-order-button {
-    display: block;
+    display: flex;
+    justify-content: center;
     margin-left: 12px;
     padding: 8px 16px;
     background: #16a74b;
