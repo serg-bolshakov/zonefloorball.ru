@@ -346,8 +346,7 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
 
                             {!user && (
                                 <>
-                                    <span className='margin-left8px fs11 margin-top8px'>Товар отсортирован </span>
-                                    <select className="text-align-left margin-left8px"
+                                    <select className="text-align-left margin-left24px"
                                         value={sortOrder}
                                         onChange={handleOrderChange}
                                     >
