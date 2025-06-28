@@ -59,6 +59,7 @@ i { font-style: italic; }
 .flex-jc-center    {justify-content: center;}
 .flex-wrap { flex-wrap: wrap; }
 .aline-items-center {align-items: center;}
+.aline-content-center {align-content: center;}
 .aline-items-flex-start {align-items: flex-start;}
 
 .fs11 { font-size: 0.6875rem; }
@@ -83,6 +84,7 @@ i { font-style: italic; }
 .max-h-80vh     {max-height: 80vh; }
 .max-h-85vh     {max-height: 85vh; }
 .max-h-90vh     {max-height: 90vh; }
+
 
 .w-auto {width: auto;}
 .w-110px { width: 110px; }
@@ -4340,6 +4342,7 @@ a.changing-form__submit-btn:hover {
 .w-4            { width: 1rem;}
 .w-6            { width: 1.5rem;}
 .h-2            { height: 0.5rem;}
+.h-28px         { height: 28px;}
 .rounded-full   { border-radius: 50%; }
 .transition-all { transition: all;}
 

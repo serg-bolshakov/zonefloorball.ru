@@ -18,6 +18,7 @@ import { CompactPagination } from '@/Components/CompactPagination';
 import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
 import { ICategoryItemFromDB } from '../Types/types';
+import useAppContext from '@/Hooks/useAppContext';
 // import axios from 'axios';
 
 interface ICatalogProps {
@@ -78,6 +79,7 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     // Инициализируем состояние из пропсов (которые приходят из URL через Inertia)
     const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [searchType, setSearchType] = useState<'article' | 'title'>(initialSearchType);
+    const { user } = useAppContext();
 
     console.log(searchTerm);
     console.log(searchType);
@@ -342,22 +344,39 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                             </div>
                             {/* <span className='pagination-info'>Товары отсортированы: </span> */}
 
-                            <select className="text-align-left margin-left8px"
-                                value={sortOrder}
-                                onChange={handleOrderChange}
-                            >
-                                {/* <option value="asc"> ▲ по возрастанию цены</option> 
-                                <option value="desc"> ▼ по убыванию цены</option> */}
-                                <option value="asc"> Цена ▲ </option> 
-                                <option value="desc"> Цена ▼ </option>
-                            </select>
+                            {!user && (
+                                <>
+                                    <span className='margin-left8px fs11 margin-top8px'>Товар отсортирован </span>
+                                    <select className="text-align-left margin-left8px"
+                                        value={sortOrder}
+                                        onChange={handleOrderChange}
+                                    >
+                                        <option value="asc"> ▲ по возрастанию цены</option> 
+                                        <option value="desc"> ▼ по убыванию цены</option>
+                                    </select>
+                                </>
+                            )}
+                            
+                            { user && (
+                                <select className="text-align-left margin-left8px"
+                                    value={sortOrder}
+                                    onChange={handleOrderChange}
+                                >
+                                    {/* <option value="asc"> ▲ по возрастанию цены</option> 
+                                    <option value="desc"> ▼ по убыванию цены</option> */}
+                                    <option value="asc"> Цена ▲ </option> 
+                                    <option value="desc"> Цена ▼ </option>
+                                </select>
+                                )}
 
-                            <Link 
-                                href="/profile/products-table" 
-                                className="new-order-button"
-                            >
-                                Создать заказ
-                            </Link>
+                            { user && (
+                                <Link 
+                                    href="/profile/products-table" 
+                                    className="new-order-button"
+                                >
+                                    Создать заказ
+                                </Link>
+                            )}
                         </div>
                     </div>
 
