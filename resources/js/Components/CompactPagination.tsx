@@ -55,9 +55,9 @@ export const CompactPagination: React.FC<PaginationProps> = ({ meta, getPageUrl 
             </Link>
             
             {/* Информация о позиции */}
-            <span className="pagination-info">
+            {/* <span className="pagination-info">
                 {meta.from}-{meta.to} из {meta.total}
-            </span>
+            </span> */}
         </div>
     );
 };

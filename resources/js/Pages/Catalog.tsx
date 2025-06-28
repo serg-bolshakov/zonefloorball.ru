@@ -288,16 +288,15 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                             getPageUrl={getPageUrl}
                         />
 
-                        {/* <input
-                            type="text"
-                            disabled
-                            placeholder="Поиск в каталоге"
-                            // onChange={(e) => setSearchQuery(e.target.value)}
-                            className="search-input"
-                        /> */}
+                        <Link 
+                        href="/profile/products-table" 
+                        className="new-order-button"
+                        >
+                            Создать заказ
+                        </Link>
 
                         {/* Поиск в каталоге */}
-                    <div className="d-flex flex-wrap">
+                        <div className="d-flex flex-wrap">
                         {/* <span className='pagination-info'>Поиск </span> */}
                         {/* <select 
                         value={searchType}
@@ -328,13 +327,6 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                         >
                         Найти
                         </button>
-
-                        <Link 
-                        href="/profile/products-table" 
-                        className="new-order-button"
-                        >
-                            Новый заказ
-                        </Link>
                         
                         {/* Индикация активного поиска: */}
                         {searchTerm && (

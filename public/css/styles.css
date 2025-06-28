@@ -5355,7 +5355,8 @@ select {
 }
 
 .new-order-button {
-    margin-left: 8px;
+    display: block;
+    margin-left: 12px;
     padding: 8px 16px;
     background: #16a74b;
     color: white;
