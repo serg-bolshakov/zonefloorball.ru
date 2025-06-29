@@ -46,55 +46,66 @@ const SiteMap: React.FC<ISiteMapProps> = ({title, robots, description, keywords,
                                         // console.log('Category:', category);
                                         if (category[0]) {
                                             return (
-                                                <div key={category[0].url_semantic} className="menu--element">
-                                                    <Link key={category[0].category_view} href={`/products/catalog?category=${category[0].url_semantic}`}>
-                                                        <h2>{category[0].category_view}</h2>
-                                                    </Link>
-                                                    {Object.values(category).map((value, key) => {
-                                                        // console.log('Value:', value); 
-                                                        return (
-                                                            key !== 0 && (
-                                                                // Each child in a list should have a unique "key" prop...
-                                                                <div key={key}> 
-                                                                    {value.prop_url_semantic && (
-                                                                        <Link key={value.prop_url_semantic} href={`/products/catalog?category=${category[0].url_semantic}&${value.prop_title}=${value.prop_url_semantic}`}>
-                                                                            {value.prop_value_view}
-                                                                        </Link>
-                                                                    )}
-                                                                    {value.model && (
-                                                                        <Link key={value.model} href={`/products/catalog?category=${value.url_semantic}&model=${value.model}`}>
-                                                                            {value.model}
-                                                                        </Link>
-                                                                    )}
-                                                                    {value.url_semantic && (
-                                                                        <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
-                                                                            {value.category_view_2}
-                                                                        </Link>
-                                                                    )}
-                                                                    
-                                                                    {/* {console.table(value[0])} */}
-                                                                    {!value.prop_url_semantic && !value.model && !value.url_semantic && (
-                                                                        value[0] && ( // Проверка на существование 
-                                                                        <div key={value[0].url_semantic}>
-                                                                            <p><strong>{value[0].category_view_2}</strong></p>
-                                                                            <ul className="prodsubcat-list__pop-up">
-                                                                                {Object.values(value).map((subCatValue, subCatKey) => (
-                                                                                    subCatKey !== 0 && subCatValue.url_semantic && (
-                                                                                        <li key={subCatKey}>
-                                                                                            <Link key={subCatValue.url_semantic} href={`/products/catalog?category=${subCatValue.url_semantic}`}>
-                                                                                                {subCatValue.category_view_2}
-                                                                                            </Link>
-                                                                                        </li>
-                                                                                    )
-                                                                                ))}
-                                                                            </ul>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            )
-                                                        );
-                                                    })}
+                                                <><div key={category[0].url_semantic} className="">
+                                                    <ul className='margin-bottom12px'>
+                                                        <Link key={category[0].category_view} href={`/products/catalog?category=${category[0].url_semantic}`}>
+                                                            {category[0].category_view}
+                                                        </Link>
+                                                    
+                                                        {Object.values(category).map((value, key) => {
+                                                            // console.log('Value:', value); 
+                                                            return (
+                                                                key !== 0 && (
+                                                                    // Each child in a list should have a unique "key" prop...
+                                                                    <div key={key}> 
+                                                                        {value.prop_url_semantic && (
+                                                                            <li className='margin-left24px'>
+                                                                                <Link key={value.prop_url_semantic} href={`/products/catalog?category=${category[0].url_semantic}&${value.prop_title}=${value.prop_url_semantic}`}>
+                                                                                    {value.prop_value_view}
+                                                                                </Link>
+                                                                            </li>
+                                                                        )}
+                                                                        {value.model && (
+                                                                            <li className='margin-left24px'>
+                                                                                <Link key={value.model} href={`/products/catalog?category=${value.url_semantic}&model=${value.model}`}>
+                                                                                    {value.model}
+                                                                                </Link>
+                                                                            </li>
+                                                                        )}
+                                                                        {value.url_semantic && (
+                                                                            <li className='margin-left24px'>
+                                                                                <Link key={value.url_semantic} href={`/products/${category[0].url_semantic}?category%5B%5D=${value.url_semantic}`}>
+                                                                                    {value.category_view_2}
+                                                                                </Link>
+                                                                            </li>
+                                                                        )}
+                                                                        
+                                                                        {/* {console.table(value[0])} */}
+                                                                        {!value.prop_url_semantic && !value.model && !value.url_semantic && (
+                                                                            value[0] && ( // Проверка на существование 
+                                                                            <div key={value[0].url_semantic} className='margin-top12px margin-left24px'>
+                                                                                <p><strong>{value[0].category_view_2}</strong></p>
+                                                                                <ul className="">
+                                                                                    {Object.values(value).map((subCatValue, subCatKey) => (
+                                                                                        subCatKey !== 0 && subCatValue.url_semantic && (
+                                                                                            <li key={subCatKey} className='margin-left24px'>
+                                                                                                <Link key={subCatValue.url_semantic} href={`/products/catalog?category=${subCatValue.url_semantic}`}>
+                                                                                                    {subCatValue.category_view_2}
+                                                                                                </Link>
+                                                                                            </li>
+                                                                                        )
+                                                                                    ))}
+                                                                                </ul>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )
+                                                            );
+                                                        })}
+                                                    </ul>
                                                 </div>
+                                                <hr />
+                                              </>
                                             );
                                         }
                                         return null; // Если category[0] не существует, возвращаем null

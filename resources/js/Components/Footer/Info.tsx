@@ -18,6 +18,8 @@ const Info: React.FC = () => {
             <p className="modal-link" onClick={() => openModal(<PaymentAndDelivery />)}>Оплата и доставка</p>
             <p className="modal-link" onClick={() => openModal(<ReturnRules />)}>Правила обмена и возврата</p>
             <p><Link href="/sitemap">Карта сайта</Link></p>
+            <Link href="/legal/privacy-policy">Политика конфиденциальности</Link>
+            <Link href="/legal/offer">Где и как купить</Link>
         </>
     );
 };

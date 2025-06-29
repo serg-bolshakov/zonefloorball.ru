@@ -173,3 +173,11 @@ Route::get('/order/track/{order:access_hash}', [OrderController::class, 'trackOr
 Route::get('/profile/orders', [OrderController::class, 'getOrders'])
     ->middleware(['auth', 'verified'])
     ->name('profile.orders');
+
+Route::get('/legal/privacy-policy', function () {
+    return view('legal.privacy-policy'); // Шаблон с текстом политики
+})->name('legal.privacy');
+
+Route::get('/legal/offer', function () {
+    return view('legal.offer'); // Шаблон с офертой
+})->name('legal.offer');
