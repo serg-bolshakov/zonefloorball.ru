@@ -37,7 +37,8 @@ class Order extends Model {
         'payment_details',
         'pickup_point_id ',
         'access_hash',
-        'access_expires_at'
+        'access_expires_at',
+        'actual_legal_agreement_ip'
         // ... другие поля
     ];
 

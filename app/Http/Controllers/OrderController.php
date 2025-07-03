@@ -17,6 +17,8 @@ use App\Models\OrdersCount;
 use App\Models\ProductReport;
 use App\Models\ProductReservation;
 use App\Models\User;
+use App\Models\LegalDocument;
+
 use Illuminate\Http\Request;
 use App\Http\Resources\OrderResource; 
 use App\Http\Resources\OrderCollection;
@@ -81,7 +83,21 @@ class OrderController extends Controller {
                 // 1. Создаём/получаем пользователя
                     $user = $this->resolveUser($request);
                     \Log::debug('OrderController user:', [ 'user_id' => $user->id,  ]);
-                
+
+                    // Проверяем, были ли обновления документов
+                    $currentPrivacyPolicy = LegalDocument::getCurrentVersion('privacy_policy');
+                    $currentOffer = LegalDocument::getCurrentVersion('offer');
+                    
+                    $needReconfirm = (
+                        $user->privacy_policy_version !== $currentPrivacyPolicy->version ||
+                        $user->offer_version !== $currentOffer->version
+                    );
+
+                    if ($needReconfirm) {
+                        // Показываем страницу переподтверждения - нет!!! надо подумать!!! просто убрать чекбокс!? чтобы пользователь подтвердил согласие!!!
+                        return redirect()->route('legal.reconfirm'); 
+                    }
+
                 // 2. Генерируем номер заказа
                     $clientType = $user->client_type_id ?? 1; // По умолчанию физлицо
                     $orderNumber = $this->generateOrderNumber($clientType);
@@ -141,6 +157,7 @@ class OrderController extends Controller {
                         'email'                     => $orderRecipientEmail,
                         'status_id'                 => OrderStatus::PENDING->value,
                         'access_hash'               => Str::random(32),
+                        'actual_legal_agreement_ip' => $user->initial_legal_agreement_ip ?? $request->ip(),
                     ];
                     $order = Order::create($orderData);
                     \Log::debug('order:', [ 'order' => $order]);
@@ -242,8 +259,8 @@ class OrderController extends Controller {
                     // 8.4 Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
                     // $orderMail = new OrderReserve($order, $user);
                     $orderMail = match ($user->client_type_id) {
-                        1 => new OrderReserve($order, $user),
-                        2 => new OrderInvoice($order, $user),
+                        1 => new OrderReserve($order, $user),               // Для физических лиц делаем "Резерв"
+                        2 => new OrderInvoice($order, $user),               // Для юридических лиц формируем счёт
                         default => new OrderReserve($order, $user)
                     };
 

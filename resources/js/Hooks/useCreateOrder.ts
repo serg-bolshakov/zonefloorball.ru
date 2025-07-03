@@ -97,6 +97,9 @@ const useCreateOrder = () => {
             if (err.response?.status === 422) {
               const errors = err.response.data.errors as ValidationErrors;
               Object.values(errors).forEach(msg => toast.error(msg[0]));
+            } else if (err.response?.status === 403 && err.response.data.requires_verification) {
+              toast.error(err.response?.data.message || 'Ошибка сервера');
+              window.location.href = err.response.data.redirect_url;
             } else {
               toast.error(err.response?.data.message || 'Ошибка сервера');
             }

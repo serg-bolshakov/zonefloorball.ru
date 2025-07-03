@@ -40,6 +40,9 @@ import useAppContext from "@/Hooks/useAppContext";
     import { IGuestCustomer } from "@/Types/types";
     import { isLegalUser } from "@/Types/types";
     import LegalCustomerDataModalForm from "@/Components/OrderCheckoutModals/LegalCustomerDataModalForm";
+    import { dateRu, formatServerDate } from "@/Utils/dateFormatter";
+    import CheckoutButton from "@/Components/Cart/CheckoutButton";
+    import Toast from "@/Components/Cart/Toast";
 
 interface IHomeProps {  
     title: string;
@@ -134,6 +137,54 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         // Inertia.visit(comeFrom);
     };
 
+    // const [isAgreed, setIsAgreed] = useState(!!user);
+    const [isAgreed, setIsAgreed] = useState(!!user && !user.needReconfirm);
+    const [isNeedReconfirm, setIsNeedReconfirm] = useState(user?.needReconfirm || false);
+    
+    const getAgreementLabel = () => {
+        if (user) {
+            return isNeedReconfirm 
+            ? 'Требуется подтверждение новых условий'
+            : `Согласие подтверждено ${formatServerDate(user.privacy_policy_agreed_at)}`;
+        }
+        return 'Прочитано. Понятно. Согласие подверждаю.';
+    };
+
+    const renderStatusMessage = () => {
+        if (!isAgreed) {
+            return (
+            <div className="registration-error margin-tb8px text-align-center">
+                {user
+                ? 'Для продолжения необходимо подтвердить согласие'
+                : 'Необходимо ознакомиться и подтвердить согласие'
+                }
+            </div>
+            );
+        }
+
+        if (isNeedReconfirm && isAgreed) {
+            return (
+            <div className="registration-success margin-tb8px text-align-center">
+                Новые условия успешно подтверждены!
+            </div>
+            );
+        }
+
+        return null;
+    };
+
+    const handleAgreementChange = () => {
+        const newValue = !isAgreed;
+  
+        if (newValue && isNeedReconfirm) {
+            // При подтверждении новых условий
+            // updateUserAgreement(); // Отправка на сервер
+            setIsNeedReconfirm(false);
+        }
+    
+        setIsAgreed(newValue);
+    };
+
     useEffect(() => {
         const controller = new AbortController; // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
         // создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
@@ -202,6 +253,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
 
     useEffect(() => {
         const newCustomerData = getInitialCustomerData(user);
+        setIsAgreed(!!user && !user.needReconfirm);
+        setIsNeedReconfirm(user?.needReconfirm || false);
         setCustomerData(newCustomerData);
     }, [user]);
 
@@ -440,7 +493,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         closeModal();
         setDeliveryData(initialDeliveryData);   // нужно удалить выбранный способ доставки, чтобы пропали кнопки Оформить заказ
         setSelectedTransportId(0);              // Сбрасываем явно
-    };        
+    };              
 
     const { createOrder, isLoading: isOrderCreating } = useCreateOrder();
 
@@ -472,7 +525,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 },
                 delivery: deliveryDataRef.current,
                 products_amount: cartAmount,
-                total: cartAmount + deliveryData.price
+                total: cartAmount + deliveryData.price,
+                legal_agreement: isAgreed
             };
 
             console.log('orderData', orderData);
@@ -487,11 +541,6 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     closeModal();
                     toast.success(`Заказ успешно ${actionType === 'pay' ? 'оплачен' : 'оформлен'}`);
                         // Не сбрасываем isSubmitting тут - форма уже закрыта
-
-                    // 2. Выбираем данные нового заказа для обновления состояния:
-                    const newOrder = {
-
-                    };    
 
                     // 3. Редирект через 1.5 || 2 секунды + Очистка корзины...
                     setTimeout(() => {
@@ -534,6 +583,112 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     <div></div>
                 ) : cartTotal > 0 ? (
                     <>
+                        
+                        {/* Рисуем блок расчёта стоимости корзины без учёта стоимости доставки */}
+                        <div className="basket-res__no-delivery">
+                            <ProductsQuantityInCart cartTotal={cartTotal} />
+                            <h3 className="basketPriceNoDeliveryBlockH3elemTotalAmount">на сумму: {formatPrice(cartAmount)} <sup>₽</sup></h3>
+                        </div>
+                        
+                        {deliveryData.transportId == 0 && (
+                            <div className="margin-bottom24px color-green h-28px l-h-24px">Для начала оформления заказа необходимо выбрать способ доставки/получения...</div>
+                        )}
+
+                        <DeliverySelector
+                            transports={transports}
+                            selectedTransportId={selectedTransportId}
+                            onTransportChange={(id) => setSelectedTransportId(id)}  // Вот так передаём функцию
+                            onSelect={(data) => {handleTransportSelect(data);}}     // Здесь сохраняем в состояние корзины
+                        />
+
+                        {/* заводим блок расчёта итоговой суммы к оплате: */}
+                        {deliveryData.price >= 0 && deliveryData.transportId > 0 && (
+                        <>
+                        <section>
+                            {cartAmount < regularAmount ? (
+                                <>
+                                    {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (
+                                        <>
+                                            <h3 className=''>Итого к оплате за заказ: </h3>
+                                            <div className='basket-res__total'>
+                                                <h3 className='basketTotalAmountBlockH3elem2 line-through'>
+                                                {formatPrice(deliveryData.price + regularAmount)}
+                                                </h3>
+                                                <h3 className="color-red">{formatPrice(deliveryData.price + cartAmount)}&nbsp;<sup>&#8381;</sup></h3>
+                                            </div>
+                                        </>
+                                    )
+                                }</>
+                            ) : (
+                                <>
+                                    {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (
+                                        <div className='basket-res__total'>
+                                            <h3 className=''>Итого к оплате за заказ: </h3>
+                                            <h3>{formatPrice(deliveryData.price + regularAmount)}&nbsp;<sup>&#8381;</sup></h3>
+                                        </div>
+                                    )}
+                                </>
+                            )}
+                            </section>
+
+                            <div className="max-w-320px fs12px">
+                                {(user && isNeedReconfirm) && (
+                                    <Toast 
+                                        type="warning" 
+                                        message="Обновились условия оферты. Пожалуйста, подтвердите согласие."
+                                    />
+                                )}
+
+                                {/* Сообщения об ошибках/предупреждениях */}
+                                {renderStatusMessage()}   
+                                
+                                {/* Заголовок с ссылками */}
+                                <div className="text-align-center margin-bottom8px">
+                                    <a className='a-text-black' href="/legal/privacy-policy" target="_blank" rel="noopener noreferrer">Политика конфиденциальности
+                                    </a> и <a className='a-text-black' href="/legal/offer" target="_blank" rel="noopener noreferrer">оферта</a>.
+                                </div>
+
+                                {/* Чекбокс и статус согласия */}
+                                <input 
+                                    type="checkbox" hidden id="legal_agreement" name="legal_agreement" 
+                                    checked={isAgreed}
+                                    onChange={handleAgreementChange}
+                                />
+                                
+                                <label htmlFor="legal_agreement" className={`${isAgreed ? 'color-green' : ''}`}>
+                                    {getAgreementLabel()}
+                                </label>
+                            </div>
+
+                            {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (    
+                            <section> {/* заводим блок кнопок для оплаты заказа или получения счёта: */}
+                                <div className='basket-res__total'>
+                                    <motion.button onClick={returnBack} className="basket-button" whileHover={{ scale: 1.1 }}  
+                                        whileTap={{ scale: 0.9 }}
+                                    >
+                                        {isLegalUser(user) ? 'Назад' : 'Ещё подумаю'} 
+                                    </motion.button>
+                                    
+                                    {/* Кнопка "оформить заказ" */}
+                                    <CheckoutButton 
+                                        disabled={!isAgreed} 
+                                        onClick={handleCheckoutClick}
+                                        isPulsing={isAgreed}
+                                    />
+
+                                </div>
+                            </section>
+                            )}
+                        </>
+                        )}
+
+                        {regularAmount > cartAmount && (
+                            <DiscountSummary 
+                                regularTotal={regularAmount}
+                                discountedTotal={cartAmount}
+                            />
+                        )}
+
                         <div id="basketproductsblock">
                             {memoizedProducts.map(product => (
                                 <div key={product.id} className="basket-row__product">
@@ -629,84 +784,6 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                 </div>
                             ))}
                         </div>
-                        
-                        {regularAmount > cartAmount && (
-                            <DiscountSummary 
-                                regularTotal={regularAmount}
-                                discountedTotal={cartAmount}
-                            />
-                        )}
-                        
-                        {/* Рисуем блок расчёта стоимости корзины без учёта стоимости доставки */}
-                        <div className="basket-res__no-delivery">
-                            <ProductsQuantityInCart cartTotal={cartTotal} />
-                            <h3 className="basketPriceNoDeliveryBlockH3elemTotalAmount">на сумму: {formatPrice(cartAmount)} <sup>₽</sup></h3>
-                        </div>
-                        <DeliverySelector
-                            transports={transports}
-                            selectedTransportId={selectedTransportId}
-                            onTransportChange={(id) => setSelectedTransportId(id)}  // Вот так передаём функцию
-                            onSelect={(data) => {handleTransportSelect(data);}}     // Здесь сохраняем в состояние корзины
-                        />
-
-                        {/* заводим блок расчёта итоговой суммы к оплате: */}
-                        {deliveryData.price >= 0 && deliveryData.transportId > 0 && (
-                        <>
-                        <section>
-                            {cartAmount < regularAmount ? (
-                                <>
-                                    {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (
-                                        <>
-                                            <h3 className=''>Итого к оплате за заказ: </h3>
-                                            <div className='basket-res__total'>
-                                                <h3 className='basketTotalAmountBlockH3elem2 line-through'>
-                                                {formatPrice(deliveryData.price + regularAmount)}
-                                                </h3>
-                                                <h3 className="color-red">{formatPrice(deliveryData.price + cartAmount)}&nbsp;<sup>&#8381;</sup></h3>
-                                            </div>
-                                        </>
-                                    )
-                                }</>
-                            ) : (
-                                <>
-                                    {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (
-                                        <div className='basket-res__total'>
-                                            <h3 className=''>Итого к оплате за заказ: </h3>
-                                            <h3>{formatPrice(deliveryData.price + regularAmount)}&nbsp;<sup>&#8381;</sup></h3>
-                                        </div>
-                                    )}
-                                </>
-                            )}
-                        </section>
-                        {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (    
-                        <section> {/* заводим блок кнопок для оплаты заказа или получения счёта: */}
-                            <div className='basket-res__total'>
-                                <motion.button onClick={returnBack} className="basket-button" whileHover={{ scale: 1.1 }}  
-                                    whileTap={{ scale: 0.9 }}
-                                >
-                                    {isLegalUser(user) ? 'Назад' : 'Ещё подумаю'} 
-                                </motion.button>
-                                <motion.button 
-                                    className="basket-button" 
-                                    whileHover={{ scale: 1.1 }}  
-                                    whileTap={{ scale: 0.9 }}
-                                    animate={{
-                                        scale: [1, 1.03, 1], // Пульсация
-                                        transition: { 
-                                        repeat: Infinity, 
-                                        repeatDelay: 2,
-                                        duration: 1.1 
-                                        }
-                                    }}
-                                    onClick={handleCheckoutClick}
-                                >
-                                    Оформить заказ
-                                </motion.button>
-                            </div>
-                        </section>
-                        )}
-                        </>
-                        )}
                     </>
 
                 ) : (

@@ -2,19 +2,45 @@
 
 import { MONTHS_GENITIVE } from "@/Constants/months";
 
-/**
- * Конвертирует дату из формата 'DD.MM.YYYY HH:mm' в 'YYYY-MM-DDTHH:mm:SS',
- * чтобы Date.parse() смог её распознать.
- */
-const convertToIsoFormat = (dateString: string): string => {
-    if (!dateString) return '';
-    
-    const [datePart, timePart] = dateString.split(' ');
-    const [day, month, year] = datePart.split('.');
-    
-    return `${year}-${month}-${day}T${timePart}:00`;
-};
 
+/**
+ * Форматирует дату с сервера в формате 'YYYY-MM-DDTHH:mm:ss.SSSSSSZ'
+ * в читаемый вид ("24 января 2025" или "Сегодня в 11:45").
+ */
+export const formatServerDate = (dateString: string | null | undefined, showTime: boolean = false): string => {
+    if (!dateString) return '-';
+
+    // Парсим дату с сервера (учитываем Z в конце - UTC время)
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Дата не определена';
+
+    const now = new Date();
+
+    // Проверяем, сегодня ли дата (учитываем локальное время)
+    const isToday = 
+        date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
+
+    if (isToday) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `Сегодня в ${hours}:${minutes}`;
+    }
+
+    const day = date.getDate();
+    const month = MONTHS_GENITIVE[date.getMonth() + 1];
+    const year = date.getFullYear();
+
+    let result = `${day} ${month} ${year}`;
+    if (showTime) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        result += ` в ${hours}:${minutes}`;
+    }
+
+    return result;
+};
 
 
 /**
@@ -72,38 +98,73 @@ export const dateRu = (dateString: string | null | undefined, showTime: boolean 
     return result;
 };
 
+/**
+ * Конвертирует дату из формата 'DD.MM.YYYY HH:mm' в 'YYYY-MM-DDTHH:mm:SS',
+ * чтобы Date.parse() смог её распознать.
+ */
+const convertToIsoFormat = (dateString: string): string => {
+    if (!dateString) return '';
+    
+    const [datePart, timePart] = dateString.split(' ');
+    const [day, month, year] = datePart.split('.');
+    
+    return `${year}-${month}-${day}T${timePart}:00`;
+};
 
-/*export const dateRu = (dateString: string, showTime: boolean = false): string => {
+
+
+
+
+
+/*export const dateRu = (dateString: string | null | undefined, showTime: boolean = false): string => {
+
+    if (!dateString) return '-';
+
+    console.log('dateFormatter', Date.parse(dateString));
+
+    // Конвертируем дату, если она в формате 'DD.MM.YYYY HH:mm' - для отслеживания заказа мы принимаем строку вида: '13.06.2025 16:07'
+    const isoDateString = dateString.includes('.') 
+        ? convertToIsoFormat(dateString) 
+        : dateString;
+
     
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return '-';
-    
+    const timestamp = Date.parse(isoDateString);
+    if (isNaN(timestamp)) return 'Дата не определена';
+
+    const date = new Date(timestamp);
     const now = new Date();
-    const options = { timeZone: 'Europe/Moscow' };
 
-    const today = now.toLocaleString('ru-RU', options).split(',')[0];
-    const targetDate = date.toLocaleString('ru-RU', options).split(',')[0];
+    // Проверяем, сегодня ли дата
+    const isToday = 
+        date.getDate() === now.getDate() &&
+        date.getMonth() === now.getMonth() &&
+        date.getFullYear() === now.getFullYear();
 
-    if (today === targetDate) {
-    const time = date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
-    return `Сегодня в ${time}`;
-    } else {
-        const monthNames = [
-        '', 'янв', 'фев', 'мар', 'апр', 'мая', 'июн',
-        'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'
-        ];
-        const day = date.getDate();
-        const month = monthNames[date.getMonth() + 1];
-        const year = date.getFullYear();
-        
-        let result = `${day} ${month} ${year}`;
-        if (showTime) {
+    if (isToday) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `Сегодня в ${hours}:${minutes}`;
+    }
+
+    // Месяцы в родительном падеже
+    const months = [
+        '', 'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+
+    const day = date.getDate();
+    // const month = months[date.getMonth() + 1];       // Вынесли за пределы функции months в константы, чтобы массив не создавался при каждом вызове... проверяем...
+    const month = MONTHS_GENITIVE[date.getMonth() + 1];
+    const year = date.getFullYear();
+
+    let result = `${day} ${month} ${year}`;
+    if (showTime) {
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
         result += ` в ${hours}:${minutes}`;
-        }
-        return result;
     }
+
+    return result;
 };*/
 
 /** Это аналог моего PHP-трейта:

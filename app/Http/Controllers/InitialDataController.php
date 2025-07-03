@@ -20,32 +20,36 @@
     class InitialDataController extends Controller {
         public function index(Request $request) {
 
-            /* \Log::debug('URL Check', [
-                'current_path' => $request->path(),                                     // api/initial-data
-                'referer' => $request->header('referer'),                               // http://127.0.0.1:8000/profile
-                'is_profile' => $request->is('profile') ||                              // true
-                            str_contains($request->header('referer'), '/profile')
-            ]);*/ 
+            
             
             try {
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();
                 $userData = $this->getUserAuthData($user, $request);
 
+                \Log::debug('URL Check', [
+                    'current_path' => $request->path(),                                     // api/initial-data
+                    'referer' => $request->header('referer'),                               // http://127.0.0.1:8000/profile
+                    'is_profile' => $request->is('profile') ||                              // true
+                                str_contains($request->header('referer'), '/profile'),
+                ]);
+
                 return response()->json([
                     'user' => $user ? [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'pers_surname' => $user->pers_surname,
-                        'pers_tel' => $user->pers_tel,
-                        'date_of_birth' => $user->date_of_birth,
-                        'delivery_addr_on_default' => $user->delivery_addr_on_default,
-                        'email' => $user->email,
-                        'client_type_id' => $user->client_type_id,
-                        'client_rank_id' => $user->client_rank_id,
-                        'org_inn' => $user->org_inn,
-                        'org_kpp' => $user->org_kpp,
-                        'org_addr' => $user->org_addr,
-                        'org_tel' => $user->org_tel,
+                        'id'                        => $user->id,
+                        'created_at'                => $user->created_at,
+                        'name'                      => $user->name,
+                        'pers_surname'              => $user->pers_surname,
+                        'pers_tel'                  => $user->pers_tel,
+                        'date_of_birth'             => $user->date_of_birth,
+                        'delivery_addr_on_default'  => $user->delivery_addr_on_default,
+                        'email'                     => $user->email,
+                        'client_type_id'            => $user->client_type_id,
+                        'client_rank_id'            => $user->client_rank_id,
+                        'org_inn'                   => $user->org_inn,
+                        'org_kpp'                   => $user->org_kpp,
+                        'org_addr'                  => $user->org_addr,
+                        'org_tel'                   => $user->org_tel,
+                        'needReconfirm'             => $user->needsLegalReconfirm(),
                     ] : null,
                     
                     'categoriesMenuArr' => $this->getCategoriesMenu(),

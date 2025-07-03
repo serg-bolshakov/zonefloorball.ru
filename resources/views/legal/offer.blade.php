@@ -3,6 +3,14 @@
 <head>
     <title>Публичная оферта | {{ config('app.name') }}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link type="image/png" sizes="16x16" 	rel="icon" href="{{ asset('favicons/favicon-16x16.png')   }}">
+    <link type="image/png" sizes="32x32" 	rel="icon" href="{{ asset('favicons/favicon-32x32.png')   }}">
+    <link type="image/png" sizes="96x96" 	rel="icon" href="{{ asset('favicons/favicon--96x96.png')  }}">
+    <link type="image/png" sizes="120x120" 	rel="icon" href="{{ asset('favicons/favicon-120x120.png') }}">
+    <link type="image/png" sizes="256x256" 	rel="icon" href="{{ asset('favicons/favicon-256x256.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { 
             margin: 0; 
@@ -59,7 +67,7 @@
 <body>
     <h1>ПУБЛИЧНАЯ ОФЕРТА<br>интернет-магазина {{ config('app.name') }}</h1>
     
-    <p class="last-update">Дата последнего обновления: 01.07.2025</p>
+    <p class="last-update">Дата последнего обновления: 31.07.2025</p>
 
     <h2>1. Термины</h2>
     <p>1.1. <span class="highlight">Продавец</span> — {{ config('app.name') }}, ИНН 526200100909, адрес: г. Нижний Новгород, ул. Казанское шоссе, д. 10, корп. 5.</p>
@@ -75,13 +83,13 @@
         <li> Указывает контактные данные;</li>
         <li> Подтверждает заказ.</li>
     </ul>
-    <p>3.2. Для юрлиц обязательна проверка реквизитов.</p>
+    <p>3.2. Для юридических лиц обязательна проверка реквизитов.</p>
 
     <h2>4. Оплата</h2>
     <p>4.1. Способы оплаты:</p>
     <ul>
-        <li>Для физлиц: онлайн-оплата картой или при получении;</li>
-        <li>Для юрлиц: <span class="highlight">только безналичный расчёт</span> по счёту.</li>
+        <li>Для физических лиц: онлайн-оплата картой или при получении;</li>
+        <li>Для юридических лиц: <span class="highlight">только безналичный расчёт</span> по счёту.</li>
     </ul>
     <p>4.2. Срок оплаты счёта — 3 банковских дня.</p>
 

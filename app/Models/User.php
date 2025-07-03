@@ -29,8 +29,8 @@ use Laravel\Sanctum\HasApiTokens;
     protected $fillable = [
         'name', 
         'email', 'pers_email',
-        'password', 
-        'pers_surname', 'pers_tel', 'delivery_addr_on_default', 'date_of_birth', 'action_auth_id', 
+        'password', 'privacy_policy_agreed_at', 'offer_agreed_at', 'privacy_policy_version', 'offer_version',
+        'pers_surname', 'pers_tel', 'delivery_addr_on_default', 'date_of_birth', 'action_auth_id', 'initial_legal_agreement_ip', 
         'is_taxes_pay', 'org_tel', 'org_inn', 'org_kpp', 'org_addr', 'client_type_id', 'client_rank_id', 'email_verified_at', 'this_id',
     ];
 
@@ -53,6 +53,15 @@ use Laravel\Sanctum\HasApiTokens;
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    // метод для проверки актуальности согласий оферты и пользовательского соглашения:
+    public function needsLegalReconfirm(): bool {
+        $latestPrivacyVersion = LegalDocument::getCurrentVersion('privacy_policy')->version;
+        $latestOfferVersion = LegalDocument::getCurrentVersion('offer')->version;
+        
+        return $this->privacy_policy_version !== $latestPrivacyVersion || 
+            $this->offer_version !== $latestOfferVersion;
+    }
 
     /* Получить ранг пользователя */
     public function rank() {

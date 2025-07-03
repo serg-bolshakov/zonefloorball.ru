@@ -51,7 +51,7 @@
             <label class="label" for="email">Email (личный адрес электронной почты): </label>
             <input class = "registration-form__input" type="email" required placeholder="user@gmail.com" id="email" name="email" autofocus autocomplete="username" value="{{ old('email') }}">
             <span class="registration-error">*<br>@error('email') {{ $message }} @enderror</span>
-            <span class="productAddition-form__clearance">Будет использоваться в качестве логина при авторизации, для отправки электронных кассовых чеков,  информации о  заказах... Если нет почты - можно оформить покупку без регистрации.</span><br>
+            <span class="productAddition-form__clearance">Будет использоваться в качестве логина при авторизации, для отправки электронных кассовых чеков,  информации о  заказах...</span><br>
             <span id="registrationerrortelnum" class="registration-error"></span>
         </p>
         
@@ -101,10 +101,17 @@
             <span class="registration-error">*<br>@error('password_confirmation') {{ $message }} @enderror</span>
         </p>
 
+        <div class="registration-form__input-item">
+            <div class="margin-tb8px text-align-center color-green">Пожалуйста, сначала ознакомьтесь с</div>
+            <div class="fs12px margin-bottom8px"><a href="/legal/privacy-policy" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</a> и <a href="/legal/offer" target="_blank" rel="noopener noreferrer">офертой</a></div>
+            <input type="checkbox" hidden id="registration_legal" @checked(old('legal_agreement')) name="legal_agreement" value="yes">
+            <label for="registration_legal" class="">Подтверждаю согласие</label>
+            <div class="registration-error margin-tb8px margin-tb8px text-align-center">@error('legal_agreement') {{ $message }} @enderror</div>
+        </div>
         
         <div class="d-flex flex-sa">
-            <button type="submit" class="registration-form__submit-btn" name="regsubbtn" value="regsubmit">Вперёд!</button>
-            <a href = "/" class = "registration-form__submit-btn" >Отменить</a>
+            <a href = "/" class = "registration-form__submit-btn" >Отмена</a>    
+            <button type="submit" class="registration-form__submit-btn" name="regsubbtn" value="regsubmit">Вперёд</button>
         </div>
     </form>
 </div>

@@ -16,6 +16,8 @@ export interface IUserBase {
     delivery_addr_on_default: string | null;
     user_manager_id: number | null;
     action_auth_id: number | null;
+    needReconfirm?: boolean;
+    privacy_policy_agreed_at: string;
 }
 
 // создаём интерфейсы для юридических и физических лиц, которые будут расширять базовый интерфейс:

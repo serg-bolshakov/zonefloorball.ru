@@ -18,6 +18,7 @@ use App\Http\Controllers\ProductCardController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\ProductsTableController;
+use App\Http\Controllers\LegalController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -174,10 +175,20 @@ Route::get('/profile/orders', [OrderController::class, 'getOrders'])
     ->middleware(['auth', 'verified'])
     ->name('profile.orders');
 
-Route::get('/legal/privacy-policy', function () {
+/*Route::get('/legal/privacy-policy', function () {
     return view('legal.privacy-policy'); // Шаблон с текстом политики
 })->name('legal.privacy');
 
 Route::get('/legal/offer', function () {
     return view('legal.offer'); // Шаблон с офертой
-})->name('legal.offer');
+})->name('legal.offer');*/
+
+// Отображение документов пользователям
+Route::get('/legal/{type}', [LegalController::class, 'show'])
+    ->name('legal.show')
+    ->where('type', 'privacy-policy|offer');
+
+// Страница переподтверждения того, что пользователь ознакомился с новыми условиями оферты и/или использования персональных данных (если документы обновились)
+// Пока комментируем - логика до конца не продумана и страницы не реализованы
+/*Route::get('/legal-reconfirm', [LegalController::class, 'showReconfirmForm'])->name('legal.reconfirm');
+Route::post('/legal-reconfirm', [LegalController::class, 'processReconfirm']);*/

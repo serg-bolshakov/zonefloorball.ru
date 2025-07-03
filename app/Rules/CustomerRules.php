@@ -1,83 +1,29 @@
 <?php
-// app/Http/Requests/StoreOrderRequest.php
-namespace App\Http\Requests;
+// app/Rules/CustomerRules.php
 
-use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Contracts\Validation\Validator;
-use Symfony\Component\HttpFoundation\Response;
-use App\Rules\CustomerRules;
+/** Проблема дублирования валидации (29/06/2025)
+ *      Фронтенд (React): Уже есть валидация в формах
+ *      StoreOrderRequest: Валидация перед контроллером
+ *      Модели (Eloquent): Правила в $fillable/$casts/аксессорах
+ *      БД (миграции): Ограничения NOT NULL, VARCHAR(length)
+ * 
+ *  Решение: Единый источник истины: 
+ *      1. Создадим базовый класс для всех правил валидации: app/Rules/ValidationRules.php
+ *      2. Создадим класс для правил регистрации, наследующий базовый: app/Rules/RegistrationRules.php
+ *      3. Создадим класс для правил создания заказов и покупателей, наследующий базовый: app/Rules/CustomerRules.php
+*/
 
-class StoreOrderRequest extends FormRequest
-{
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool {
 
-        /*\Log::debug('Auth check', [
-            'is_guest' => !auth()->check(),
-            'is_verified' => auth()->check() ? auth()->user()->hasVerifiedEmail() : null,
-            'expects_json' => $this->expectsJson()
-        ]);*/
+namespace App\Rules;
 
-        // Гости могут оформлять заказ
-        if (!auth()->check()) {
-            return true;
-        }
+class CustomerRules extends ValidationRules {
         
-        // Пользователи с подтверждённым email могут оформлять заказ
-        if (auth()->user()->hasVerifiedEmail()) {
-            return true;
-        }
-
-        /*\Log::warning('Unverified email attempt', [
-            'user_id' => auth()->id(),
-            'route' => $this->route()->getName(),
-            'ip' => $this->ip()
-        ]);*/
-        
-        // Для JSON-запросов: как раз наш запрос приходит как JSON
-        if ($this->expectsJson()) {
-            throw new HttpResponseException(
-                response()->json([
-                    'success' => false,
-                    'message' => 'Для оформления заказа подтвердите email',
-                    'requires_verification' => true,
-                    'redirect_url' => route('verification.notice')
-                ], 403)
-            );
-        }
-        
-        
-        // Для обычных веб-запросов
-        throw new HttpResponseException(
-            redirect()
-                ->route('verification.notice')
-                ->with('error', 'Для оформления заказа подтвердите ваш email')
-                ->with('intended', $this->fullUrl())
-        );
-    }
-
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
-
-    public function rules(): array {
-        return CustomerRules::getRules($this->input('customer.type'));
-    }
-
-    public function messages(): array {
-        return CustomerRules::orderMessages();
-    }
-
-    /*public function rules(): array {
-      $rules = [
+    public static function getRules(?string $customerType): array {
+        $rules = [
             // общие для всех типов покупателей правила валидации входных данных для оформления заказа:
             'customer.type'             => 'required|string|in:guest,individual,legal',
-            'delivery.address'          => $this->getAddressRules(),
+            'legal_agreement'           => 'required|accepted',
+            'delivery.address'          => parent::addressRules(),
             'delivery.price'            => 'numeric',
             'delivery.time'             => 'nullable|string',
             'delivery.transportId'      => 'required|numeric',
@@ -89,29 +35,21 @@ class StoreOrderRequest extends FormRequest
             'products_amount'           => 'required|numeric',
             'total'                     => 'required|numeric|min:1',
         ];
-
-        if ($this->input('customer.type') === 'legal') {
-            // ... правила для юрлиц
-            $rules['customer.orgname']          = 'required|string|max:100';
-        } else if ($this->input('customer.type') === 'individual') {
-            // ... правила для зарегистрированных и авторизованных физлиц
-        } else {
-            // ... правила для гостей ('guest') по умолчанию:
-            $rules['customer.firstName']        = $this->getNameRules();
-            $rules['customer.lastName']         = $this->getNameRules();
-            $rules['customer.phone']            = $this->getPhoneRules();
-            $rules['customer.email']            = $this->getEmailRules();
-            $rules['customer.deliveryAddress']  = $this->getAddressRules();
-        }
         
-        return $rules;
+        return array_merge($rules, match($customerType) {
+            'legal'                     => self::legalRules(),
+            'individual'                => self::individualRules(),
+            default                     => self::guestRules()
+        });
     }
 
-    public function messages() {
+    public static function orderMessages(): array {
         return [
             // Общие для всех типов
-            'customer.type.required' => 'Тип покупателя (guest/individual/legal) обязателен.',
-            'customer.type.in' => 'Допустимые типы покупателя: guest, individual, legal.',
+            'customer.type.required'        => 'Тип покупателя обязателен.',
+            'customer.type.in'              => 'Неизвестный тип покупателя.',
+            'legal_agreement.required'      => 'Необходимо ознакомиться принять условия оферты и политики конфиденциальности',
+            'legal_agreement.accepted'      => 'Вы должны подтвердить согласие с документами',
 
             // Для гостей (guest)
             'customer.firstName.required'   => 'Имя обязательно для заполнения.',
@@ -151,5 +89,27 @@ class StoreOrderRequest extends FormRequest
             'total.numeric'                 => 'Общая стоимость заказа должна быть числом.',
             'total.min'                     => 'Общая стоимость заказа должна стоить хоть сколько-то. Хотя бы :min руб.',
         ];
-    }*/
+    }
+
+    public static function individualRules(): array {
+        return [
+            // ... правила для зарегистрированных и авторизованных физлиц
+        ];
+    }
+
+    public static function legalRules(): array {
+        return [
+            // ... правила для юрлиц
+        ];
+    }
+
+    public static function guestRules(): array {
+        return [
+            'customer.firstName'        => parent::nameRules(),
+            'customer.lastName'         => parent::nameRules(),
+            'customer.phone'            => parent::phoneRules(),
+            'customer.email'            => parent::emailRules(),
+            'customer.deliveryAddress'  => parent::addressRules(true),
+        ];
+    }
 }
