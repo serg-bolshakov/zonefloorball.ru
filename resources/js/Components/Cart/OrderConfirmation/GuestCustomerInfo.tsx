@@ -1,9 +1,9 @@
 //resources/js/Components/Cart/OrderConfirmation/GuestCustomerInfo.tsx
-import { TCartCustomer } from "@/Types/cart";
+import { TCartGuestCustomer } from "@/Types/cart";
 import { IDeliverySelectionData } from "@/Types/delivery";
 
 interface GuestCustomerInfoProps {
-    customer: TCartCustomer;
+    customer: TCartGuestCustomer;
     deliveryData: IDeliverySelectionData
 }
 
@@ -11,7 +11,7 @@ export const GuestCustomerInfo = ({ customer, deliveryData }: GuestCustomerInfoP
     <>
         {/* Данные получателя */}
         <div className="d-flex flex-sb margin-tb12px">
-            <span>Получатель:</span>
+            <span>Получатель: </span>
             <span>{customer.lastName} {customer.firstName}</span>
         </div>
 
