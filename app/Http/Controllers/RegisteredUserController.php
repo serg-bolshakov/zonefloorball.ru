@@ -27,22 +27,14 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request) {
         // dd($request);
+        // \Log::debug('RegisteredUserController:', [ 'privacyPolicy' => 'enter',  ]);
         // Валидация данных
         $rules = $request->has('org') 
             ? RegistrationRules::legalRules() 
             : RegistrationRules::individualRules();
 
         $validated = $request->validate($rules, RegistrationRules::registrationMessages());
-
-        // Получаем актуальные версии документов
-        $privacyPolicy = LegalDocument::where('type', 'privacy_policy')
-            ->where('is_active', true)
-            ->first();
-        
-        $offer = LegalDocument::where('type', 'offer')
-            ->where('is_active', true)
-            ->first();
-        
+        // \Log::debug('RegisteredUserController:', [ 'validated' => $validated,  ]);       
         
         $userData = array_merge($validated, [
             'initial_legal_agreement_ip' => $request->ip()
@@ -69,8 +61,8 @@ class RegisteredUserController extends Controller
             'action_auth_id'             => 0,
             'privacy_policy_agreed_at'   => now(),
             'offer_agreed_at'            => now(),
-            'privacy_policy_version'     => $privacyPolicy->version,
-            'offer_version'              => $offer->version,
+            'privacy_policy_version'     => $this->getPrivacyPolicy()?->version ?? '1.0.0',
+            'offer_version'              => $this->getOfferVersion()?->version ?? '1.0.0',
             'initial_legal_agreement_ip' => $data['initial_legal_agreement_ip'],
         ]);
     // Вызов события Registered
@@ -120,5 +112,25 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
         return $user;
     }
+
+    // Получаем актуальные версии документов
+    /*  $privacyPolicy = LegalDocument::where('type', 'privacy_policy')
+            ->where('is_active', true)
+            ->first();
+        
+        $offer = LegalDocument::where('type', 'offer')
+            ->where('is_active', true)
+            ->first();*/
+
+    private function getPrivacyPolicy(): ?LegalDocument {
+        return LegalDocument::where('type', 'privacy_policy')
+            ->where('is_active', true)
+            ->first(); // Вернёт null, если нет документа
+    }
     
+    private function getOfferVersion(): ?LegalDocument {
+        return LegalDocument::where('type', 'offer')
+            ->where('is_active', true)
+            ->first(); 
+    }
 }
