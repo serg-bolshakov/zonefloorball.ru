@@ -70,6 +70,7 @@ jobs:
               --exclude='node_modules' \
               --exclude='.env' \
               --exclude='vite.config.js' \
+              --exclude='public/storage' \
               --exclude='storage/app/public' \
               --exclude='resources/views/app.blade.php' \
               $TEMP_DIR/ /var/www/fastuser/data/www/zonefloorball.ru/
@@ -83,5 +84,6 @@ jobs:
             sudo -u fastuser npm run build &&
             sudo -u fastuser composer install --optimize-autoloader --no-dev &&
             sudo -u fastuser php artisan migrate --force &&
+            sudo -u fastuser php artisan storage:link &&
             sudo -u fastuser php artisan optimize:clear
           "
