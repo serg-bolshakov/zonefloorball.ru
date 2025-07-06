@@ -114,14 +114,6 @@ class RegisteredUserController extends Controller
     }
 
     // Получаем актуальные версии документов
-    /*  $privacyPolicy = LegalDocument::where('type', 'privacy_policy')
-            ->where('is_active', true)
-            ->first();
-        
-        $offer = LegalDocument::where('type', 'offer')
-            ->where('is_active', true)
-            ->first();*/
-
     private function getPrivacyPolicy(): ?LegalDocument {
         return LegalDocument::where('type', 'privacy_policy')
             ->where('is_active', true)
