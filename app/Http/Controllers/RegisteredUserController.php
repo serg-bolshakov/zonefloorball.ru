@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Models\LegalDocument;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Auth\Events\Registered;
-
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
@@ -41,11 +41,33 @@ class RegisteredUserController extends Controller
         ]);
 
         // Определяем тип регистрации (физлицо или юрлицо)
-        if (!$request->has('org') && !$request->has('orgneedsregularcontract')) {
-            $this->createIndividualUser($userData);
+        $user = null;   
+
+        /* if (!$request->has('org') && !$request->has('orgneedsregularcontract')) {
+            $user = $this->createIndividualUser($userData);
         } elseif ($request->has('org') && !$request->has('orgneedsregularcontract')) {
-            $this->createLegalUser($userData);
+            $user = $this->createLegalUser($userData);
+        } */
+
+        if ($request->has('org')) {
+            if ($request->has('orgneedsregularcontract')) {
+                // Обработка специального случая для юрлиц
+                // $user = $this->createSpecialLegalUser($userData);
+                $user = $this->createLegalUser($userData);
+            } else {
+                // Обычное юрлицо
+                $user = $this->createLegalUser($userData);
+            }
+        } else {
+            // Физлицо (дефолтный случай)
+            $user = $this->createIndividualUser($userData);
         }
+
+        if (!$user) {
+            throw new \RuntimeException('User creation failed');
+        }
+
+        Auth::login($user); // Авторизуем сразу
 
         // Редирект после регистрации
         return redirect('/email/verify');

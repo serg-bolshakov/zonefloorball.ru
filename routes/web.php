@@ -99,8 +99,8 @@ Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
 
 Route::match(['get', 'post'], '/profile', [ProfileController::class, 'index'])->middleware(['verified'])->name('profile');
 
-// Изменение/обновление данных пользователя
-Route::put('/profile', [ProfileController::class, 'update'])->middleware(['verified'])->name('names.update');
+// Изменение/обновление данных пользователя - добавил 07.07.2025 в middleware 'auth' - проверить, чтоб работало корректно...
+Route::put('/profile', [ProfileController::class, 'update'])->middleware(['auth', 'verified'])->name('names.update');
 
 Route::get('/email/verify', function () {
     return view('auth.verify-email');
