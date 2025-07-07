@@ -97,7 +97,7 @@ Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardCo
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);
 Route::match(['get', 'post'], '/orders', [PackageController::class, 'show']);
 
-Route::match(['get', 'post'], '/profile', [ProfileController::class, 'index'])->middleware(['verified'])->name('profile');
+Route::match(['get', 'post'], '/profile', [ProfileController::class, 'index'])->middleware(['auth', 'verified'])->name('profile');
 
 // Изменение/обновление данных пользователя - добавил 07.07.2025 в middleware 'auth' - проверить, чтоб работало корректно...
 Route::put('/profile', [ProfileController::class, 'update'])->middleware(['auth', 'verified'])->name('names.update');
