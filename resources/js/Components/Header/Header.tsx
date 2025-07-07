@@ -3,15 +3,31 @@ import { Link } from '@inertiajs/react';
 import useAppContext from '../../Hooks/useAppContext';
 import { useUserDataContext } from '@/Hooks/useUserDataContext';
 import { motion } from 'framer-motion';
+import useSafeLocation from '@/Hooks/useSafeLocation';
+import { useEffect } from 'react';
 
 const Header: React.FC = () => {
-    const { user, categoriesMenuArr, authBlockContentFinal } = useAppContext();
+    const { user, categoriesMenuArr, authBlockContentFinal, setAuthBlockContentFinal } = useAppContext();
     const { orders, favorites, cartTotal, ordersTotal } = useUserDataContext();
     // Считаем количества
     // const ordersCount = orders.length;
     const ordersCount = ordersTotal;
     const favoritesCount = favorites.length;
     const cartCount = cartTotal;
+
+    const location = useSafeLocation();
+
+    useEffect(() => {
+        if (user) {
+            const isProfile = location.pathname === '/profile';
+            setAuthBlockContentFinal(
+                `${user.name},<br>мы рады общению. Вы можете: ` +
+                `<br><a href="${isProfile ? '/' : '/profile'}">` +
+                `${isProfile ? 'выйти из профиля' : 'войти в профиль'}</a> ` +
+                `или <a href="/logout">выйти из системы</a>`
+            );
+        }
+    }, [location.pathname, user]);
 
     // Если categoriesMenuArr ещё не загружено, показываем заглушку
     if (!categoriesMenuArr) {
