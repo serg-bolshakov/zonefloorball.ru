@@ -89,7 +89,7 @@ class OrderReserve extends Mailable
         // Подготавливаем данные
         $data = $this->prepareData();
 
-        \Log::debug('OrderReserve buildPdfAndSave:', [ 'data' => $data]);
+        // \Log::debug('OrderReserve buildPdfAndSave:', [ 'data' => $data]);
 
         // Рендерим шаблон
         $content = view('emails.orders.reserve', $data)->render();
@@ -237,25 +237,25 @@ class OrderReserve extends Mailable
         $trackUrl = asset('order/track/'. $this->order->access_hash); 
 
         $data = [
-            'orderNum'                  => $this->order->order_number           ,
-            'orderDate'                 => $orderDate                           ,
-            'buyerName'                 => $buyerName                           ,
-            'buyerTel'                  => $buyerTel                            ,
-            'transport'                 => $transport                           ,
-            'deliveryAddress'           => $this->order->order_delivery_address ,
-            'dataAboutGoodsForMailBody' => $dataAboutGoodsForMailBody           ,
-            'productAmount'             => $productAmountFormatted              ,
-            'totalDiscount'             => $totalDiscount                       ,
-            'discountTotalLine'         => $discountTotalLine                   ,
-            'deliveryCostLine'          => $deliveryCostLine                    ,
-            'deliveryCost'              => $deliveryCost                        ,
-            'totalOrderAmount'          => $totalOrderAmount                    ,
-            'totalAmountInRegularPricesFormattedNote' => $totalAmountInRegularPricesFormattedNote,
-            'pathToImage' => 'storage/images/logo.png', // Путь к логотипу
-            'orderAmountinRussian'      => $orderAmountinRussian                ,
-            'pdfUrl'                    => $pdfUrl,
-            'invoiceUrl'                => $invoiceUrl,
-            'trackUrl'                  => $trackUrl
+            'orderNum'                                  => $this->order->order_number               ,
+            'orderDate'                                 => $orderDate                               ,
+            'buyerName'                                 => $buyerName                               ,
+            'buyerTel'                                  => $buyerTel                                ,
+            'transport'                                 => $transport                               ,
+            'deliveryAddress'                           => $this->order->order_delivery_address     ,
+            'dataAboutGoodsForMailBody'                 => $dataAboutGoodsForMailBody               ,
+            'productAmount'                             => $productAmountFormatted                  ,
+            'totalDiscount'                             => $totalDiscount                           ,
+            'discountTotalLine'                         => $discountTotalLine                       ,
+            'deliveryCostLine'                          => $deliveryCostLine                        ,
+            'deliveryCost'                              => $deliveryCost                            ,
+            'totalOrderAmount'                          => $totalOrderAmount                        ,
+            'totalAmountInRegularPricesFormattedNote'   => $totalAmountInRegularPricesFormattedNote ,
+            'pathToImage'                               => 'storage/images/logo.png'                ,   // Путь к логотипу
+            'orderAmountinRussian'                      => $orderAmountinRussian                    ,
+            'pdfUrl'                                    => $pdfUrl                                  ,
+            'invoiceUrl'                                => $invoiceUrl                              ,
+            'trackUrl'                                  => $trackUrl
         ];
 
         return $data;

@@ -25,8 +25,7 @@ const CustomersCares: React.FC = () => {
                 
                 <p className="">Сделано&nbsp;<a href="mailto:serg.bolshakov@gmail.com">Большаковым&nbsp;Сергеем</a>, 2025</p>
                 {/* <p>Демоверсия 0.0.5 <a href="https://github.com/serg-bolshakov/zonefloorball.ru" target="_blank" rel="noopener noreferrer"><span className="header-icon">Посмотреть</span></a> исходный код.</p> */}
-                <p className="margin-bottom12px">Буду рад сотрудничеству&nbsp;(<a href="/storage/docs/resume.pdf"><span className="cursive header-icon">resume.pdf</span></a><span className="cursive">, 68 Кб</span>). <span className='strong'>Интернет-магазин "под ключ". Администрирование</span>.</p>
-                
+                <p className="margin-bottom12px">Буду рад сотрудничеству&nbsp;(<a href="/storage/docs/resume.pdf"  target="_blank" rel="noopener noreferrer"><span className="cursive header-icon">resume.pdf</span></a><span className="cursive">, 68 Кб</span>). <span className='strong'>Интернет-магазин "под ключ". Администрирование</span>.</p>
             </div>
         </>
     );

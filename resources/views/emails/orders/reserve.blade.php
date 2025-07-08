@@ -64,7 +64,7 @@ hr    { height: 1px; border: none; color: #dddddd; background: #dddddd; margin: 
 </tbody>
 </table>
 <div>
-<a href="{{ $invoiceUrl }}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; width: 120px; font-size: 16px; margin: 10px 0; cursor: pointer; border-radius: 8px;">Распечатать</a>
+{{--<a href="{{ $invoiceUrl }}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; width: 120px; font-size: 16px; margin: 10px 0; cursor: pointer; border-radius: 8px;">Распечатать</a> --}}
 <a href="{{ $pdfUrl }}" style="background-color: blue; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; width: 120px; font-size: 16px; margin: 10px 0 10px 20px; cursor: pointer; border-radius: 8px;"> Оплатить </a>
 </div>
 {!! $orderAmountinRussian !!}
@@ -82,8 +82,7 @@ hr    { height: 1px; border: none; color: #dddddd; background: #dddddd; margin: 
 @endif
 {{-- закомментировал пока <h3>ИТОГО стоимость заказа: {{ $totalOrderAmount }}&nbsp;<sup>&#8381;</sup></h3>
 {!! $isBuyerPayVATNote !!}
-{!! $orderAmountinRussian !!}
-<hr> --}}
+{!! $orderAmountinRussian !!} --}}
 <hr>
 <p>С уважением, интернет-магазин флорбольной экипировки<br><a href="https://zonefloorball.ru">ZoneFloorball.RU</a></p>
 </body>
