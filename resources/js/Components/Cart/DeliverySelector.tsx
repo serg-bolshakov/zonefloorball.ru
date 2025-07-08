@@ -66,7 +66,7 @@ const DeliverySelector = ({ transports, selectedTransportId, onTransportChange, 
                     transport.code === 'pickup' || transport.code === 'local' 
                     ? onSelect({
                       transportId: transport.id,
-                      address: transport.code === 'pickup' ?  'Самовывоз: ' + DEFAULT_WAREHOUSE.title : '',
+                      address: transport.code === 'pickup' ?  DEFAULT_WAREHOUSE.title : '',
                       price: transport.base_price,
                       time: '1-2 дня'
                       })

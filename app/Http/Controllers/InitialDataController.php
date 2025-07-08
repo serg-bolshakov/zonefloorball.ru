@@ -49,6 +49,7 @@
                         'org_kpp'                   => $user->org_kpp,
                         'org_addr'                  => $user->org_addr,
                         'org_tel'                   => $user->org_tel,
+                        'privacy_policy_agreed_at'  => $user->privacy_policy_agreed_at,
                         'needReconfirm'             => $user->needsLegalReconfirm(),
                     ] : null,
                     

@@ -95,7 +95,8 @@ class OrderController extends Controller {
 
                     if ($needReconfirm) {
                         // Показываем страницу переподтверждения - нет!!! надо подумать!!! просто убрать чекбокс!? чтобы пользователь подтвердил согласие!!!
-                        return redirect()->route('legal.reconfirm'); 
+                        // return redirect()->route('legal.reconfirm'); 
+                        \Log::debug('OrderController $needReconfirm:', [ '$needReconfirm' => $needReconfirm,  ]);
                     }
 
                 // 2. Генерируем номер заказа
@@ -168,9 +169,10 @@ class OrderController extends Controller {
                     }
 
                     foreach ($request->input('products') as $item) {
+                        \Log::debug('orderController:', [ 'order_item' => $item]);
                         // 1. Создаём позицию заказа
                             // выбираем цену, которая была зафиксирована на момент продажу товара (с учётом возможной скидки за ранг пользоателя):
-                            $productFinalPrice = (isset($item['price_with_rank_discount']) && $item['price_with_rank_discount'] < $item['price']) 
+                            $productFinalPrice = (isset($item['price_with_rank_discount'])  && $item['price_with_rank_discount'] != 0 && $item['price_with_rank_discount'] < $item['price']) 
                                 ? $item['price_with_rank_discount']
                                 : $item['price'];
 

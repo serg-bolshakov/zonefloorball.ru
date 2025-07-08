@@ -72,7 +72,7 @@ class OrderReserve extends Mailable
     public function buildPdf()
     {
         $content = view('emails.orders.reserve', $this->content()->with)->render();
-        \Log::debug('OrderReserve buildPdf:', [ 'content' => $content]);
+        // \Log::debug('OrderReserve buildPdf:', [ 'content' => $content]);
         // Настройка dompdf
         $pdf = Pdf::loadHTML($content);
         $pdf->setOption('defaultFont', 'DejaVu Sans'); // Указываем шрифт
@@ -84,8 +84,7 @@ class OrderReserve extends Mailable
 
     public function buildPdfAndSave($relativePath)
     {
-        \Log::debug('OrderReserve buildPdfAndSave:', [ 'start' => 'staart',
-        '$relativePath' => $relativePath]);
+        // \Log::debug('OrderReserve buildPdfAndSave:', [ 'start' => 'staart', '$relativePath' => $relativePath]);
               
         // Подготавливаем данные
         $data = $this->prepareData();

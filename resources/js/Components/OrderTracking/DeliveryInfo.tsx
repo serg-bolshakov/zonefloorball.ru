@@ -11,7 +11,7 @@ export const DeliveryInfo: React.FC<{ delivery: IOrderDelivery }> = ({ delivery 
                 <span>{delivery.type}</span>
             </div>
             <div className="info-row">
-                <span>Адрес:</span>
+                <span>Адрес:&nbsp;</span>
                 <span>{delivery.address}</span>
             </div>
             {delivery.tracking_number && (
