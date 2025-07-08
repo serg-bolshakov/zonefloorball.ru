@@ -41,8 +41,13 @@ class RegistrationRules extends ValidationRules
 
     public static function legalRules(): array {
         return array_merge(self::commonRules(), [
+            'name'          => parent::nameRules(),
+            'surname'       => parent::nameRules(),
+            'pers_tel'      => parent::phoneRules(),
+            'email'         => parent::emailRules(),        // При регистрации юридического лица (или ИП), смотрим email представителя и если кто-то уже есть в системе с таким email, берём его... нет - создаём нового...
             'name_of_org'   => parent::orgNameRules(),
             'regorgemail'   => parent::emailRules(true),
+            'orgvatpayer' => ['nullable', 'boolean'],       // boolean валидатор идеально подходит для чекбоксов: Принимает: true, false, 1, 0, "1", "0" / Автоматически конвертирует в булево значение
             'org_inn'       => parent::innRules(),
             'org_kpp'       => parent::kppRules(),
             'org_addr'      => parent::addressRules(),

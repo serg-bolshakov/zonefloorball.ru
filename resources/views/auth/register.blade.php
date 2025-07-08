@@ -75,16 +75,24 @@
             <span class="productAddition-form__clearance">Если будет указана - мы будем поздравлять Вас с этим событием.</span><br>
         </p>
 --}}        
-        <!-- <div id="registration_org_checkbox" class="registration-form__input-item"> -->
+        <div id="registration_org_checkbox" class="registration-form__input-item">
             <input type="checkbox" hidden id="registration_org" @checked(old('org')) name="org" value="yes">
             <label for="registration_org" class="">Я действую от имени организации</label>
-        <!-- </div> -->
+        </div>
 
         <!-- Точка входа блока регистрации организации -->
         <div id="registration_org_block" class="registration-form__input-item d-none"></div>
 
         <!-- Точка входа блока ввода данных для договора -->
         <div id="registration_org_block_contract" class="registration-form__input-item registration_org_block_contract"></div>
+
+        <div class="registration-form__input-item">
+            <div class="margin-tb8px text-align-center color-red">Пожалуйста, сначала ознакомьтесь с <a href="/legal/offer" target="_blank" rel="noopener noreferrer">офертой</a></div>
+            <div class="fs12px margin-bottom8px text-align-center color-red"> и <a href="/legal/privacy-policy" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</a></div>
+            <input type="checkbox" hidden id="registration_legal" @checked(old('legal_agreement')) name="legal_agreement" value="yes">
+            <label for="registration_legal" class="">Понятно. Подтверждаю согласие</label>
+            <div class="registration-error margin-tb8px margin-tb8px text-align-center">@error('legal_agreement') {{ $message }} @enderror</div>
+        </div>
         
         <p class="registration-form__input-item password">
             <label class="label" for="password">Придумайте пароль: </label>
@@ -100,14 +108,6 @@
             <a href="#" class="password-control" onclick="return show_hide_password_confirmation(this);"></a>
             <span class="registration-error">*<br>@error('password_confirmation') {{ $message }} @enderror</span>
         </p>
-
-        <div class="registration-form__input-item">
-            <div class="margin-tb8px text-align-center color-green">Пожалуйста, сначала ознакомьтесь с</div>
-            <div class="fs12px margin-bottom8px"><a href="/legal/privacy-policy" target="_blank" rel="noopener noreferrer">политикой конфиденциальности</a> и <a href="/legal/offer" target="_blank" rel="noopener noreferrer">офертой</a></div>
-            <input type="checkbox" hidden id="registration_legal" @checked(old('legal_agreement')) name="legal_agreement" value="yes">
-            <label for="registration_legal" class="">Подтверждаю согласие</label>
-            <div class="registration-error margin-tb8px margin-tb8px text-align-center">@error('legal_agreement') {{ $message }} @enderror</div>
-        </div>
         
         <div class="d-flex flex-sa">
             <a href = "/" class = "registration-form__submit-btn" >Отмена</a>    

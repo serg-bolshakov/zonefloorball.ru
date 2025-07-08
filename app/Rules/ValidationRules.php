@@ -100,7 +100,11 @@ class ValidationRules
 
     // Правила для КПП
     public static function kppRules(): array {
-        return ['filled', 'numeric', 'digits:9'];
+        return [
+            'nullable', 
+            'numeric', 
+            'digits:9',
+        ];
     }
 
     // Правила для названия организации

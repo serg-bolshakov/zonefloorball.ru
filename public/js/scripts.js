@@ -495,10 +495,12 @@ function checkInputedFormFields(hiddenInputId = null) {
                 break;
 
                 case 'orgfieldkpp':
-                    let checkKPPnum = /^[\d]{9}$/.test(Number(value));
+                    let checkKPPnum = value === '' || /^\d{9}$/.test(value);
+                    
+                    console.log('checkKPPnum', checkKPPnum)
                     if(!checkKPPnum) {
-                        errorText = 'КПП может содержать только цифры, длина 9 знаков!';
-                        this.value = '';
+                        errorText = 'КПП должен содержать ровно 9 цифр или быть пустым';
+                        // this.value = '';
                     } 
                     check = checkKPPnum;
                 break;

@@ -139,10 +139,8 @@
                 inputKPPOrg.className = 'registration-form__input';
                 inputKPPOrg.setAttribute('id', 'registration-org-kpp');
                 inputKPPOrg.setAttribute('type', 'text');
-                inputKPPOrg.setAttribute('required', true);
+                // inputKPPOrg.setAttribute('required', true);
                 inputKPPOrg.dataset.rule = 'orgfieldkpp';
-                // inputKPPOrg.dataset.minlength = '10';
-                // inputKPPOrg.dataset.maxlength = '12';
                 inputKPPOrg.setAttribute('name', 'org_kpp');
                 
                 // при отправке POST желательно сохранять введённое в поле значение... пробуем это реализовать через sessionStarage:
@@ -167,8 +165,13 @@
                 if (inphiddenwitherrorinfo.dataset.kppoforgerr != '') {
                     spanElemForStarMandatoryFieldKppTextContent = inphiddenwitherrorinfo.dataset.kppoforgerr + '<br>';
                 }
-                spanElemForStarMandatoryFieldKpp.innerHTML = ' *<br>' + spanElemForStarMandatoryFieldKppTextContent;
+                spanElemForStarMandatoryFieldKpp.innerHTML = '<br>' + spanElemForStarMandatoryFieldKppTextContent;
                 kppOrgPelemMain.appendChild(spanElemForStarMandatoryFieldKpp);
+
+                let spanElemForClearOrgKppField = document.createElement('span');
+                spanElemForClearOrgKppField.className = 'productAddition-form__clearance';
+                spanElemForClearOrgKppField.textContent = 'Оставьте пустым, если регистрируетесь как ИП';
+                kppOrgPelemMain.appendChild(spanElemForClearOrgKppField);
 
                 let spanElemForErrordKPPField = document.createElement('span');
                 spanElemForErrordKPPField.className = 'registration-error';

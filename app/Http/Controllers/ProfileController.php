@@ -173,14 +173,14 @@ class ProfileController extends Controller
 
             // если авторизованный пользователь - организация (ИП), нам нужно получить представителя, если такой есть
             $representPerson = $user->this_id 
-                ? User::find($user->this_id)?->only(['name', 'pers_surname', 'pers_email', 'pers_tel'])
+                ? User::find($user->this_id)?->only(['name', 'email', 'pers_surname', 'pers_email', 'pers_tel'])
                 : null;
 
             if ($representPerson) {
                 $representPerson = [
                     'org_rep_name' => $representPerson['name'],
                     'org_rep_surname' => $representPerson['pers_surname'],
-                    'org_rep_email' => $representPerson['pers_email'],
+                    'org_rep_email' => $representPerson['email'] ?? $representPerson['pers_email'],
                     'org_rep_phone' => $representPerson['pers_tel']
                 ];
             }

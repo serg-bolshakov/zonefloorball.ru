@@ -101,6 +101,12 @@ use Laravel\Sanctum\HasApiTokens;
         // У пользователя может быть много записей в таблице orders
         return $this->hasMany(Order::class, 'order_client_id');
     }
+
+    /** Определение типа организации по ИНН */
+    public function isIndividualEntrepreneur(string $inn): bool {
+        // ИП имеют ИНН физлица (12 цифр)
+        return strlen(preg_replace('/\D/', '', $inn)) === 12;
+    }
 }
 
 /*

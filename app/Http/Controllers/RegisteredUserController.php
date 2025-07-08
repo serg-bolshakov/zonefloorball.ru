@@ -10,6 +10,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 
 use App\Rules\RegistrationRules;
 
@@ -27,11 +28,13 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request) {
         // dd($request);
-        // \Log::debug('RegisteredUserController:', [ 'privacyPolicy' => 'enter',  ]);
+        \Log::debug('RegisteredUserController:', [ 'requesr' => $request->all(),  ]);
         // Валидация данных
         $rules = $request->has('org') 
             ? RegistrationRules::legalRules() 
             : RegistrationRules::individualRules();
+
+        $messages = RegistrationRules::registrationMessages();
 
         $validated = $request->validate($rules, RegistrationRules::registrationMessages());
         // \Log::debug('RegisteredUserController:', [ 'validated' => $validated,  ]);       
@@ -94,9 +97,10 @@ class RegisteredUserController extends Controller
 
     protected function createLegalUser(array $data): User {
         $representId = NULL;
-            
+        \Log::debug('RegisteredUserController: createLegalUser', [ 'data' => $data,  ]);        
         // возможно представитель уже зарегистрирован в БД, как самостоятельное частное (физическое) лицо - сначала проверим это его имейлу:
         $personUser = User::where('email', $data['email'])->first();
+        
         // если такого зарегистрированного пользователя нет, заносим его в базу данных как нового, в качестве представителя компании:
         if(!$personUser) {
             $represent = new User;
@@ -105,11 +109,29 @@ class RegisteredUserController extends Controller
             $represent->pers_tel = $data['pers_tel'];
             $represent->pers_email = $data['email'];
             $represent->action_auth_id = 0;
-            $represent->client_rank_id = 10;// Представитель организации
-            $represent->user_access_id = 6; // Гость guest     
+            $represent->client_rank_id = 10;    // Представитель организации
+            $represent->user_access_id = 6;     // Гость guest     
             $represent->save();
-            $representId = $represent->id;   // вносим в БД новую запись и получаем id этой записи
-        } else {
+            $representId = $represent->id;      // вносим в БД новую запись и получаем id этой записи
+        } else {                                // если в системе зарегистрирован пользователь с таким email, нужно сравнить данные, которые вводятся сейчас, с теми, которые есть в БД для этого пользователя
+            $errors = [];
+        
+            if ($data['name'] != $personUser->name) {
+                $errors['name'] = 'Имя представителя не совпадает с именем в вашем профиле';
+            }
+        
+            if ($data['surname'] != $personUser->pers_surname) {
+                $errors['surname'] = 'Фамилия представителя не совпадает с фамилией в вашем профиле';
+            }
+        
+            if ($data['pers_tel'] != $personUser->pers_tel) {
+                $errors['pers_tel'] = 'Телефон представителя не совпадает с телефоном в вашем профиле';
+            }
+        
+            if (!empty($errors)) {
+                throw ValidationException::withMessages($errors);
+            }
+        
             $representId = $personUser->id;
         }
             
@@ -122,11 +144,16 @@ class RegisteredUserController extends Controller
             'org_tel'                       => $data['regorgtel'],
             'org_inn'                       => $data['org_inn'],
             'org_kpp'                       => $data['org_kpp'],
+            'is_taxes_pay'                  => $data['orgvatpayer'] ?? NULL,
             'org_addr'                      => $data['org_addr'],
             'action_auth_id'                => 0,   // он-лайн
             'client_type_id'                => 2,   // Юридическое лицо
             'client_rank_id'                => 2,   // Юрлицо, зарегистрированное
             'this_id'                       => $representId,
+            'privacy_policy_agreed_at'      => now(),
+            'offer_agreed_at'               => now(),
+            'privacy_policy_version'        => $this->getPrivacyPolicy()?->version ?? '1.0.0',
+            'offer_version'                 => $this->getOfferVersion()?->version ?? '1.0.0',
             'initial_legal_agreement_ip'    => $data['initial_legal_agreement_ip'],
         ]);
 
