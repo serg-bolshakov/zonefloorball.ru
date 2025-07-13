@@ -337,9 +337,15 @@ class OrderController extends Controller {
                         
                         // если физлицо выбирает опцию "отложить оплату", - просто сообщаем, что заказ создан. Оплатить - переводим его по ссылке на оплату заказа
                         if (!$request->isReserve) {
+                            \Log::channel('payments')->debug('Generating Robokassa link we must not to be here', [
+                                'order_id' => $order->id,
+                                'amount' => (float)$order->total_product_amount + (float)$order->order_delivery_cost,
+                                'items_count' => count($items),
+                                'paymentUrl' => $paymentUrl,
+                            ]);
                             return response()->json([
                                 'status' => 'success',
-                                'redirect_url' => $paymentUrl
+                                // 'redirect_url' => $paymentUrl
                             ]);
                         }                        
                     } catch (\Exception $e) {
