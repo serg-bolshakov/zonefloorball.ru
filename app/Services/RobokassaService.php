@@ -4,6 +4,13 @@
     class RobokassaService {
 
         public function generatePaymentLink(float $amount, int $orderId, string $description, array $items = []) {
+            if ($amount <= 0) {
+                throw new \Exception("Сумма оплаты должна быть больше 0");
+            }
+            
+            if (empty($items)) {
+                throw new \Exception("Нет товаров для оплаты");
+            }
 
             $params = [
                 'MerchantLogin'  => config('services.robokassa.merchant_login'),
