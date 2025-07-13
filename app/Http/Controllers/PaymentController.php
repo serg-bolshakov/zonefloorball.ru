@@ -121,7 +121,8 @@ class PaymentController extends Controller
                 }
             });
 
-            return response("OK{$validated['InvId']}\n", 200);
+            return response("OK{$validated['InvId']}\n", 200)
+                ->header('Content-Type', 'text/plain');
 
         } catch (\Exception $e) {
             // 6. Обработка ошибок

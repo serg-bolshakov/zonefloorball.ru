@@ -209,7 +209,7 @@ class OrderController extends Controller {
                                 'reserved'  => (int)$productReport->reserved + (int)$item['quantity'],
                             ]);
                         } catch (\Exception $e) {
-                            Log::error("Ошибка резервирования товара", [
+                            \Log::error("Ошибка резервирования товара", [
                                 'product_id' => $item['id'],
                                 'error' => $e->getMessage()
                             ]);
@@ -321,7 +321,7 @@ class OrderController extends Controller {
                             $items
                         );
 
-                        \Log::channel('payments')->debug('Generating Robokassa link', [
+                        \Log::debug('Generating Robokassa link', [
                             'order_id' => $order->id,
                             'amount' => (float)$order->total_product_amount + (float)$order->order_delivery_cost,
                             'items_count' => count($items),
@@ -337,7 +337,7 @@ class OrderController extends Controller {
                         
                         // если физлицо выбирает опцию "отложить оплату", - просто сообщаем, что заказ создан. Оплатить - переводим его по ссылке на оплату заказа
                         if (!$request->isReserve) {
-                            \Log::channel('payments')->debug('Generating Robokassa link we must not to be here', [
+                            \Log::debug('Generating Robokassa link we must not to be here', [
                                 'order_id' => $order->id,
                                 'amount' => (float)$order->total_product_amount + (float)$order->order_delivery_cost,
                                 'items_count' => count($items),
