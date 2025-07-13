@@ -285,9 +285,9 @@ class OrderController extends Controller {
                 // 8. Формируем данные для Робокассы (и пытаемся инициировать оплату, если пользователь выбрал "Оплатить"):
                     if ($paymentMethod === PaymentMethod::ONLINE && $order && $order->payment_status !== 'paid') {    
                         \Log::debug('$paymentMethod', [ 'paymentMethod $order' => $order,
-                        '$paymentMethod' => $paymentMethod
-                    ]);
-                        
+                            '$paymentMethod' => $paymentMethod
+                        ]);
+                            
                         // Проверка суммы 
                         $calculatedTotal = array_reduce($items, fn($sum, $item) => $sum + ($item['price'] * $item['quantity']), 0);
                         if (abs($calculatedTotal - $order->total_product_amount) > 0.01) {
@@ -394,6 +394,9 @@ class OrderController extends Controller {
                         }
                     } 
 
+                \Log::debug('oafter step 8', [ 'after step 8 $order' => $order,
+                    '$paymentMethod' => $paymentMethod
+                ]); 
                     // Проверяем не был ли заказ уже оплачен:
                     if ($order && $order->payment_status === 'paid') {
                         // заказ уже оплачен, возвращаем ответ:
@@ -404,6 +407,9 @@ class OrderController extends Controller {
                         ], 500);
                     }
 
+                \Log::debug('orderMail: before', [ 'orderMail before $order' => $order,
+                    '$paymentMethod' => $paymentMethod
+                ]);    
                 // 9. Отправляем заказ по email...
                     try {
                         // Mail::to($user->email)->send($orderMail);
@@ -412,6 +418,9 @@ class OrderController extends Controller {
                     } catch (\Exception $e) {
                         Log::error('Failed to send order email: '.$e->getMessage());
                     }
+                \Log::debug('orderMail: after', [ 'orderMail after $order' => $order,
+                    '$paymentMethod' => $paymentMethod
+                ]);
 
                 // 10. Только после успеха обновляем статус
                     $order->update([
