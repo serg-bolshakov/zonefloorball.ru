@@ -131,8 +131,6 @@ Route::get('/resend-verification-email', function () {
 Route::post('/resend-verification-email', [ResendVerificationEmailController::class, 'resend'])
     ->name('verification.resend');
 
-Route::post('/robokassa/result', [PaymentController::class, 'handleResult'])->name('robokassa.result');
-
 // Маршрут для генерации карты сайта:
 Route::get('/generate-sitemap', [SiteMapXmlController::class, 'generate']);
 
@@ -192,3 +190,7 @@ Route::get('/legal/{type}', [LegalController::class, 'show'])
 // Пока комментируем - логика до конца не продумана и страницы не реализованы
 /*Route::get('/legal-reconfirm', [LegalController::class, 'showReconfirmForm'])->name('legal.reconfirm');
 Route::post('/legal-reconfirm', [LegalController::class, 'processReconfirm']);*/
+
+Route::post('/api/payments/robokassa/result', [PaymentController::class, 'handleResult']);
+Route::post('/orders/success', [OrderController::class, 'showSuccess']);
+Route::post('/orders/failed', [OrderController::class, 'showFailed']);

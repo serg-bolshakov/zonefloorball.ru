@@ -23,6 +23,7 @@ enum OrderStatus: int {
             self::PENDING                   => 'Ожидание обработки',
             self::CREATED                   => 'Заказ создан',
             self::RESERVED                  => 'Товар зарезервирован',
+            self::CONFIRMED                 => 'Подтверждён',
             self::CANCELLED                 => 'Заказ отменён',
             self::IN_PROCESSING             => 'В обработке',
             self::READY_TO_BE_DISPATCHED    => 'Готов к отгрузке',

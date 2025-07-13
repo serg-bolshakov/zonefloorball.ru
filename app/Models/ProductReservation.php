@@ -15,6 +15,7 @@
             'order_id',
             'quantity',
             'expires_at',
+            'paid_at',
             'cancelled_at'
         ];
 
@@ -34,13 +35,15 @@
         // Scope для просроченных
         public function scopeExpired($query) {
             return $query->whereNull('cancelled_at')
-                ->where('expires_at', '<=', now());
+                ->where('expires_at', '<=', now())
+                ->whereNull('paid_at');
         }
 
         // Scope для активных резервов
         public function scopeActive($query) {
             return $query->whereNull('cancelled_at')
-                ->where('expires_at', '>', now());
+                ->where('expires_at', '>', now())
+                ->whereNull('paid_at');
         }
 
     }

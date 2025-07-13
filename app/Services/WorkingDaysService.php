@@ -7,9 +7,23 @@
 
     class WorkingDaysService
     {
+
+        private static array $holidays = [
+            '01-01', // Новый год
+            '08-03', // 8 марта
+            // ... другие праздники
+        ];
+
         public static function addWorkingDays(Carbon $date, int $days): Carbon
         {
-            return $date->addWeekdays($days);
+            $count = 0;
+            while ($count < $days) {
+                $date = $date->addDay();
+                if ($date->isWeekday() && !self::isHoliday($date)) {
+                    $count++;
+                }
+            }
+            return $date;
         }
 
         public static function getExpirationDate(int $days = 3): Carbon
@@ -26,5 +40,9 @@
             }
 
             return self::addWorkingDays($now, $days);
+        }
+
+        private static function isHoliday(Carbon $date): bool {
+            return in_array($date->format('d-m'), self::$holidays);
         }
     }

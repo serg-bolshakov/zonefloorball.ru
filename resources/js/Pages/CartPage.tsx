@@ -511,6 +511,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             const orderData = {
                 products: cartProducts.map(p => ({
                     id: p.id,
+                    name: p.title,
                     quantity: p.quantity ?? 0,
                     price: p.price_actual ?? 0,
                     price_regular: p.price_regular ?? 0,

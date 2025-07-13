@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log; 
 
 use App\Services\DiscountService;
+use App\Services\RobokassaService;
 use App\Models\Discount;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -163,19 +164,28 @@ class OrderController extends Controller {
                     $order = Order::create($orderData);
                     \Log::debug('order:', [ 'order' => $order]);
                 
-                // 4. Добавляем товары в таблицу order_items (id, order_id, product_id, quantity, price, regular_price, created_at, updated_at) и резервируем их
+                // 4. Добавляем товары в таблицу order_items (id, name, order_id, product_id, quantity, price, regular_price, created_at, updated_at) и резервируем их
                     if (empty($request->input('products'))) {
                         throw new \Exception('Нет товаров в заказе');
                     }
 
+                    $items = [];    // создаём массив товаров для передачи в Робокассу
+
                     foreach ($request->input('products') as $item) {
                         \Log::debug('orderController:', [ 'order_item' => $item]);
                         // 1. Создаём позицию заказа
-                            // выбираем цену, которая была зафиксирована на момент продажу товара (с учётом возможной скидки за ранг пользоателя):
+                            // выбираем цену, которая была зафиксирована на момент продажу товара (с учётом возможной скидки за ранг пользователя):
                             $productFinalPrice = (isset($item['price_with_rank_discount'])  && $item['price_with_rank_discount'] != 0 && $item['price_with_rank_discount'] < $item['price']) 
                                 ? $item['price_with_rank_discount']
                                 : $item['price'];
 
+                            $items[] = [
+                                'name'     => $item['name'],
+                                'quantity' => (int)$item['quantity'],
+                                'price'    => (float)$productFinalPrice,
+                                'tax'      => 'vat0' // Ставка НДС (без НДС)
+                            ];
+                                
                         OrderItem::create([
                             'order_id'      => $order->id,
                             'product_id'    => $item['id'],
@@ -208,25 +218,25 @@ class OrderController extends Controller {
 
                         // 3. Логируем резерв
                         ProductReservation::create([
-                            'product_id' => $item['id'],
-                            'order_id' => $order->id,
-                            'quantity' => $item['quantity'],
-                            'expires_at' => WorkingDaysService::getExpirationDate(3)
+                            'product_id'    => $item['id'],
+                            'order_id'      => $order->id,
+                            'quantity'      => $item['quantity'],
+                            'expires_at'    => WorkingDaysService::getExpirationDate(3)
                         ]);
                     }
                 
                 // 5. Логируем статус
                     OrderStatusHistory::create([
-                        'order_id' => $order->id,
-                        'old_status' => OrderStatus::PENDING->value,                // 1
-                        'new_status' => OrderStatus::CREATED->value,                // 2
-                        'comment' => 'Пользователь подтвердил заказ'
+                        'order_id'          => $order->id,
+                        'old_status'        => OrderStatus::PENDING->value,                 // 1
+                        'new_status'        => OrderStatus::RESERVED->value,                // 3
+                        'comment'           => 'Пользователь подтвердил заказ'
                     ]);
 
                 // 6. Обновляем статус заказа в таблице Orders
                     $order->refresh()->update([
-                        'status_id' => OrderStatus::CREATED->value,
-                        'invoice_url_expired_at' => WorkingDaysService::getExpirationDate(3),
+                        'status_id'                 => OrderStatus::RESERVED->value,
+                        'invoice_url_expired_at'    => WorkingDaysService::getExpirationDate(3),
                     ]);
                 
                 // 7. Логируем полученные покупателем скидки: вызываем сервис для логирования (применения - закомментировал) скидок:
@@ -235,49 +245,119 @@ class OrderController extends Controller {
 
                 // 8. Генерируем PDF и отправляем письма
 
-                    // 8.1 Создаём экземпляр Mailable
-                    // $orderMail = new OrderReserve($order, $user);
-                    $orderMail = match ($user->client_type_id) {
-                        1 => new OrderReserve($order, $user),
-                        2 => new OrderInvoice($order, $user),
-                        default => new OrderReserve($order, $user)
-                    };
-                    
-                    // 8.2 Генерируем уникальное имя для PDF
-                    $sanitizedOrderNumber = $orderMail->sanitizeOrderNumber($orderNumber);
-                    \Log::debug('sanitizedOrderNumber:', [ 'sanitizedOrderNumber' => $sanitizedOrderNumber]);
-
-                    $salt = $orderMail->encryptOrderNumber($sanitizedOrderNumber);
-                    $relativePath = 'storage/invoices/invoice_' . $sanitizedOrderNumber . '_' . $salt . '.pdf';
-                    
-                    // 8.3 Сохраняем путь к PDF в базу данных (Обновляем заказ с ссылкой на PDF)
-                    try {
-                        $order->update(['invoice_url' => $relativePath]);
-                    } catch (\Exception $e) {
-                        \Log::error('Failed to update order: '.$e->getMessage());
-                        // Дополнительная обработка ошибки
-                    }
-
-                    // 8.4 Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
-                    // $orderMail = new OrderReserve($order, $user);
-                    $orderMail = match ($user->client_type_id) {
-                        1 => new OrderReserve($order, $user),               // Для физических лиц делаем "Резерв"
-                        2 => new OrderInvoice($order, $user),               // Для юридических лиц формируем счёт
-                        default => new OrderReserve($order, $user)
-                    };
-
-                    // 8.5 Генерируем и сохраняем PDF
-                    $orderMail->buildPdfAndSave($relativePath);
-
-                    // Отправляем заказ ...
-                    try {
-                        // Mail::to($user->email)->send($orderMail);
-                        // Mail::to('serg.bolshakov@gmail.com')->cc('ivk@mts.ru')->send($orderMail);
-                        Mail::to('serg.bolshakov@gmail.com')->send($orderMail);
-                    } catch (\Exception $e) {
-                        Log::error('Failed to send order email: '.$e->getMessage());
-                    }
+                // 8.1 Создаём экземпляр Mailable
+                // $orderMail = new OrderReserve($order, $user);
+                $orderMail = match ($user->client_type_id) {
+                    1 => new OrderReserve($order, $user),
+                    2 => new OrderInvoice($order, $user),
+                    default => new OrderReserve($order, $user)
+                };
                 
+                // 8.2 Генерируем уникальное имя для PDF
+                $sanitizedOrderNumber = $orderMail->sanitizeOrderNumber($orderNumber);
+                \Log::debug('sanitizedOrderNumber:', [ 'sanitizedOrderNumber' => $sanitizedOrderNumber]);
+
+                $salt = $orderMail->encryptOrderNumber($sanitizedOrderNumber);
+                $relativePath = 'storage/invoices/invoice_' . $sanitizedOrderNumber . '_' . $salt . '.pdf';
+                
+                // 8.3 Сохраняем путь к PDF в базу данных (Обновляем заказ с ссылкой на PDF)
+                try {
+                    $order->update(['invoice_url' => $relativePath]);
+                } catch (\Exception $e) {
+                    \Log::error('Failed to update order: '.$e->getMessage());
+                    // Дополнительная обработка ошибки
+                }
+
+                // 8.4 Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
+                // $orderMail = new OrderReserve($order, $user);
+                $orderMail = match ($user->client_type_id) {
+                    1 => new OrderReserve($order, $user),               // Для физических лиц делаем "Резерв"
+                    2 => new OrderInvoice($order, $user),               // Для юридических лиц формируем счёт
+                    default => new OrderReserve($order, $user)
+                };
+
+                // 8.5 Генерируем и сохраняем PDF
+                $orderMail->buildPdfAndSave($relativePath);
+
+                // Отправляем заказ ...
+                try {
+                    // Mail::to($user->email)->send($orderMail);
+                    // Mail::to('serg.bolshakov@gmail.com')->cc('ivk@mts.ru')->send($orderMail);
+                    Mail::to('serg.bolshakov@gmail.com')->send($orderMail);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send order email: '.$e->getMessage());
+                }
+   
+                $paymentMethod = PaymentMethod::forRequest($request);
+
+                // Формируем данные для Робокассы: ()
+                if ($paymentMethod === PaymentMethod::ONLINE && $order && $order->payment_status !== 'paid') {    
+                    // Проверка суммы 
+                    $calculatedTotal = array_reduce($items, fn($sum, $item) => $sum + ($item['price'] * $item['quantity']), 0);
+                    if (abs($calculatedTotal - $order->total_product_amount) > 0.01) {
+                        \Log::error('Сумма товаров не совпадает с total_product_amount', [
+                            'calculated' => $calculatedTotal,
+                            'order_total' => $order->total_product_amount
+                        ]);
+                        throw new \Exception('Ошибка: расхождение в сумме заказа');
+                    }
+
+                    // Robokassa требует явно указывать доставку в чеке. Добавяем её в массив $items:
+                    if ($order->order_delivery_cost > 0) {
+                        $items[] = [
+                            'name'     => 'Доставка',
+                            'quantity' => 1,
+                            'price'    => (float)$order->order_delivery_cost,
+                            'tax'      => 'vat0' // ставка НДС для доставки
+                        ];
+                    }
+
+                    try {
+                        $robokassaService = new RobokassaService();
+                        $paymentUrl = $robokassaService->generatePaymentLink(
+                            (float)$order->total_product_amount + (float)$order->order_delivery_cost,
+                            $order->id, // Лучше использовать числовой ID для Robokassa
+                            "Оплата заказа #{$order->order_number}",
+                            $items
+                        );
+
+                        \Log::channel('payments')->debug('Generating Robokassa link', [
+                            'order_id' => $order->id,
+                            'amount' => (float)$order->total_product_amount + (float)$order->order_delivery_cost,
+                            'items_count' => count($items),
+                            'paymentUrl' => $paymentUrl,
+                        ]);
+                                                   
+                        // Обновляем запись payment_status в таблице orders
+                        $order->addPaymentDetails([
+                            'payment_url' => $paymentUrl,
+                            'payment_url_expires_at' => WorkingDaysService::getExpirationDate(3) // 3 рабочих дня
+                        ]);  // метод описан в модели Order
+                        
+                        
+                        // если физлицо выбирает опцию "отложить оплату", - просто сообщаем, что заказ создан. Оплатить - переводим его по ссылке на оплату заказа
+                        if (!$request->isReserve) {
+                            return response()->json([
+                                'status' => 'success',
+                                'redirect_url' => $paymentUrl
+                            ]);
+                        }                        
+                    } catch (\Exception $e) {
+                        \Log::error('Robokassa payment failed: '.$e->getMessage());
+                        // Откатываем заказ или помечаем как ошибку оплаты
+                    }
+                } 
+
+                // Проверяем не был ли заказ уже оплачен:
+                if ($order && $order->payment_status === 'paid') {
+                    // заказ уже оплачен, возвращаем ответ:
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Заказ уже оплачен. Спасибо.',
+                        'error_code' => 'ORDER_PAYMENT_FAILED'
+                    ], 500);
+                }
+
                 return compact('order');
             });
 
@@ -286,14 +366,13 @@ class OrderController extends Controller {
             return response()->json([
                 'status' => 'success',
                 'orderId' => $order['order']->id,
-                // 'order' => $order['order'],
                 'clearCart' => true, // Флаг для фронта
                 'redirect' => null,  // Фронт сам решит куда редиректить
                 'message' => 'Заказ успешно создан'
             ]);
         
         } catch (\Throwable $e) {     // \Throwable — это базовый интерфейс в PHP, который реализуют: Все исключения (\Exception) и Ошибки (\Error, например TypeError)
-            Log::error('Order failed: '.$e->getMessage());
+            \Log::error('Order failed: '.$e->getMessage());
                     
             return response()->json([
                 'status' => 'error',
@@ -303,6 +382,22 @@ class OrderController extends Controller {
         }
         
     }      
+
+    public function showSuccess(Request $request) {
+        $orderId = $request->input('InvId');
+        $order = Order::findOrFail($orderId);
+        $this->trackOrder($order);
+    }
+
+    public function showFailed(Request $request) {
+        $orderId = $request->input('InvId');
+        $error = $request->input('error');
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Ошибка при оплате заказа',
+            'error_code' => 'ORDER_PAYMENT_FAILED' . $error
+        ], 500);
+    }
         
     private function resolveUser($request): ?User {
         // \Log::debug('OrderController request:', [ 'user' => $request->all(),]);

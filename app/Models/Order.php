@@ -176,6 +176,14 @@ class Order extends Model {
     public function items() {
         return $this->hasMany(OrderItem::class);                // Один заказ → много позиций
     }
+
+    // Добавить информацию об оплате заказа (платеже)
+    public function addPaymentDetails(array $newData) {
+        $current = json_decode($this->payment_details, true) ?? [];
+        $this->update([
+            'payment_details' => json_encode(array_merge($current, $newData), JSON_UNESCAPED_UNICODE)
+        ]);
+    }
    
 }
 
