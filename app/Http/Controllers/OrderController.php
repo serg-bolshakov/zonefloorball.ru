@@ -367,8 +367,20 @@ class OrderController extends Controller {
                 return compact('order');
             });
 
-            $orderForReturn = json_decode($order['order'], true) ?? [];
-            \Log::debug('order for return:', ['order for return' => $orderForReturn]);
+            $orderData = [
+                'order' => $order['order'] instanceof \Illuminate\Database\Eloquent\Model 
+                    ? $order['order']->toArray() 
+                    : (is_array($order['order']) 
+                        ? $order['order'] 
+                        : json_decode($order['order'], true) ?? []
+                    )
+            ];
+
+            /** что такое $order['order']?             *  
+             * Если это результат compact('order'), то это объект модели.
+             */
+
+            \Log::debug('Order for return:', $orderData);
 
             return response()->json([
                 'status' => 'success',
