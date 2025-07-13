@@ -367,7 +367,7 @@ class OrderController extends Controller {
                 return compact('order');
             });
 
-            $orderData = $order['order'] instanceof \Illuminate\Database\Eloquent\Model 
+            $orderOrder = $order['order'] instanceof \Illuminate\Database\Eloquent\Model 
                     ? $order['order']->toArray() 
                     : (is_array($order['order']) 
                         ? $order['order'] 
@@ -379,7 +379,7 @@ class OrderController extends Controller {
              * Если это результат compact('order'), то это объект модели.
              */
 
-            \Log::debug('Order for return:', $orderData);
+            \Log::debug('Order for return:', $orderOrder);
 
             return response()->json([
                 'status' => 'success',
