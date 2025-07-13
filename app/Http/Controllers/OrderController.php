@@ -380,7 +380,6 @@ class OrderController extends Controller {
              */
 
             // \Log::debug('Order for return:', $orderOrder);
-            \Log::debug('Order for return:', 'Ошибка была здесь');
 
             return response()->json([
                 'status' => 'success',
