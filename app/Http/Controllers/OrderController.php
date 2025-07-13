@@ -80,7 +80,7 @@ class OrderController extends Controller {
     public function create (StoreOrderRequest $request) {
 
         try {
-            $order = DB::transaction(function () use ($request) {
+            $orderCreated = DB::transaction(function () use ($request) {
                 // 1. Создаём/получаем пользователя
                     $user = $this->resolveUser($request);
                     \Log::debug('OrderController user:', [ 'user_id' => $user->id,  ]);
@@ -364,29 +364,27 @@ class OrderController extends Controller {
                     ], 500);
                 }
 
-                return compact('order');
+                // return compact('order');
+                return [
+                    'order_object' => $order,
+                    'order_id' => $order->id,
+                    'status' => 'success'
+                ];
             });
 
-            /*$orderOrder = $order['order'] instanceof \Illuminate\Database\Eloquent\Model 
-                    ? $order['order']->toArray() 
-                    : (is_array($order['order']) 
-                        ? $order['order'] 
-                        : json_decode($order['order'], true) ?? []
-                    )
-            ;*/
-
-            /** что такое $order['order']?             *  
-             * Если это результат compact('order'), то это объект модели.
-             */
-
-            // \Log::debug('Order for return:', $orderOrder);
+            // Логирование
+            \Log::debug('Order created', [
+                'order_id' => $orderCreated['order_id'],
+                'order_data' => $orderCreated['order_object']->toArray()
+            ]);
 
             return response()->json([
-                'status' => 'success',
-                'orderId' => $order['order']->id,
+                'status'    => 'success',
+                // 'orderId'   => $order['order']->id,
+                'orderId'   => $orderCreated['order_id'],
                 'clearCart' => true, // Флаг для фронта
-                'redirect' => null,  // Фронт сам решит куда редиректить
-                'message' => 'Заказ успешно создан'
+                'redirect'  => null,  // Фронт сам решит куда редиректить
+                'message'   => 'Заказ успешно создан'
             ]);
         
         } catch (\Throwable $e) {     // \Throwable — это базовый интерфейс в PHP, который реализуют: Все исключения (\Exception) и Ошибки (\Error, например TypeError)

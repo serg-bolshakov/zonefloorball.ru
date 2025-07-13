@@ -179,10 +179,13 @@ class Order extends Model {
 
     // Добавить информацию об оплате заказа (платеже)
     public function addPaymentDetails(array $newData) {
-        $current = json_decode($this->payment_details, true) ?? [];
-        $this->update([
+        // $current = json_decode($this->payment_details, true) ?? [];
+        /* $this->update([
             'payment_details' => json_encode(array_merge($current, $newData), JSON_UNESCAPED_UNICODE)
-        ]);
+        ]); */
+        $current = $this->payment_details ? json_decode($this->payment_details, true) : [];
+        $this->payment_details = json_encode(array_merge($current, $data));
+        $this->save();
     }
    
 }

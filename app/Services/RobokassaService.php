@@ -18,7 +18,8 @@
             
             $params['SignatureValue'] = $this->generateSignature($params);
             
-            return "src='https://auth.robokassa.ru/Merchant/PaymentForm/FormMS.js?" . http_build_query($params);
+            // return "src='https://auth.robokassa.ru/Merchant/PaymentForm/FormMS.js?" . http_build_query($params);
+            return "https://auth.robokassa.ru/Merchant/PaymentForm/FormMS.js?" . http_build_query($params);
         }
 
         // значение $crc из документации Робокассы:
