@@ -367,7 +367,7 @@ class OrderController extends Controller {
                 return compact('order');
             });
 
-            \Log::debug('order for return:', [ 'order for return' => $order['order']]);
+            \Log::debug('order for return:', ['order for return' => $order['order']->toArray()]);
 
             return response()->json([
                 'status' => 'success',
