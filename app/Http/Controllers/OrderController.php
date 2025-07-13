@@ -266,6 +266,7 @@ class OrderController extends Controller {
 
                     // 6.4 Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
                     // $orderMail = new OrderReserve($order, $user);
+                    \Log::debug('orderMail:', [ 'orderMail $order' => $order]);
                     $orderMail = match ($user->client_type_id) {
                         1 => new OrderReserve($order, $user),               // Для физических лиц делаем "Резерв"
                         2 => new OrderInvoice($order, $user),               // Для юридических лиц формируем счёт
@@ -274,12 +275,19 @@ class OrderController extends Controller {
 
                     // 6.5 Генерируем и сохраняем PDF
                     $orderMail->buildPdfAndSave($relativePath);
-    
+                    \Log::debug('orderMail after:', [ 'orderMail after $order' => $order]);
                 // 7. Инициализируем способ оплаты заказа
                     $paymentMethod = PaymentMethod::forRequest($request);
+                    \Log::debug('orderMail: $paymentMethod', [ 'orderMail $order' => $order,
+                        '$paymentMethod' => $paymentMethod
+                    ]);
 
                 // 8. Формируем данные для Робокассы (и пытаемся инициировать оплату, если пользователь выбрал "Оплатить"):
                     if ($paymentMethod === PaymentMethod::ONLINE && $order && $order->payment_status !== 'paid') {    
+                        \Log::debug('$paymentMethod', [ 'paymentMethod $order' => $order,
+                        '$paymentMethod' => $paymentMethod
+                    ]);
+                        
                         // Проверка суммы 
                         $calculatedTotal = array_reduce($items, fn($sum, $item) => $sum + ($item['price'] * $item['quantity']), 0);
                         if (abs($calculatedTotal - $order->total_product_amount) > 0.01) {
@@ -325,7 +333,7 @@ class OrderController extends Controller {
                             
                             
                             // если физлицо выбирает опцию "отложить оплату", - просто сообщаем, что заказ создан. Оплатить - переводим его по ссылке на оплату заказа
-                            if (!$request->isReserve) {
+                            if (!$request->isReserve && !$request->bank_transfer) {
                                 \Log::debug('Generating Robokassa link we must not to be here', [
                                     'order_id' => $order->id,
                                     'amount' => (float)$order->total_product_amount + (float)$order->order_delivery_cost,
