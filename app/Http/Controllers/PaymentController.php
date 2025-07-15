@@ -39,6 +39,7 @@ class PaymentController extends Controller
 
         // 3. Проверка подписи
         $signature = strtoupper(md5("{$validated['OutSum']}:{$validated['InvId']}:{$password2}"));
+        \Log::debug('PaymentController handleResult expected signature', ['expected signature' => $signature]);
 
         if ($signature !== strtoupper($validated['SignatureValue'])) {
             Log::warning('Robokassa signature mismatch', [
