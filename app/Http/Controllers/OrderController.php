@@ -486,10 +486,12 @@ class OrderController extends Controller {
     }      
 
     public function showSuccess(Request $request) {
-        Log::debug('Robokassa Success Data:', $request->all());
+        \Log::debug('Robokassa Success Data:', $request->all());
 
-        // Получаем InvId из POST-данных
+        // Получаем данные из POST-данных
         $orderId = $request->input('InvId');
+        $outSum = $request->input('OutSum');
+        $receivedSignature = strtolower($request->input('SignatureValue'));
 
         if (!$orderId) {
             \Log::error('Robokassa Success: Missing InvId', $request->all());
@@ -501,22 +503,33 @@ class OrderController extends Controller {
             'headers' => $request->headers->all()
         ]);
 
-        $signature = Str::lower($request->input('SignatureValue'));
-        // $signature = strtolower($request->input('SignatureValue'));
+        // 1. Получаем Receipt из запроса (если есть)
+            $receipt = $request->input('Receipt');
+            $receiptForSignature = $receipt ? urldecode($receipt) : '';
 
-        // Проверяем подпись
-        $validSignature = md5("{$request->input('OutSum')}:{$orderId}:" . config('services.robokassa.password2'));
+        // 2. Формируем строку для подписи
+            $signatureString = implode(':', [
+                $outSum,
+                $orderId,
+                $receiptForSignature,                   // Учитываем Receipt, если он есть
+                config('services.robokassa.password2')  // Используем Password2!
+            ]);    
+
+        $expectedSignature = md5($signatureString);
+
+        // 3. Сравниваем подписи
+            if ($receivedSignature !== $expectedSignature) {
+                \Log::error('Invalid Robokassa signature', [
+                    'received'          => $receivedSignature,
+                    'expected'          => $expectedSignature,
+                    'signature_string'  => $signatureString // Для отладки
+                ]);
+                return redirect('/')->with('error', 'Ошибка проверки подписи платежа');
+            }
         
-        if ($signature !== $validSignature) {
-            \Log::error('Invalid Robokassa signature', [
-                'received' => $signature,
-                'expected' => $validSignature
-            ]);
-            return redirect('/')->with('error', 'Ошибка проверки подписи');
-        }
-
-        $order = Order::findOrFail($orderId);
-        $this->trackOrder($order);              // Редирект на страницу заказа
+        // 4. Если подпись верна — обрабатываем заказ
+            $order = Order::findOrFail($orderId);
+            $this->trackOrder($order);              // Редирект на страницу заказа
     }
 
     public function showFailed(Request $request) {
