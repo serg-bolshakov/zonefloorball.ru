@@ -186,11 +186,6 @@ Route::get('/legal/{type}', [LegalController::class, 'show'])
     ->name('legal.show')
     ->where('type', 'privacy-policy|offer');
 
-// Страница переподтверждения того, что пользователь ознакомился с новыми условиями оферты и/или использования персональных данных (если документы обновились)
-// Пока комментируем - логика до конца не продумана и страницы не реализованы
-/*Route::get('/legal-reconfirm', [LegalController::class, 'showReconfirmForm'])->name('legal.reconfirm');
-Route::post('/legal-reconfirm', [LegalController::class, 'processReconfirm']);*/
-
 Route::post('/api/payments/robokassa/result', [PaymentController::class, 'handleResult']);
 Route::post('/orders/success', [OrderController::class, 'showSuccess']);
 Route::post('/orders/failed', [OrderController::class, 'showFailed']);

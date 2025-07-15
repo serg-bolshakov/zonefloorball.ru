@@ -17,11 +17,11 @@ export const PaymentInfo: React.FC<{ payment: IOrderPayment }> = ({ payment }) =
                 </span>
             </div>
 
-            <div className="d-flex aline-items-center aline-content-center">
+            <div className="payment-buttons-grid margin-top12px">
                 {payment.invoice_url && (
                     <a 
                         href={payment.invoice_url} 
-                        className="invoice-link"
+                        className="payment-button"
                         target="_blank" 
                         rel="noopener noreferrer"
                     >
@@ -29,25 +29,15 @@ export const PaymentInfo: React.FC<{ payment: IOrderPayment }> = ({ payment }) =
                     </a>
                 )}
 
-                {/* {payment.payment_url && (
-                    <a 
-                        href={payment.payment_url} 
-                        className="invoice-link margin-left12px"
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                    >
-                        Оплатить заказ
-                    </a>
-                )} */}
-
                 {payment.payment_url && (
                     <form 
                         action={payment.payment_url} 
                         method="POST"
                         target="_blank"
+                        className="payment-form"
                     >
-                        <button type="submit" className="invoice-link margin-left12px fs14">
-                            Оплатить
+                        <button type="submit" className="payment-button">
+                            Оплатить заказ
                         </button>
                     </form>
                 )}
