@@ -486,7 +486,29 @@ class OrderController extends Controller {
     }      
 
     public function showSuccess(Request $request) {
+        // Получаем InvId из POST-данных
         $orderId = $request->input('InvId');
+
+        if (!$orderId) {
+            \Log::error('Robokassa Success: Missing InvId', $request->all());
+            return redirect('/')->with('error', 'Не удалось обработать платёж');
+        }
+
+        \Log::debug('Robokassa Success Call', [
+            'all_input' => $request->all(),
+            'headers' => $request->headers->all()
+        ]);
+
+        $signature = Str::lower($request->input('SignatureValue'));
+
+        // Проверяем подпись
+        $validSignature = md5("{$request->input('OutSum')}:{$orderId}:" . config('services.robokassa.password2'));
+        
+        if ($signature !== $validSignature) {
+            \Log::error('Robokassa Success: Invalid signature', $request->all());
+            return redirect('/')->with('error', 'Ошибка проверки подписи');
+        }
+
         $order = Order::findOrFail($orderId);
         $this->trackOrder($order);
     }

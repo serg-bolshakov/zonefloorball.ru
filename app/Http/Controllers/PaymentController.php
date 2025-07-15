@@ -18,6 +18,11 @@ class PaymentController extends Controller
 
         \Log::debug('PaymentController handleResult', [ '$request' => $request->all()]);
 
+        \Log::debug('Robokassa Result URL Call', [
+            'all_input' => $request->all(),
+            'headers' => $request->headers->all()
+        ]);
+
         // 1. Валидация входных данных
         $validated = $request->validate([
             'OutSum'            => 'required|numeric',
