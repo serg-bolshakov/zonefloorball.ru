@@ -36,7 +36,8 @@ class PaymentController extends Controller
         // 2. Получаем параметры из конфига
         $password2 = Config::get('services.robokassa.password2');           // Пароль #2 из настроек Robokassa
         $testMode  = Config::get('services.robokassa.test_mode', false);
-
+        \Log::debug('PaymentController handleResult', ['testMode' => $testMode]);
+        
         // 3. Проверка подписи
         $signature = strtoupper(md5("{$validated['OutSum']}:{$validated['InvId']}:{$password2}"));
         \Log::debug('PaymentController handleResult expected signature', ['expected signature' => $signature]);
