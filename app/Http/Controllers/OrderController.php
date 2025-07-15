@@ -700,7 +700,7 @@ class OrderController extends Controller {
                                 'label' => $order->payment_status->label()      // 'Ожидает оплаты'
                             ],
                             'invoice_url' => '/invoice/' . $order->access_hash,
-                            'payment_url' => $this->resolvePaymentUrl($order, $paymentDetails)['url'] // отправить только, если ссылка активна, заказ, не оплачен
+                            'payment_url' => $this->resolvePaymentUrl($order, $paymentDetails)['url'] ?? null   // отправить только, если ссылка активна, заказ, не оплачен
                         ]
                     ]
                 ]);
