@@ -489,7 +489,7 @@ class OrderController extends Controller {
         \Log::debug('Robokassa Success Data:', $request->all());
 
         // Получаем данные из POST-данных
-        $orderId = $request->input('InvId');
+        $orderId = (int)$request->input('InvId');
         $outSum = $request->input('OutSum');
         $receivedSignature = strtolower($request->input('SignatureValue'));
 
@@ -525,7 +525,8 @@ class OrderController extends Controller {
         
         // 3. Если подпись верна — обрабатываем заказ
             $order = Order::findOrFail($orderId);
-            $this->trackOrder($order);                          // Редирект на страницу заказа
+            // Редирект на страницу заказа с хешем
+            return redirect()->route('order.track', ['order' => $order->access_hash]);
     }
 
     public function showFailed(Request $request) {
