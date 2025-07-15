@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Config;
 
 use App\Enums\OrderStatus;                  
 use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatus;
 
 class PaymentController extends Controller
 {
@@ -84,7 +85,7 @@ class PaymentController extends Controller
                 ]);  // метод описан в модели Order
                 
                 $order->update([
-                    'payment_status'            => PaymentMethod::PAID->value,
+                    'payment_status'            => PaymentStatus::PAID->value,
                     'invoice_url_expired_at'    => now(),
                     'status_id'                 => OrderStatus::CONFIRMED->value,
                 ]);
