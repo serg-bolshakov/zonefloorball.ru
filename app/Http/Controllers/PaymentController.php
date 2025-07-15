@@ -68,12 +68,12 @@ class PaymentController extends Controller
                 $order->addPaymentDetails([
                     'payment_url_expires_at'    => now()->toDateTimeString(),
                     'paid_at'                   => now()->toDateTimeString(),
-                    'amount' => (float)$validated['OutSum'],
-                    'currency' => 'RUB',
-                    'gateway' => 'robokassa',
-                    'transaction_id' => $validated['InvId'],
+                    'amount'                    => (float)$validated['OutSum'],
+                    'currency'                  => 'RUB',
+                    'gateway'                   => 'robokassa',
+                    'transaction_id'            => $validated['InvId'],
                     // Поля для будущего дополнения:
-                    'receipt_url' => null, // Пока оставляем null
+                    'receipt_url'               => null, // Пока оставляем null
                     'metadata' => [
                         'test_mode' => $testMode
                     ]
@@ -87,7 +87,7 @@ class PaymentController extends Controller
             });
 
             // 5. Логирование успеха
-            \Log::channel('payments')->info("Order {$validated['InvId']} processed", [
+            \Log::info("Order {$validated['InvId']} processed", [
                 'amount' => $validated['OutSum'],
                 'mode' => $testMode ? 'test' : 'production'
             ]);
@@ -126,7 +126,7 @@ class PaymentController extends Controller
 
         } catch (\Exception $e) {
             // 6. Обработка ошибок
-            Log::channel('payments')->error("Payment processing failed: " . $e->getMessage(), [
+            \Log::error("Payment processing failed: " . $e->getMessage(), [
                 'order_id' => $validated['InvId'],
                 'trace' => $e->getTraceAsString()
             ]);

@@ -506,7 +506,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         
         if (submittingRef.current) return; // Защита от повторного нажатия
         submittingRef.current = true;
-
+        
         try {
             const orderData = {
                 products: cartProducts.map(p => ({
@@ -530,11 +530,13 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 legal_agreement: isAgreed
             };
 
-            console.log('orderData', orderData);
+            // console.log('orderData', orderData);
+            // console.log('customerData', customerData);
     
             await createOrder(orderData, {
                 isReserve: actionType === 'reserve',
-                paymentMethod: actionType === 'pay' ? 'online' : 'bank_transfer',
+                isPay: actionType === 'pay',        
+                paymentMethod: customerData.type === 'legal' ? 'bank_transfer' : 'online',
 
                 onSuccess: (res) => {
                 

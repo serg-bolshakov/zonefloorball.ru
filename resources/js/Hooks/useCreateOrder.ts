@@ -51,6 +51,7 @@ const useCreateOrder = () => {
         orderData: OrderData<T>,
         options: {
             isReserve?: boolean;
+            isPay?: boolean;
             paymentMethod?: 'online' | 'bank_transfer' | 'cash';
             onSuccess?: (response: OrderResponse) => void;
           }

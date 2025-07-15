@@ -61,6 +61,7 @@ export interface IOrderPayment {
         label: string;
     };
     invoice_url?: string;
+    payment_url?: string;
 }
 
 interface IOrder {

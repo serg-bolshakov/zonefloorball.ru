@@ -8,15 +8,16 @@ enum OrderStatus: int {
     case CREATED                = 2;    // Создан
     case RESERVED               = 3;    // Зарезервирован
     case CONFIRMED              = 4;    // Подтверждён
-    case CANCELLED              = 5;    //Отменён
-    case IN_PROCESSING          = 6;    // Заказ оплачен (или принято решение об отгрузке без предоплаты). Комплектуется и готовится к отгрузке (отправке/получению) со склада.
-    case READY_TO_BE_DISPATCHED = 7;    // Готов к отгрузке/отправке/получению со склада
-    case SHIPPED                = 8;    // Заказ отпрален
-    case DELIVEVERED            = 9;    // Заказ доставлен в место получения/выдачи
-    case RECEIVED               =10;    // Товары получены покупателем
-    case COMPLETED              =11;    // Заказ завершён (товар получен, заказ оплачен, претензий у сторон нет)
-    case RETURNED               =12;    // Оформлен возврат товара
-    case NULLIFY                =13;    // Счёт/резерв не оплачен в течение 3-х дней: аннулирован, товары снимаются с резерва, счёт не подлежит оплате, делать недействительным
+    case CANCELLED              = 5;    // Отменён
+    case FAILED                 = 6;    // Ошибка при создании
+    case IN_PROCESSING          = 7;    // Заказ оплачен (или принято решение об отгрузке без предоплаты). Комплектуется и готовится к отгрузке (отправке/получению) со склада.
+    case READY_TO_BE_DISPATCHED = 8;    // Готов к отгрузке/отправке/получению со склада
+    case SHIPPED                = 9;    // Заказ отпрален
+    case DELIVEVERED            =10;    // Заказ доставлен в место получения/выдачи
+    case RECEIVED               =11;    // Товары получены покупателем
+    case COMPLETED              =12;    // Заказ завершён (товар получен, заказ оплачен, претензий у сторон нет)
+    case RETURNED               =13;    // Оформлен возврат товара
+    case NULLIFY                =14;    // Счёт/резерв не оплачен в течение 3-х дней: аннулирован, товары снимаются с резерва, счёт не подлежит оплате, делать недействительным
     
     public function title(): string {
         return match($this) {
@@ -25,6 +26,7 @@ enum OrderStatus: int {
             self::RESERVED                  => 'Товар зарезервирован',
             self::CONFIRMED                 => 'Подтверждён',
             self::CANCELLED                 => 'Заказ отменён',
+            self::FAILED                    => 'Ошибка при создании',
             self::IN_PROCESSING             => 'В обработке',
             self::READY_TO_BE_DISPATCHED    => 'Готов к отгрузке',
             self::SHIPPED                   => 'Отгружен',
@@ -54,14 +56,15 @@ enum OrderStatus: int {
              3 => self::RESERVED,
              4 => self::CONFIRMED,
              5 => self::CANCELLED,
-             6 => self::IN_PROCESSING,
-             7 => self::READY_TO_BE_DISPATCHED,
-             8 => self::SHIPPED,
-             9 => self::DELIVEVERED,
-            10 => self::RECEIVED,
-            11 => self::COMPLETED,
-            12 => self::RETURNED,
-            13 => self::NULLIFY,
+             6 => self::FAILED,
+             7 => self::IN_PROCESSING,
+             8 => self::READY_TO_BE_DISPATCHED,
+             9 => self::SHIPPED,
+            10 => self::DELIVEVERED,
+            11 => self::RECEIVED,
+            12 => self::COMPLETED,
+            13 => self::RETURNED,
+            14 => self::NULLIFY,
             default => throw new \InvalidArgumentException("Неизвестный статус: $value")
         };
     }
