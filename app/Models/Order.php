@@ -9,6 +9,8 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 
+use Illuminate\Support\Carbon; 
+
 class Order extends Model {
     use HasFactory;
 
@@ -187,6 +189,14 @@ class Order extends Model {
         $this->payment_details = json_encode(array_merge($current, $newData));
         $this->save();
     }
-   
+
+    // Проверяем срок действия ссылки для оплаты заказа
+    public function isPaymentLinkExpired(): bool {
+        $expiresAt = $this->payment_details['payment_url_expires_at'] ?? null;
+        
+        return $expiresAt 
+            ? now()->gt(Carbon::parse($expiresAt)) 
+            : true; // Если нет даты - считаем ссылку просроченной
+    }
 }
 

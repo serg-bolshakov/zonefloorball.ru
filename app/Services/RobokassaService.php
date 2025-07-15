@@ -45,8 +45,6 @@
                 'SignatureValue'    => md5($signatureString)
             ];
             
-            // $params['SignatureValue'] = $this->generateSignature($params);
-
             $link = "https://auth.robokassa.ru/Merchant/Index.aspx?" . http_build_query($params);
             \Log::debug('Generated Robokassa Link', ['url' => $link]);
 

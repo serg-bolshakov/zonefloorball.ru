@@ -66,8 +66,8 @@ class PaymentController extends Controller
                     return;
                 }
 
-                if (abs($order->total - $validated['OutSum']) > 0.01) {
-                    throw new \Exception("Amount mismatch: expected {$order->total}, got {$validated['OutSum']}");
+                if (abs((float)$order->total_product_amount + (float)$order->order_delivery_cost - $validated['OutSum']) > 0.01) {
+                    throw new \Exception("Amount mismatch: expected {(float)$order->total_product_amount + (float)$order->order_delivery_cost}, got {$validated['OutSum']}");
                 }
                 
                 // Обновляем поле заказа payment_status в таблице orders
@@ -80,9 +80,7 @@ class PaymentController extends Controller
                     'transaction_id'            => $validated['InvId'],
                     // Поля для будущего дополнения:
                     'receipt_url'               => null, // Пока оставляем null
-                    'metadata' => [
-                        'test_mode' => $testMode
-                    ]
+                    'metadata'                  => ['test_mode' => $testMode]
                 ]);  // метод описан в модели Order
                 
                 $order->update([
@@ -100,6 +98,7 @@ class PaymentController extends Controller
 
             // 6. Освобождаем резерв товаров и Логируем резерв
             $order->items()->each(function($item) {
+                \Log::info("Item {$item}");
                 try {
                     $productReport = ProductReport::where('product_id', $item['id'])
                         ->lockForUpdate() // Решает проблему "гонки"

@@ -507,7 +507,7 @@ class OrderController extends Controller {
             $signatureString = implode(':', [
                 $outSum,
                 $orderId,
-                config('services.robokassa.password2')  // Используем Password2!
+                config('services.robokassa.password1')  // Используем Password1!
             ]);    
 
         $expectedSignature = md5($signatureString);
@@ -517,14 +517,15 @@ class OrderController extends Controller {
                 \Log::error('Invalid Robokassa signature', [
                     'received'          => $receivedSignature,
                     'expected'          => $expectedSignature,
-                    'signature_string'  => $signatureString // Для отладки
+                    'signature_string'  => $signatureString,    // Для отладки
+                    'error'             => 'Ошибка проверки подписи платежа в showSuccess'
                 ]);
-                return redirect('/')->with('error', 'Ошибка проверки подписи платежа');
+                // return redirect('/')->with('error', 'Ошибка проверки подписи платежа');
             }
         
         // 3. Если подпись верна — обрабатываем заказ
             $order = Order::findOrFail($orderId);
-            $this->trackOrder($order);              // Редирект на страницу заказа
+            $this->trackOrder($order);                          // Редирект на страницу заказа
     }
 
     public function showFailed(Request $request) {
