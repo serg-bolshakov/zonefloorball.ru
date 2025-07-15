@@ -486,6 +486,8 @@ class OrderController extends Controller {
     }      
 
     public function showSuccess(Request $request) {
+        Log::debug('Robokassa Success Data:', $request->all());
+
         // Получаем InvId из POST-данных
         $orderId = $request->input('InvId');
 
@@ -500,17 +502,21 @@ class OrderController extends Controller {
         ]);
 
         $signature = Str::lower($request->input('SignatureValue'));
+        // $signature = strtolower($request->input('SignatureValue'));
 
         // Проверяем подпись
         $validSignature = md5("{$request->input('OutSum')}:{$orderId}:" . config('services.robokassa.password2'));
         
         if ($signature !== $validSignature) {
-            \Log::error('Robokassa Success: Invalid signature', $request->all());
+            \Log::error('Invalid Robokassa signature', [
+                'received' => $signature,
+                'expected' => $validSignature
+            ]);
             return redirect('/')->with('error', 'Ошибка проверки подписи');
         }
 
         $order = Order::findOrFail($orderId);
-        $this->trackOrder($order);
+        $this->trackOrder($order);              // Редирект на страницу заказа
     }
 
     public function showFailed(Request $request) {
