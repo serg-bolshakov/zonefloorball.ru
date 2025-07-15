@@ -503,21 +503,16 @@ class OrderController extends Controller {
             'headers' => $request->headers->all()
         ]);
 
-        // 1. Получаем Receipt из запроса (если есть)
-            $receipt = $request->input('Receipt');
-            $receiptForSignature = $receipt ? urldecode($receipt) : '';
-
-        // 2. Формируем строку для подписи
+        // 1. Формируем строку для подписи
             $signatureString = implode(':', [
                 $outSum,
                 $orderId,
-                $receiptForSignature,                   // Учитываем Receipt, если он есть
                 config('services.robokassa.password2')  // Используем Password2!
             ]);    
 
         $expectedSignature = md5($signatureString);
 
-        // 3. Сравниваем подписи
+        // 2. Сравниваем подписи
             if ($receivedSignature !== $expectedSignature) {
                 \Log::error('Invalid Robokassa signature', [
                     'received'          => $receivedSignature,
@@ -527,7 +522,7 @@ class OrderController extends Controller {
                 return redirect('/')->with('error', 'Ошибка проверки подписи платежа');
             }
         
-        // 4. Если подпись верна — обрабатываем заказ
+        // 3. Если подпись верна — обрабатываем заказ
             $order = Order::findOrFail($orderId);
             $this->trackOrder($order);              // Редирект на страницу заказа
     }
