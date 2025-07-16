@@ -17,7 +17,7 @@ class PaymentController extends Controller
     public function handleResult(Request $request)
     {
 
-        \Log::debug('PaymentController handleResult', [ '$request' => $request->all()]);
+        \Log::debug('PaymentController handleResult', ['$request' => $request->all()]);
 
         \Log::debug('Robokassa Result URL Call', [
             'all_input' => $request->all(),
@@ -101,8 +101,6 @@ class PaymentController extends Controller
                         'new_status'        => OrderStatus::IN_PROCESSING->value,           // 7
                         'comment'           => 'Платёж подтверждён'
                     ]);*/
-
-                    \Log::debug('PaymentController change status:', ['newStatus' => OrderStatus::IN_PROCESSING->value]);   
 
                     $order->changeStatus(
                         newStatus: OrderStatus::IN_PROCESSING,

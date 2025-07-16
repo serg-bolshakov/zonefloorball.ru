@@ -196,7 +196,6 @@ class OrderController extends Controller {
                                 'name'     => $item['name'],
                                 'quantity' => (int)$item['quantity'],
                                 'price'    => (float)$productFinalPrice,
-                                // 'tax'      => 'vat0'
                                 'tax'      => 'none' // Ставка НДС (без НДС)
                             ];
                                 
@@ -281,21 +280,21 @@ class OrderController extends Controller {
                         
                 // 7. Инициализируем способ оплаты заказа
                     $paymentMethod = PaymentMethod::forRequest($request);
-                \Log::debug('Robokassa payment link generation check', [
-                    'order_id' => $order->id,
-                    'payment_method' => $paymentMethod, 
-                    'is_reserve' => $request->boolean('isReserve'),
-                    'amount' => $order->total_product_amount + $order->order_delivery_cost,
-                    'request_data' => $request->only([
-                        'paymentMethod', 
-                        'products', 
-                        'customer'
-                    ]),
-                    'debug_trace' => [
-                        'step' => 'before_payment_processing',
-                        'memory_usage' => memory_get_usage(true) / 1024 / 1024 . ' MB'
-                    ]
-                ]);
+                    \Log::debug('Robokassa payment link generation check', [
+                        'order_id' => $order->id,
+                        'payment_method' => $paymentMethod, 
+                        'is_reserve' => $request->boolean('isReserve'),
+                        'amount' => $order->total_product_amount + $order->order_delivery_cost,
+                        'request_data' => $request->only([
+                            'paymentMethod', 
+                            'products', 
+                            'customer'
+                        ]),
+                        'debug_trace' => [
+                            'step' => 'before_payment_processing',
+                            'memory_usage' => memory_get_usage(true) / 1024 / 1024 . ' MB'
+                        ]
+                    ]);
                 // 8. Формируем данные для Робокассы (и пытаемся инициировать оплату, если пользователь выбрал "Оплатить"):
                     if ($paymentMethod === PaymentMethod::ONLINE && $order && $order->payment_status !== 'paid') {    
                         \Log::debug('Generating Robokassa link we must not to be here', [
