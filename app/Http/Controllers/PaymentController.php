@@ -95,9 +95,10 @@ class PaymentController extends Controller
                     );
 
                     // Освобождаем резерв товаров и Логируем резерв
-                    $order->items()->each(function($item) {
-                        \Log::info("Item {$item}");
+                    $order->items()->each(function($item) use ($order) {        // Передаем $order в замыкание
+                        \Log::info(" {$item}");
                         try {
+                            // 1. Обновляем отчёт по остаткам
                             $productReport = ProductReport::where('product_id', $item['id'])
                                 ->lockForUpdate() // Решает проблему "гонки"
                                 ->first();
@@ -107,7 +108,7 @@ class PaymentController extends Controller
                                 'reserved'  => (int)$productReport->reserved - (int)$item['quantity'],
                             ]);
 
-                            $productReservation = ProductReservation::where('product_id', $item['id'])->where('order_id', $validated['InvId'])
+                            $productReservation = ProductReservation::where('product_id', $item['id'])->where('order_id', $order->id)  // ← Используем $order->id вместо $validated
                                 ->lockForUpdate() 
                                 ->first();
                             if (!$productReservation) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по резервированию"); }
@@ -117,6 +118,7 @@ class PaymentController extends Controller
 
                         } catch (\Exception $e) {
                             Log::error("Ошибка снятия товара с резерва", [
+                                'order_id' => $order->id,  // Логируем ID заказа
                                 'product_id' => $item['id'],
                                 'error' => $e->getMessage()
                             ]);
