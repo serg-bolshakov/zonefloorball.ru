@@ -649,6 +649,10 @@ class OrderController extends Controller {
             }
 
             \Log::debug('status_id:', [ 'history' => OrderStatus::tryFrom((int)$order->status_id)?->title()]);
+            \Log::debug('Loaded statusHistory:', [
+                'type' => get_class($order->statusHistory),
+                'first_item' => $order->statusHistory->first()?->toArray()
+            ]);
 
             return Inertia::render('OrderTracking', [
                     'title' => 'Отслеживание заказа',
@@ -662,13 +666,14 @@ class OrderController extends Controller {
                         'status' => [
                             'id' => $order->status_id,
                             'name' => OrderStatus::tryFrom((int)$order->status_id)?->title() ?? 'Не указан',    // Используем enum
-                            'history' => $order->load('statusHistory')->statusHistory?->map(function($item) {   // Оператор null-safe (?.) Автоматически обрабатывает случай, когда statusHistory равен null.
+                            'history' => $order->statusHistory?->map(function(OrderStatusHistory $item) {       // Оператор null-safe (?.) Автоматически обрабатывает случай, когда statusHistory равен null.
+                                \Log::debug('History item raw:', ['history' => $item->new_status->title()]);    
                                 return [
-                                    'date' => Carbon::parse($item->created_at)->format('d.m.Y H:i'),            // Преобразуем строку в Carbon
-                                    'status' => OrderStatus::tryFrom((int)$item->new_status)?->title() ?? 'Неизвестный статус',     // tryFrom с null-оператором - Безопасное преобразование статуса без исключений.
-                                    'comment' => $item->comment
+                                    'date'      => Carbon::parse($item->created_at)->format('d.m.Y H:i'),            // Преобразуем строку в Carbon
+                                    'status'    => $item->new_status?->title() ?? 'Неизвестный статус',            
+                                    'comment'   => $item->comment
                                 ];
-                            }) ?? [] // Возвращаем пустой массив если history null
+                            })->toArray() ?? [] // Возвращаем пустой массив если history null
                         ],
                         'items' => $order->items->map(function($item) {
                             // dd($item);

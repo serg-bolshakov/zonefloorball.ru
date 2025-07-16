@@ -105,11 +105,8 @@ const OrderTracking: React.FC<IOrderTrackProps> = ({title, robots, description, 
                 <p className="order-date">Дата: {dateRu(order.date)}</p>
                 <p className="order-total">Общая стоимость заказа: <span className="color-green">{formatPrice(totalAmount)}&nbsp;<sup>&#8381;</sup></span></p>
                 
-                {/* Статус заказа с прогресс-баром */}
-                <OrderStatusTimeline status={order.status} />
-
                 {/* Адаптивные секции с аккордеоном для мобильных */}
-                <div className="order-sections">
+                <div className="order-sections margin-bottom4px">
                     <OrderSection 
                         title="Товары в заказе" 
                         isExpanded={expandedSection === 'items'} 
@@ -134,6 +131,9 @@ const OrderTracking: React.FC<IOrderTrackProps> = ({title, robots, description, 
                         <PaymentInfo payment={order.payment} />
                     </OrderSection>
                 </div>
+
+                {/* Статус заказа с прогресс-баром */}
+                <OrderStatusTimeline status={order.status} />
 
                 <div className="order-actions">
                 {order.status.name === 'pending' && (
