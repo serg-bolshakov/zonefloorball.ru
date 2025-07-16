@@ -10,9 +10,11 @@ use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 
 use Illuminate\Support\Carbon; 
+use App\Traits\HasStatusHistory;
 
 class Order extends Model {
     use HasFactory;
+    use HasStatusHistory;
 
     protected $fillable = [
         'order_number',
@@ -197,6 +199,34 @@ class Order extends Model {
         return $expiresAt 
             ? now()->gt(Carbon::parse($expiresAt)) 
             : true; // Если нет даты - считаем ссылку просроченной
+    }
+
+    // Отношение... Связь с историей статусов
+    public function statusHistory() {
+        return $this->hasMany(OrderStatusHistory::class)->latest();
+    }
+
+    // Доступ к текущему статусу (для удобства)
+    public function getStatusAttribute() {
+        return OrderStatus::tryFrom($this->status_id);
+    }
+
+    public function changeStatus(OrderStatus $newStatus, ?string $comment = null): void {
+        // 1. Получаем текущий статус из БД
+        // $oldStatus = $this->status_id;       
+        $oldStatus = $this->getOriginal('status_id'); // Берём исходное значение из БД                                                  
+
+        DB::transaction(function () use ($newStatus, $oldStatus, $comment) {
+            // 2. Обновляем статус
+            $this->update(['status_id' => $newStatus->value]);
+
+            // 3. Логируем изменение
+            $this->logStatusChange(                                     // используем трейт use HasStatusHistory;
+                oldStatus: $oldStatus,
+                newStatus: $newStatus->value,
+                comment: $comment ?? "Статус изменён с {$oldStatus} на {$newStatus->value}"
+            );
+        });
     }
 }
 

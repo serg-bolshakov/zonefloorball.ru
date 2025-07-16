@@ -91,11 +91,23 @@ class PaymentController extends Controller
                     ]);
                 });
 
-                // 5. Логирование успеха
-                \Log::info("Order {$validated['InvId']} processed", [
-                    'amount' => $validated['OutSum'],
-                    'mode' => $testMode ? 'test' : 'production'
-                ]);
+                // 5. Логируем статус
+                    /*OrderStatusHistory::create([
+                        'order_id'          => $order->id,
+                        'old_status'        => OrderStatus::RESERVED->value,                // 3
+                        'new_status'        => OrderStatus::IN_PROCESSING->value,           // 7
+                        'comment'           => 'Платёж подтверждён'
+                    ]);*/
+                    
+                    $order->changeStatus(
+                        newStatus: OrderStatus::IN_PROCESSING,
+                        comment: 'Платёж подтверждён'
+                    );
+
+                    \Log::info("Order {$validated['InvId']} processed", [
+                        'amount' => $validated['OutSum'],
+                        'mode' => $testMode ? 'test' : 'production'
+                    ]);
 
                 // 6. Освобождаем резерв товаров и Логируем резерв
                 $order->items()->each(function($item) {

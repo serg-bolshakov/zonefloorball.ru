@@ -34,7 +34,7 @@ export interface IOrderItem {
 export interface IOrderStatus {
     id: number;
     name: string;
-    history: IOrderStatusEvent[];
+    history: IOrderStatusEvent[] | null;
 }
 
 export interface IOrderStatusEvent {

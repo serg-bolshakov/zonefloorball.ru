@@ -11,15 +11,15 @@ class OrderStatusHistory extends Model {
     
     use HasFactory;
 
-    // для обращения к заказу/статусам
+    // для обращения к заказу/статусам... Связь с заказом
     public function order() {
         return $this->belongsTo(Order::class);
     }
 
     protected $fillable = [
         'order_id',
-        'old_status',
-        'new_status',
+        'old_status',   // integer (значение из enum)
+        'new_status',   // integer (значение из enum)
         'comment',
         // 'created_at'
     ];
