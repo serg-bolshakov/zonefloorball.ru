@@ -25,33 +25,31 @@ class PaymentController extends Controller
         ]);
 
         // 1. Валидация входных данных
-        $validated = $request->validate([
-            'OutSum'            => 'required|numeric',
-            'InvId'             => 'required|integer',
-            'SignatureValue'    => 'required|string'
-        ]);
-        \Log::debug('PaymentController handleResult', ['$validated' => $validated]);
-
-        // Проверяем подпись, обновляем статус заказа
-        
-        // 2. Получаем параметры из конфига
-        $password2 = Config::get('services.robokassa.password2');           // Пароль #2 из настроек Robokassa
-        $testMode  = Config::get('services.robokassa.test_mode', false);
-        \Log::debug('PaymentController handleResult', ['testMode' => $testMode]);
-
-        // 3. Проверка подписи
-        $signature = strtoupper(md5("{$validated['OutSum']}:{$validated['InvId']}:{$password2}"));
-        \Log::debug('PaymentController handleResult expected signature', ['expected signature' => $signature]);
-
-        if ($signature !== strtoupper($validated['SignatureValue'])) {
-            Log::warning('Robokassa signature mismatch', [
-                'order_id'      => $validated['InvId'],
-                'received'      => $validated['SignatureValue'],
-                'calculated'    => $signature,
-                'ip'            => $request->ip()
+            $validated = $request->validate([
+                'OutSum'            => 'required|numeric',
+                'InvId'             => 'required|integer',
+                'SignatureValue'    => 'required|string'
             ]);
-            return response("bad sign\n", 403);
-        }
+            \Log::debug('PaymentController handleResult', ['$validated' => $validated]);
+
+        // Проверяем подпись, обновляем статус заказа       
+        // 2. Получаем параметры из конфига
+            $password2 = Config::get('services.robokassa.password2');           // Пароль #2 из настроек Robokassa
+            $testMode  = Config::get('services.robokassa.test_mode', false);
+            \Log::debug('PaymentController handleResult', ['testMode' => $testMode]);
+        // 3. Проверка подписи
+            $signature = strtoupper(md5("{$validated['OutSum']}:{$validated['InvId']}:{$password2}"));
+            \Log::debug('PaymentController handleResult expected signature', ['expected signature' => $signature]);
+
+            if ($signature !== strtoupper($validated['SignatureValue'])) {
+                Log::warning('Robokassa signature mismatch', [
+                    'order_id'      => $validated['InvId'],
+                    'received'      => $validated['SignatureValue'],
+                    'calculated'    => $signature,
+                    'ip'            => $request->ip()
+                ]);
+                return response("bad sign\n", 403);
+            }
 
         // 4. Обработка платежа в транзакции
             $order = null; // Объявим переменную ДО транзакции, чтобы её не потерять в блоке try - catch
@@ -65,85 +63,66 @@ class PaymentController extends Controller
 
                     if ($order->payment_status === 'paid') {
                         \Log::info("Order {$order->id} already paid");
-                        return;
+                        return response("OK{$validated['InvId']}\n", 200);
                     }
 
                     if (abs((float)$order->total_product_amount + (float)$order->order_delivery_cost - $validated['OutSum']) > 0.01) {
                         throw new \Exception("Amount mismatch: expected {(float)$order->total_product_amount + (float)$order->order_delivery_cost}, got {$validated['OutSum']}");
                     }
                     
-                    // Обновляем поле заказа payment_status в таблице orders
+                    // Обновление платежного статуса в таблице orders
                     $order->addPaymentDetails([
                         'payment_url_expires_at'    => now()->toDateTimeString(),
                         'paid_at'                   => now()->toDateTimeString(),
                         'amount'                    => (float)$validated['OutSum'],
                         'currency'                  => 'RUB',
                         'gateway'                   => 'robokassa',
-                        'transaction_id'            => $validated['InvId'],
-                        // Поля для будущего дополнения:
-                        'receipt_url'               => null, // Пока оставляем null
                     ]);
                     
                     $order->update([
                         'payment_status'            => PaymentStatus::PAID->value,
                         'invoice_url_expired_at'    => now(),
-                        // 'status_id'                 => OrderStatus::CONFIRMED->value,
                     ]);
 
-                    $order->changeStatus(newStatus: OrderStatus::CONFIRMED);        // Автоматическое обновление статуса заказа
-
-                });
-
-                // 5. Логируем статус
-                    /*OrderStatusHistory::create([
-                        'order_id'          => $order->id,
-                        'old_status'        => OrderStatus::RESERVED->value,                // 3
-                        'new_status'        => OrderStatus::IN_PROCESSING->value,           // 7
-                        'comment'           => 'Платёж подтверждён'
-                    ]);*/
-
+                    // Логируем статус
                     $order->changeStatus(
                         newStatus: OrderStatus::IN_PROCESSING,
                         comment: 'Заказ оплачен. В обработке.'
                     );
 
-                    \Log::info("Order {$validated['InvId']} processed", [
-                        'amount' => $validated['OutSum'],
-                        'mode' => $testMode ? 'test' : 'production'
-                    ]);
+                    // Освобождаем резерв товаров и Логируем резерв
+                    $order->items()->each(function($item) {
+                        \Log::info("Item {$item}");
+                        try {
+                            $productReport = ProductReport::where('product_id', $item['id'])
+                                ->lockForUpdate() // Решает проблему "гонки"
+                                ->first();
+                            
+                            if (!$productReport) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по остаткам"); }
+                            $productReport->update([
+                                'reserved'  => (int)$productReport->reserved - (int)$item['quantity'],
+                            ]);
 
-                // 6. Освобождаем резерв товаров и Логируем резерв
-                $order->items()->each(function($item) {
-                    \Log::info("Item {$item}");
-                    try {
-                        $productReport = ProductReport::where('product_id', $item['id'])
-                            ->lockForUpdate() // Решает проблему "гонки"
-                            ->first();
-                        
-                        if (!$productReport) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по остаткам"); }
-                        $productReport->update([
-                            'reserved'  => (int)$productReport->reserved - (int)$item['quantity'],
-                        ]);
+                            $productReservation = ProductReservation::where('product_id', $item['id'])->where('order_id', $validated['InvId'])
+                                ->lockForUpdate() 
+                                ->first();
+                            if (!$productReservation) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по резервированию"); }
+                            $productReservation->update([
+                                'paid_at' => now()->toDateTimeString(),
+                            ]);
 
-                        $productReservation = ProductReservation::where('product_id', $item['id'])->where('order_id', $validated['InvId'])
-                            ->lockForUpdate() 
-                            ->first();
-                        if (!$productReservation) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по резервированию"); }
-                        $productReservation->update([
-                            'paid_at' => now()->toDateTimeString(),
-                        ]);
+                        } catch (\Exception $e) {
+                            Log::error("Ошибка снятия товара с резерва", [
+                                'product_id' => $item['id'],
+                                'error' => $e->getMessage()
+                            ]);
+                            throw $e; // Пробрасываем выше для отката транзакции
+                        }
+                    });
 
-                    } catch (\Exception $e) {
-                        Log::error("Ошибка снятия товара с резерва", [
-                            'product_id' => $item['id'],
-                            'error' => $e->getMessage()
-                        ]);
-                        throw $e; // Пробрасываем выше для отката транзакции
-                    }
                 });
 
-                return response("OK{$validated['InvId']}\n", 200)
-                    ->header('Content-Type', 'text/plain');
+                return response("OK{$validated['InvId']}\n", 200);
 
             } catch (\Exception $e) {
                 // 6. Обработка ошибок
