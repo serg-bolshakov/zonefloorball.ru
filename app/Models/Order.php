@@ -226,7 +226,7 @@ class Order extends Model {
             $this->logStatusChange(                                     // используем трейт use HasStatusHistory;
                 oldStatus: $oldStatus,
                 newStatus: $newStatus->value,
-                comment: $comment ?? "Статус изменён с {$oldStatus} на {$newStatus->value}"
+                comment: $comment ?? "Автоматическое обновление статуса"
             );
         });
     }

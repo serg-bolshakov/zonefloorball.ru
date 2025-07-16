@@ -87,8 +87,11 @@ class PaymentController extends Controller
                     $order->update([
                         'payment_status'            => PaymentStatus::PAID->value,
                         'invoice_url_expired_at'    => now(),
-                        'status_id'                 => OrderStatus::CONFIRMED->value,
+                        // 'status_id'                 => OrderStatus::CONFIRMED->value,
                     ]);
+
+                    $order->changeStatus(newStatus: OrderStatus::CONFIRMED);        // Автоматическое обновление статуса заказа
+
                 });
 
                 // 5. Логируем статус
@@ -103,7 +106,7 @@ class PaymentController extends Controller
 
                     $order->changeStatus(
                         newStatus: OrderStatus::IN_PROCESSING,
-                        comment: 'Платёж подтверждён'
+                        comment: 'Заказ оплачен. В обработке.'
                     );
 
                     \Log::info("Order {$validated['InvId']} processed", [
