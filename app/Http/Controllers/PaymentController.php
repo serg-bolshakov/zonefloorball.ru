@@ -98,9 +98,9 @@ class PaymentController extends Controller
                         'new_status'        => OrderStatus::IN_PROCESSING->value,           // 7
                         'comment'           => 'Платёж подтверждён'
                     ]);*/
-                    
+
                     $order->changeStatus(
-                        newStatus: OrderStatus::IN_PROCESSING,
+                        newStatus: OrderStatus::IN_PROCESSING->value,
                         comment: 'Платёж подтверждён'
                     );
 
