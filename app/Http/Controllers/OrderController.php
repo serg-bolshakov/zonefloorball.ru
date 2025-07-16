@@ -662,7 +662,7 @@ class OrderController extends Controller {
                         'status' => [
                             'id' => $order->status_id,
                             'name' => OrderStatus::tryFrom((int)$order->status_id)?->title() ?? 'Не указан',    // Используем enum
-                            'history' => $order->statusHistory?->map(function($item) {                          // Оператор null-safe (?.) Автоматически обрабатывает случай, когда statusHistory равен null.
+                            'history' => $order->load('statusHistory')->statusHistory?->map(function($item) {   // Оператор null-safe (?.) Автоматически обрабатывает случай, когда statusHistory равен null.
                                 return [
                                     'date' => Carbon::parse($item->created_at)->format('d.m.Y H:i'),            // Преобразуем строку в Carbon
                                     'status' => OrderStatus::tryFrom((int)$item->new_status)?->title() ?? 'Неизвестный статус',     // tryFrom с null-оператором - Безопасное преобразование статуса без исключений.
