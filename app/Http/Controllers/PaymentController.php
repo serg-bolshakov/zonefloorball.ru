@@ -99,19 +99,19 @@ class PaymentController extends Controller
                         \Log::info(" {$item}");
                         try {
                             // 1. Обновляем отчёт по остаткам
-                            $productReport = ProductReport::where('product_id', $item['id'])
+                            $productReport = ProductReport::where('product_id', $item['product_id'])
                                 ->lockForUpdate() // Решает проблему "гонки"
                                 ->first();
                             
-                            if (!$productReport) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по остаткам"); }
+                            if (!$productReport) { throw new \Exception("Товар ID: {$item['product_id']} не найден в отчётах по остаткам"); }
                             $productReport->update([
                                 'reserved'  => (int)$productReport->reserved - (int)$item['quantity'],
                             ]);
 
-                            $productReservation = ProductReservation::where('product_id', $item['id'])->where('order_id', $order->id)  // ← Используем $order->id вместо $validated
+                            $productReservation = ProductReservation::where('product_id', $item['product_id'])->where('order_id', $order->id)  // ← Используем $order->id вместо $validated
                                 ->lockForUpdate() 
                                 ->first();
-                            if (!$productReservation) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по резервированию"); }
+                            if (!$productReservation) { throw new \Exception("Товар ID: {$item['product_id']} не найден в отчётах по резервированию"); }
                             $productReservation->update([
                                 'paid_at' => now()->toDateTimeString(),
                             ]);
@@ -119,7 +119,7 @@ class PaymentController extends Controller
                         } catch (\Exception $e) {
                             Log::error("Ошибка снятия товара с резерва", [
                                 'order_id' => $order->id,  // Логируем ID заказа
-                                'product_id' => $item['id'],
+                                'product_id' => $item['product_id'],
                                 'error' => $e->getMessage()
                             ]);
                             throw $e; // Пробрасываем выше для отката транзакции
