@@ -731,10 +731,16 @@ class OrderController extends Controller {
 
     // Отслеживание заказа (приватная, для авторизованных пользователей)
     public function trackPrivateOrder(Order $order) {
-        // Дополнительная проверка владельца (может и не нужно)
-        if ($order->user_id !== auth()->id()) {
-            // abort(403, 'Это не ваш заказ');
-            return ;
+
+        \Log::debug('TrackPrivateOrder started', ['order_id' => $order->id, 'order_client_id' => $order->order_client_id, 'user_id' => auth()->id()]);
+
+        // 1. Строгая проверка владельца
+        if ($order->order_client_id !== auth()->id()) {
+            \Log::warning('Order access denied', [
+                'order_user' => $order->user_id,
+                'current_user' => auth()->id()
+            ]);
+            abort(403, 'Это не ваш заказ');
         }
 
         $paymentDetails = $order->payment_details 
@@ -742,7 +748,9 @@ class OrderController extends Controller {
             : [];
 
         try {
+            // 2. Проверка истечения срока доступа
             if ($order->access_expires_at?->isPast()) {
+                \Log::debug('Order expired', ['expires_at' => $order->access_expires_at]);
                 return Inertia::render('OrderExpired');
             }
 
