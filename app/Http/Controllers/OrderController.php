@@ -528,8 +528,9 @@ class OrderController extends Controller {
             \Log::debug('Auth check before', [
                 'order_client_id' => $order->order_client_id,
                 'auth_id' => auth()->id(),
-                'is_verified' => auth()->user()->hasVerifiedEmail(),
-                'cookies' => request()->cookies->all()
+                'is_verified' => auth()->check() ? auth()->user()->hasVerifiedEmail() : 'guest',
+                'cookies' => request()->cookies->all(),
+                'session_id' => session()->getId()
             ]);
 
         // 4. Для авторизованных: проверяем владельца
@@ -582,7 +583,7 @@ class OrderController extends Controller {
                 'auth_check' => auth()->check(),
                 'client_ip' => request()->ip()
             ]);
-            
+
         // 5. Для гостей: редирект на страницу заказа с хешем
             return redirect()->route('order.track', $order->access_hash);
     }
