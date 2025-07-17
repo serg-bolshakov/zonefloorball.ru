@@ -498,6 +498,7 @@ class OrderController extends Controller {
         }
 
         \Log::debug('Robokassa Success Call', [
+            'user' => Auth::check(),
             'all_input' => $request->all(),
             'headers' => $request->headers->all()
         ]);
@@ -526,66 +527,79 @@ class OrderController extends Controller {
             $order = Order::findOrFail($orderId);
 
             \Log::debug('Auth check before', [
+                'user' => Auth::check(),
                 'order_client_id' => $order->order_client_id,
                 'auth_id' => auth()->id(),
                 'is_verified' => auth()->check() ? auth()->user()->hasVerifiedEmail() : 'guest',
                 'cookies' => request()->cookies->all(),
                 'session_id' => session()->getId()
             ]);
+            /*
+                // 4. Для авторизованных: проверяем владельца - по-любому не видит авторизованного пользователя... :(
+                    if (auth()->check()) {
+                        \Log::debug('Auth check passed', [
+                            'order_client_id' => $order->order_client_id,
+                            'auth_id' => auth()->id(),
+                            'is_verified' => auth()->user()->hasVerifiedEmail(),
+                            'cookies' => request()->cookies->all()
+                        ]);
+                        
+                        if ($order->order_client_id == auth()->id()) {
+                            \Log::debug('Owner confirmed', ['access_hash' => $order->access_hash]);
+                            
+                            $response = redirect()->route('privateorder.track', $order->access_hash);
+                            
+                            \Log::debug('Cookies before set', [
+                                'laravel_session' => request()->cookie('laravel_session'),
+                                'xsrf_token' => request()->cookie('XSRF-TOKEN')
+                            ]);
+                            
+                            return $response->withCookies([
+                                cookie()->forever(
+                                    'laravel_session', 
+                                    request()->cookie('laravel_session'),
+                                    secure: true,
+                                    domain: '.zonefloorball.ru',
+                                    sameSite: 'lax'
+                                ),
+                                cookie()->forever(
+                                    'XSRF-TOKEN',
+                                    request()->cookie('XSRF-TOKEN'),
+                                    secure: true,
+                                    domain: '.zonefloorball.ru',
+                                    sameSite: 'lax'
+                                )
+                            ]);
+                        } else {
+                            \Log::warning('Access denied for order', [
+                                'order_id' => $order->id,
+                                'expected_user' => $order->order_client_id,
+                                'actual_user' => auth()->id()
+                            ]);
+                            abort(403, 'Это не ваш заказ');
+                        }
+                    }
 
-        // 4. Для авторизованных: проверяем владельца
-            if (auth()->check()) {
-                \Log::debug('Auth check passed', [
-                    'order_client_id' => $order->order_client_id,
-                    'auth_id' => auth()->id(),
-                    'is_verified' => auth()->user()->hasVerifiedEmail(),
-                    'cookies' => request()->cookies->all()
-                ]);
-                
-                if ($order->order_client_id == auth()->id()) {
-                    \Log::debug('Owner confirmed', ['access_hash' => $order->access_hash]);
-                    
-                    $response = redirect()->route('privateorder.track', $order->access_hash);
-                    
-                    \Log::debug('Cookies before set', [
-                        'laravel_session' => request()->cookie('laravel_session'),
-                        'xsrf_token' => request()->cookie('XSRF-TOKEN')
-                    ]);
-                    
-                    return $response->withCookies([
-                        cookie()->forever(
-                            'laravel_session', 
-                            request()->cookie('laravel_session'),
-                            secure: true,
-                            domain: '.zonefloorball.ru',
-                            sameSite: 'lax'
-                        ),
-                        cookie()->forever(
-                            'XSRF-TOKEN',
-                            request()->cookie('XSRF-TOKEN'),
-                            secure: true,
-                            domain: '.zonefloorball.ru',
-                            sameSite: 'lax'
-                        )
-                    ]);
-                } else {
-                    \Log::warning('Access denied for order', [
+                    \Log::debug('Guest fallback', [
                         'order_id' => $order->id,
-                        'expected_user' => $order->order_client_id,
-                        'actual_user' => auth()->id()
+                        'auth_check' => auth()->check(),
+                        'client_ip' => request()->ip()
                     ]);
-                    abort(403, 'Это не ваш заказ');
-                }
+
+                // 5. Для гостей: редирект на страницу заказа с хешем
+                    return redirect()->route('order.track', $order->access_hash);
+            */
+
+        // 1. Для всех - редирект на страницу заказа
+            $url = route('order.track', $order->access_hash);
+            
+        // 2. Если заказ привязан к пользователю - используем приватный маршрут
+            if ($order->order_client_rank_id !== '8') {
+                $url = route('privateorder.track', $order->access_hash);
             }
-
-            \Log::debug('Guest fallback', [
-                'order_id' => $order->id,
-                'auth_check' => auth()->check(),
-                'client_ip' => request()->ip()
-            ]);
-
-        // 5. Для гостей: редирект на страницу заказа с хешем
-            return redirect()->route('order.track', $order->access_hash);
+            
+        // 3. Добавляем флаг оплаты в сессию
+            return redirect($url)->with('payment_success', true);    
     }
 
     public function showFailed(Request $request) {
@@ -697,7 +711,15 @@ class OrderController extends Controller {
 
     // Отслеживание заказа (публичная)
     public function trackOrder(Order $order) {
-        
+        \Log::debug('trackOrder Auth check before', [
+            'user' => Auth::check(),
+            'order_client_id' => $order->order_client_id,
+            'auth_id' => auth()->id(),
+            'is_verified' => auth()->check() ? auth()->user()->hasVerifiedEmail() : 'guest',
+            'cookies' => request()->cookies->all(),
+            'session_id' => session()->getId()
+        ]);
+
         $paymentDetails = $order->payment_details 
             ? json_decode($order->payment_details, true) 
             : [];
@@ -779,6 +801,14 @@ class OrderController extends Controller {
 
     // Отслеживание заказа (приватная, для авторизованных пользователей)
     public function trackPrivateOrder(Order $order) {
+        \Log::debug('TrackPrivateOrder Auth check before', [
+            'user' => Auth::check(),
+            'order_client_id' => $order->order_client_id,
+            'auth_id' => auth()->id(),
+            'is_verified' => auth()->check() ? auth()->user()->hasVerifiedEmail() : 'guest',
+            'cookies' => request()->cookies->all(),
+            'session_id' => session()->getId()
+        ]);
 
         \Log::debug('TrackPrivateOrder started', ['order_id' => $order->id, 'order_client_id' => $order->order_client_id, 'user_id' => auth()->id()]);
 

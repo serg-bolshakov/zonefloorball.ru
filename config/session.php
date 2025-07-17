@@ -156,7 +156,7 @@ return [
     */
 
     //'domain' => env('SESSION_DOMAIN'),           // вариант из коробки
-    //'domain' => env('SESSION_DOMAIN', 'localhost'), // Основная проблема: Сессия работает в IndexReactController (Inertia), но не в OrderController (API). Ghj,etv htibnm 09.05.2025 - сразу потеряли юзера
+    //'domain' => env('SESSION_DOMAIN', 'localhost'), // Основная проблема: Сессия работает в IndexReactController (Inertia), но не в OrderController (API). Пробуем решить 09.05.2025 - сразу потеряли юзера
     // 'domain' => null, // Явно отключаем привязку к домену - тоже не то // комментирую 17.07.2025
     'domain' => env('SESSION_DOMAIN', '.zonefloorball.ru'), // 17.07.2025 - пытаемся реализовать переадресацию после успешной оплаты с сохранением авторизации
 
@@ -172,8 +172,8 @@ return [
     */
 
     // 'secure' => env('SESSION_SECURE_COOKIE'), // из коробки пока меняем на вот так: 
-    'secure' => false, // true только для HTTPS
-    // 'secure' => env('SESSION_SECURE_COOKIE', true),  // на сервере
+    // 'secure' => false, // true только для HTTPS
+    'secure' => env('SESSION_SECURE_COOKIE', true),  // на сервере
 
     /*
     |--------------------------------------------------------------------------
