@@ -595,17 +595,19 @@ class OrderController extends Controller {
                 // 5. Для гостей: редирект на страницу заказа с хешем
                     return redirect()->route('order.track', $order->access_hash);
             */
-
-        // 1. Для всех - редирект на страницу заказа
-            $url = route('order.track', $order->access_hash);
-            
-        // 2. Если заказ привязан к пользователю - используем приватный маршрут
+        // 4. Для авторизованных: проверяем владельца 
             if ($order->order_client_rank_id !== '8') {
-                $url = route('privateorder.track', $order->access_hash);
+                Auth::loginUsingId($order->order_client_id);
+                \Log::debug('Auth check passed', [
+                    'order_client_id' => $order->order_client_id,
+                    'auth_id' => auth()->id(),
+                    'is_verified' => auth()->user()->hasVerifiedEmail(),
+                ]);
+                return redirect()->route('privateorder.track', $order->access_hash);
             }
             
-        // 3. Добавляем флаг оплаты в сессию
-            return redirect($url)->with('payment_success', true);    
+        // 5. Для гостей: редирект на страницу заказа с хешем
+            return redirect()->route('order.track', $order->access_hash);
     }
 
     public function showFailed(Request $request) {
