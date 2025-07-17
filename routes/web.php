@@ -161,15 +161,15 @@ Route::get('/sitemap', [SiteMapController::class, 'index']);
 /*Route::get('/invoice/{order}/{hash}', [OrderController::class, 'showInvoice'])
     ->name('order.invoice');*/
 
-Route::get('/invoice/{order:access_hash}', [OrderController::class, 'showInvoice'])         // {order:access_hash} автоматически ищет заказ по хешу.
+Route::get('/invoice/{order:access_hash}', [OrderController::class, 'showInvoice'])                         // {order:access_hash} автоматически ищет заказ по хешу.
     ->name('order.invoice');
 
 // Отслеживание заказа (публичная)
-Route::get('/order/track/{order:access_hash}', [OrderController::class, 'trackOrder'])      // {order:access_hash} автоматически ищет заказ по хешу.
+Route::get('/order/track/{order:access_hash}', [OrderController::class, 'trackOrder'])                      // {order:access_hash} автоматически ищет заказ по хешу.
     ->name('order.track');
 
 // Отслеживание заказа (приватная, для авторизованных пользователей)
-Route::get('/profile/order/track/{order:access_hash}', [OrderController::class, 'trackPrivateOrder'])      // {order:access_hash} автоматически ищет заказ по хешу.
+Route::get('/profile/track/order/{order:access_hash}', [OrderController::class, 'trackPrivateOrder'])       // {order:access_hash} автоматически ищет заказ по хешу.
     ->middleware(['auth', 'verified'])
     ->name('privateorder.track');
 

@@ -529,7 +529,10 @@ class OrderController extends Controller {
             if (auth()->check() && $order->order_client_id == auth()->id()) {
                 // Редирект в ЛК В ТОЙ ЖЕ ВКЛАДКЕ
                 return redirect()->route('privateorder.track', $order->access_hash)
-                    ->withCookie(cookie()->forever('laravel_session', request()->cookie('laravel_session'))); // Явное сохранение сессии
+                    ->withCookies([
+                        cookie()->forever('laravel_session', request()->cookie('laravel_session')),
+                        cookie()->forever('XSRF-TOKEN', request()->cookie('XSRF-TOKEN'))
+                    ]); // Явное сохранение сессии
 
             } elseif (auth()->check() && $order->order_client_id !== auth()->id()) {
                 abort(403);                       // Чужой заказ - прерывает выполнение с HTTP-ошибкой 403 (Forbidden)

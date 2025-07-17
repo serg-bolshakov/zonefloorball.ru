@@ -262,7 +262,7 @@ const Orders: React.FC<IOrdersProps> = ({
                                         <td className="td-center">{dateRu(order.order_date)}</td>  
                                         <td className="td-center">{formatPrice(order.cost)}</td>
                                         <td className="td-center">{order.status }</td>
-                                        <td className="td-center"><Link  className='header-logo__img' href={`/profile/order/track/${order.hash}`}><img
+                                        <td className="td-center"><Link  className='header-logo__img' href={`/profile/track/order/${order.hash}`}><img
                                                 src='/storage/icons/search.png' 
                                                 alt='check-order' 
                                                 title='Посмотреть заказ' 
