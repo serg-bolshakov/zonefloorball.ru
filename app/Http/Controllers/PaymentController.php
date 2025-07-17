@@ -113,7 +113,7 @@ class PaymentController extends Controller
                                 ->first();
                             if (!$productReservation) { throw new \Exception("Товар ID: {$item['product_id']} не найден в отчётах по резервированию"); }
                             $productReservation->update([
-                                'paid_at' => now()->toDateTimeString(),
+                                'paid_at' => now(),
                             ]);
 
                         } catch (\Exception $e) {
