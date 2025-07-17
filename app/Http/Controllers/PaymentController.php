@@ -24,7 +24,6 @@ class PaymentController extends Controller
         \Log::debug('PaymentController handleResult', ['$request' => $request->all()]);
 
         \Log::debug('PaymentController Auth check before', [
-            'order_client_id' => $order->order_client_id,
             'auth_id' => auth()->id(),
             'is_verified' => auth()->check() ? auth()->user()->hasVerifiedEmail() : 'guest',
             'cookies' => request()->cookies->all(),
