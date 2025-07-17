@@ -234,7 +234,17 @@ class OrderReserve extends Mailable
         $pdfUrl = asset($this->order->invoice_url);      // asset(), ДОЛЖНА автоматически добавить домен и правильный путь.
         // Функция asset() генерирует полный URL на основе относительного пути. Например: Если invoice_url содержит storage/invoices/invoice_2_25_01_207_1b27f699.pdf, то asset($this->order->invoice_url) вернёт: http://ваш-домен/storage/invoices/invoice_2_25_01_207_1b27f699.pdf
         $invoiceUrl = asset('invoice/'  . $this->order->access_hash); 
-        $trackUrl = asset('order/track/'. $this->order->access_hash); 
+        
+        
+        /*$trackUrl = ($this->order->order_client_rank_id == '8')         // Не зарегистрированный ("Гость")
+            ? asset('order/track/'. $this->order->access_hash)
+            : asset('profile/order/track/'. $this->order->access_hash);*/
+
+        // $trackUrl = asset('order/track/'. $this->order->access_hash); 
+
+        $trackUrl = ($this->order->order_client_rank_id == '8')
+            ? route('order.track', $this->order->access_hash)           // Используем именованный маршрут
+            : route('privateorder.track', $this->order->access_hash);
 
         $data = [
             'orderNum'                                  => $this->order->order_number               ,

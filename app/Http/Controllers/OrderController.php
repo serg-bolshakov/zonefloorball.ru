@@ -509,7 +509,7 @@ class OrderController extends Controller {
                 config('services.robokassa.password1')  // Используем Password1!
             ]);    
 
-        $expectedSignature = md5($signatureString);
+            $expectedSignature = md5($signatureString);
 
         // 2. Сравниваем подписи
             if ($receivedSignature !== $expectedSignature) {
@@ -519,13 +519,25 @@ class OrderController extends Controller {
                     'signature_string'  => $signatureString,    // Для отладки
                     'error'             => 'Ошибка проверки подписи платежа в showSuccess'
                 ]);
-                // return redirect('/')->with('error', 'Ошибка проверки подписи платежа');
+                return redirect('/')->with('error', 'Ошибка проверки подписи платежа');
             }
         
         // 3. Если подпись верна — обрабатываем заказ
             $order = Order::findOrFail($orderId);
-            // Редирект на страницу заказа с хешем
-            return redirect()->route('order.track', ['order' => $order->access_hash]);
+
+        // 4. Для авторизованных: проверяем владельца
+            if (auth()->check() && $order->order_client_id == auth()->id()) {
+                // Редирект в ЛК В ТОЙ ЖЕ ВКЛАДКЕ
+                return redirect()->route('privateorder.track', $order->access_hash)
+                    ->withCookie(cookie()->forever('laravel_session', request()->cookie('laravel_session'))); // Явное сохранение сессии
+
+            } elseif (auth()->check() && $order->order_client_id !== auth()->id()) {
+                abort(403);                       // Чужой заказ - прерывает выполнение с HTTP-ошибкой 403 (Forbidden)
+                // return;                        // ❌ Опасный момент: пустой return ... может привести к белой странице или ошибке 200 без контента
+            }
+
+        // 5. Для гостей: редирект на страницу заказа с хешем
+            return redirect()->route('order.track', $order->access_hash);
     }
 
     public function showFailed(Request $request) {
@@ -715,6 +727,92 @@ class OrderController extends Controller {
             ], 500);
         }
         
+    }
+
+    // Отслеживание заказа (приватная, для авторизованных пользователей)
+    public function trackPrivateOrder(Order $order) {
+        // Дополнительная проверка владельца (может и не нужно)
+        if ($order->user_id !== auth()->id()) {
+            // abort(403, 'Это не ваш заказ');
+            return ;
+        }
+
+        $paymentDetails = $order->payment_details 
+            ? json_decode($order->payment_details, true) 
+            : [];
+
+        try {
+            if ($order->access_expires_at?->isPast()) {
+                return Inertia::render('OrderExpired');
+            }
+
+            \Log::debug('LegalOrder status_id:', [ 'history' => OrderStatus::tryFrom((int)$order->status_id)?->title()]);
+            \Log::debug('LegalOrder Loaded statusHistory:', [
+                'type' => get_class($order->statusHistory),
+                'first_item' => $order->statusHistory->first()?->toArray()
+            ]);
+
+            return Inertia::render('OrderTracking', [
+                    'title' => 'Отслеживание заказа',
+                    'robots' => 'NOINDEX,NOFOLLOW',
+                    'description' => '',
+                    'keywords' => '',         
+                    'order' => [
+                        // 'id' => $order->id,
+                        'number' => $order->order_number,
+                        'date' => $order->order_date->format('d.m.Y H:i'),
+                        'status' => [
+                            'id' => $order->status_id,
+                            'name' => OrderStatus::tryFrom((int)$order->status_id)?->title() ?? 'Не указан',    // Используем enum
+                            'history' => $order->statusHistory?->map(function(OrderStatusHistory $item) {       // Оператор null-safe (?.) Автоматически обрабатывает случай, когда statusHistory равен null.
+                                \Log::debug('History item raw:', ['history' => $item->new_status->title()]);    
+                                return [
+                                    'date'      => Carbon::parse($item->created_at)->format('d.m.Y H:i'),            // Преобразуем строку в Carbon
+                                    'status'    => $item->new_status?->title() ?? 'Неизвестный статус',            
+                                    'comment'   => $item->comment
+                                ];
+                            })->toArray() ?? [] // Возвращаем пустой массив если history null
+                        ],
+                        'items' => $order->items->map(function($item) {
+                            // dd($item);
+                            return [
+                                'product' => [
+                                    'id' => $item->product_id,
+                                    'name' => $item->product->title,
+                                    'article' => $item->product->article
+                                ],
+                                'quantity' => $item->quantity,
+                                'price' => $item->price,
+                                'discount' => $item->regular_price - $item->price
+                            ];
+                        }),
+                        'delivery' => [
+                            'type'              => $order->transport->name,
+                            'address'           => $order->order_delivery_address,
+                            'tracking_number'   => $order->delivery_tracking_number,
+                            'estimated_date'    => $order->estimated_delivery_date?->format('d.m.Y'), // estimated_delivery_date может быть null - добавили обработку
+                            'cost'              => $order->order_delivery_cost
+                        ],
+                        'payment' => [
+                            'method' => [
+                                'code'  => $order->payment_method->value,       // 'online'
+                                'label' => $order->payment_method->label()      // 'Онлайн-оплата'
+                            ],
+                            'status' => [
+                                'code'  => $order->payment_status->value,       // 'pending'
+                                'label' => $order->payment_status->label()      // 'Ожидает оплаты'
+                            ],
+                            'invoice_url' => '/invoice/' . $order->access_hash,
+                            'payment_url' => $this->resolvePaymentUrl($order, $paymentDetails)['url'] ?? null   // отправить только, если ссылка активна, заказ, не оплачен
+                        ]
+                    ]
+                ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Ошибка загрузки данных для просмотра статуса заказа в OrderController@trackPrivateOrder',
+                'details' => config('app.debug') ? $e->getMessage() : null
+            ], 500);
+        }
     }
 
     // Получение всех заказов клиента

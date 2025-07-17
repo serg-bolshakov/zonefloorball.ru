@@ -65,7 +65,7 @@ hr    { height: 1px; border: none; color: #dddddd; background: #dddddd; margin: 
 </table>
 <div>
 {{--<a href="{{ $invoiceUrl }}" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; width: 120px; font-size: 16px; margin: 10px 0; cursor: pointer; border-radius: 8px;">Распечатать</a> --}}
-<a href="{{ $pdfUrl }}" style="background-color: blue; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; width: 120px; font-size: 16px; margin: 10px 0 10px 20px; cursor: pointer; border-radius: 8px;"> Оплатить </a>
+{{-- <a href="{{ $pdfUrl }}" style="background-color: blue; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; width: 120px; font-size: 16px; margin: 10px 0 10px 20px; cursor: pointer; border-radius: 8px;"> Оплатить </a> --}}
 </div>
 {!! $orderAmountinRussian !!}
 {!! $discountTotalLine !!}
