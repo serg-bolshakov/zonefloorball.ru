@@ -487,6 +487,12 @@ class OrderController extends Controller {
     public function showSuccess(Request $request) {
         \Log::debug('Robokassa Success Data:', $request->all());
 
+        \Log::debug('Success URL Cookies:', [
+            'all_cookies' => $request->cookies->all(),
+            'order_auth_cookie' => $request->cookie('order_access_hash'),
+            'session_cookie' => $request->cookie('laravel_session')
+        ]);
+
         // Получаем данные из POST-данных
         $orderId = (int)$request->input('InvId');
         $outSum = $request->input('OutSum');
