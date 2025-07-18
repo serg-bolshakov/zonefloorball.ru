@@ -94,7 +94,6 @@ class OrderController extends Controller {
 
         if (Auth::check()) {
             \Log::debug('OrderController@create check authed:', [ 'isAuthed' => Auth::check()]);
-            return Auth::user();
         } else {
             \Log::debug('OrderController@create check authed:', [ 'user' => '!authed',]);
         }
