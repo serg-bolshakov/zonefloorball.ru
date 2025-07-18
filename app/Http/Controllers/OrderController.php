@@ -558,61 +558,7 @@ class OrderController extends Controller {
                 'cookies' => request()->cookies->all(),
                 'session_id' => session()->getId()
             ]);
-            /*
-                // 4. Для авторизованных: проверяем владельца - по-любому не видит авторизованного пользователя... :(
-                    if (auth()->check()) {
-                        \Log::debug('Auth check passed', [
-                            'order_client_id' => $order->order_client_id,
-                            'auth_id' => auth()->id(),
-                            'is_verified' => auth()->user()->hasVerifiedEmail(),
-                            'cookies' => request()->cookies->all()
-                        ]);
-                        
-                        if ($order->order_client_id == auth()->id()) {
-                            \Log::debug('Owner confirmed', ['access_hash' => $order->access_hash]);
-                            
-                            $response = redirect()->route('privateorder.track', $order->access_hash);
-                            
-                            \Log::debug('Cookies before set', [
-                                'laravel_session' => request()->cookie('laravel_session'),
-                                'xsrf_token' => request()->cookie('XSRF-TOKEN')
-                            ]);
-                            
-                            return $response->withCookies([
-                                cookie()->forever(
-                                    'laravel_session', 
-                                    request()->cookie('laravel_session'),
-                                    secure: true,
-                                    domain: '.zonefloorball.ru',
-                                    sameSite: 'lax'
-                                ),
-                                cookie()->forever(
-                                    'XSRF-TOKEN',
-                                    request()->cookie('XSRF-TOKEN'),
-                                    secure: true,
-                                    domain: '.zonefloorball.ru',
-                                    sameSite: 'lax'
-                                )
-                            ]);
-                        } else {
-                            \Log::warning('Access denied for order', [
-                                'order_id' => $order->id,
-                                'expected_user' => $order->order_client_id,
-                                'actual_user' => auth()->id()
-                            ]);
-                            abort(403, 'Это не ваш заказ');
-                        }
-                    }
 
-                    \Log::debug('Guest fallback', [
-                        'order_id' => $order->id,
-                        'auth_check' => auth()->check(),
-                        'client_ip' => request()->ip()
-                    ]);
-
-                // 5. Для гостей: редирект на страницу заказа с хешем
-                    return redirect()->route('order.track', $order->access_hash);
-            */
         // 4. Для авторизованных: проверяем владельца 
             /* if ($order->order_client_rank_id !== '8') {
                 Auth::loginUsingId($order->order_client_id);
@@ -625,7 +571,18 @@ class OrderController extends Controller {
             } */
 
             if (Auth::check()) {
-                return redirect()->route('privateorder.track', $order->access_hash);
+                if ($order->order_client_id == auth()->id()) {
+                   \Log::debug('Owner confirmed', ['access_hash' => $order->access_hash]);
+                   return redirect()->route('privateorder.track', $order->access_hash);
+
+                } else {
+                    \Log::warning('Access denied for order', [
+                        'order_id' => $order->id,
+                        'expected_user' => $order->order_client_id,
+                        'actual_user' => auth()->id()
+                    ]);
+                    abort(403, 'Это не ваш заказ');
+                }
             }
             
         // 5. Для гостей: редирект на страницу заказа с хешем
