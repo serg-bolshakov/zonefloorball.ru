@@ -56,15 +56,7 @@ class OrderController extends Controller {
 
     use CalculateDiscountTrait;
 
-    public function __construct(DiscountService $discountService) {
-        
-        if (Auth::check()) {
-            \Log::debug('OrderController@constructor check authed:', [ 'isAuthed' => Auth::check()]);
-            return Auth::user();
-        } else {
-            \Log::debug('OrderController@constructor check authed:', [ 'user' => '!authed',]);
-        }
-        
+    public function __construct(DiscountService $discountService) {        
         $this->discountService = $discountService;
     }
 
