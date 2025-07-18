@@ -614,13 +614,17 @@ class OrderController extends Controller {
                     return redirect()->route('order.track', $order->access_hash);
             */
         // 4. Для авторизованных: проверяем владельца 
-            if ($order->order_client_rank_id !== '8') {
+            /* if ($order->order_client_rank_id !== '8') {
                 Auth::loginUsingId($order->order_client_id);
                 \Log::debug('Auth check passed', [
                     'order_client_id' => $order->order_client_id,
                     'auth_id' => auth()->id(),
                     'is_verified' => auth()->user()->hasVerifiedEmail(),
                 ]);
+                return redirect()->route('privateorder.track', $order->access_hash);
+            } */
+
+            if (Auth::check()) {
                 return redirect()->route('privateorder.track', $order->access_hash);
             }
             
