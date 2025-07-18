@@ -57,6 +57,14 @@ class OrderController extends Controller {
     use CalculateDiscountTrait;
 
     public function __construct(DiscountService $discountService) {
+        
+        if (Auth::check()) {
+            \Log::debug('OrderController@constructor check authed:', [ 'isAuthed' => Auth::check()]);
+            return Auth::user();
+        } else {
+            \Log::debug('OrderController@constructor check authed:', [ 'user' => '!authed',]);
+        }
+        
         $this->discountService = $discountService;
     }
 
@@ -81,7 +89,15 @@ class OrderController extends Controller {
     }
 
     // Просмотр логов:  tail -f storage/logs/laravel.log
+
     public function create (StoreOrderRequest $request) {
+
+        if (Auth::check()) {
+            \Log::debug('OrderController@create check authed:', [ 'isAuthed' => Auth::check()]);
+            return Auth::user();
+        } else {
+            \Log::debug('OrderController@create check authed:', [ 'user' => '!authed',]);
+        }
 
         // Объявим переменную ДО транзакции, чтобы её не потерять в блоке try - catch
         $order = null; 
@@ -706,13 +722,15 @@ class OrderController extends Controller {
     }
         
     private function resolveUser($request): ?User {
-        // \Log::debug('OrderController request:', [ 'user' => $request->all(),]);
+        \Log::debug('OrderController request:', [ 'user' => $request->all(),]);
 
         if (Auth::check()) {
+            \Log::debug('OrderController@resolveUser check authed:', [ 'isAuthed' => Auth::check()]);
             return Auth::user();
+        } else {
+            \Log::debug('OrderController@resolveUser check authed:', [ 'user' => '!authed',]);
         }
-        // \Log::debug('OrderController !authed:', [ '!authed' => '!authed',]);
-
+        
         return User::create([
             'client_type_id' => 1,                                              // Физлицо
             'client_rank_id' => 8,                                              // Не зарегистрированный
