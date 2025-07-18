@@ -16,6 +16,8 @@ use App\Models\Order;
 use App\Models\ProductReport;
 use App\Models\ProductReservation;
 
+use App\Services\ErrorNotifierService;
+
 class PaymentController extends Controller
 {
     public function handleResult(Request $request)
@@ -113,6 +115,7 @@ class PaymentController extends Controller
                             if (!$productReport) { throw new \Exception("Товар ID: {$item['product_id']} не найден в отчётах по остаткам"); }
                             $productReport->update([
                                 'reserved'  => (int)$productReport->reserved - (int)$item['quantity'],
+                                'on_sale'   => (int)$productReport->on_sale + (int)$item['quantity']
                             ]);
 
                             $productReservation = ProductReservation::where('product_id', $item['product_id'])->where('order_id', $order->id)  // ← Используем $order->id вместо $validated
@@ -129,6 +132,7 @@ class PaymentController extends Controller
                                 'product_id' => $item['product_id'],
                                 'error' => $e->getMessage()
                             ]);
+
                             throw $e; // Пробрасываем выше для отката транзакции
                         }
                     });
@@ -144,6 +148,12 @@ class PaymentController extends Controller
                     'trace' => $e->getTraceAsString()
                 ]);
 
+                ErrorNotifierService::notifyAdmin($e, [
+                    'order_id' => $orderId ?? null,
+                    'payment_system' => 'robokassa',
+                    'stage' => 'PaymentController'
+                ]);
+                
                 return response("ERROR: " . $e->getMessage() . "\n", 500);
             }
     }

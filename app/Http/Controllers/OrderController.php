@@ -49,6 +49,8 @@ use App\Services\WorkingDaysService;        // Сервис для расчёт�
 use Illuminate\Support\Str;                 // класс генерирует криптографически безопасную строку
 use Inertia\Inertia;
 
+use App\Services\ErrorNotifierService;
+
 class OrderController extends Controller {
     protected $discountService;
 
@@ -397,6 +399,12 @@ class OrderController extends Controller {
                                 Mail::to('serg.bolshakov@gmail.com')->send($orderMail);
                             } catch (\Exception $e) {
                                 \Log::error('Failed to send order email: '.$e->getMessage());
+                                
+                                ErrorNotifierService::notifyAdmin($e, [
+                                    'order_id' => $orderId ?? null,
+                                    'payment_system' => 'robokassa',
+                                    'stage' => 'OrderController@create for postponed payment'
+                                ]);
                             }
 
                 // 10. Только после успеха обновляем статус
@@ -439,9 +447,7 @@ class OrderController extends Controller {
                         'new_status'        => OrderStatus::FAILED->value,                  // 6
                         'comment'           => $e->getMessage()
                     ]);
-                
-               
-                
+                 
                 // Освобождаем резервы
                     $order->items()->each(function($item) {
                         try {
@@ -474,6 +480,12 @@ class OrderController extends Controller {
                 // Заказа нет в БД — что-то пошло не так при создании
                 \Log::error('Order creation failed completely');
             }
+
+            ErrorNotifierService::notifyAdmin($e, [
+                'order_id' => $orderId ?? null,
+                'payment_system' => 'robokassa',
+                'stage' => 'OrderController@create'
+            ]);
                     
             return response()->json([
                 'status' => 'error',
@@ -481,7 +493,6 @@ class OrderController extends Controller {
                 'error_code' => 'ORDER_CREATION_FAILED'
             ], 500);
         }
-        
     }      
 
     public function showSuccess(Request $request) {
@@ -611,13 +622,87 @@ class OrderController extends Controller {
     }
 
     public function showFailed(Request $request) {
-        $orderId = $request->input('InvId');
-        $error = $request->input('error');
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Ошибка при оплате заказа',
-            'error_code' => 'ORDER_PAYMENT_FAILED' . $error
-        ], 500);
+        \Log::debug('Robokassa Failed Data:', $request->all());
+       
+        // Получаем данные из POST-данных
+        $orderId = (int)$request->input('InvId');
+        $outSum = $request->input('OutSum');
+        $receivedSignature = strtolower($request->input('SignatureValue'));
+
+        if (!$orderId) {
+            \Log::error('Robokassa Success: Missing InvId', $request->all());
+            return redirect('/')->with('error', 'Не удалось обработать платёж');
+        }
+
+        // Проверяем существование заказа до проверки подписи
+        $order = Order::find($orderId);
+        if (!$order) {
+            \Log::error('Robokassa Failed: Order not found', ['orderId' => $orderId]);
+            return redirect('/')->with('error', 'Заказ не найден');
+        }
+
+        // 1. Формируем строку для подписи
+            $signatureString = implode(':', [
+                $outSum,
+                $orderId,
+                config('services.robokassa.password1')  // Используем Password1!
+            ]);    
+
+            $expectedSignature = md5($signatureString);
+
+        // 2. Сравниваем подписи
+            if ($receivedSignature !== $expectedSignature) {
+                \Log::error('Invalid Robokassa signature', [
+                    'received'          => $receivedSignature,
+                    'expected'          => $expectedSignature,
+                    'signature_string'  => $signatureString,    // Для отладки
+                    'error'             => 'Ошибка проверки подписи платежа в showFailed'
+                ]);
+                return redirect('/')->with('error', 'Ошибка проверки подписи платежа');
+            }
+        
+        // 3. Если подпись верна — обрабатываем заказ
+            // $order = Order::findOrFail($orderId);    // findOrFail() выбросит 404, если заказ не найден. Возможно, лучше сначала проверить существование заказа до проверки подписи?
+        
+        // 4. Обновляем статус только если он еще не FAILED
+            if ($order->payment_status !== PaymentStatus::FAILED->value) {
+                $order->update([
+                    'payment_status' => PaymentStatus::FAILED->value
+                ]);
+        // 5. Обновляем запись payment_url в таблице orders        
+                $order->addPaymentDetails([
+                    'failed_at' => now()->toDateTimeString(),
+                    'failure_reason' => 'User returned from payment page'
+                ]);  // метод описан в модели Order
+                
+                \Log::info('Order payment status set to FAILED', ['orderId' => $orderId]);
+            }
+        
+        // 6. Рассуждения: снятие товаров с резерва будет инициировано в App\Console\Commands\CheckExpiredReservations.php, где мы отслеживаем статус товара в резерве более 3-х дней (или сколько мы решим)
+            /** Из документации Робокассы (https://docs.robokassa.ru/pay-interface/#fail): 
+             * Переход пользователя по данному адресу, строго говоря, не означает окончательного отказа покупателя от оплаты, 
+             * нажав кнопку «Назад» в браузере он может вернуться на страницу оплаты Robokassa. 
+             * Поэтому в случае блокировки товара на складе под заказ, для его разблокирования желательно проверять факт отказа 
+             * от платежа запросом XML-интерфейса получения состояния оплаты счета, 
+             * используя в запросе номер счета InvId имеющийся в базе данных магазина/продавца.
+             */
+
+        // 7. Авторизация для не-гостевых заказов
+            if ($order->order_client_rank_id !== '8') {
+                Auth::loginUsingId($order->order_client_id);
+                \Log::debug('Auth check passed', [
+                    'order_client_id' => $order->order_client_id,
+                    'auth_id' => auth()->id(),
+                    'is_verified' => auth()->user()->hasVerifiedEmail(),
+                ]);
+            }
+            
+        // 8. Редирект на главную страницу
+            return redirect('/')->with('error', 'Ошибка проведения платежа');
+
+        // Можно перенаправить на страницу заказа с более детальной информацией
+            /* return redirect()->route('orders.show', $orderId)
+                ->with('error', 'Оплата не была завершена. Вы можете повторить попытку оплаты.'); */
     }
         
     private function resolveUser($request): ?User {

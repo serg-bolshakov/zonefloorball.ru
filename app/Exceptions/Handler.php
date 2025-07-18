@@ -24,7 +24,12 @@ class Handler extends ExceptionHandler
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            //
+            if (app()->environment('production')) {
+                ErrorNotifierService::notifyAdmin($e, [
+                    'url' => request()?->fullUrl(),
+                    'user_id' => auth()->id() ?? 'Гостевой визит',
+                ]);
+            }
         });
     }
 }

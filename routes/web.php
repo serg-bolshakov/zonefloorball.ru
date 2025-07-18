@@ -194,3 +194,16 @@ Route::get('/legal/{type}', [LegalController::class, 'show'])
 Route::post('/api/payments/robokassa/result', [PaymentController::class, 'handleResult']);
 Route::post('/orders/success', [OrderController::class, 'showSuccess']);
 Route::post('/orders/failed', [OrderController::class, 'showFailed']);
+
+// временный роут для теста очтётов для ошибок
+Route::get('/test-error', function() {
+    try {
+        throw new \Exception('Это тестовая ошибка для проверки нотификации!');
+    } catch (\Throwable $e) {
+        App\Services\ErrorNotifierService::notifyAdmin($e, [
+            'test' => true,
+            'comment' => 'Это тестовое уведомление, можно игнорировать'
+        ]);
+        return "Тестовое уведомление отправлено!";
+    }
+});
