@@ -1,6 +1,6 @@
 // resources/js/Types/orders.ts
 
-export interface IGuestCustomerData {
+/*export interface IGuestCustomerData {
     firstName: string;
     lastName: string;
     phone: string;
@@ -17,4 +17,6 @@ export type TValidationRule = {
     type: 'text' | 'tel' | 'address' | 'email';
     maxLength?: number;
     required: boolean;
-};
+};*/
+
+export type TOrderAction = 'pay' | 'reserve' | 'preorder';

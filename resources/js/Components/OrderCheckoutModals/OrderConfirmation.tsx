@@ -23,6 +23,7 @@ interface IOrderConfirmationProps {
     regularTotal: number;
     onReserve: () => Promise<void>;
     onPay: () => Promise<void>;
+    onPreorder: () => Promise<void>;
     onBack: () => void;
     onCancel: () => void;
 }
@@ -37,19 +38,20 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     regularTotal,
     onReserve,
     onPay,
+    onPreorder, 
     onBack,
     onCancel
   }) => {
     
-    const [currentAction, setCurrentAction] = useState<'pay' | 'reserve' | null>(null); // Локальный isProcessing управляет UI
+    const [currentAction, setCurrentAction] = useState<'pay' | 'reserve' | 'preorder' | null>(null); // Локальный isProcessing управляет UI
 
-    const handleAction = async (type: 'pay' | 'reserve') => {
+    const handleAction = async (type: 'pay' | 'reserve' | 'preorder') => {
         if (currentAction) return;
         setCurrentAction(type);
         try {
             await (type === 'pay' ? onPay() : onReserve());
         } finally {
-            setCurrentAction(null);
+            setCurrentAction('preorder');
         }
     };
 
@@ -169,6 +171,18 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                         </motion.button>
                     )}
                     
+                    { isLegalUser(user) && (
+                        <motion.button 
+                            disabled={isProcessing}
+                            whileHover={isProcessing ? {} : buttonAnimation.hover}  
+                            whileTap={isProcessing ? {} : buttonAnimation.tap}
+                            onClick={() => handleAction('preorder')}
+                            className="order-confirmation__submit-btn"
+                        >
+                            { isLegalUser(user) && ( isReserving ? 'Готовим предзаказ' : 'Получить счёт на предзаказ' )}
+                        </motion.button>
+                    )}
+
                     { (isIndividualUser(user) || isLegalUser(user)) && (
                         <motion.button 
                             disabled={isProcessing}

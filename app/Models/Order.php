@@ -51,6 +51,7 @@ class Order extends Model {
     protected $casts = [
         'order_date'                => 'datetime',
         'is_paid'                   => 'boolean',
+        'is_client_informed'        => 'boolean',
         'invoice_url_expired_at'    => 'datetime',
         'access_expires_at'         => 'datetime',
         'created_at'                => 'datetime',

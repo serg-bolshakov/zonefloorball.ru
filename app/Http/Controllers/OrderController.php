@@ -40,6 +40,7 @@ use Illuminate\Support\Facades\Auth; // Получение аутентифиц�
 use App\Enums\OrderStatus;                  // создали класс-перечисление:
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Enums\OrderAction;
 
 /* Если вы не хотите использовать метод validate запроса, то вы можете создать экземпляр валидатора вручную, 
    используя фасад Validator. Метод make фасада генерирует новый экземпляр валидатора: 
@@ -50,6 +51,8 @@ use Illuminate\Support\Str;                 // класс генерирует �
 use Inertia\Inertia;
 
 use App\Services\ErrorNotifierService;
+use Illuminate\Validation\Rule;
+use Illuminate\Http\RedirectResponse;
 
 class OrderController extends Controller {
     protected $discountService;
@@ -95,6 +98,14 @@ class OrderController extends Controller {
 
         try {
                 DB::transaction(function () use ($request, &$order) {       // Передаём $order в транзакцию по ссылке
+
+                $validated = $request->validate([
+                    'action'        => ['required', 'string', Rule::in(OrderAction::forRequest($request))],
+                    'paymentMethod' => ['required', 'string', Rule::in(['online', 'bank_transfer', 'cash']) ]
+                ]);
+                
+                \Log::debug('OrderController@create $validated:', [ '$validated' => $validated]);
+
                 // 1. Создаём/получаем пользователя
                     $user = $this->resolveUser($request);
                     \Log::debug('OrderController user:', [ 'user_id' => $user->id,  ]);
@@ -150,7 +161,7 @@ class OrderController extends Controller {
                             $orderRecipientEmail = $user->org_email; 
                         }  
                     } else {
-                        $orderRecipientEmail = $user->pers_email;
+                        $orderRecipientEmail = $user->email;
                     }
                     \Log::debug('orderRecipientEmailrderRecipientTel:', [ 'orderRecipientEmail' => $orderRecipientEmail]);
 
@@ -293,6 +304,7 @@ class OrderController extends Controller {
                         'order_id' => $order->id,
                         'payment_method' => $paymentMethod, 
                         'is_reserve' => $request->boolean('isReserve'),
+                        'is_pay' => $request->boolean('isPay'),
                         'amount' => $order->total_product_amount + $order->order_delivery_cost,
                         'request_data' => $request->only([
                             'paymentMethod', 
@@ -305,8 +317,8 @@ class OrderController extends Controller {
                         ]
                     ]);
                 // 8. Формируем данные для Робокассы (и пытаемся инициировать оплату, если пользователь выбрал "Оплатить"):
-                    if ($paymentMethod === PaymentMethod::ONLINE && $order && $order->payment_status !== 'paid') {    
-                        \Log::debug('Generating Robokassa link we must not to be here', [
+                    if ($order && $order->payment_status !== 'paid') {    
+                        \Log::debug('Generating Robokassa link start', [
                             'order_id' => $order->id,
                             'amount' => (float)$order->total_product_amount + (float)$order->order_delivery_cost,
                             'items_count' => count($items),
@@ -351,7 +363,7 @@ class OrderController extends Controller {
                                 $items
                             );
 
-                            \Log::debug('Generating Robokassa link', [
+                            \Log::debug('Generating Robokassa link finish', [
                                 'order_id' => $order->id,
                                 'amount' => (float)$order->total_product_amount + (float)$order->order_delivery_cost,
                                 'items_count' => count($items),
@@ -364,66 +376,26 @@ class OrderController extends Controller {
                                     'payment_url_expires_at' => WorkingDaysService::getExpirationDate(3) // 3 рабочих дня
                                 ]);  // метод описан в модели Order
                             
+                            \Log::debug('OrderController action type', [
+                                'action' => $request->action ?? null,
+                                'pay'       => $validated['action'] === OrderAction::PAY->value ?? null,         
+                                'reserve'   => $validated['action'] === OrderAction::RESERVE->value ?? null,    
+                                'preorder'  => $validated['action'] === OrderAction::PREORDER->value ?? null,
+                            ]);
                             
-                            // если физлицо выбирает опцию "отложить оплату", - просто сообщаем, что заказ создан. Оплатить - переводим его по ссылке на оплату заказа
-                            if ($request->isPay) {
-                                // Для немедленной оплаты - сохраняем письмо в сессию
-                                session()->put("pending_order_email_{$order->id}", serialize($orderMail));
-                                
-                                // Редирект в Robokassa
-                                return redirect()->away($paymentUrl);
-                            } else {
-                                // 9. Для отложенной оплаты - Отправляем заказ по email... сразу
-                                    try {
-                                        // Mail::to($user->email)->send($orderMail);
-                                        // Mail::to('serg.bolshakov@gmail.com')->cc('ivk@mts.ru')->send($orderMail);
-                                        Mail::to('serg.bolshakov@gmail.com')->send($orderMail);
-                                    } catch (\Exception $e) {
-                                        \Log::error('Failed to send order email: '.$e->getMessage());
-                                    }
-
-                                // 10. Только после успеха обновляем статус
-                                    $order->update(['status_id' => OrderStatus::RESERVED->value]);
-
-                                // 11. Логируем статус
-                                    OrderStatusHistory::create([
-                                        'order_id'          => $order->id,
-                                        'old_status'        => OrderStatus::CREATED->value,                 // 2
-                                        'new_status'        => OrderStatus::RESERVED->value,                // 3
-                                        'comment'           => 'Пользователь подтвердил заказ'
-                                    ]);
-                            }
-                     
+                            match ($validated['action']) {
+                                OrderAction::PAY->value         => $this->processPayment($order, $paymentUrl, $orderMail),               // надо подумать когда отправлять пользователю письмо со ссылкой на опату заказа
+                                OrderAction::RESERVE->value     => $this->processReserve($order, $orderMail),
+                                OrderAction::PREORDER->value    => $this->processPreOrder(),
+                                default => throw new \InvalidArgumentException('Invalid action')
+                            };
+                            
                         } catch (\Exception $e) {
                             \Log::error('OrderCreating failed: '.$e->getMessage());
                             throw $e; // Пробрасываем для отката транзакции
                         }
                     } else {
-                // 9. Для отложенной оплаты - Отправляем заказ по email... сразу
-                            try {
-                                // Mail::to($user->email)->send($orderMail);
-                                // Mail::to('serg.bolshakov@gmail.com')->cc('ivk@mts.ru')->send($orderMail);
-                                Mail::to('serg.bolshakov@gmail.com')->send($orderMail);
-                            } catch (\Exception $e) {
-                                \Log::error('Failed to send order email: '.$e->getMessage());
-                                
-                                ErrorNotifierService::notifyAdmin($e, [
-                                    'order_id' => $orderId ?? null,
-                                    'payment_system' => 'robokassa',
-                                    'stage' => 'OrderController@create for postponed payment'
-                                ]);
-                            }
-
-                // 10. Только после успеха обновляем статус
-                            $order->update(['status_id' => OrderStatus::RESERVED->value]);
-
-                // 11. Логируем статус
-                            OrderStatusHistory::create([
-                                'order_id'          => $order->id,
-                                'old_status'        => OrderStatus::CREATED->value,                 // 2
-                                'new_status'        => OrderStatus::RESERVED->value,                // 3
-                                'comment'           => 'Пользователь подтвердил заказ'
-                            ]);
+                        \Log::info("OrderController@create {$order->id} already paid");
                     }
 
                 return $order; // Возвращаем только объект
@@ -489,7 +461,7 @@ class OrderController extends Controller {
             }
 
             ErrorNotifierService::notifyAdmin($e, [
-                'order_id' => $orderId ?? null,
+                'order_id' => $order->id ?? null,
                 'payment_system' => 'robokassa',
                 'stage' => 'OrderController@create'
             ]);
@@ -1036,5 +1008,107 @@ class OrderController extends Controller {
         ];
 
         // return $paymentDetails['payment_url'];
+    }
+
+    // Прямая переадресация покупателя по ссылке оплаты Робокассы, если он выбирает флаг "Оплатить":
+    public function processPayment($order, $paymentUrl, $orderMail) {
+        \Log::debug('OrderController processPayment start', [
+            'order'         => $order ?? null,
+        'paymentUrl'        => $paymentUrl ?? null,         
+            'orderMail'     => $orderMail ?? null,    
+        ]);
+
+
+        \Log::debug('OrderController processPayment', [
+            'order_id' => $order->id,
+            'payment_url' => $paymentUrl,
+            'session_id' => session()->getId()
+        ]);
+
+        // надо подумать когда отправлять пользователю письмо со ссылкой на опату заказа
+        try {
+            if (!Str::isUrl($paymentUrl)) {
+                throw new \Exception("Invalid payment URL: {$paymentUrl}");
+            }
+            // Сохраняем данные письма в сессии
+            // 1. Сохраняем данные в сессии ПЕРЕД редиректом
+            session()->put([
+                'pending_order_email' => [
+                    'order_id' => $order->id,
+                    'mail_data' => base64_encode(serialize($orderMail)), // Доп. безопасность
+                ]
+            ]);
+
+            // 2. Обновляем статус
+            $order->update(['status_id' => OrderStatus::RESERVED->value]);
+
+            // 3. Явное сохранение сессии
+            session()->save();
+
+            // 4. Логирование перед редиректом
+            \Log::debug('Attempting redirect to:', ['url' => $paymentUrl]);
+
+            // 5. Логируем статус
+            OrderStatusHistory::create([
+                'order_id'          => $order->id,
+                'old_status'        => OrderStatus::CREATED->value,                 // 2
+                'new_status'        => OrderStatus::RESERVED->value,                // 3
+                'comment'           => 'Пользователь подтвердил заказ'
+            ]);
+
+            // return redirect()->away($paymentUrl);    // этот вариант не работает
+            // 6. Чистый редирект без Laravel-оберток
+            return new RedirectResponse(
+                $paymentUrl,
+                302,
+                ['Cache-Control' => 'no-store']
+            );
+
+        } catch (\Exception $e) {
+            \Log::error('Payment processing failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return back()->withErrors('Ошибка при переходе к оплате');
+        }       
+    }
+
+    // Авторизованному пользователю, выбравшему "зарезервировать" (отложенная оплата ): 
+    public function processReserve($order, $orderMail) {
+        // Явная проверка на false
+        if ($order->is_client_informed !== false) {
+            return;
+        }
+
+        // 9. Отправляем заказ по email... сразу
+        try {
+            Mail::to($order->email)->bcc(config('mail.admin_email'))->send($orderMail);
+
+            // 10. Только после успеха обновляем статус
+            $order->update([
+                'status_id'             => OrderStatus::RESERVED->value,
+                'is_client_informed'    => true,
+                // 'informed_at'        => now() // Для аналитики
+            ]);
+
+            // 11. Логируем статус
+            OrderStatusHistory::create([
+                'order_id'          => $order->id,
+                'old_status'        => OrderStatus::CREATED->value,                 // 2
+                'new_status'        => OrderStatus::RESERVED->value,                // 3
+                'comment'           => 'Пользователь подтвердил заказ'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to send order email: '.$e->getMessage());
+            
+            ErrorNotifierService::notifyAdmin($e, [
+                'order_id' => $order->id ?? null,
+                'payment_system' => 'robokassa',
+                'stage' => 'OrderController@create for postponed payment processReserve method Mailing process'
+            ]);
+        }
     }
 }

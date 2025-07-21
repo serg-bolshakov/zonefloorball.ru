@@ -111,19 +111,13 @@ return [
         'address' => env('MAIL_FROM_ADDRESS', 'hello@example.com'),
         'name' => env('MAIL_FROM_NAME', 'Example'),
     ],
-/*  наше приложение использует один и тот же адрес from для всех своих электронных писем, укажем глобальный адрес отправителя в файле 
-    конфигурации config/mail.php. Этот адрес будет использоваться, если в почтовом классе не указан другой адрес в методе from:
-    ниже запись из конфигурации из файла .env - должно всё работать - там задан правильный адрес:
-    
-    MAIL_MAILER=smtp
-    MAIL_HOST=mail.unihoczone.ru
-    MAIL_PORT=465
-    MAIL_USERNAME=admin@unihoczone.ru
-    MAIL_PASSWORD=oH3sI9gL3x
-    MAIL_ENCRYPTION=ssl
-    MAIL_FROM_ADDRESS=admin@unihoczone.ru
-    MAIL_FROM_NAME="${APP_NAME}"
-*/
+    /*  наше приложение использует один и тот же адрес from для всех своих электронных писем, укажем глобальный адрес отправителя в файле 
+        конфигурации config/mail.php. Этот адрес будет использоваться, если в почтовом классе не указан другой адрес в методе from:
+        ниже запись из конфигурации из файла .env - должно всё работать - там задан правильный адрес:
+    */
+
+    'admin_email' => env('ADMIN_EMAIL', 'serg.bolshakov@gmail.com'),
+
     /*
     |--------------------------------------------------------------------------
     | Markdown Mail Settings

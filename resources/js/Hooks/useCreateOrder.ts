@@ -8,6 +8,15 @@ import { API_ENDPOINTS } from '@/Constants/api';
 import { toast } from 'react-toastify';
 import { useRef } from 'react';
 import { TCartCustomer } from '@/Types/cart';
+import { TOrderAction } from '@/Types/orders';
+
+
+// Расширяем интерфейс options
+interface IOrderOptions {
+    action: TOrderAction; // Вместо isPay/isReserve
+    paymentMethod?: 'online' | 'bank_transfer' | 'cash';
+    onSuccess?: (response: IOrderResponse) => void;
+}
 
 interface OrderData<T extends TCartCustomer> {
     products: Array<{
@@ -18,7 +27,7 @@ interface OrderData<T extends TCartCustomer> {
     customer: T;
     delivery: IDeliverySelectionData;
     total: number;
-    paymentMethod?: 'online' | 'bank_transfer' | 'cash';
+    // paymentMethod?: 'online' | 'bank_transfer' | 'cash'
 }
 
 interface ValidationErrors {
@@ -26,7 +35,7 @@ interface ValidationErrors {
 }
 
 // Типы для ответа сервера
-interface OrderResponse {
+interface IOrderResponse {
     status: 'success' | 'error';
     orderId: number;
     clearCart?: boolean;
@@ -49,13 +58,14 @@ const useCreateOrder = () => {
 
     const createOrder = useCallback(async <T extends TCartCustomer>(
         orderData: OrderData<T>,
-        options: {
-            isReserve?: boolean;
-            isPay?: boolean;
-            paymentMethod?: 'online' | 'bank_transfer' | 'cash';
-            onSuccess?: (response: OrderResponse) => void;
-          }
-    ): Promise<OrderResponse> => {
+        /* options: {
+        //     isReserve?: boolean;
+        //     isPay?: boolean;
+        //     paymentMethod?: 'online' | 'bank_transfer' | 'cash';
+        //     onSuccess?: (response: IOrderResponse) => void;
+        // } */
+        options: IOrderOptions
+    ): Promise<IOrderResponse> => {
 
         // Отменяем предыдущий запрос, если он есть
         controllerRef.current?.abort();
@@ -66,18 +76,22 @@ const useCreateOrder = () => {
         controllerRef.current = controller;
 
         console.log(orderData);
+        console.log(options);
         console.log('options.paymentMethod', options.paymentMethod);
 
         try {
           setIsLoading(true);
           //setError(null);
     
-          const endpoint = options.isReserve 
+          /* const endpoint = options.isReserve 
             ? API_ENDPOINTS.ORDER_CREATE
-            : API_ENDPOINTS.ORDER_CREATE;
+            : API_ENDPOINTS.ORDER_CREATE;*/
+
+          const endpoint = API_ENDPOINTS.ORDER_CREATE;
     
-          const response = await axios.post<OrderResponse>(endpoint, {
-            ...orderData,
+          const response = await axios.post<IOrderResponse>(endpoint, {
+            ...orderData, 
+            action: options.action, // 'pay' | 'reserve' | 'preorder'
             paymentMethod: options.paymentMethod,
           }, {
             signal: controller.signal,                  // controller.signal - это объект AbortSignal, который передаётся в axios (или fetch).

@@ -2,6 +2,12 @@
 
 use Illuminate\Support\Str;
 
+// dd(env()); // Fatal error: Uncaught ReflectionException: Class "env" does not exist... // Не работает на этапе загрузки конфигурации (до инициализации ядра)
+// dd($_ENV['SESSION_DRIVER']); //  "cookie"    // Работает внутри зарегистрированных сервис-провайдеров
+// dd(env('SESSION_SAME_SITE'));
+
+$isLocal = (getenv('APP_ENV') ?: 'production') === 'local';
+
 return [
 
     /*
@@ -126,6 +132,7 @@ return [
     |
     */
 
+    // Настройки кук с учетом окружения
     'cookie' => env(
         'SESSION_COOKIE',
         Str::slug(env('APP_NAME', 'laravel'), '_').'_session'
@@ -155,7 +162,9 @@ return [
     |
     */
 
-    'domain' => env('SESSION_DOMAIN'),           // вариант из коробки
+    'domain' => $isLocal ? null : env('SESSION_DOMAIN'), // Важно: null для local
+    // 'domain' => (getenv('APP_ENV') ?? '') === 'local' ? null : env('SESSION_DOMAIN'),
+    // 'domain' => env('SESSION_DOMAIN'),           // вариант из коробки - последний рабочий для хостинга вариант...
     // 'domain' => env('SESSION_DOMAIN', 'localhost'), // Основная проблема: Сессия работает в IndexReactController (Inertia), но не в OrderController (API). Пробуем решить 09.05.2025 - сразу потеряли юзера
     // 'domain' => null, // Явно отключаем привязку к домену - тоже не то // комментирую 17.07.2025
     // 'domain' => env('SESSION_DOMAIN', '.zonefloorball.ru'), // 17.07.2025 - пытаемся реализовать переадресацию после успешной оплаты с сохранением авторизации
@@ -171,9 +180,11 @@ return [
     |
     */
 
+    'secure' => $isLocal ? false : (bool) env('SESSION_SECURE_COOKIE', true),
     // 'secure' => env('SESSION_SECURE_COOKIE'), // из коробки пока меняем на вот так: 
     // 'secure' => false, // true только для HTTPS
-    'secure' => env('SESSION_SECURE_COOKIE', true),  // на сервере
+    // 'secure' => env('SESSION_SECURE_COOKIE', true),  // на сервере
+    // 'secure' => (bool) (getenv('APP_ENV') ?? '') === 'local' ? false : true,
 
     /*
     |--------------------------------------------------------------------------
@@ -202,7 +213,10 @@ return [
     */
 
     // 'same_site' => 'lax',
-    'same_site' => 'none',  // Корректно для кросс-доменных запросов (например, платежные системы)
+    // 'same_site' => 'none',  // Корректно для кросс-доменных запросов (например, платежные системы, для хостинга)
+    // 'same_site' => (getenv('APP_ENV') ?? '') === 'local' ? 'lax' : 'none',
+    // 'same_site' => env('SESSION_SAME_SITE'),
+    'same_site' => $isLocal ? 'lax' : env('SESSION_SAME_SITE', 'none'),
 
     /*
     |--------------------------------------------------------------------------
@@ -218,3 +232,7 @@ return [
     'partitioned' => false,
 
 ];
+
+/** $_ENV — суперглобальный массив PHP, доступен всегда 
+ * env() — хелпер Laravel, требует инициализации фреймворка
+ */

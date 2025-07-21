@@ -43,6 +43,7 @@ import useAppContext from "@/Hooks/useAppContext";
     import { dateRu, formatServerDate } from "@/Utils/dateFormatter";
     import CheckoutButton from "@/Components/Cart/CheckoutButton";
     import Toast from "@/Components/Cart/Toast";
+    import { TOrderAction } from "@/Types/orders";
 
 interface IHomeProps {  
     title: string;
@@ -464,6 +465,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             regularTotal={regularAmount}
             onReserve={() => handleOrderAction('reserve', customerData)}
             onPay={() => handleOrderAction('pay', customerData)}
+            onPreorder={() => handleOrderAction('preorder', customerData)}
             onBack={() => handleContinueAsGuest()} // Возврат к редактированию
             onCancel={() => handleCancelClick()}
           />
@@ -500,7 +502,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const submittingRef = useRef<boolean>(false);
     
     const handleOrderAction = async (
-        actionType: 'reserve' | 'pay',
+        actionType: TOrderAction,
         customerData: TCartCustomer
     ) => {
         
@@ -530,12 +532,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 legal_agreement: isAgreed
             };
 
-            // console.log('orderData', orderData);
-            // console.log('customerData', customerData);
-    
             await createOrder(orderData, {
-                isReserve: actionType === 'reserve',
-                isPay: actionType === 'pay',        
+                action: actionType,                     // 'pay' | 'reserve' | 'preorder'
                 paymentMethod: customerData.type === 'legal' ? 'bank_transfer' : 'online',
 
                 onSuccess: (res) => {

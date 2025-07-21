@@ -17,6 +17,7 @@ use App\Models\ProductReport;
 use App\Models\ProductReservation;
 
 use App\Services\ErrorNotifierService;
+use Illuminate\Support\Facades\Mail;                // Чтобы отправить сообщение, используем метод to фасада Mail
 
 class PaymentController extends Controller
 {
@@ -73,11 +74,60 @@ class PaymentController extends Controller
                     if (!$order) {
                         throw new \Exception("Order {$validated['InvId']} not found");
                     }
-
+                    
+                    // Проверка дублирования оплаты
                     if ($order->payment_status === 'paid') {
                         \Log::info("Order {$order->id} already paid");
                         return response("OK{$validated['InvId']}\n", 200);
                     }
+
+                    
+                    // Отправка письма только если:
+                    // 1. Письмо еще не отправлено И
+                    // 2. Есть данные в сессии И
+                    // 3. ID заказа совпадает
+
+                    // Достаем данные из сессии, если письмо не было отправлено ранее: 
+                    if (!$order->is_client_informed && 
+                        $request->session()->has('pending_order_email')) {
+                        
+                        $emailData = $request->session()->get('pending_order_email');
+
+                        if ($emailData['order_id'] == $order->id) {
+                            try {
+                                // Двойная проверка перед отправкой
+                                if (!$order->fresh()->is_client_informed) {
+                                    Mail::to($order->email)
+                                        ->bcc(config('mail.admin_email'))
+                                        ->send(unserialize($emailData['mail_data']));
+
+                                    $order->update([
+                                        'is_client_informed' => true,
+                                        // 'informed_at' => now() // Для аналитики
+                                    ]);
+
+                                    // Логируем успех
+                                    \Log::info("Order confirmation sent", [
+                                        'order_id'  => $order->id,
+                                        'email'     => $order->email
+                                    ]);
+                                }
+
+                            } catch (\Exception $e) {
+                                \Log::error('Email sending failed', [
+                                    'order_id' => $order->id,
+                                    'error' => $e->getMessage(),
+                                    'trace' => $e->getTraceAsString()
+                                ]);
+                                
+                                // Не прерываем транзакцию из-за ошибки почты!
+                            } finally {
+                                // Всегда очищаем сессию
+                                $request->session()->forget('pending_order_email');
+                            }
+                        }
+                    }
+                    
 
                     if (abs((float)$order->total_product_amount + (float)$order->order_delivery_cost - $validated['OutSum']) > 0.01) {
                         throw new \Exception("Amount mismatch: expected {(float)$order->total_product_amount + (float)$order->order_delivery_cost}, got {$validated['OutSum']}");
@@ -92,6 +142,7 @@ class PaymentController extends Controller
                         'gateway'                   => 'robokassa',
                     ]);
                     
+                    // Основное обновление заказа
                     $order->update([
                         'payment_status'            => PaymentStatus::PAID->value,
                         'invoice_url_expired_at'    => now(),
