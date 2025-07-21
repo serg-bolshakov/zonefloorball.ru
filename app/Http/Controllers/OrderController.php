@@ -94,10 +94,10 @@ class OrderController extends Controller {
         }
 
         // Объявим переменную ДО транзакции, чтобы её не потерять в блоке try - catch
-        $order = null; 
+        $order = $redirect = null; 
 
         try {
-                DB::transaction(function () use ($request, &$order) {       // Передаём $order в транзакцию по ссылке
+                DB::transaction(function () use ($request, &$order, &$redirect) {       // Передаём $order в транзакцию по ссылке
 
                 $validated = $request->validate([
                     'action'        => ['required', 'string', Rule::in(OrderAction::forRequest($request))],
@@ -384,7 +384,7 @@ class OrderController extends Controller {
                             ]);
                             
                             match ($validated['action']) {
-                                OrderAction::PAY->value         => $this->processPayment($order, $paymentUrl, $orderMail),               // надо подумать когда отправлять пользователю письмо со ссылкой на опату заказа
+                                OrderAction::PAY->value         => $redirect = $this->processPayment($order, $paymentUrl, $orderMail),
                                 OrderAction::RESERVE->value     => $this->processReserve($order, $orderMail),
                                 OrderAction::PREORDER->value    => $this->processPreOrder(),
                                 default => throw new \InvalidArgumentException('Invalid action')
@@ -404,8 +404,8 @@ class OrderController extends Controller {
             return response()->json([
                 'status'    => 'success',
                 'orderId'   => $order->id,
-                'clearCart' => true, // Флаг для фронта
-                'redirect'  => null,  // Фронт сам решит куда редиректить
+                'clearCart' => true,            // Флаг для фронта
+                'redirect'  => $redirect,       // Фронт сам решит куда редиректить (либо null, либо ссылка на оплату)
                 'message'   => 'Заказ успешно создан'
             ]);
         
@@ -1056,13 +1056,14 @@ class OrderController extends Controller {
                 'comment'           => 'Пользователь подтвердил заказ'
             ]);
 
-            // return redirect()->away($paymentUrl);    // этот вариант не работает
+            return $paymentUrl;
+
             // 6. Чистый редирект без Laravel-оберток
-            return new RedirectResponse(
+            /*return new RedirectResponse(
                 $paymentUrl,
                 302,
                 ['Cache-Control' => 'no-store']
-            );
+            );*/
 
         } catch (\Exception $e) {
             \Log::error('Payment processing failed', [

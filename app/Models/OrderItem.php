@@ -21,13 +21,11 @@ class OrderItem extends Model
         'quantity',
         'price',
         'regular_price',
-        'applied_discount'
     ];
 
     protected $casts = [
         'price' => 'float',
         'regular_price' => 'float',
-        'applied_discount' => 'json'                // Новое поле nullable
     ];
 
     public function order() {

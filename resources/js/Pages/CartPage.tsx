@@ -540,14 +540,20 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 
                     // 1. Закрываем модалку
                     closeModal();
-                    toast.success(`Заказ успешно ${actionType === 'pay' ? 'оплачен' : 'оформлен'}`);
+                    toast.success(res?.message || `Заказ успешно ${actionType === 'pay' ? 'оплачен' : 'оформлен'}`);
                         // Не сбрасываем isSubmitting тут - форма уже закрыта
 
                     // 3. Редирект через 1.5 || 2 секунды + Очистка корзины...
                     setTimeout(() => {
-                        router.visit(res?.redirect || '/'); // Редирект через Inertia
+                        // router.visit(res?.redirect || '/'); // Редирект через Inertia
                         addOrder(res.orderId);
                         clearCart();                        // Обновляем стейт. Очищаем корзину
+                        if(res.redirect) {
+                            // Для Robokassa и внешних сервисов
+                            window.location.href = res.redirect; 
+                        } else {
+                            router.visit('/'); // Внутренний переход
+                        }
                     }, 2000);
                 }
             });

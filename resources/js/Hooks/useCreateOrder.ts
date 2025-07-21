@@ -103,6 +103,7 @@ const useCreateOrder = () => {
     
           if (!controller.signal.aborted) {
             options.onSuccess?.(response.data);
+            console.log('Response', response.data);
             return response.data;
           }
 
