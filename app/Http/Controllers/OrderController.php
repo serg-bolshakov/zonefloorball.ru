@@ -1057,13 +1057,19 @@ class OrderController extends Controller {
                 'comment'           => 'Пользователь подтвердил заказ'
             ]);
 
-            PendingPayment::updateOrCreate(
+            /* PendingPayment::updateOrCreate(
                 ['order_id' => $order->id],
                 [
                     'mail_data' => serialize($orderMail), // Автоматически зашифруется
                     'expires_at' => now()->addHours(2)
                 ]
-            );
+            );*/
+
+            PendingPayment::create([
+                'order_id' => $order->id,
+                'mail_data' => serialize($orderMail),
+                'expires_at' => now()->addHours(2)
+            ]);
 
             return $paymentUrl;
 
