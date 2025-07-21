@@ -106,7 +106,7 @@ class PaymentController extends Controller
                     // 3. ID заказа совпадает
 
                     // Достаем данные из сессии, если письмо не было отправлено ранее: СЕССИИ НЕ РАБОТАЮТ!!!
-                    if (!$order->is_client_informed && 
+                    /* if (!$order->is_client_informed && 
                         $request->session()->has('pending_order_email')) {
                         
                         $emailData = $request->session()->get('pending_order_email');
@@ -144,7 +144,7 @@ class PaymentController extends Controller
                                 $request->session()->forget('pending_order_email');
                             }
                         }
-                    }
+                    }*/
                     
                     $pendingPayment = PendingPayment::where('order_id', $order->id)  // ← Используем $order->id вместо $validated
                                             ->lockForUpdate() 
@@ -157,7 +157,7 @@ class PaymentController extends Controller
 
                                 // $mail = unserialize($pendingPayment->decrypted_mail_data);
                                 $mail = unserialize($pendingPayment->mail_data);
-                                
+
                                 Mail::to($order->email)
                                     ->bcc(config('mail.admin_email'))
                                     ->send($mail);
