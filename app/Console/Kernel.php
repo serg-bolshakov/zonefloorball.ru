@@ -9,6 +9,7 @@ class Kernel extends ConsoleKernel
 {
     /**
      * Define the application's command schedule.
+     * Все планируемые задачи добавляются только в schedule()
      */
     protected function schedule(Schedule $schedule): void
     {
@@ -33,10 +34,20 @@ class Kernel extends ConsoleKernel
             ->dailyAt('08:00') // Проверка каждое утро
             ->timezone('Europe/Moscow');
 
+        // Очистка устаревших PendingPayments каждый час
+        /* $schedule->command('model:prune', [
+            '--model' => [PendingPayment::class],
+            '--hours' => 24 // Удалять записи старше 24 часов
+        ])->daily(); */
+        $schedule->call(function () {
+            PendingPayment::where('expires_at', '<', now())
+                ->delete();
+        })->hourly();
     }
 
     /**
      * Register the commands for the application.
+     * используется только для регистрации консольных команд
      */
     protected function commands(): void
     {

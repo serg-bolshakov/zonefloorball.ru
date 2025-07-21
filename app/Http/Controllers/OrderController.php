@@ -19,6 +19,7 @@ use App\Models\ProductReport;
 use App\Models\ProductReservation;
 use App\Models\User;
 use App\Models\LegalDocument;
+use App\Models\PendingPayment;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\OrderResource; 
@@ -1030,7 +1031,7 @@ class OrderController extends Controller {
             if (!Str::isUrl($paymentUrl)) {
                 throw new \Exception("Invalid payment URL: {$paymentUrl}");
             }
-            // Сохраняем данные письма в сессии
+            // Сохраняем данные письма в сессии - сессии НЕ РАБОТАЮТ!!!
             // 1. Сохраняем данные в сессии ПЕРЕД редиректом
             session()->put([
                 'pending_order_email' => [
@@ -1055,6 +1056,14 @@ class OrderController extends Controller {
                 'new_status'        => OrderStatus::RESERVED->value,                // 3
                 'comment'           => 'Пользователь подтвердил заказ'
             ]);
+
+            PendingPayment::updateOrCreate(
+                ['order_id' => $order->id],
+                [
+                    'mail_data' => serialize($orderMail), // Автоматически зашифруется
+                    'expires_at' => now()->addHours(2)
+                ]
+            );
 
             return $paymentUrl;
 

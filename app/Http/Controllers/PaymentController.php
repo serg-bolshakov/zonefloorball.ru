@@ -15,6 +15,7 @@ use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\ProductReport;
 use App\Models\ProductReservation;
+use App\Models\PendingPayment;
 
 use App\Services\ErrorNotifierService;
 use Illuminate\Support\Facades\Mail;                // Чтобы отправить сообщение, используем метод to фасада Mail
@@ -98,13 +99,13 @@ class PaymentController extends Controller
                             'user_agent' => $request->userAgent()
                         ]
                     ]);
-                    
+
                     // Отправка письма только если:
                     // 1. Письмо еще не отправлено И
                     // 2. Есть данные в сессии И
                     // 3. ID заказа совпадает
 
-                    // Достаем данные из сессии, если письмо не было отправлено ранее: 
+                    // Достаем данные из сессии, если письмо не было отправлено ранее: СЕССИИ НЕ РАБОТАЮТ!!!
                     if (!$order->is_client_informed && 
                         $request->session()->has('pending_order_email')) {
                         
@@ -145,6 +146,47 @@ class PaymentController extends Controller
                         }
                     }
                     
+                    $pendingPayment = PendingPayment::where('order_id', $order->id)  // ← Используем $order->id вместо $validated
+                                            ->lockForUpdate() 
+                                            ->first();
+
+                    if (!$order->is_client_informed && !$pendingPayment->isExpired()) {
+                        try {
+                            // Двойная проверка перед отправкой
+                            if (!$order->fresh()->is_client_informed) {
+
+                                // $mail = unserialize($pendingPayment->decrypted_mail_data);
+                                $mail = unserialize($pendingPayment->mail_data);
+                                
+                                Mail::to($order->email)
+                                    ->bcc(config('mail.admin_email'))
+                                    ->send($mail);
+
+                                $order->update([
+                                    'is_client_informed' => true,
+                                    // 'informed_at' => now() // Для аналитики
+                                ]);
+
+                                // Логируем успех
+                                \Log::info("Order confirmation sent", [
+                                    'order_id'  => $order->id,
+                                    'email'     => $order->email
+                                ]);
+                            }
+
+                        } catch (\Exception $e) {
+                            \Log::error('Email sending failed', [
+                                'order_id' => $order->id,
+                                'error' => $e->getMessage(),
+                                'trace' => $e->getTraceAsString()
+                            ]);
+                            
+                            // Не прерываем транзакцию из-за ошибки почты!
+                        } finally {
+                            // Всегда 
+                            $pendingPayment->delete();
+                        }
+                    }
 
                     if (abs((float)$order->total_product_amount + (float)$order->order_delivery_cost - $validated['OutSum']) > 0.01) {
                         throw new \Exception("Amount mismatch: expected {(float)$order->total_product_amount + (float)$order->order_delivery_cost}, got {$validated['OutSum']}");
