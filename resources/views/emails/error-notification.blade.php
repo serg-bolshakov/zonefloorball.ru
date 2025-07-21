@@ -10,7 +10,8 @@
 @if(!empty($context))
 **Контекст:**  
 ```json
-{{ json_encode($context, JSON_PRETTY_PRINT) }}
+<!-- {{ json_encode($context, JSON_PRETTY_PRINT) }} -->
+{!! json_encode($context, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) !!}
 @endif
 
 {{-- @component('mail::button', ['url' => url('/admin')])

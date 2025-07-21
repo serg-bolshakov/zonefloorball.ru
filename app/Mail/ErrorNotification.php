@@ -34,7 +34,8 @@ class ErrorNotification extends Mailable
                 'context' => $this->context,
                 'appName' => config('app.name'),
                 'time' => now()->format('Y-m-d H:i:s'),
-            ]
+            ],
+            encoding: 'utf-8'
         );
     }
 }

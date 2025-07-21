@@ -68,7 +68,7 @@ class PaymentController extends Controller
         // 4. Обработка платежа в транзакции
             $order = null; // Объявим переменную ДО транзакции, чтобы её не потерять в блоке try - catch
             try {
-                DB::transaction(function () use ($validated, &$order) {       // Передаём $order в транзакцию по ссылке
+                DB::transaction(function () use ($validated, $request, &$order) {       // Передаём $order в транзакцию по ссылке // «Передаём по ссылке только то, что требует модификации»
                     $order = Order::lockForUpdate()->find($validated['InvId']);
                     
                     if (!$order) {
@@ -81,6 +81,23 @@ class PaymentController extends Controller
                         return response("OK{$validated['InvId']}\n", 200);
                     }
 
+                    \Log::debug('Transaction data', [
+                        'request_data' => $request->all(),
+                        'order_before' => $order?->id,
+                        'validated' => $validated,
+                    ]);
+
+                    \Log::debug('Payment processing', [
+                        'session_data' => [
+                            'pending_order_exists' => session()->has('pending_order_email'),
+                            'order_id_in_session' => session('pending_order_email.order_id'),
+                            'session_keys' => array_keys(session()->all())
+                        ],
+                        'request' => [
+                            'ip' => $request->ip(),
+                            'user_agent' => $request->userAgent()
+                        ]
+                    ]);
                     
                     // Отправка письма только если:
                     // 1. Письмо еще не отправлено И
