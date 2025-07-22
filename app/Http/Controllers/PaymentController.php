@@ -150,6 +150,15 @@ class PaymentController extends Controller
                                             ->lockForUpdate() 
                                             ->first();
 
+                    \Log::debug('Payment processing', [
+                        'order_id' => $order->id,
+                        'pending_payment_exists' => $pendingPayment ? true : false,
+                        'is_expired' => $pendingPayment?->isExpired(),
+                        'email' => $order->email,
+                        'is_informed' => $order->is_client_informed,
+                        'if' => !$order->is_client_informed && !$pendingPayment->isExpired()
+                    ]);
+
                     if (!$order->is_client_informed && !$pendingPayment->isExpired()) {
                         try {
                             // Двойная проверка перед отправкой

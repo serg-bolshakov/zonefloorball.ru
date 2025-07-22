@@ -35,14 +35,15 @@ class Kernel extends ConsoleKernel
             ->timezone('Europe/Moscow');
 
         // Очистка устаревших PendingPayments каждый час
-        /* $schedule->command('model:prune', [
+        $schedule->command('model:prune', [
             '--model' => [PendingPayment::class],
             '--hours' => 24 // Удалять записи старше 24 часов
-        ])->daily(); */
-        $schedule->call(function () {
+        ])->hourly();
+        
+        /* $schedule->call(function () {
             PendingPayment::where('expires_at', '<', now())
                 ->delete();
-        })->hourly();
+        })->hourly();*/
     }
 
     /**
