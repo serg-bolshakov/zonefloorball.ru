@@ -104,7 +104,7 @@ class PaymentController extends Controller
                                     };
 
                                 // 6.5 Генерируем и сохраняем PDF
-                                    // $orderMail->buildPdfAndSave($order->invoice_url);    // Думаю, что лишнее это для физиков (юрики сюда не попадают)
+                                    $orderMail->buildPdfAndSave($order->invoice_url);
                                     
                                 // 6.6 Отправляем письмо    
                                     Mail::to($order->email)

@@ -277,17 +277,18 @@ class OrderController extends Controller {
                         $salt = $orderMail->encryptOrderNumber($sanitizedOrderNumber);
                         $relativePath = 'storage/invoices/invoice_' . $sanitizedOrderNumber . '_' . $salt . '.pdf';
                     
-                    // 6.3 Сохраняем путь к PDF в базу данных (Обновляем заказ с ссылкой на PDF)
-                        try {
-                            $order->refresh()->update([
-                                'invoice_url'               => $relativePath,
-                                'invoice_url_expired_at'    => WorkingDaysService::getExpirationDate(3),
-                            ]);
-                        } catch (\Exception $e) {
-                            \Log::error('Failed to update order: '.$e->getMessage());
-                            // Дополнительная обработка ошибки
+                    // 6.3 Сохраняем путь к PDF в базу данных (Обновляем заказ с ссылкой на PDF) - только для юридических лиц!?
+                        if ($user->client_type_id == '2') {
+                            try {
+                                $order->refresh()->update([
+                                    'invoice_url'               => $relativePath,
+                                    'invoice_url_expired_at'    => WorkingDaysService::getExpirationDate(3),
+                                ]);
+                            } catch (\Exception $e) {
+                                \Log::error('Failed to update order: '.$e->getMessage());
+                                // Дополнительная обработка ошибки
+                            }
                         }
-
                     // 6.4 Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
                         $orderMail = match ($user->client_type_id) {
                             1 => new OrderReserve($order, $user),               // Для физических лиц делаем "Резерв"
@@ -316,8 +317,8 @@ class OrderController extends Controller {
                             'memory_usage' => memory_get_usage(true) / 1024 / 1024 . ' MB'
                         ]
                     ]);
-                // 8. Формируем данные для Робокассы (и пытаемся инициировать оплату, если пользователь выбрал "Оплатить"):
-                    if ($order && $order->payment_status !== 'paid') {    
+                // 8. Формируем данные для Робокассы (и пытаемся инициировать оплату, если пользователь выбрал "Оплатить" - оплата он-лайн возможна только для физических лиц):
+                    if ($order && $order->payment_status !== 'paid' && $user->client_type_id == '1') {    
                         \Log::debug('Generating Robokassa link start', [
                             'order_id' => $order->id,
                             'amount' => (float)$order->total_product_amount + (float)$order->order_delivery_cost,
@@ -394,8 +395,25 @@ class OrderController extends Controller {
                             \Log::error('OrderCreating failed: '.$e->getMessage());
                             throw $e; // Пробрасываем для отката транзакции
                         }
-                    } else {
-                        \Log::info("OrderController@create {$order->id} already paid");
+                    } elseif ($order && $order->payment_status !== 'paid' && $user->client_type_id == '2') {
+                        // Если покупатель юридическое лицо
+                        try {
+                            // Обновляем запись payment_url в таблице orders
+                                $order->addPaymentDetails([
+                                    'payment_url' => $paymentUrl,
+                                    'payment_url_expires_at' => WorkingDaysService::getExpirationDate(3) // 3 рабочих дня
+                                ]);  // метод описан в модели Order
+                            
+                            match ($validated['action']) {
+                                OrderAction::RESERVE->value     => $this->processReserve($order, $orderMail),
+                                OrderAction::PREORDER->value    => $this->processPreOrder(),
+                                default => throw new \InvalidArgumentException('Invalid action')
+                            };
+                            
+                        } catch (\Exception $e) {
+                            \Log::error('OrderCreating failed: '.$e->getMessage());
+                            throw $e; // Пробрасываем для отката транзакции
+                        }
                     }
 
                 return $order; // Возвращаем только объект
@@ -1033,7 +1051,6 @@ class OrderController extends Controller {
             // 2. Обновляем статус
             $order->update(['status_id' => OrderStatus::RESERVED->value]);
 
-            // 4. Логирование перед редиректом
             \Log::debug('Attempting redirect to:', ['url' => $paymentUrl]);
 
             // 5. Логируем статус
@@ -1051,6 +1068,12 @@ class OrderController extends Controller {
                 'order_id' => $order->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
+            ]);
+
+            ErrorNotifierService::notifyAdmin($e, [
+                'order_id' => $order->id ?? null,
+                'error' => $e->getMessage(),
+                'stage' => 'OrderController@processPayment'
             ]);
             
             return back()->withErrors('Ошибка при переходе к оплате');
@@ -1089,6 +1112,7 @@ class OrderController extends Controller {
             ErrorNotifierService::notifyAdmin($e, [
                 'order_id' => $order->id ?? null,
                 'payment_system' => 'robokassa',
+                'error' => $e->getMessage(),
                 'stage' => 'OrderController@create for postponed payment processReserve method Mailing process'
             ]);
         }

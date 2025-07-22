@@ -1,7 +1,6 @@
 // Компонент для информации об оплате
 import { IOrderPayment } from "@/Pages/OrderTracking";
 
-
 export const PaymentInfo: React.FC<{ payment: IOrderPayment }> = ({ payment }) => {
     console.log(payment);
     return (
