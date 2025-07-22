@@ -17,7 +17,7 @@ export const PaymentInfo: React.FC<{ payment: IOrderPayment }> = ({ payment }) =
             </div>
 
             <div className="payment-buttons-grid margin-top12px">
-                {payment.invoice_url && (
+                {payment.invoice_url && payment.invoice_url !== 'null' && (
                     <a 
                         href={payment.invoice_url} 
                         className="payment-button"

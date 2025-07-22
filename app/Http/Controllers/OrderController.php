@@ -787,6 +787,11 @@ class OrderController extends Controller {
                 'first_item' => $order->statusHistory->first()?->toArray()
             ]);
 
+            \Log::debug('Client type check', [
+                'client_type_id' => $order->order_client_type_id,
+                'invoice_url_generated' => $order->order_client_type_id == '2'
+            ]);
+
             return Inertia::render('OrderTracking', [
                     'title' => 'Отслеживание заказа',
                     'robots' => 'NOINDEX,NOFOLLOW',
@@ -837,7 +842,10 @@ class OrderController extends Controller {
                                 'code'  => $order->payment_status->value,       // 'pending'
                                 'label' => $order->payment_status->label()      // 'Ожидает оплаты'
                             ],
-                            'invoice_url' => $order->order_client_type_id == '2' ? '/invoice/' . $order->access_hash : null,    // отправить ссылку только, если заказ от юридического лица
+                            // отправить ссылку только, если заказ от юридического лица:
+                            'invoice_url' => $order->order_client_type_id === 2 // Сравниваем с числом, а не строкой
+                                ? '/invoice/' . $order->access_hash 
+                                : null,
                             'payment_url' => $this->resolvePaymentUrl($order, $paymentDetails)['url'] ?? null                   // отправить только, если ссылка активна, заказ, не оплачен
                         ]
                     ]
