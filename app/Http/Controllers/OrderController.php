@@ -19,7 +19,6 @@ use App\Models\ProductReport;
 use App\Models\ProductReservation;
 use App\Models\User;
 use App\Models\LegalDocument;
-use App\Models\PendingPayment;
 
 use Illuminate\Http\Request;
 use App\Http\Resources\OrderResource; 
@@ -1015,10 +1014,9 @@ class OrderController extends Controller {
     public function processPayment($order, $paymentUrl, $orderMail) {
         \Log::debug('OrderController processPayment start', [
             'order'         => $order ?? null,
-        'paymentUrl'        => $paymentUrl ?? null,         
+            'paymentUrl'    => $paymentUrl ?? null,         
             'orderMail'     => $orderMail ?? null,    
         ]);
-
 
         \Log::debug('OrderController processPayment', [
             'order_id' => $order->id,
@@ -1031,20 +1029,9 @@ class OrderController extends Controller {
             if (!Str::isUrl($paymentUrl)) {
                 throw new \Exception("Invalid payment URL: {$paymentUrl}");
             }
-            // Сохраняем данные письма в сессии - сессии НЕ РАБОТАЮТ!!!
-            // 1. Сохраняем данные в сессии ПЕРЕД редиректом
-            session()->put([
-                'pending_order_email' => [
-                    'order_id' => $order->id,
-                    'mail_data' => base64_encode(serialize($orderMail)), // Доп. безопасность
-                ]
-            ]);
-
+            
             // 2. Обновляем статус
             $order->update(['status_id' => OrderStatus::RESERVED->value]);
-
-            // 3. Явное сохранение сессии
-            session()->save();
 
             // 4. Логирование перед редиректом
             \Log::debug('Attempting redirect to:', ['url' => $paymentUrl]);
@@ -1057,34 +1044,7 @@ class OrderController extends Controller {
                 'comment'           => 'Пользователь подтвердил заказ'
             ]);
 
-            /* PendingPayment::updateOrCreate(
-                ['order_id' => $order->id],
-                [
-                    'mail_data' => serialize($orderMail), // Автоматически зашифруется
-                    'expires_at' => now()->addHours(2)
-                ]
-            );*/
-
-            \Log::debug('Email before storing:', ['email original' => $orderMail]);
-
-            Log::debug('Serializing mail data', ['mail_data' => $orderMail, 'order_id' => $order->id]);
-            $serialized = serialize($orderMail);
-            Log::debug('Serialized data', ['serialized' => $serialized]);
-
-            PendingPayment::create([
-                'order_id' => $order->id,
-                'mail_data' => $serialized,
-                'expires_at' => now()->addHours(2)
-            ]);
-
             return $paymentUrl;
-
-            // 6. Чистый редирект без Laravel-оберток
-            /*return new RedirectResponse(
-                $paymentUrl,
-                302,
-                ['Cache-Control' => 'no-store']
-            );*/
 
         } catch (\Exception $e) {
             \Log::error('Payment processing failed', [

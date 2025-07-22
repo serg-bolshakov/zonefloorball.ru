@@ -33,18 +33,6 @@ class Kernel extends ConsoleKernel
         $schedule->command('reservations:check-expired')
             ->dailyAt('08:00') // Проверка каждое утро
             ->timezone('Europe/Moscow');
-
-        // Очистка устаревших PendingPayments каждый час
-        $schedule->command('model:prune', [
-            '--model' => [PendingPayment::class],
-            '--hours' => 24 // Удалять записи старше 24 часов
-        ])->hourly();
-
-        /* $schedule->call(function () {
-            \Log::info('Cleaning pending payments...');
-            PendingPayment::where('expires_at', '<', now())
-                ->delete();
-        })->hourly();*/
     }
 
     /**

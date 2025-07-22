@@ -15,7 +15,6 @@ use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Models\ProductReport;
 use App\Models\ProductReservation;
-use App\Models\PendingPayment;
 
 use App\Services\ErrorNotifierService;
 use App\Mail\OrderInvoice;
@@ -85,117 +84,15 @@ class PaymentController extends Controller
                         return response("OK{$validated['InvId']}\n", 200);
                     }
 
-                    \Log::debug('Transaction data', [
+                    \Log::debug('PaymentController Transaction data', [
                         'request_data' => $request->all(),
                         'order_before' => $order?->id,
                         'validated' => $validated,
                     ]);
 
-                    /* \Log::debug('Payment processing', [
-                        'session_data' => [
-                            'pending_order_exists' => session()->has('pending_order_email'),
-                            'order_id_in_session' => session('pending_order_email.order_id'),
-                            'session_keys' => array_keys(session()->all())
-                        ],
-                        'request' => [
-                            'ip' => $request->ip(),
-                            'user_agent' => $request->userAgent()
-                        ]
-                    ]); */
-
                     // Отправка письма только если:
-                    // 1. Письмо еще не отправлено И
-                    // 3. ID заказа совпадает
-
-                    // Достаем данные из сессии, если письмо не было отправлено ранее: СЕССИИ НЕ РАБОТАЮТ!!!
-                    /* if (!$order->is_client_informed && 
-                        $request->session()->has('pending_order_email')) {
-                        
-                        $emailData = $request->session()->get('pending_order_email');
-
-                        if ($emailData['order_id'] == $order->id) {
-                            try {
-                                // Двойная проверка перед отправкой
-                                if (!$order->fresh()->is_client_informed) {
-                                    Mail::to($order->email)
-                                        ->bcc(config('mail.admin_email'))
-                                        ->send(unserialize($emailData['mail_data']));
-
-                                    $order->update([
-                                        'is_client_informed' => true,
-                                        // 'informed_at' => now() // Для аналитики
-                                    ]);
-
-                                    // Логируем успех
-                                    \Log::info("Order confirmation sent", [
-                                        'order_id'  => $order->id,
-                                        'email'     => $order->email
-                                    ]);
-                                }
-
-                            } catch (\Exception $e) {
-                                \Log::error('Email sending failed', [
-                                    'order_id' => $order->id,
-                                    'error' => $e->getMessage(),
-                                    'trace' => $e->getTraceAsString()
-                                ]);
-                                
-                                // Не прерываем транзакцию из-за ошибки почты!
-                            } finally {
-                                // Всегда очищаем сессию
-                                $request->session()->forget('pending_order_email');
-                            }
-                        }
-                    }*/
-                    
-                    $pendingPayment = PendingPayment::where('order_id', $order->id)  // ← Используем $order->id вместо $validated
-                                            ->lockForUpdate() 
-                                            ->first();
-
-                    \Log::debug('Payment processing', [
-                        'order_id' => $order->id,
-                        'pending_payment_exists' => $pendingPayment ? true : false,
-                        'is_expired' => $pendingPayment?->isExpired(),
-                        'email' => $order->email,
-                        'is_informed' => $order->is_client_informed,
-                        'if' => !$order->is_client_informed && !$pendingPayment->isExpired()
-                    ]);
-
-                    if (!$order->is_client_informed && !$pendingPayment->isExpired()) {
+                    if (!$order->is_client_informed) {
                         try {
-                            // Двойная проверка перед отправкой
-                            /*if (!$order->fresh()->is_client_informed) {
-                                
-                                \Log::debug('Payment processing after double checking', [
-                                    'email' => $order->email,
-                                    'is_informed' => $order->is_client_informed,
-                                    'emai_data' => $pendingPayment->mail_data ?? null,
-                                    'email_userialize' => unserialize($pendingPayment->mail_data) ?? null
-                                ]);
-
-                                // $mail = unserialize($pendingPayment->decrypted_mail_data);
-                                $mail = unserialize($pendingPayment->mail_data);
-
-                                \Log::debug('Email to be sent', [
-                                    'email' => $mail ?? null,
-                                ]);
-
-                                Mail::to($order->email)
-                                    ->bcc(config('mail.admin_email'))
-                                    ->send($mail);
-
-                                $order->update([
-                                    'is_client_informed' => true,
-                                    // 'informed_at' => now() // Для аналитики
-                                ]);
-
-                                // Логируем успех
-                                \Log::info("Order confirmation sent", [
-                                    'order_id'  => $order->id,
-                                    'email'     => $order->email
-                                ]);
-                            } */
-
                             $user = User::find($order->order_client_id);
 
                             if($user) {
@@ -207,26 +104,23 @@ class PaymentController extends Controller
                                     };
 
                                 // 6.5 Генерируем и сохраняем PDF
-                                    $orderMail->buildPdfAndSave($order->invoice_url);
+                                    // $orderMail->buildPdfAndSave($order->invoice_url);    // Думаю, что лишнее это для физиков (юрики сюда не попадают)
                                     
                                 // 6.6 Отправляем письмо    
-                                    // Двойная проверка перед отправкой
-                                    if (!$order->fresh()->is_client_informed) {
-                                        Mail::to($order->email)
-                                        ->bcc(config('mail.admin_email'))
-                                        ->send($orderMail);
+                                    Mail::to($order->email)
+                                    ->bcc(config('mail.admin_email'))
+                                    ->send($orderMail);
 
-                                        $order->update([
-                                            'is_client_informed' => true,
-                                            // 'informed_at' => now() // Для аналитики
-                                        ]);
+                                    $order->update([
+                                        'is_client_informed' => true,
+                                        // 'informed_at' => now() // Для аналитики
+                                    ]);
 
-                                        // Логируем успех
-                                        \Log::info("Order confirmation sent", [
-                                            'order_id'  => $order->id,
-                                            'email'     => $order->email
-                                        ]);
-                                    }
+                                    // Логируем успех
+                                    \Log::info("Order confirmation sent", [
+                                        'order_id'  => $order->id,
+                                        'email'     => $order->email
+                                    ]);
                             }
 
                         } catch (\Exception $e) {
@@ -237,9 +131,6 @@ class PaymentController extends Controller
                             ]);
                             
                             // Не прерываем транзакцию из-за ошибки почты!
-                        } finally {
-                            // Всегда 
-                            $pendingPayment->delete();
                         }
                     }
 
