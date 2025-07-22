@@ -1065,9 +1065,15 @@ class OrderController extends Controller {
                 ]
             );*/
 
+            \Log::debug('Email before storing:', ['email original' => $orderMail]);
+
+            Log::debug('Serializing mail data', ['mail_data' => $orderMail, 'order_id' => $order->id]);
+            $serialized = serialize($orderMail);
+            Log::debug('Serialized data', ['serialized' => $serialized]);
+
             PendingPayment::create([
                 'order_id' => $order->id,
-                'mail_data' => serialize($orderMail),
+                'mail_data' => $serialized,
                 'expires_at' => now()->addHours(2)
             ]);
 
