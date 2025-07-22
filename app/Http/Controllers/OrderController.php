@@ -277,18 +277,17 @@ class OrderController extends Controller {
                         $salt = $orderMail->encryptOrderNumber($sanitizedOrderNumber);
                         $relativePath = 'storage/invoices/invoice_' . $sanitizedOrderNumber . '_' . $salt . '.pdf';
                     
-                    // 6.3 Сохраняем путь к PDF в базу данных (Обновляем заказ с ссылкой на PDF) - только для юридических лиц!?
-                        if ($user->client_type_id == '2') {
-                            try {
-                                $order->refresh()->update([
-                                    'invoice_url'               => $relativePath,
-                                    'invoice_url_expired_at'    => WorkingDaysService::getExpirationDate(3),
-                                ]);
-                            } catch (\Exception $e) {
-                                \Log::error('Failed to update order: '.$e->getMessage());
-                                // Дополнительная обработка ошибки
-                            }
+                    // 6.3 Сохраняем путь к PDF в базу данных (Обновляем заказ с ссылкой на PDF)
+                        try {
+                            $order->refresh()->update([
+                                'invoice_url'               => $relativePath,
+                                'invoice_url_expired_at'    => WorkingDaysService::getExpirationDate(3),
+                            ]);
+                        } catch (\Exception $e) {
+                            \Log::error('Failed to update order: '.$e->getMessage());
+                            // Дополнительная обработка ошибки
                         }
+
                     // 6.4 Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
                         $orderMail = match ($user->client_type_id) {
                             1 => new OrderReserve($order, $user),               // Для физических лиц делаем "Резерв"
@@ -838,8 +837,8 @@ class OrderController extends Controller {
                                 'code'  => $order->payment_status->value,       // 'pending'
                                 'label' => $order->payment_status->label()      // 'Ожидает оплаты'
                             ],
-                            'invoice_url' => '/invoice/' . $order->access_hash,
-                            'payment_url' => $this->resolvePaymentUrl($order, $paymentDetails)['url'] ?? null   // отправить только, если ссылка активна, заказ, не оплачен
+                            'invoice_url' => $order->order_client_type_id == '2' ? '/invoice/' . $order->access_hash : null,    // отправить ссылку только, если заказ от юридического лица
+                            'payment_url' => $this->resolvePaymentUrl($order, $paymentDetails)['url'] ?? null                   // отправить только, если ссылка активна, заказ, не оплачен
                         ]
                     ]
                 ]);
