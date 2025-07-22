@@ -39,8 +39,9 @@ class Kernel extends ConsoleKernel
             '--model' => [PendingPayment::class],
             '--hours' => 24 // Удалять записи старше 24 часов
         ])->hourly();
-        
+
         /* $schedule->call(function () {
+            \Log::info('Cleaning pending payments...');
             PendingPayment::where('expires_at', '<', now())
                 ->delete();
         })->hourly();*/

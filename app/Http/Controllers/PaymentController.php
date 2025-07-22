@@ -163,9 +163,22 @@ class PaymentController extends Controller
                         try {
                             // Двойная проверка перед отправкой
                             if (!$order->fresh()->is_client_informed) {
+                                
+                                \Log::debug('Payment processing after double checking', [
+                                    'order_id' => $order->id,
+                                    'pending_payment_exists' => $pendingPayment ? true : false,
+                                    'is_expired' => $pendingPayment?->isExpired(),
+                                    'email' => $order->email,
+                                    'is_informed' => $order->is_client_informed,
+                                    'if' => !$order->is_client_informed && !$pendingPayment->isExpired()
+                                ]);
 
                                 // $mail = unserialize($pendingPayment->decrypted_mail_data);
                                 $mail = unserialize($pendingPayment->mail_data);
+
+                                \Log::debug('Email to be sent', [
+                                    'email' => $mail ?? null,
+                                ]);
 
                                 Mail::to($order->email)
                                     ->bcc(config('mail.admin_email'))
