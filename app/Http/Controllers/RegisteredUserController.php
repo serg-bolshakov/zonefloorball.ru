@@ -139,7 +139,6 @@ class RegisteredUserController extends Controller
         $user = User::create([
             'name'                          => $data['name_of_org'],
             'email'                         => $data['regorgemail'],
-            'is_taxes_pay'                  => $data['orgvatpayer'],
             'password'                      => Hash::make($data['password']),
             'org_tel'                       => $data['regorgtel'],
             'org_inn'                       => $data['org_inn'],
