@@ -317,7 +317,7 @@ class OrderController extends Controller {
                         ]
                     ]);
                 // 8. Формируем данные для Робокассы (и пытаемся инициировать оплату, если пользователь выбрал "Оплатить" - оплата он-лайн возможна только для физических лиц):
-                    if ($order && $order->payment_status !== 'paid' && $user->client_type_id == '1') {    
+                    if ($order && $order->payment_status !== 'paid' && $user->client_type_id === 1) {    
                         \Log::debug('Generating Robokassa link start', [
                             'order_id' => $order->id,
                             'amount' => (float)$order->total_product_amount + (float)$order->order_delivery_cost,
@@ -397,11 +397,6 @@ class OrderController extends Controller {
                     } elseif ($order && $order->payment_status !== 'paid' && $user->client_type_id == '2') {
                         // Если покупатель юридическое лицо
                         try {
-                            // Обновляем запись payment_url в таблице orders
-                                $order->addPaymentDetails([
-                                    'payment_url' => $paymentUrl,
-                                    'payment_url_expires_at' => WorkingDaysService::getExpirationDate(3) // 3 рабочих дня
-                                ]);  // метод описан в модели Order
                             
                             match ($validated['action']) {
                                 OrderAction::RESERVE->value     => $this->processReserve($order, $orderMail),
