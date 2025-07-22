@@ -111,9 +111,17 @@ class OrderReserve extends Mailable
 
     public function attachments(): array
     {
+        // Для физлиц не прикрепляем PDF
+        if ($this->buyer->client_type_id === 1) {
+            return [];
+        }
+
+        // Для юрлиц и других случаев
         return [
-            \Illuminate\Mail\Mailables\Attachment::fromData(fn () => $this->buildPdf(), 'zakaz.pdf')
-                ->withMime('application/pdf'),
+            \Illuminate\Mail\Mailables\Attachment::fromData(
+                fn () => $this->buildPdf(), 
+                'zakaz.pdf'
+            )->withMime('application/pdf'),
         ];
     }
 
