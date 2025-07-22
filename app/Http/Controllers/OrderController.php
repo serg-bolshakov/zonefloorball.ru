@@ -948,7 +948,10 @@ class OrderController extends Controller {
                                 'code'  => $order->payment_status->value,       // 'pending'
                                 'label' => $order->payment_status->label()      // 'Ожидает оплаты'
                             ],
-                            'invoice_url' => '/invoice/' . $order->access_hash,
+                            // отправить ссылку только, если заказ от юридического лица:
+                            'invoice_url' => $order->order_client_type_id === 2 // Сравниваем с числом, а не строкой
+                                ? '/invoice/' . $order->access_hash 
+                                : null,
                             'payment_url' => $this->resolvePaymentUrl($order, $paymentDetails)['url'] ?? null   // отправить только, если ссылка активна, заказ, не оплачен
                         ]
                     ]
