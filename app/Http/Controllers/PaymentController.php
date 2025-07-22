@@ -18,7 +18,10 @@ use App\Models\ProductReservation;
 use App\Models\PendingPayment;
 
 use App\Services\ErrorNotifierService;
-use Illuminate\Support\Facades\Mail;                // Чтобы отправить сообщение, используем метод to фасада Mail
+use App\Mail\OrderInvoice;
+use App\Mail\OrderReserve;
+use Illuminate\Support\Facades\Mail;        // Чтобы отправить сообщение, используем метод to фасада Mail
+use App\Models\User;
 
 class PaymentController extends Controller
 {
@@ -88,7 +91,7 @@ class PaymentController extends Controller
                         'validated' => $validated,
                     ]);
 
-                    \Log::debug('Payment processing', [
+                    /* \Log::debug('Payment processing', [
                         'session_data' => [
                             'pending_order_exists' => session()->has('pending_order_email'),
                             'order_id_in_session' => session('pending_order_email.order_id'),
@@ -98,11 +101,10 @@ class PaymentController extends Controller
                             'ip' => $request->ip(),
                             'user_agent' => $request->userAgent()
                         ]
-                    ]);
+                    ]); */
 
                     // Отправка письма только если:
                     // 1. Письмо еще не отправлено И
-                    // 2. Есть данные в сессии И
                     // 3. ID заказа совпадает
 
                     // Достаем данные из сессии, если письмо не было отправлено ранее: СЕССИИ НЕ РАБОТАЮТ!!!
@@ -162,7 +164,7 @@ class PaymentController extends Controller
                     if (!$order->is_client_informed && !$pendingPayment->isExpired()) {
                         try {
                             // Двойная проверка перед отправкой
-                            if (!$order->fresh()->is_client_informed) {
+                            /*if (!$order->fresh()->is_client_informed) {
                                 
                                 \Log::debug('Payment processing after double checking', [
                                     'email' => $order->email,
@@ -192,6 +194,39 @@ class PaymentController extends Controller
                                     'order_id'  => $order->id,
                                     'email'     => $order->email
                                 ]);
+                            } */
+
+                            $user = User::find($order->order_client_id);
+
+                            if($user) {
+                                // 6.4 Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
+                                    $orderMail = match ($user->client_type_id) {
+                                        1 => new OrderReserve($order, $user),               // Для физических лиц делаем "Резерв"
+                                        2 => new OrderInvoice($order, $user),               // Для юридических лиц формируем счёт
+                                        default => new OrderReserve($order, $user)
+                                    };
+
+                                // 6.5 Генерируем и сохраняем PDF
+                                    $orderMail->buildPdfAndSave($order->invoice_url);
+                                    
+                                // 6.6 Отправляем письмо    
+                                    // Двойная проверка перед отправкой
+                                    if (!$order->fresh()->is_client_informed) {
+                                        Mail::to($order->email)
+                                        ->bcc(config('mail.admin_email'))
+                                        ->send($orderMail);
+
+                                        $order->update([
+                                            'is_client_informed' => true,
+                                            // 'informed_at' => now() // Для аналитики
+                                        ]);
+
+                                        // Логируем успех
+                                        \Log::info("Order confirmation sent", [
+                                            'order_id'  => $order->id,
+                                            'email'     => $order->email
+                                        ]);
+                                    }
                             }
 
                         } catch (\Exception $e) {
