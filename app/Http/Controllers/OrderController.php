@@ -478,8 +478,7 @@ class OrderController extends Controller {
             }
 
             ErrorNotifierService::notifyAdmin($e, [
-                'order_id' => $order->id ?? null,
-                'payment_system' => 'robokassa',
+                'Order failed: '.$e->getMessage(),
                 'stage' => 'OrderController@create'
             ]);
                     

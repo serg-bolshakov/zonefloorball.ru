@@ -179,7 +179,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                             onClick={() => handleAction('preorder')}
                             className="order-confirmation__submit-btn"
                         >
-                            { isLegalUser(user) && ( isReserving ? 'Готовим предзаказ' : 'Получить счёт на предзаказ' )}
+                            { isLegalUser(user) && ( isReserving ? 'Готовим предзаказ' : 'Оформить предзаказ' )}
                         </motion.button>
                     )}
 
@@ -191,7 +191,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                             onClick={() => handleAction('reserve')}
                             className="order-confirmation__submit-btn"
                         >
-                            { isIndividualUser(user) && ( isReserving ? 'Создаём резерв' : 'Отложить' )}
+                            { isIndividualUser(user) && ( isReserving ? 'Создаём резерв' : 'Создать резерв' )}
                             { isLegalUser(user) && ( isReserving ? 'Готовим счёт' : 'Получить счёт' )}
                         </motion.button>
                     )}
