@@ -58,6 +58,10 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
     console.log('propVariants', propVariants);
     console.log('prodInfo.category_id', prodInfo.category_id);
 
+    const imagePath = `/storage/${prodInfo.productMainImage.img_link}`;
+    const webpPath = imagePath.replace(/\.(jpg|png)$/, '.webp');
+
+
     try {
         
         return (
@@ -83,7 +87,7 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
 
                     <section className="cardProduct-line__block">
                         <section>
-                            { prodInfo.productMainImage.img_link && (                          
+                            {/* { prodInfo.productMainImage.img_link && (                         
                                 <LazyLoadImage
                                     className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
                                     onClick={() => setIsModalOpen(true)}
@@ -91,7 +95,31 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                                     alt={[prodInfo.category.category, prodInfo.brand.brand_view, prodInfo.model, prodInfo.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} 
                                     title="Кликни на изображение, чтобы посмотреть его на всём экране."
                                 />
-                            )}
+                            )} */}
+                            
+                            {prodInfo.productMainImage.img_link && (
+                                <picture>
+                                    {/* Добавляем проверку MIME-типа */}
+                                    <source 
+                                        srcSet={`/storage/${prodInfo.productMainImage.img_link.replace(/\.(jpg|png)$/, '.webp')}`} 
+                                        type="image/webp" 
+                                    />
+                                    {/* Явно указываем MIME-тип для оригинала */}
+                                    <source 
+                                        srcSet={`/storage/${prodInfo.productMainImage.img_link}`} 
+                                        type={prodInfo.productMainImage.img_link.endsWith('.png') ? 'image/png' : 'image/jpeg'} 
+                                    />
+                                    {/* Финальный фолбэк */}
+                                    <img
+                                        src={`/storage/${prodInfo.productMainImage.img_link}`}
+                                        className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
+                                        onClick={() => setIsModalOpen(true)}
+                                        alt={[prodInfo.category.category, prodInfo.brand.brand_view, prodInfo.model, prodInfo.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} 
+                                        title="Кликни на изображение, чтобы посмотреть его на всём экране."
+                                    />
+                                </picture>
+                                )}
+
                             <AnimatePresence>
                             {isModalOpen && (
                                 <motion.div
