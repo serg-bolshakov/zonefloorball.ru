@@ -18,4 +18,14 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    # WebP автоматическая отдача (добавляем в конец, но внутри mod_rewrite)
+    RewriteCond %{HTTP_ACCEPT} image/webp
+    RewriteCond %{DOCUMENT_ROOT}/$1.webp -f
+    RewriteRule ^(.*)\.(jpg|png|jpeg)$ $1.webp [T=image/webp,L]
+    
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header append Vary Accept
 </IfModule>
