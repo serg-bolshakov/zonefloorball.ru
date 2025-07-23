@@ -7,6 +7,7 @@ use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 use App\Services\ErrorNotifierService;
 
+
 class Handler extends ExceptionHandler
 {
     /**
