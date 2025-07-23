@@ -20,8 +20,9 @@
 
     <form action="/register" method="POST">
         @csrf
-        <p class="registration-form__input-item"><span class="registration-form__title">Добро пожаловать!<br>Регистрационная форма</span></p>
         <p class="registration-form__input-item"><span class="registration-form__star">*</span> - поля, обязательные для заполнения </p>
+        <p class="cursive color-green text-align-center">Для просмотра формы используйте прокрутку!</p>
+        <p class="registration-form__input-item"><span class="registration-form__title">Добро пожаловать!<br>Регистрационная форма</span></p>
         
         <p class="registration-form__input-item">
             <label class="label" for="name">Имя: </label>
