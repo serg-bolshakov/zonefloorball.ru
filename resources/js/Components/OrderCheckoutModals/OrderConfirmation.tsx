@@ -192,7 +192,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                             className="order-confirmation__submit-btn"
                         >
                             { isIndividualUser(user) && ( isReserving ? 'Создаём резерв' : 'Резерв' )}
-                            { isLegalUser(user) && ( isReserving ? 'Готовим счёт' : 'Счёт на опалту' )}
+                            { isLegalUser(user) && ( isReserving ? 'Готовим счёт' : 'Счёт на оплату' )}
                         </motion.button>
                     )}
                     { !isLegalUser(user) && (

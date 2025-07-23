@@ -1,16 +1,16 @@
 //recources/js/Components/OrderCheckoutModals/GuestCustomerDataModalForm.tsx
 import React, { useState, useEffect, useRef } from 'react';
-import useModal from "@/Hooks/useModal";
 
 import { TCustomer } from '@/Types/types';
-import { IGuestCustomerData } from '@/Types/orders';
+import { TCartGuestCustomer } from '@/Types/cart';
 
 import { motion } from 'framer-motion';
+import { Link } from '@inertiajs/react';        // Жёсткая связка с Inertia.js (Link) - это скорее недостаток - перепишем в коде на <a>... наверное...
 
 interface GuestCustomerDataModalFormProps {
     initialDeliveryAddress: string;
     initialCustomerData: TCustomer;
-    onSubmit: (data: IGuestCustomerData) => void;
+    onSubmit: (data: TCartGuestCustomer) => void;
     onCancel: () => void;
 }
 
@@ -21,7 +21,7 @@ const GuestCustomerDataModalForm: React.FC<GuestCustomerDataModalFormProps> = ({
     onCancel,
   }) => {
     
-    const [formData, setFormData] = useState<IGuestCustomerData>({
+    const [formData, setFormData] = useState<TCartGuestCustomer>({
         type: 'guest',
         firstName: '',
         lastName: '',
@@ -30,11 +30,11 @@ const GuestCustomerDataModalForm: React.FC<GuestCustomerDataModalFormProps> = ({
         deliveryAddress: initialDeliveryAddress,
     });
 
-    const [errors, setErrors] = useState<Partial<IGuestCustomerData>>({});
+    const [errors, setErrors] = useState<Partial<TCartGuestCustomer>>({});
     const addressRef = useRef<HTMLDivElement>(null);
 
     // Валидация полей
-    const validateField = (name: keyof IGuestCustomerData, value: string): boolean => {
+    const validateField = (name: keyof TCartGuestCustomer, value: string): boolean => {
         let isValid = true;
         let error = '';
 
@@ -86,7 +86,7 @@ const GuestCustomerDataModalForm: React.FC<GuestCustomerDataModalFormProps> = ({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        validateField(name as keyof IGuestCustomerData, value);
+        validateField(name as keyof TCartGuestCustomer, value);
     };
     
     // Обработчик адреса (contentEditable div)
@@ -158,7 +158,7 @@ const GuestCustomerDataModalForm: React.FC<GuestCustomerDataModalFormProps> = ({
     return (
         <>
             <form onSubmit={handleSubmit}> 
-                <p className="order-info__text">Важно! Оформление заказа производится без регистрации и авторизации покупателя! Вы сможете отслеживать изменения статуса и ход доставки только на этом устройстве в разделе "Мои заказы / покупки". Для доступа в "личный кабинет", получения детальной информации и специальных цен, рекомендуем <a href="/register">зарегистрироваться</a> в системе или <a href="/login">авторизоваться</a></p>
+                <p className="order-info__text">Важно! Оформление заказа производится без регистрации и авторизации покупателя! Вы сможете отслеживать изменения статуса и ход доставки только по ссылке, полученной по электроной почте". Для доступа в "личный кабинет", получения детальной информации и специальных цен, рекомендуем <a href="/register">зарегистрироваться</a> в системе или <a href="/login">авторизоваться</a></p>
                 <p className="registration-form__input-item"><span className="registration-form__title">Информация о получателе заказа</span></p>
 
                 <p className="registration-form__input-item">
