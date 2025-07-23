@@ -1,9 +1,11 @@
 <?php
+// app/Exceptions/Handler.php
 
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use App\Mail\ErrorNotification;
 
 class Handler extends ExceptionHandler
 {
