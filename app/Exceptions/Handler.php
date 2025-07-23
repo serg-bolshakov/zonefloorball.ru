@@ -5,7 +5,7 @@ namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
-use App\Mail\ErrorNotification;
+use App\Services\ErrorNotifierService;
 
 class Handler extends ExceptionHandler
 {
