@@ -67,55 +67,55 @@ const Video = () => {
 
     return ( 
         <div className="video-container">
-            <video id="video-1" controls poster="/storage/video/posters/2-balls-trick.png">
+            <video id="video-1" controls poster="/storage/video/posters/2-balls-trick.webp">
             <source src="/storage/video/2-balls-trick.mp4" type="video/mp4" />
             Ваш браузер не поддерживает встроенные видео :(
             </video>
             <button className="share-button" onClick={() => handleCopyLink('video-1')}>Скопировать ссылку на видео</button>
 
-            <video id="video-2" controls poster="/storage/video/posters/mymove-shot-feat-anna-wijk.png">
+            <video id="video-2" controls poster="/storage/video/posters/mymove-shot-feat-anna-wijk.webp">
             <source src="/storage/video/mymove-shot-feat-anna-wijk.mp4" type="video/mp4" />
             Ваш браузер не поддерживает встроенные видео :(
             </video>
             <button className="share-button" onClick={() => handleCopyLink('video-2')}>Скопировать ссылку на видео</button>
 
-            <video id="video-3" controls poster="/storage/video/posters/shoot-on-watermelon.png">
+            <video id="video-3" controls poster="/storage/video/posters/shoot-on-watermelon.webp">
             <source src="/storage/video/shoot-on-watermelon.mp4" type="video/mp4" />
             Ваш браузер не поддерживает встроенные видео :(
             </video>
             <button className="share-button" onClick={() => handleCopyLink('video-3')}>Скопировать ссылку на видео</button>
 
-            <video id="video-4" controls poster="/storage/video/posters/floorball-golf.png">
+            <video id="video-4" controls poster="/storage/video/posters/floorball-golf.webp">
             <source src="/storage/video/floorball-golf.mp4" type="video/mp4" />
             Ваш браузер не поддерживает встроенные видео :(
             </video>
             <button className="share-button" onClick={() => handleCopyLink('video-4')}>Скопировать ссылку на видео</button>
 
-            <video id="video-5" controls poster="/storage/video/posters/mymove-zorro-shoooting.png">
+            <video id="video-5" controls poster="/storage/video/posters/mymove-zorro-shoooting.webp">
             <source src="/storage/video/mymove-zorro-shoooting.mp4" type="video/mp4" />
             Ваш браузер не поддерживает встроенные видео :(
             </video>
             <button className="share-button" onClick={() => handleCopyLink('video-5')}>Скопировать ссылку на видео</button>
 
-            <video id="video-6" controls poster="/storage/video/posters/liseberg-challange.png">
+            <video id="video-6" controls poster="/storage/video/posters/liseberg-challange.webp">
             <source src="/storage/video/liseberg-challange.mp4" type="video/mp4" />
             Ваш браузер не поддерживает встроенные видео :(
             </video>
             <button className="share-button" onClick={() => handleCopyLink('video-6')}>Скопировать ссылку на видео</button>
 
-            <video id="video-7" controls poster="/storage/video/posters/longdistance-shooting.png">
+            <video id="video-7" controls poster="/storage/video/posters/longdistance-shooting.webp">
             <source src="/storage/video/longdistance-shooting.mp4" type="video/mp4" />
             Ваш браузер не поддерживает встроенные видео :(
             </video>
             <button className="share-button" onClick={() => handleCopyLink('video-7')}>Скопировать ссылку на видео</button>
 
-            <video id="video-8" controls poster="/storage/video/posters/mymove-ball-to-the-basket.png">
+            <video id="video-8" controls poster="/storage/video/posters/mymove-ball-to-the-basket.webp">
             <source src="/storage/video/mymove-ball-to-the-basket.mp4" type="video/mp4" />
             Ваш браузер не поддерживает встроенные видео :(
             </video>
             <button className="share-button" onClick={() => handleCopyLink('video-8')}>Скопировать ссылку на видео</button>
 
-            <video id="video-9" controls poster="/storage/video/posters/mymove-do-not-repeat-that.png">
+            <video id="video-9" controls poster="/storage/video/posters/mymove-do-not-repeat-that.webp">
             <source src="/storage/video/mymove-do-not-repeat-that.mp4" type="video/mp4" />
             Ваш браузер не поддерживает встроенные видео :(
             </video>
