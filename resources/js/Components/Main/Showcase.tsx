@@ -79,20 +79,7 @@ const MainShowcase = () => {
 
             <section className="main-content">
                 <div className="main-content__images">
-                    {/* <img className="main-content__image" src="/storage/images/main/floorball-pro_708x472.jpeg" alt="proffesionals" /> */}
-                    <picture>
-                        {/* Добавляем проверку MIME-типа */}
-                        <source 
-                            srcSet="/storage/images/main/floorball-pro_708x472.webp" 
-                            type="image/webp" 
-                        />
-                        {/* Финальный фолбэк */}
-                        <img
-                            src="/storage/images/main/floorball-pro_708x472.jpeg"
-                            className="main-content__image"
-                            alt="proffesionals"
-                        />
-                    </picture>
+                    <img className="main-content__image" src="/storage/images/main/floorball-pro_708x472.jpeg" alt="proffesionals" />
                     <p>Для профессионалов...</p>
                     <div className="pop-up__main-content">
                         <img className="main-content__icons-position" src="/storage/icons/about.png" alt="icon about" />
@@ -105,20 +92,7 @@ const MainShowcase = () => {
                 </div>
                 
                 <div className="main-content__images">
-                    {/* <img className="main-content__image" src="/storage/images/main/floorball-girls_708x473.jpeg" alt="floorball-friends" /> */}
-                    <picture>
-                        {/* Добавляем проверку MIME-типа */}
-                        <source 
-                            srcSet="/storage/images/main/floorball-girls_708x473.webp" 
-                            type="image/webp" 
-                        />
-                        {/* Финальный фолбэк */}
-                        <img
-                            src="/storage/images/main/floorball-girls_708x473.jpeg"
-                            className="main-content__image"
-                            alt="floorball-friends"
-                        />
-                    </picture>
+                    <img className="main-content__image" src="/storage/images/main/floorball-girls_708x473.jpeg" alt="floorball-friends" />
                     <p>любителей...</p>
                     <div className="pop-up__main-content">
                         <img className="main-content__icons-position" src="/storage/icons/about.png" alt="icon about" />
@@ -130,20 +104,7 @@ const MainShowcase = () => {
                 </div>
                         
                 <div className="main-content__images">
-                    {/* <img id="myImg" className="main-content__image" src="/storage/images/main/floorball-boys_708x472.jpg" alt="Для школ, ФОКов, спортсменов других видов спорта..." /> */}
-                    <picture>
-                        {/* Добавляем проверку MIME-типа */}
-                        <source 
-                            srcSet="/storage/images/main/floorball-boys_708x472.webp" 
-                            type="image/webp" 
-                        />
-                        {/* Финальный фолбэк */}
-                        <img
-                            src="/storage/images/main/floorball-boys_708x472.jpg"
-                            className="main-content__image"
-                            alt="floorball for all"
-                        />
-                    </picture>
+                    <img id="myImg" className="main-content__image" src="/storage/images/main/floorball-boys_708x472.jpg" alt="Для школ, ФОКов, спортсменов других видов спорта..." />
                     <p>школ, ФОКов, спортсменов других видов спорта...</p>
                     <div className="pop-up__main-content">
                         <img className="main-content__icons-position" src="/storage/icons/about.png" alt="icon about" />
@@ -156,20 +117,7 @@ const MainShowcase = () => {
                 </div>
                         
                 <div className="main-content__images">
-                    {/* <img className="main-content__image" src="/storage/images/main/floorball-parents-children_708x472.jpg" alt="самых маленьких (первая, самая лучшая клюшка)" /> */}
-                    <picture>
-                        {/* Добавляем проверку MIME-типа */}
-                        <source 
-                            srcSet="/storage/images/main/floorball-parents-children_708x472.webp" 
-                            type="image/webp" 
-                        />
-                        {/* Финальный фолбэк */}
-                        <img
-                            src="/storage/images/main/floorball-parents-children_708x472.jpg"
-                            className="main-content__image"
-                            alt="floorball-for-beginners"
-                        />
-                    </picture>
+                    <img className="main-content__image" src="/storage/images/main/floorball-parents-children_708x472.jpg" alt="самых маленьких (первая, самая лучшая клюшка)" />
                     <p>самых маленьких (первая, самая лучшая клюшка)</p>
                     <div className="pop-up__main-content">
                     <img className="main-content__icons-position" src="/storage/icons/about.png" alt="icon about" /> 
