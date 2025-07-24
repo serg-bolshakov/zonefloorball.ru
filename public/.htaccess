@@ -26,9 +26,18 @@
     # 2. ДОП. ЗАЩИТА ДЛЯ FORTIFY + VITE + REACT
     # ==========================================
     # Защита от брутфорса Fortify-роутов
-    RewriteCond %{REQUEST_URI} ^/(auth/login|auth/register|password/forgot) [NC]  # Точные пути
-    RewriteCond %{HTTP_USER_AGENT} bad_bot [NC,OR]
+    RewriteCond %{REQUEST_URI} ^/(auth/login|auth/register|password/forgot) [NC]    # Точные пути
+    RewriteCond %{HTTP_USER_AGENT} bad_bot [NC,OR]                                  # не видит переменную bad_bot, созданную через SetEnvIfNoCase !!!???
     RewriteCond %{REMOTE_ADDR} ^123\.123\.123\. [NC]
+    RewriteRule ^ - [F,L]
+
+    # Блокировка по User-Agent (должен работать с mod_setenvif, но не работает)
+    RewriteCond %{ENV:bad_bot} =1
+    RewriteCond %{ENV:exploit_tool} =1
+    RewriteCond %{ENV:image_harvester} =1
+    RewriteCond %{ENV:spa_client} !1
+    RewriteCond %{ENV:search_engine} !1
+    RewriteCond %{ENV:social_bot} !1
     RewriteRule ^ - [F,L]
     
     # Блокировка прямого доступа к исходникам
@@ -115,4 +124,20 @@
 # Оптимизация regex (кеширование):
 <IfModule mod_reqtimeout.c>
     RequestReadTimeout header=20-40,MinRate=500 body=20-40,MinRate=500
+</IfModule>
+
+<IfModule mod_authz_core.c>
+    <RequireAll>
+        # Базовый доступ
+        Require all granted
+
+        # Основные категории блокировки
+        Require not env bad_bot
+        Require not env exploit_tool
+        Require not env image_harvester
+
+        # Важные исключения
+        Require env spa_client
+        Require env search_engine
+    </RequireAll>
 </IfModule>
