@@ -5,6 +5,9 @@
 
     RewriteEngine On
 
+    # ==============================
+    # 1. СТАНДАРТНЫЕ ПРАВИЛА LARAVEL 
+    # ==============================
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -18,4 +21,98 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+
+    # ==========================================
+    # 2. ДОП. ЗАЩИТА ДЛЯ FORTIFY + VITE + REACT
+    # ==========================================
+    # Защита от брутфорса Fortify-роутов
+    RewriteCond %{REQUEST_URI} ^/(auth/login|auth/register|password/forgot) [NC]  # Точные пути
+    RewriteCond %{HTTP_USER_AGENT} bad_bot [NC,OR]
+    RewriteCond %{REMOTE_ADDR} ^123\.123\.123\. [NC]
+    RewriteRule ^ - [F,L]
+    
+    # Блокировка прямого доступа к исходникам
+    RewriteCond %{REQUEST_URI} ^/(resources/js|resources/css|node_modules) [NC]
+    RewriteRule ^ - [F,L]
+    
+    # Защита от поддельных manifest.json
+    RewriteCond %{REQUEST_URI} ^/build/manifest.json [NC]
+    RewriteCond %{HTTP_REFERER} !^https://zonefloorball.ru [NC]
+    RewriteRule ^ - [F,L]
+
+    # Блокировка подозрительных запросов к .env
+    RewriteCond %{REQUEST_URI} ^/(\.env|vendor/|storage/|database/) [NC]
+    RewriteRule ^ - [F,L]
+
+    # Защита от hotlinking:
+    RewriteCond %{HTTP_REFERER} !^https://zonefloorball\.ru [NC]
+    RewriteCond %{REQUEST_URI} \.(webp|jpg|png)$ [NC]
+    RewriteRule ^ - [F,L]
+</IfModule>
+
+<IfModule mod_setenvif.c>
+    # ===========================================================
+    # 3. ГИБРИДНЫЙ БЛОКИРОВЩИК БОТОВ (мои правила + техподдержка)
+    # ===========================================================
+    SetEnvIfNoCase User-Agent "Abonti|Amazonbot|OAI-SearchBot|AwarioBot|SenutoBot|PerplexityBot|serpstatbot|ImagesiftBot|Barkrowler|trendictionbot|AspiegelBot|aggregator|AhrefsBot|Aport|asterias|Baiduspider|Bytespider|keys-so-bot|BDCbot|bidswitchbot|Birubot|SirdataBot|BLEXBot|BuiltBotTough|Bullseye|BunnySlippers|Butterfly|ca-crawler|CamontSpider|Claudebot|CCBot|Cegbfeieh|CheeseBot|CherryPicker|coccoc|CopyRightCheck|cosmos|crawler|Crescent|CyotekWebCopy/1.7|CyotekHTTP/2.0|DataForSeoBot|DeuSu|discobot|DittoSpyder|DnyzBot|DomainCrawler|DotBot|Download Ninja|EasouSpider|EmailCollector|EmailSiphon|EmailWolf|EroCrawler|Exabot|ExtractorPro|Ezooms|FairShare|Fasterfox|FeedBooster|Foobot|GeedoProductSearch|Genieo|GetIntent\ Crawler|Gigabot|gold\ crawler|GrapeshotCrawler|GPTBot|grub-client|Harvest|hloader|httplib|HTTrack|humanlinks|Photon|HybridBot|ia_archiver|ieautodiscovery|Incutio|InfoNaviRobot|InternetSeer|IstellaBot|Java|Java/1.|JamesBOT|JennyBot|JS-Kit|k2spider|Kenjin Spider|Keyword Density/0.9|kmSearchBot|larbin|LexiBot|libWeb|facebookexternalhit|libwww|Linguee|LinkExchanger|LinkextractorPro|linko|LinkScan/8.1a Unix|LinkWalker|LinkpadBot|lmspider|LNSpiderguy|ltx71|lwp-trivial|lwp-trivial|magpie|Mata Hari|MaxPointCrawler|MegaIndex|memoryBot|Microsoft URL Control|MIIxpc|Mippin|Missigua Locator|Mister PiX|MJ12bot|MLBot|moget|MSIECrawler|msnbot|msnbot-media|NetAnts|NICErsPRO|Niki-Bot|NjuiceBot|NPBot|Nutch|Offline Explorer|OLEcrawler|Openfind|panscient.com|PostRank|ProPowerBot/2.14|PetalBot|ProWebWalker|ptd-crawler|Purebot|PycURL|python-requests|Python-urllib|QueryN Metasearch|RepoMonkey|Riddler|RMA|Scrapy|SemrushBot|serf|SeznamBot|SISTRIX|SiteBot|sitecheck.Internetseer.com|SiteSnagger|Serpstat|Slurp|SnapPreviewBot|Sogou|Soup|SpankBot|spanner|spbot|Spinn3r|SpyFu|suggybot|SurveyBot|suzuran|sqlmap|SWeb|Szukacz/1.4|Teleport|Telesoft|The Intraformant|TheNomad|TightTwatBot|Titan|toCrawl/UrlDispatcher|True_Robot|ttCrawler|turingos|TurnitinBot|UbiCrawler|UnisterBot|Unknown|uptime files|URLy Warning|User-Agent|VCI|Vedma|Voyager|WBSearchBot|Web Downloader/6.9|Web Image Collector|WebAuto|WebBandit|WebCopier|WebEnhancer|WebmasterWorldForumBot|WebReaper|WebSauger|Website Quester|Webster Pro|WebStripper|WebZip|Wotbox|wsr-agent|WWW-Collector-E|Yeti|YottosBot|Zao|Zeus|ZyBORG" bad_bot
+    
+    # ===========================================================
+    # 4. КРИТИЧНЫЕ ДОПОЛНЕНИЯ ДЛЯ LARAVEL
+    # ============================================================
+    # Сканеры уязвимостей (дополнение к основному списку)
+    SetEnvIfNoCase User-Agent "(nmap|nikto|wpscan|dirbuster|metasploit|Brutus|hydra|sqlmap|havij)" exploit_tool
+    
+    # Боты-парсеры изображений (актуально для .webp)
+    SetEnvIfNoCase User-Agent "(ImageSizer|WebThumbnail|ImageFetch|GrabNet|WebPicture)" image_harvester
+
+    # ============================
+    # 5. СТРАТЕГИЧЕСКИЕ ИСКЛЮЧЕНИЯ
+    # ============================
+    # Разрешаем Inertia.js и Livewire
+    SetEnvIfNoCase User-Agent "Inertia|Livewire" spa_client
+    SetEnvIfNoCase User-Agent "(Googlebot|Bingbot)" search_engine
+    # Разрешаем соцсети (если есть шеринг)
+    SetEnvIfNoCase User-Agent "(facebookexternalhit|Twitterbot|Pinterest|LinkedInBot)" social_bot
+
+    # ========================
+    # 6. УМНАЯ БЛОКИРОВКА
+    # ========================
+    <RequireAll>
+        # Базовый доступ
+        Require all granted
+
+        # Основные категории блокировки
+        Require not env bad_bot
+        Require not env exploit_tool
+        Require not env image_harvester
+
+        # Важные исключения
+        Require env spa_client
+        Require env search_engine
+    </RequireAll>
+</IfModule>
+
+# ==========================================
+# 7. RATE LIMITING (выносим за mod_rewrite)
+# ==========================================
+<IfModule mod_ratelimit.c>
+    # Для API (Laravel Fortify)
+    <LocationMatch "^/(api|login|register|forgot-password)">
+        RateLimit 30
+    </LocationMatch>
+
+    # Для статики (webp/js/css)
+    <FilesMatch "\.(webp|js|css|svg)$">
+        RateLimit 200  # Увеличенный лимит
+    </FilesMatch>
+
+    <LocationMatch "^/(login|register|forgot-password)">
+        RateLimit 15  # Ужесточаем лимит для auth-роутов
+        Require not env bad_bot  # Двойная защита
+    </LocationMatch>
+</IfModule>
+
+# Оптимизация regex (кеширование):
+<IfModule mod_reqtimeout.c>
+    RequestReadTimeout header=20-40,MinRate=500 body=20-40,MinRate=500
 </IfModule>
