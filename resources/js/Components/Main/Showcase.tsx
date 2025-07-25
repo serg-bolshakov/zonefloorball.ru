@@ -5,70 +5,200 @@ const MainShowcase = () => {
         <>   
             <section className="main-content__products">
                 <div className="main-content__products-type">
-                    <img className="main-content__image" src="/storage/images/main/sticks.jpg" alt="sticks" />
+                    {/* <img className="main-content__image" src="/storage/images/main/sticks.jpg" alt="sticks" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/sticks.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/sticks.jpg"
+                            className="main-content__image"
+                            alt="sticks"
+                        />
+                    </picture>
                     <div className="main-content__item">
                         <Link href="products/sticks/">КЛЮШКИ</Link>
                     </div>
                 </div>  
 
                 <div className="main-content__products-type">
-                    <img className="main-content__image" src="/storage/images/main/blades.jpg" alt="blades" />
+                    {/* <img className="main-content__image" src="/storage/images/main/blades.jpg" alt="blades" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/blades.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/blades.jpg"
+                            className="main-content__image"
+                            alt="blades"
+                        />
+                    </picture>
                     <div className="main-content__item">
                         <Link className="main-content__item" href="/products/blades/">КРЮКИ</Link>
                     </div>
                 </div>  
 
                 <div className="main-content__products-type">
-                    <img className="main-content__image" src="/storage/images/main/grips.jpg" alt="grips" />
+                    {/* <img className="main-content__image" src="/storage/images/main/grips.jpg" alt="grips" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/grips.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/grips.jpg"
+                            className="main-content__image"
+                            alt="grips"
+                        />
+                    </picture>
                     <div className="main-content__item">
                      <h2><Link href="/products/grips/">ОБМОТКИ</Link></h2>
                     </div>
                 </div>  
                 
                 <div className="main-content__products-container">
-                    <img className="main-content__image" src="/storage/images/main/shoes.jpg" alt="apparel" />
+                    {/* <img className="main-content__image" src="/storage/images/main/shoes.jpg" alt="shoes" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/shoes.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/shoes.jpg"
+                            className="main-content__image"
+                            alt="shoes"
+                        />
+                    </picture>
                     <div className="main-content__products-overlay">
                         <h2 className="main-content__products-text">ОБУВЬ</h2>
                     </div>
                 </div>
 
                 <div className="main-content__products-container">
-                    <img className="main-content__image" src="/storage/images/showcase/showcase-goalkeepers.png" alt="goalie" />
+                    {/* <img className="main-content__image" src="/storage/images/showcase/showcase-goalkeepers.png" alt="goalie" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/showcase/showcase-goalkeepers.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/showcase/showcase-goalkeepers.jpg"
+                            className="main-content__image"
+                            alt="goalie"
+                        />
+                    </picture>
                     <div className="main-content__products-overlay">
                         <Link href="/products/goalie"><h2 className="main-content__products-text">ВРАТАРСКАЯ ЭКИПИРОВКА</h2></Link>
                     </div>
                 </div>  
 
                 <div className="main-content__products-container">
-                    <img className="main-content__image" src="/storage/images/showcase/showcase-eyewear.png" alt="eyewear" />
+                    {/* <img className="main-content__image" src="/storage/images/showcase/showcase-eyewear.png" alt="eyewear" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/showcase/showcase-eyewear.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/images/showcase/showcase-eyewear.jpg"
+                            className="main-content__image"
+                            alt="eyewear"
+                        />
+                    </picture>
                     <div className="main-content__products-overlay">
                         <Link href="/products/eyewears/"><h2 className="main-content__products-text">ОЧКИ</h2></Link>
                     </div>
                 </div>
 
                 <div className="main-content__products-container">
-                    <img className="main-content__image" src="/storage/images/main/apparel.jpg" alt="apparel" />
+                    {/* <img className="main-content__image" src="/storage/images/main/apparel.jpg" alt="apparel" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/apparel.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/images/main/apparel.jpg"
+                            className="main-content__image"
+                            alt="apparel"
+                        />
+                    </picture>
                     <div className="main-content__products-overlay">
                         <h2 className="main-content__products-text">ОДЕЖДА</h2>
                     </div>
                 </div>
 
                 <div className="main-content__products-container">
-                    <img className="main-content__image" src="/storage/images/showcase/showcase-bags.png" alt="bags" />
+                    {/* <img className="main-content__image" src="/storage/images/showcase/showcase-bags.png" alt="bags" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/showcase/showcase-bags.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/images/showcase/showcase-bags.jpg"
+                            className="main-content__image"
+                            alt="bags"
+                        />
+                    </picture>
                     <div className="main-content__products-overlay">
                         <h2 className="main-content__products-text">СУМКИ ЧЕХЛЫ</h2>
                     </div>
                 </div>
 
                 <div className="main-content__products-container">
-                    <img className="main-content__image" src="/storage/images/main/accessories.jpg" alt="accessories" />
+                    {/* <img className="main-content__image" src="/storage/images/main/accessories.jpg" alt="accessories" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/accessories.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/images/main/accessories.jpg"
+                            className="main-content__image"
+                            alt="accessories"
+                        />
+                    </picture>
                     <div className="main-content__products-overlay">
                         <h2 className="main-content__products-text">АКСЕССУАРЫ</h2>
                     </div>
                 </div>
                 
                 <div className="main-content__products-container">
-                    <img className="main-content__image" src="/storage/images/main/basic-collection.jpg" alt="basic-collection" />
+                    {/* <img className="main-content__image" src="/storage/images/main/basic-collection.jpg" alt="basic-collection" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/basic-collection.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/images/main/basic-collection.jpg"
+                            className="main-content__image"
+                            alt="basic-collection"
+                        />
+                    </picture>
                     <div className="main-content__products-overlay">
                         <h2 className="main-content__products-text">ВОРОТА И МЯЧИ</h2>
                     </div>
@@ -79,7 +209,20 @@ const MainShowcase = () => {
 
             <section className="main-content">
                 <div className="main-content__images">
-                    <img className="main-content__image" src="/storage/images/main/floorball-pro_708x472.jpeg" alt="proffesionals" />
+                    {/* <img className="main-content__image" src="/storage/images/main/floorball-pro_708x472.jpeg" alt="proffesionals" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/floorball-pro_708x472.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/floorball-pro_708x472.jpeg"
+                            className="main-content__image"
+                            alt="proffesionals"
+                        />
+                    </picture>
                     <p>Для профессионалов...</p>
                     <div className="pop-up__main-content">
                         <img className="main-content__icons-position" src="/storage/icons/about.png" alt="icon about" />
@@ -92,7 +235,20 @@ const MainShowcase = () => {
                 </div>
                 
                 <div className="main-content__images">
-                    <img className="main-content__image" src="/storage/images/main/floorball-girls_708x473.jpeg" alt="floorball-friends" />
+                    {/* <img className="main-content__image" src="/storage/images/main/floorball-girls_708x473.jpeg" alt="floorball-friends" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/floorball-girls_708x473.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/floorball-girls_708x473.jpeg"
+                            className="main-content__image"
+                            alt="floorball-friends"
+                        />
+                    </picture>
                     <p>любителей...</p>
                     <div className="pop-up__main-content">
                         <img className="main-content__icons-position" src="/storage/icons/about.png" alt="icon about" />
@@ -104,7 +260,20 @@ const MainShowcase = () => {
                 </div>
                         
                 <div className="main-content__images">
-                    <img id="myImg" className="main-content__image" src="/storage/images/main/floorball-boys_708x472.jpg" alt="Для школ, ФОКов, спортсменов других видов спорта..." />
+                    {/* <img id="myImg" className="main-content__image" src="/storage/images/main/floorball-boys_708x472.jpg" alt="Для школ, ФОКов, спортсменов других видов спорта..." /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/floorball-boys_708x472.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/floorball-boys_708x472.jpg"
+                            className="main-content__image"
+                            alt="floorball for all"
+                        />
+                    </picture>
                     <p>школ, ФОКов, спортсменов других видов спорта...</p>
                     <div className="pop-up__main-content">
                         <img className="main-content__icons-position" src="/storage/icons/about.png" alt="icon about" />
@@ -117,7 +286,20 @@ const MainShowcase = () => {
                 </div>
                         
                 <div className="main-content__images">
-                    <img className="main-content__image" src="/storage/images/main/floorball-parents-children_708x472.jpg" alt="самых маленьких (первая, самая лучшая клюшка)" />
+                    {/* <img className="main-content__image" src="/storage/images/main/floorball-parents-children_708x472.jpg" alt="самых маленьких (первая, самая лучшая клюшка)" /> */}
+                    <picture>
+                        {/* Добавляем проверку MIME-типа */}
+                        <source 
+                            srcSet="/storage/images/main/floorball-parents-children_708x472.webp" 
+                            type="image/webp" 
+                        />
+                        {/* Финальный фолбэк */}
+                        <img
+                            src="/storage/images/main/floorball-parents-children_708x472.jpg"
+                            className="main-content__image"
+                            alt="floorball-for-beginners"
+                        />
+                    </picture>
                     <p>самых маленьких (первая, самая лучшая клюшка)</p>
                     <div className="pop-up__main-content">
                     <img className="main-content__icons-position" src="/storage/icons/about.png" alt="icon about" /> 

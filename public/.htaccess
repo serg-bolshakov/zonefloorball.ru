@@ -1,3 +1,5 @@
+    RewriteRule ^ - [E=TEST_DEBUG:%{ENV:bad_bot}]
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
