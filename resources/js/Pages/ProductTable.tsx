@@ -5,7 +5,6 @@ import { usePage, router } from '@inertiajs/react';
 import { IProductsResponse, IProduct, TSecondLevel } from '@/Types/types';
 import { formatPrice } from '@/Utils/priceFormatter';
 import useAppContext from '@/Hooks/useAppContext';
-import { ProductTableRow } from '@/Components/ProductOrderTable/ProductTableRow';
 import { ICategoryMenuItem } from '@/Types/types';
 import { Link } from '@inertiajs/react';
 import { ICategoryItemFromDB } from '@/Types/types';
@@ -33,8 +32,8 @@ interface ProductTableProps {
     sortBy?: string;
     sortOrder?: string;
     search: string;
-    searchType: 'article' | 'title';
-    actionType: 'cart' | 'preorder';
+    searchType: 'article' | 'title';    
+    tableMode: 'cart' | 'preorder';     // 'cart' — добавление в обычную корзину. 'preorder' — добавление в предзаказ.
     categoryId?: number | null;
     categoryInfo?: ICategoryItemFromDB;
 }
@@ -78,7 +77,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
     sortOrder = 'asc',
     search: initialSearch = '',
     searchType: initialSearchType = 'article',
-    actionType: initialActionType = 'cart',
+    tableMode: InitialTableMode = 'cart',
     categoryId,
     categoryInfo,
 }) => {
@@ -88,25 +87,44 @@ const ProductTable: React.FC<ProductTableProps> = ({
     const [searchType, setSearchType] = useState<'article' | 'title'>(initialSearchType);
     
     // Какое действие выполняет пользователь (создаёт предварительный заказ или "накладывает" в корзину для покупки в настоящий момент)
-    const [actionType, setActionType] = useState<'cart' | 'preorder'>(initialActionType);
+    const [tableMode, setTableMode] = useState<'cart' | 'preorder'>(InitialTableMode);
 
     // Синхронизация при изменении URL (если пользователь нажимает "Назад")
     useEffect(() => {
         setSearchTerm(initialSearch);
         setSearchType(initialSearchType);
-        setActionType(initialActionType);
-    }, [initialSearch, initialSearchType, initialActionType]);
+        setTableMode(InitialTableMode);
+    }, [initialSearch, initialSearchType, InitialTableMode]);
 
     const { user, categoriesMenuArr } = useAppContext();
-    const { cart, addToCart, updateCart, addToFavorites, removeFromCart, clearCart } = useUserDataContext();
+    const { cart, addToCart, updateCart, addToFavorites, removeFromCart, clearCart, preorder, updatePreorder, removeFromPreorder } = useUserDataContext();
     
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Фильтрация товаров (при выборе "Предзаказ"): (на будущее)
-    /*const filteredProducts = actionType === 'preorder' 
+    /*const filteredProducts = tableMode === 'preorder' 
         ? products.data.filter(p => p.on_preorder > 0)
         : products.data;
     */
+
+    const handleTableMode = (mode: 'cart' | 'preorder') => {
+        setIsLoading(true);
+        const params = {
+            page: 1, // Всегда сбрасываем на первую страницу
+            perPage: products.meta.per_page,
+            sortBy,
+            sortOrder,
+            tableMode: mode.trim(), // Используем переданный режим
+            searchType
+        };
+        
+        router.get('/profile/products-table', params, {
+            preserveScroll: true,
+            preserveState: true
+        });
+        setIsLoading(true);
+    }
 
     const handleSearch = () => {
         const params = {
@@ -114,6 +132,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
             perPage: products.meta.per_page,
             sortBy,
             sortOrder,
+            tableMode,
             search: searchTerm.trim(),
             searchType
         };
@@ -156,10 +175,6 @@ const ProductTable: React.FC<ProductTableProps> = ({
     useEffect(() => {
         setMainCategories(getMainCategories());
     }, [categoriesMenuArr]);
-
-    // console.log(getMainCategories());
-    // console.log('products', products);
-    // console.log('cart', cart);
 
     // Сохраняем позицию прокрутки перед обновлением
     useEffect(() => {
@@ -213,6 +228,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
             page: 1, // Сбрасываем на первую страницу при смене категории
             sortBy,
             sortOrder,
+            tableMode,
             perPage: products.meta.per_page
         };
 
@@ -222,20 +238,35 @@ const ProductTable: React.FC<ProductTableProps> = ({
     };
 
     // Добавляем состояние для количества товара в поле "выбранное количество" для корзины/предзаказа
-    const [quantities, setQuantities] = useState<Record<number, number>>({});
+    // const [quantities, setQuantities] = useState<Record<number, number>>({});
+    // Вместо одного состояния quantities
+    const [cartQuantities, setCartQuantities] = useState<Record<number, number>>({});
+    const [preorderQuantities, setPreorderQuantities] = useState<Record<number, number>>({});
   
     // При монтировании компонента
     useEffect(() => {
         if (cart) {
-            const initialQuantities = products.data.reduce((acc, product) => {
+            const initialCartQuantities = products.data.reduce((acc, product) => {
             if (cart[product.id] && product.on_sale) {
                 acc[product.id] = Math.min(cart[product.id], product.on_sale);
             }
             return acc;
             }, {} as Record<number, number>);
-            setQuantities(initialQuantities);
+            setCartQuantities(initialCartQuantities);
         }
     }, [cart, products.data]);
+
+    useEffect(() => {
+        if (preorder) {
+            const initialPreorderQuantities = products.data.reduce((acc, product) => {
+            if (preorder[product.id] && product.on_preorder) {
+                acc[product.id] = Math.min(preorder[product.id], product.on_preorder);
+            }
+            return acc;
+            }, {} as Record<number, number>);
+            setPreorderQuantities(initialPreorderQuantities);
+        }
+    }, [preorder, products.data]);
 
     const handleOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const params = {
@@ -243,6 +274,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
             page: products.meta.current_page.toString(),
             sortBy,
             sortOrder: e.target.value,
+            tableMode,
             perPage: products.meta.per_page
         };
 
@@ -286,6 +318,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
         perPage: products.meta.per_page,
         sortBy,
         sortOrder,
+        tableMode,
         category: categoryInfo?.url_semantic,
         ...additionalParams
     });
@@ -313,7 +346,29 @@ const ProductTable: React.FC<ProductTableProps> = ({
         return `?${params.toString()}`;
     };
 
-    // console.log(products.data);
+    //console.log(products.data);
+    //console.log (user);
+
+    const webpPath = (imagePath: string) => {return imagePath.replace(/\.(jpg|png)$/, '.webp')};
+
+    // Вспомогательная функция вывода даты в поле "Ожидаемая дата поступления товаров на склад продавца" в читабельном формате...
+    const getDisplayDate = (expectedDate: string | null | undefined, inNumberDays: number = 3) => {
+        if (expectedDate) return new Date(expectedDate).toLocaleDateString();
+        
+        // Добавляем количество требуемых дней к текущей дате
+        const futureDate = new Date();
+        futureDate.setDate(futureDate.getDate() + inNumberDays);
+        return futureDate.toLocaleDateString();
+    };
+
+    // console.log(getMainCategories());
+    console.log('products', products);
+    console.log('cart', cart);
+    console.log('preorder', preorder);
+    console.log('cartQuantities', cartQuantities);
+    console.log('preorderQuantities', preorderQuantities);
+    console.log('tableMode', tableMode);
+
 
     return (
         <MainLayout>
@@ -340,9 +395,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                     </Link>
                 </div>
                 
-                
-                <div className="table-controls">
-                    
+                <div className="table-controls">                   
                     {/* Селект количества строк */}
                     <div className="pagination">
                         <select 
@@ -426,6 +479,21 @@ const ProductTable: React.FC<ProductTableProps> = ({
                     </div>
                 </div>
 
+                {/* Выбор режима работы таблицы */}
+                {/* <div className='margin-bottom8px'>
+                    <select className="text-align-left"
+                        value={tableMode}
+                        onChange={(e) => {
+                            const newMode = e.target.value as 'cart' | 'preorder';
+                            setTableMode(newMode);
+                            handleTableMode(newMode); // Передаём новый режим напрямую
+                        }}
+                    >
+                        <option value="cart"> Оформление текущего заказа</option> 
+                        <option value="preorder"> Оформление предварительного заказа</option>
+                    </select>
+                </div> */}
+
                 <div className="search-controls">
                     <span className='pagination-info'>Поиск </span>
                     <select 
@@ -478,6 +546,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                     perPage: products.meta.per_page,
                                     sortBy,
                                     sortOrder,
+                                    tableMode,
                                     preserveScroll: true,
                                     preserveState: true
                                 });
@@ -497,24 +566,28 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                 <th>
                                     <div className="action-header td-left">
                                         <select 
-                                            value="cart" 
-                                            onChange={(e) => {}}
+                                            value={tableMode}
+                                            onChange={(e) => {
+                                                const newMode = e.target.value as 'cart' | 'preorder';
+                                                setTableMode(newMode);
+                                                handleTableMode(newMode); // Передаём новый режим напрямую
+                                            }}
                                             className="action-select"
-                                            // disabled // Пока не реализовано
                                         >
                                         <option value="cart">В корзин(е/у)</option>
-                                        <option value="preorder">Предзаказ</option>
+                                        <option value="preorder">В предзаказ(е)</option>
                                         </select>
-                                        <span className='product-qty-on-sale margin-left12px nobr'>В продаже</span>
+                                        {tableMode === 'cart' ? <span className='product-qty-on-sale margin-left12px nobr'>В продаже</span> : <span className='product-qty-on-preorder margin-left12px nobr'>Доступно для заказа</span>}
                                     </div>
                                 </th>
                                 {/* <th title="Доступное для покупки количество един товара">В продаже</th> */}
                                 <th title="Рекомендованная розничная цена">РРЦ</th>
-                                {/* <th>Действие</th> */}
-                                <th title="На нашем складе">Склад</th>
-                                <th title="Зарезервировано">Резерв</th>
-                                {/* <th title="Доступно для предзаказа">Предзаказ</th>
-                                <th title="Ожидаемая дата поставки на склад продавца">Поставка</th> */}
+                                {tableMode === 'preorder' && (<th title="Количество единиц товара в продаже"><div className=" product-qty-on-sale nobr">В продаже</div></th>)}
+                                {tableMode === 'cart' && (<th title="На нашем складе">Склад</th>)}
+                                {tableMode === 'cart' && (<th title="Зарезервировано, но пока не оплачено. Обычно срок резерва составляет три рабочих дня">Резерв</th>)}
+                                {tableMode === 'cart' && (<th title="Доступно для предзаказа">На заказ</th>)}
+                                <th title="Ожидаемая дата поставки на склад продавца">Ожидаем</th>
+                                {tableMode === 'cart' && (<th title="Цена предзаказа">Цена</th>)}
                                 <th title="Артикульный номер товара">Артикул</th>
                                 <th className="hide-column">id</th>
                             </tr>
@@ -525,11 +598,15 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                         <tr key={product.id}>
                                             <td className="table-img">
                                                 <Link href={`/products/card/${product.prod_url_semantic}/`}>
-                                                    <img 
-                                                        src={`/storage/${product.img_link}`} 
-                                                        alt={product.title} 
-                                                        title={`По клику на изображение, переход в карточку товара: ${product.title}`}
-                                                    />
+                                                    <picture>
+                                                        <source srcSet={webpPath(`/storage/${product.img_link}`)} type="image/webp" />
+                                                        <img 
+                                                            src={`/storage/${product.img_link}`} 
+                                                            alt={product.title} 
+                                                            title={`По клику на изображение, переход в карточку товара: ${product.title}`}
+                                                        />  
+                                                    </picture>
+                                                    
                                                 </Link>
                                             </td>  
                                             <td>
@@ -540,69 +617,131 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                                 </div>
                                                 
                                                 <div className="margin-top8px">
-                                                    <div className="d-flex">
-                                                        {(product.price_with_rank_discount !== null) ? 
-                                                        // здесь логика следующая: product.actual_price - есть всегда - значение равно регулярной цене или сцециальной акционной цене (что из них меньше)
-                                                        // product.price_with_rank_discount !== null - появляется только в том случае, если пользователь авторизован и такая цена меньше product.actual_price - выводим ее!
-                                                        (
-                                                            <>
-                                                                <div className='d-flex margin-bottom8px'>
-                                                                    <span  className="color-red margin-bottom8px">{formatPrice(product.price_with_rank_discount ?? 0)}&nbsp;<sup>&#8381;</sup></span>
-                                                                    <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{product.percent_of_rank_discount}%</span>
-                                                                </div>
-                                                            </>
-                                                        ) : ( 
-                                                        
-                                                            (product.price_actual ?? 0) < (product.price_regular ?? 0) ? (
+                                                    {tableMode === 'cart' && (
+                                                        <div className="d-flex">
+                                                            {(product.price_with_rank_discount !== null) ? 
+                                                            // здесь логика следующая: product.actual_price - есть всегда - значение равно регулярной цене или сцециальной акционной цене (что из них меньше)
+                                                            // product.price_with_rank_discount !== null - появляется только в том случае, если пользователь авторизован и такая цена меньше product.actual_price - выводим ее!
+                                                            (
                                                                 <>
                                                                     <div className='d-flex margin-bottom8px'>
-                                                                        <span  className="color-red margin-bottom8px">{formatPrice(product.price_actual ?? 0)}&nbsp;<sup>&#8381;</sup></span>
-                                                                        <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_actual ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
+                                                                        <span  className="color-red margin-bottom8px">{formatPrice(product.price_with_rank_discount ?? 0)}&nbsp;<sup>&#8381;</sup></span>
+                                                                        <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{product.percent_of_rank_discount}%</span>
                                                                     </div>
-                                                                    {/* <div className="cardProduct-priceDiscountInPercentage nobr">
-                                                                        -&nbsp;{Math.ceil(100 - ((product.price_actual ?? 0) / (product.price_regular ?? 1) * 100))}%
-                                                                    </div> */}
                                                                 </>
-                                                        ) : (
-                                                            <div>
-                                                                {formatPrice((product.price_regular ?? 0))}&nbsp;<sup>&#8381;</sup>
+                                                            ) : ( 
+                                                            
+                                                                (product.price_actual ?? 0) < (product.price_regular ?? 0) ? (
+                                                                    <>
+                                                                        <div className='d-flex margin-bottom8px'>
+                                                                            <span  className="color-red margin-bottom8px">{formatPrice(product.price_actual ?? 0)}&nbsp;<sup>&#8381;</sup></span>
+                                                                            <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_actual ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
+                                                                        </div>
+                                                                        {/* <div className="cardProduct-priceDiscountInPercentage nobr">
+                                                                            -&nbsp;{Math.ceil(100 - ((product.price_actual ?? 0) / (product.price_regular ?? 1) * 100))}%
+                                                                        </div> */}
+                                                                    </>
+                                                            ) : (
+                                                                <div>
+                                                                    {formatPrice((product.price_regular ?? 0))}&nbsp;<sup>&#8381;</sup>
+                                                                </div>
+                                                            ))}
+                                                            
+                                                            <div className="product-qty-on-sale margin-left24px nobr">
+                                                                {product.on_sale > 0 ? (`${product.on_sale} шт.`) : ('Временно отсутствует')} 
                                                             </div>
-                                                        ))}
-                                                        <div className="product-qty-on-sale margin-left24px nobr">
-                                                            {product.on_sale} шт.
+
+                                                        </div>                                                        
+                                                    )}
+                                                    {tableMode === 'preorder' && (
+                                                        <div className="d-flex margin-bottom8px">
+                                                            {(product.price_with_rank_discount && product.price_preorder && product.price_preorder < product.price_with_rank_discount) ? 
+                                                            // здесь логика следующая: product.actual_price - есть всегда - значение равно регулярной цене или сцециальной акционной цене (что из них меньше)
+                                                            // product.price_with_rank_discount !== null - появляется только в том случае, если пользователь авторизован и такая цена меньше product.actual_price - выводим ее!
+                                                            (
+                                                                <div className='d-flex margin-bottom8px'>
+                                                                    <span  className="color-red margin-bottom8px">{formatPrice(product.price_preorder ?? 0)}&nbsp;<sup>&#8381;</sup></span>
+                                                                    <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_preorder ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
+                                                                </div>
+                                                            ) : ( 
+                                                                !product.price_preorder && product.price_regular && (
+                                                                    <div className='d-flex margin-bottom8px'>
+                                                                        <span  className="color-red margin-bottom8px">{formatPrice(product.price_regular * 0.9 )}&nbsp;<sup>&#8381;</sup></span>
+                                                                        <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{10}%</span>
+                                                                    </div>
+                                                            ))}
+                                                            
+                                                            
+                                                            <div className="product-qty-on-preorder margin-left24px nobr">
+                                                                {product.on_preorder}  шт.   
+                                                            </div>  
                                                         </div>
-                                                    </div>
+                                                    )}
 
                                                     <div className="">
                                                         <TableQuantityControl
                                                             prodId={product.id}
                                                             prodTitle={ product.title }
-                                                            value={quantities[product.id] || 0}
+                                                            value={tableMode === 'cart' 
+                                                                ? cartQuantities[product.id] || 0 
+                                                                : preorderQuantities[product.id] || 0}
                                                             on_sale={product.on_sale ?? 0}
+                                                            on_preorder={product.on_preorder ?? 0}
+                                                            tableMode={tableMode}
                                                             updateCart={ updateCart }
+                                                            updatePreorder={ updatePreorder }
                                                             addToFavorites={ addToFavorites }
                                                             removeFromCart={ removeFromCart }
+                                                            removeFromPreorder={ removeFromPreorder }
                                                         />
                                                     </div>
                                                 </div>
                                             </td>  
-
-                                            {/* <td className="td-center">
-                                                <div className=" product-qty-on-sale">{product.on_sale}</div>    
-                                            </td> */}
 
                                             <td  className="td-right line-through">
                                                 <div>
                                                     {formatPrice((product.price_regular ?? 0))}&nbsp;<sup>&#8381;</sup>
                                                 </div>
                                             </td>
-                                                                                                                
-                                            <td  className="td-right">{product.in_stock}</td>
-                                            <td  className="td-right">{product.reserved}</td>
-                                            {/* <td  className="td-right">{product.on_preorder}</td>
-                                            <td  className="td-right">{product.expected_receipt_date}</td> */}
+
+                                            {tableMode === 'preorder' && (
+                                                <td className="td-center">
+                                                    <div className=" product-qty-on-sale">{product.on_sale}</div>    
+                                                </td>    
+                                            )}
+                                                                                                      
+                                            {tableMode === 'cart' && (<td  className="td-right">{product.in_stock}</td>)}
+                                            {tableMode === 'cart' && (<td  className="td-right">{product.reserved}</td>)}
+                                            {tableMode === 'cart' && (<td  className="td-right nobr">{product.on_preorder && product.on_preorder > 0 ? (`${product.on_preorder} шт.`) : (<span>&nbsp;</span>)}</td>)}
+                                            <td  className="td-right">{product.on_preorder && product.on_preorder > 0 ? 
+                                                (getDisplayDate(product.expected_receipt_date)
+                                                ) : (<span>&nbsp;</span>)}
+                                            </td>
+                                            {tableMode === 'cart' && (
+                                                <td  className="td-right">
+                                                    <div className="d-flex margin-bottom8px flex-content-right">
+                                                        {(product.on_preorder && product.on_preorder > 0 && product.price_with_rank_discount && product.price_preorder && product.price_preorder < product.price_with_rank_discount) ? 
+                                                        // здесь логика следующая: product.actual_price - есть всегда - значение равно регулярной цене или сцециальной акционной цене (что из них меньше)
+                                                        // product.price_with_rank_discount !== null - появляется только в том случае, если пользователь авторизован и такая цена меньше product.actual_price - выводим ее!
+                                                        (
+                                                            <>
+                                                                <span  className="color-red margin-bottom8px">{formatPrice(product.price_preorder ?? 0)}&nbsp;<sup>&#8381;</sup></span>
+                                                                <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_preorder ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
+                                                            </>
+                                                        ) : ( 
+                                                                product.on_preorder && product.on_preorder > 0 && !product.price_preorder && product.price_regular ? (
+                                                                <>
+                                                                <span  className="color-red margin-bottom8px">{formatPrice(product.price_regular * 0.9 )}&nbsp;<sup>&#8381;</sup></span>
+                                                                <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{10}%</span>
+                                                                </>
+                                                        ) : (
+                                                            <div className='d-flex margin-bottom8px'> </div>
+                                                        ))}
+                                                    </div>
+                                                </td>
+                                            )}
                                             <td  className="td-right">{product.article}</td>
-                                            <td className="hide-column">{product.id}</td>
+                                            <td className="hide-column td-right">{product.id}</td>
                                         </tr>
                                 )
                             ))}

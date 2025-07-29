@@ -76,22 +76,21 @@ class ProductsTableController extends Controller
         $page       = (int)$request->input('page', 1);
         $sortBy     = $request->input('sortBy', 'actual_price');
         $sortOrder  = $request->input('sortOrder', 'asc');
+        $tableMode  = $request->input('tableMode', 'cart');
         
         $searchTerm = $request->input('search');
         $searchType = $request->input('searchType', 'article'); // По умолчанию поиск по артикулу
 
-        $actionType = $request->input('actionType', 'cart');    // По умолчанию: пользователь наполняет корзину (альтернатива: создаёт предзаказ (preorder))
-        
         // Создаём базовый запрос
         $query = Product::query()
             ->with(['category', 'brand', 'properties', 'productShowCaseImage', 'productReport'])            
             ->orderBy($sortBy, $sortOrder)
         ;
 
-        if ($actionType === 'preorder') {
-            // Только товары для предзаказа (on_order > 0)
+        if ($tableMode === 'preorder') {
+            // Только товары для предзаказа (on_preorder > 0)
             $query->whereHas('productReport', function($q) {
-                $q->where('on_order', '>', 0);
+                $q->where('on_preorder', '>', 0);
             });
         } else {
             // Только товары в наличии (on_sale > 0)
@@ -147,6 +146,7 @@ class ProductsTableController extends Controller
             //'filters' => $filters,
             'sortBy' => $sortBy,
             'sortOrder' => $sortOrder,
+            'tableMode' => $tableMode,
             'search' => $request->input('search', ''),
             'searchType' => $request->input('searchType', 'article'),
             'categoryId' => $categoryId,

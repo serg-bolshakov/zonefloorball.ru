@@ -84,12 +84,13 @@ interface IOrderPayment {
     invoice_url?: string;
 }
 
-interface IOrder {
+export interface IOrder {
     id: number;
     number: string;
     order_date: string;
     hash: string;
     status: string;
+    is_preorder: boolean;
     cost: number;
     delivery: IOrderDelivery;
     payment: IOrderPayment;

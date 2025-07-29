@@ -28,12 +28,13 @@ interface TableQuantityControlProps {
     prodTitle: string
     value: number;
     on_sale: number;
-    updateCart: (prodId: number, value: number) => Promise<{  
-        cartTotal: number;  // Полезно для отображения в UI
-        error?: string;     
-    }>;
+    on_preorder: number;
+    tableMode: 'cart' | 'preorder'; // Явно передаём режим
+    updateCart: (prodId: number, value: number) => Promise<{ cartTotal: number; error?: string; }>;
+    updatePreorder: (prodId: number, value: number) => Promise<{ preorderTotal: number; error?: string }>;
     addToFavorites: (prodId: number) => Promise<{ favoritesTotal: number; error?: string }>;
     removeFromCart: (prodId: number) => Promise<{ cartTotal: number; error?: string; }>;
+    removeFromPreorder: (prodId: number) => Promise<{ preorderTotal: number; error?: string }>; 
 }
 
 export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({ 
@@ -53,9 +54,13 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
          *      - это паттерн "контролируемого компонента" в React
          */
         on_sale,
+        on_preorder,
+        tableMode,
         updateCart,
+        updatePreorder,
         addToFavorites,
-        removeFromCart
+        removeFromCart,
+        removeFromPreorder
     }) => {
 
     const { openModal, closeModal } = useModal();
@@ -115,71 +120,57 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
         }
     }, [initialValue, on_sale]);*/
 
-    // Хранение состояния выбора: (на будущее)
-    const [actionType, setActionType] = useState<'cart' | 'preorder'>('cart');
-
     // Получаем ссылку на <input> с помощью useRef. Сначала создадим ref и привяжем её к инпуту:
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const handleUpdate = async (newValue: number) => {
-        if (isUpdating) return; // Защита от повторных вызовов
-        console.log("Updating:", { prodId, newValue }); // Отладка
-        
-        if (actionType === 'cart') {
-            if (newValue < 0 || newValue > on_sale) return;
-            
-            /*try {
-                setIsUpdating(true);
+    useEffect(() => {
+        // Сбрасываем локальное значение при смене режима
+        setLocalValue(initialValue);
+    }, [tableMode, initialValue]);
 
-                // Оптимистичное обновление
-                setLocalValue(newValue);
-                
-                if(newValue === 0) {
-                    // Товар закончился - удаляем и добавляем в избранное
-                    await Promise.all([                                     // Случай с Promise.all используется когда нам нужно: а) выполнить несколько асинхронных операций параллельно; б) не требуется анализ индивидуальных результатов; в) важен факт успешного выполнения всех операций
-                        removeFromCart(prodId)
-                    ]);
-                    // toast.info('Товар закончился и перемещён в Избранное', toastConfig);
-                    toast.info('Товар удалён из Корзины', toastConfig);
-                } else {
-                    const result = await updateCart(prodId, newValue);     // Случай с result используется когда: а) нужно проверить конкретный результат операции; б) требуется дополнительная обработка ответа; в) важно обработать возможные ошибки специфическим образом;
-                    if(result.error) throw new Error(result.error);
-                    toast.success(`«${prodTitle}» в корзине, в количестве: ${newValue} шт.`, toastConfig);
-                }
-            }*/
-           
-           try {
-                setIsUpdating(true);
-                const result = newValue === 0
-                    ? await removeFromCart(prodId)
+    const handleUpdate = async (newValue: number) => {
+        if (isUpdating) return;             // Защита от повторных вызовов
+        
+        const maxAllowed = tableMode === 'cart' ? on_sale : on_preorder;
+        if (newValue < 0 || newValue > maxAllowed) return;
+
+        try {
+            setIsUpdating(true);
+            let result;
+            
+            if (tableMode === 'cart') {
+                result = newValue === 0 
+                    ? await removeFromCart(prodId) 
                     : await updateCart(prodId, newValue);
-                
-                if (result.error) throw new Error(result.error);
-                
-                setLocalValue(newValue); // Обновляем состояние только после успеха
-                toast.success(
-                    newValue === 0 
-                        ? 'Товар удалён из Корзины' 
-                        : `«${prodTitle}» в корзине: ${newValue} шт.`,
-                    toastConfig
-                );
-            } catch(error) {
-                setLocalValue(initialValue);    // Откат при ошибке
-                toast.error(
-                    error instanceof Error ? error.message : 'Ошибка обновления',
-                    toastConfig
-                );
-            } finally {
-                setIsUpdating(false);
+            } else {
+                result = newValue === 0
+                    ? await removeFromPreorder(prodId)
+                    : await updatePreorder(prodId, newValue);
             }
-        } else {
-            // Логика предзаказа
+
+            if (result.error) throw new Error(result.error);
+            
+            setLocalValue(newValue);
+            toast.success(
+                newValue === 0 
+                    ? `Товар удалён из ${tableMode === 'cart' ? 'Корзины' : 'Предзаказа'}` 
+                    : `«${prodTitle}» ${tableMode === 'cart' ? 'в корзине' : 'в предзаказе'}: ${newValue} шт.`,
+                toastConfig
+            );
+        } catch(error) {
+            setLocalValue(initialValue);
+            toast.error(
+                error instanceof Error ? error.message : 'Ошибка обновления',
+                toastConfig
+            );
+        } finally {
+            setIsUpdating(false);
         }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = parseInt(e.target.value) || 0;
-        const clampedValue = Math.max(0, Math.min(on_sale, value));
+        const clampedValue = Math.max(0, Math.min(tableMode === 'cart' ? on_sale : on_preorder, value));
         setLocalValue(clampedValue);
 
         if (timeoutId) clearTimeout(timeoutId);
@@ -229,6 +220,27 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
             });
         }, [removeFromCart]);
 
+    const handleRemoveFromPreorderClick = useCallback(async (productId: number) => {
+        openModal(null, 'confirm', {
+            title: "Удалить из предзаказа?",
+            onConfirm: async () => {
+                try {
+                    const result = await removeFromPreorder(productId);    
+                    if (result.error) {
+                        toast.error(result.error, toastConfig);
+                    } else {
+                        toast.success('Товар удалён из предзаказа', toastConfig);
+                    }
+                } catch(error) {
+                    toast.error('Не удалось удалить из предзаказа', toastConfig);
+                }
+            },
+            onCancel: () => {
+                toast.success('Товар оставлен в предзаказе', toastConfig);
+            }
+        });
+    }, [removeFromPreorder]);
+    
     // Оптимизация ввода с клавиатуры
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter') {
@@ -241,6 +253,8 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
     const handleFocus = () => {
         setIsInputFocused(true);
     };
+
+    // console.log(initialValue);
 
     return (
         <>
@@ -259,11 +273,12 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                     onBlur={handleBlur}
                     onKeyDown={handleKeyDown}
                     onFocus={handleFocus}
+                    max={tableMode === 'cart' ? on_sale : on_preorder}
                 />
                 
                 <button
                     onClick={() => handleUpdate(localValue + 1)}
-                    disabled={isUpdating || localValue >= on_sale}
+                    disabled={isUpdating || localValue >= (tableMode === 'cart' ? on_sale : on_preorder)}
                 >
                 +
                 </button>
@@ -280,7 +295,11 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
                     ) : (
                         <img 
                             className="w-6 cursor-pointer margin-left12px" 
-                            onClick={() => handleRemoveFromCartClick(prodId)} 
+                            onClick={() => 
+                                tableMode === 'cart' 
+                                    ? handleRemoveFromCartClick(prodId)
+                                    : handleRemoveFromPreorderClick(prodId)
+                            } 
                             src="/storage/icons/icon-trash.png" 
                             alt="Удалить"
                         />

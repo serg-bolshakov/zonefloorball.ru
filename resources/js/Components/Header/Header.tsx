@@ -5,15 +5,17 @@ import { useUserDataContext } from '@/Hooks/useUserDataContext';
 import { motion } from 'framer-motion';
 import useSafeLocation from '@/Hooks/useSafeLocation';
 import { useEffect } from 'react';
+import { isLegalUser } from "@/Types/types";
 
 const Header: React.FC = () => {
     const { user, categoriesMenuArr, authBlockContentFinal, setAuthBlockContentFinal } = useAppContext();
-    const { orders, favorites, cartTotal, ordersTotal } = useUserDataContext();
+    const { orders, favorites, cartTotal, ordersTotal, preorderTotal } = useUserDataContext();
     // Считаем количества
     // const ordersCount = orders.length;
     const ordersCount = ordersTotal;
     const favoritesCount = favorites.length;
     const cartCount = cartTotal;
+    const preorderCount = preorderTotal;
 
     const location = useSafeLocation();
 
@@ -281,7 +283,7 @@ const Header: React.FC = () => {
                         {user ? user.name : 'Гость'}
                     </span>
 
-                    <div className="header-icon__block">
+                    <motion.div className="header-icon__block" whileHover={{ scale: 0.95 }} whileTap={{ scale: 0.95 }}>
                         {user && ordersCount > 0 && ( <div className="header-orders__counter header-logo__counter color-blue">{ ordersCount }</div> )}
                         {user && (
                             <>
@@ -289,19 +291,28 @@ const Header: React.FC = () => {
                                 <p><Link className="header-icon" href="/profile/orders">Заказы</Link></p>
                             </>
                         )}
-                    </div>
+                    </motion.div>
 
-                    <motion.div  className="header-icon__block" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <motion.div  className="header-icon__block" whileHover={{ scale: 0.95 }} whileTap={{ scale: 0.95 }}>
                         {favoritesCount > 0 && ( <div className="header-favorites__counter header-logo__counter color-red">{favoritesCount}</div>)}
                         <Link  className="" href="/products/favorites"><img src="/storage/icons/favorite.png" alt="favorite" title="Посмотреть избранное" /></Link>
                         <p><Link className="header-icon" href="/products/favorites">Избранное</Link></p>
                     </motion.div>
 
-                    <div className="header-icon__block basket-logo__div">
+                    <motion.div className="header-icon__block basket-logo__div" whileHover={{ scale: 0.95 }} whileTap={{ scale: 0.95 }}>
                         {cartCount > 0 && ( <div className="header-basket__counter header-logo__counter color-red">{ cartCount }</div> )}
                         <Link className="" href="/products/cart"><img src="/storage/icons/icon-shopping-cart.png" alt="basket" title="Посмотреть корзину" /></Link>
                         <p><Link className="header-icon" href="/products/cart">Корзина</Link></p>
-                    </div>
+                    </motion.div>
+
+                    {isLegalUser(user) && (
+                        <motion.div className="header-icon__block basket-logo__div" whileHover={{ scale: 0.95 }} whileTap={{ scale: 0.95 }}>
+                            {preorderCount > 0 && ( <div className="header-basket__counter header-logo__counter color-red">{ preorderCount }</div> )}
+                            <Link className="" href="/products/preorder"><img src="/storage/icons/combo-chart.png" alt="preorder" title="Предзаказ" /></Link>
+                            <p><Link className="header-icon" href="/products/cart">Предзаказ</Link></p>
+                        </motion.div>
+                    )} 
+
                 </div>
 
             </header>

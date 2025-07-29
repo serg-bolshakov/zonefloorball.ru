@@ -17,6 +17,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductCardController;
 use App\Http\Controllers\FavoritesController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\ProductsTableController;
 use App\Http\Controllers\LegalController;
 
@@ -83,6 +84,13 @@ Route::middleware('web')->group(function () {
     // Удаление товара из корзины (сохранение в БД)
     Route::delete('/cart/items', [CartController::class, 'delete']);
 
+    // Обновление предзаказа (сохранение в БД)
+    Route::match(['GET', 'POST'], '/preorder/items', [PreorderController::class, 'update']);
+    // Route::post('/preorder/items', [PreorderController::class, 'store']);   // The GET method is not supported for route preorder/items. Supported methods: POST.
+
+    // Удаление товара из предзаказа (сохранение в БД)
+    Route::delete('/preorder/items', [PreorderController::class, 'delete']);
+
     // Синхронизация данных при авторизации
     Route::match(['GET', 'POST'], '/user/sync', [AuthSyncController::class, 'syncLocalData']);
 
@@ -91,7 +99,8 @@ Route::middleware('web')->group(function () {
 
 // Маршруты для Inertia.js
 Route::match(['get', 'post'], '/', [IndexReactController::class, 'index'])->name('home');
-Route::match(['get', 'post'], '/products/cart', [CartController::class, 'index']);
+Route::match(['get', 'post'], '/products/cart', [CartController::class, 'index']);          // Обычная корзина
+Route::match(['get', 'post'], '/products/preorder', [PreorderController::class, 'index']);  // Предзаказы
 Route::match(['get', 'post'], '/products/{category?}', [ProductController::class, 'index']);
 Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardController::class, 'index']);
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);

@@ -12,6 +12,7 @@
     use App\Models\User;
     use App\Models\Favorite;
     use App\Models\Cart;
+    use App\Models\Preorder;
     use App\Http\Resources\ProductCollection;
     
     use Illuminate\Support\Facades\Auth;
@@ -19,8 +20,6 @@
 
     class InitialDataController extends Controller {
         public function index(Request $request) {
-
-            
             
             try {
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();
@@ -57,12 +56,14 @@
                     'categoriesInfo' => Category::all(),
                     
                     'authBlockContentFinal' => $userData['auth_content'],
-                    'cart' => $user ? $this->getUserCart($user)['cart'] : [],
-                    'cart_changes' => $user ? $this->getUserCart($user) : [],
-                    'favorites' => $user?->favorites?->product_ids 
+                    'cart'                  => $user ? $this->getUserCart($user)['cart'] : [],
+                    'cart_changes'          => $user ? $this->getUserCart($user) : [],
+                    'preorder'              => $user ? $this->getUserPreorder($user)['preorder'] : [],
+                    'preorder_changes'      => $user ? $this->getUserPreorder($user) : [],
+                    'favorites'             => $user?->favorites?->product_ids 
                         ? $user->favorites->product_ids // json_decode($user->favorites->product_ids, true) - "декодирование" осуществили в модели Favorite через cast...
                         : [],
-                    'orders' => $user ? $this->getUserOrdersIdsArr($user) : [], 
+                    'orders'                => $user ? $this->getUserOrdersIdsArr($user) : [], 
                 ]);
                     
             } catch (\Exception $e) {
@@ -194,6 +195,108 @@
             });
 
             \Log::debug('getUserCart final', [
+                '$result' => $result,
+            ]);
+
+            return $result;
+        }
+
+        // метод получения данных предзаказа пользователя для записи в локальное хранилище при авторизации
+        private function getUserPreorder(User $user): array {
+
+            // 1. Подготовка данных
+            $result = [
+                'preorder'          => [],
+                'sold_out'          => [],
+                'new_arrivals'      => [],
+                'quantity_changes'  => []
+            ];
+
+            // Загрузка данных: получаем все необходимые данные
+            $existingItems = Preorder::where('user_id', $user->id)
+                ->get()
+                ->keyBy('product_id');
+                // метод >keyBy преобразует коллекцию в ассоциативный массив, где:Ключ = значение поля product_id, Значение = вся модель Preorder
+                /* Допустим, в БД есть записи:
+                    
+                    php
+                    [
+                        ['user_id' => 1, 'product_id' => 13, 'quantity' => 6],
+                        ['user_id' => 1, 'product_id' => 25, 'quantity' => 2]
+                    ]
+                    После keyBy('product_id') получим:
+
+                    php
+                    [
+                        13 => ['user_id' => 1, 'product_id' => 13, 'quantity' => 6],
+                        25 => ['user_id' => 1, 'product_id' => 25, 'quantity' => 2]
+                    ]
+
+                    Зачем это нужно?
+                    Чтобы быстро искать записи по product_id без перебора всей коллекции:
+
+                    php
+                    $existingItems->get(13); // Вернёт запись с product_id=13
+
+                */
+
+            $productIds = $existingItems->keys()->toArray();
+
+            $products = Product::select('id') // Берём только ID товара
+                ->with(['productReport' => function ($query) {
+                    $query->select('product_id', 'on_preorder'); // Только нужные поля связи
+                }])
+                ->whereIn('id', $productIds)
+                ->get()
+                ->keyBy('id');
+
+            // 3. Обработка
+            foreach ($products as $productId => $product) {
+                $onPreorder = $product->productReport?->on_preorder ?? 0;
+                $dbQty = $existingItems[$productId]->quantity ?? 0;
+
+                if ($onPreorder <= 0) {
+                    if ($dbQty > 0) $result['sold_out'][$productId] = $dbQty;
+                    continue;
+                }
+
+                $finalQty = min($dbQty, $onPreorder);
+                $result['preorder'][$productId] = $finalQty;
+
+                if ($existingItems[$productId]->deleted_at ?? false) {
+                    $result['new_arrivals'][] = $productId;
+                }
+
+                if ($finalQty != $dbQty) {
+                    $result['quantity_changes'][$productId] = $dbQty;
+                }
+            }
+
+            // 4. Сохранение в БД 
+            DB::transaction(function () use ($user, $result) {
+
+                // Мягко удаляем товар из предзаказа пользователя в БД, если товар закончился для предзаказа:
+                Preorder::where('user_id', $user->id)
+                    ->whereIn('product_id', array_keys($result['sold_out']))
+                    ->update(['deleted_at' => now()]);
+
+                // Обновляем / актуализируем данные предзаказа в БД
+                Preorder::upsert(
+                    collect($result['preorder'])->map(function ($qty, $productId) use ($user) {
+                        return [
+                            'user_id' => $user->id,
+                            'product_id' => $productId,
+                            'quantity' => $qty,
+                            'deleted_at' => null,
+                            'updated_at' => now()
+                        ];
+                    })->values()->toArray(),
+                    ['user_id', 'product_id'],
+                    ['quantity', 'deleted_at', 'updated_at']
+                );
+            });
+
+            \Log::debug('getUserPreorder final', [
                 '$result' => $result,
             ]);
 

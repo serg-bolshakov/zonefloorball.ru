@@ -8,24 +8,28 @@ import { API_ENDPOINTS } from '@/Constants/api';
 import { getErrorMessage } from '@/Utils/error';
 import { TCart, TRecentlyViewedProducts } from './UserDataContext';
 import { IProduct } from '@/Types/types';
+import { IOrder } from '@/Pages/Orders';
 import { useLocalStorage } from '@/Hooks/useLocalStorage';
 
 type SyncData = {
   favorites?: number[];
   cart?: IProduct[];
+  preorder?: IProduct[];
   recentlyViewedProducts?: TRecentlyViewedProducts;
 };
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
     
-    const { user, cart, favorites, orders } = useAppContext();
+    const { user, cart, preorder, favorites, orders } = useAppContext();
     
     const [state, setState] = useState<UserDataState>({
-        cart                    : {},  // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
+        cart                    : {},   // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
+        preorder                : {},
         favorites               : [],
-        orders                  : [],
+        orders                  : [],   // здесь мы подразумеваем не массив объектов IOrder[], а именно массив id-шников!
         recentlyViewedProducts  : {},
         cartTotal               : 0,
+        preorderTotal           : 0,
         favoritesTotal          : 0,
         ordersTotal             : 0, 
         isLoading               : true, // Начинаем с true, так как данные загружаются
@@ -59,6 +63,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 ...newState,
                 // Автоматически пересчитываем totals при изменении массивов
                 cartTotal: calculateCartTotal(newState.cart),
+                preorderTotal: calculateCartTotal(newState.preorder),
                 favoritesTotal: newState.favorites.length,
                 ordersTotal: newState.orders.length
             };                
@@ -76,6 +81,13 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         clearTimeout(saveTimeout);
         saveTimeout = setTimeout(() => {
             localStorage.setItem('cart', JSON.stringify(cart));
+        }, 500); // Задержка 500 мс
+    };
+
+    const savePreorder = (preorder: TCart) => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(() => {
+            localStorage.setItem('preorder', JSON.stringify(preorder));
         }, 500); // Задержка 500 мс
     };
 
@@ -401,6 +413,203 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         }
     }, [user]);
 
+    const addToPreorder = useCallback(async (productId: number, quantity: number = 1) => {
+        try {
+            //Валидация quantity:
+            if (quantity <= 0 || !Number.isInteger(quantity)) {
+                return { 
+                    preorderTotal: calculateCartTotal(state.preorder),
+                    error: 'Некорректное количество' 
+                };
+            }
+
+            updateState({isLoading: true});
+            
+            // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
+            // 1. Проверяем, есть ли товар в предзаказе
+            if(productId in state.preorder) {       // Было: if(Object.keys(cart).includes(productId.toString())) {... productId in state.cart быстрее Object.keys().includes()
+                const newPreorder = {...state.preorder};
+                newPreorder[productId] += quantity; // Увеличиваем количество
+                
+                updateState({ 
+                    preorder: newPreorder,
+                    isLoading: false 
+                });
+
+                return {
+                    preorderTotal: calculateCartTotal(newPreorder),
+                    error: `Товар уже есть в предзаказе (Добавили количество. Теперь стало: ${newPreorder[productId]} шт.)` // Понятнее для пользователя
+                };
+            }
+            
+            // 2. Если товара ещё нет — добавляем
+            const newPreorder = {...state.preorder, 
+                [productId]: (state.preorder[productId] || 0) + quantity };
+
+            if (user) {
+                // console.log('productId', productId);
+                // console.log('quantity', newPreorder[productId]);
+                await axios.post('/preorder/items', { 
+                    product_id: productId,
+                    quantity: newPreorder[productId]
+                });    
+            } else {
+                // localStorage.setItem('preorder', JSON.stringify(newPreorder));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
+                savePreorder(newPreorder); // Вместо прямого вызова localStorage
+            }
+
+            updateState({ 
+                preorder: newPreorder,
+                isLoading: false 
+            });
+
+            // Реальная реализация может вернуть undefined (если есть try-catch без return) - делаем return
+            return { 
+                preorderTotal: calculateCartTotal(newPreorder),
+            };
+
+        } catch (error) {
+            const message = getErrorMessage(error);
+            updateState({
+                error: message,
+                isLoading: false
+            });
+
+            return { 
+                preorderTotal: state.preorderTotal,
+                error: message 
+            };
+        }
+    }, [user, state.preorder]); 
+
+    const removeFromPreorder = useCallback(async (productId: number): Promise<{ preorderTotal: number; error?: string; }> => {
+        try {
+            updateState({isLoading: true});
+
+            // Создаём новый объект без удаляемого товара (без мутаций!)
+            const { [productId]: _, ...rest } = state.preorder;             // Деструктуризация с исключением
+            const newPreorder = rest;
+            /** Как работает деструктуризация с исключением в нашем случае:
+             *  const state.preorder = { 84: 1, 89: 2 };            // Исходный объект предзаказа
+             *  const productId = 84;                               // Удаляемый товар
+             *  Шаг 1: Деструктуризация с исключением: 
+             *  const { [productId]: _, ...rest } = state.preorder; // → Извлекаем ключ `84` в переменную `_` (она не используется), а остальное — в `rest`
+             *  Шаг 2: Результат: console.log(rest);                // { 89: 2 } - Красота!
+             */
+            // const newPreorder = state.preorder; delete newPreordert[productId];   // Удаляем из предзаказа товар с запрошенным на удаление id - этот вариант решения оставим "в прошлое"...
+            
+            // Локальное обновление (синхронно)
+            updateState({
+                preorder: newPreorder,
+                preorderTotal: calculateCartTotal(newPreorder),
+                isLoading: false
+            });
+
+            // Сохранение на сервер (если пользователь авторизован) / localStorage
+            if (user) {
+                await axios.delete('/preorder/items', { 
+                    data: { product_id: productId } // Важно: axios.delete отправляет data в body
+                });    
+            } 
+
+            localStorage.setItem('preorder', JSON.stringify(newPreorder));
+
+            return { preorderTotal: calculateCartTotal(newPreorder) };
+
+        } catch (error) {
+            // Откат изменений при ошибке
+            const message = getErrorMessage(error); 
+            updateState({
+                error: message,
+                isLoading: false
+            });
+            return { 
+                preorderTotal: state.preorderTotal,
+                error: message 
+            };
+        }
+    }, [user, state.preorder]);  
+
+    const updatePreorder = useCallback(async (productId: number, quantity: number): Promise<{ preorderTotal: number; error?: string; }> => {
+        try {
+            //Валидация quantity:
+            if (quantity <= 0 || !Number.isInteger(quantity)) {
+                return { 
+                    preorderTotal: calculateCartTotal(state.preorder),
+                    error: 'Некорректное количество' 
+                };
+            }
+
+            updateState({isLoading: true});
+            
+            // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
+            const newPreorder = {...state.preorder};
+            newPreorder[productId] = quantity; // Изменяем количество
+
+            if (user) {
+                console.log('productId', productId);
+                console.log('quantity', newPreorder[productId]);
+                await axios.post('/preorder/items', { 
+                    product_id: productId,
+                    quantity: newPreorder[productId]
+                });    
+            } else {
+                // localStorage.setItem('preorder', JSON.stringify(newPreorder));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
+                savePreorder(newPreorder); // Вместо прямого вызова localStorage
+            }
+
+            updateState({ 
+                preorder: newPreorder,
+                isLoading: false 
+            });
+
+            // Реальная реализация может вернуть undefined (если есть try-catch без return) - делаем return
+            return { 
+                preorderTotal: calculateCartTotal(newPreorder),
+            };
+
+        } catch (error) {
+            const message = getErrorMessage(error);
+            updateState({
+                error: message,
+                isLoading: false
+            });
+
+            return { 
+                preorderTotal: state.preorderTotal,
+                error: message 
+            };
+        }
+    }, [user, state.preorder]);
+ 
+    const clearPreorder = useCallback(async(): Promise<void> => {
+        try {
+            updateState({isLoading: true});
+
+            // Локальное очищение предзаказа (синхронно)
+            updateState({
+                preorder: {},
+                preorderTotal: 0,
+                isLoading: false
+            });
+
+            // Очистка на сервере (если пользователь авторизован)
+            if(user) {
+                await axios.delete('/api/preorder/clear');
+            }
+
+            // Очистка localStorage
+            localStorage.removeItem('preorder');
+
+        } catch (error) {
+            const message = getErrorMessage(error);
+            updateState({
+                error: message,
+                isLoading: false
+            });
+        }
+    }, [user]);
+
     const getLocalStorageData = (key: string, defaultValue: any) => {
       try {
         const item = localStorage.getItem(key);
@@ -491,6 +700,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 const data = manualData ?? {
                     favorites: JSON.parse(localStorage.getItem('favorites') || '[]'),
                     cart: getLocalStorageData('cart', []),
+                    preorder: getLocalStorageData('preorder', []),
                     recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
                 };
                 // console.log('Syncing data for user:', data);
@@ -510,6 +720,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     ...prev,
                     favorites: response.data.favorites || prev.favorites,
                     cart: response.data.cart || prev.cart,
+                    preorder: response.data.preorder || prev.preorder,
                     recentlyViewedProducts: response.data.recentlyViewedProducts || prev.recentlyViewedProducts,
                     
                 }));
@@ -520,6 +731,9 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 }
                 if (response.data.cart) {
                     localStorage.setItem('cart', JSON.stringify(response.data.cart));
+                }
+                if (response.data.preorder) {
+                    localStorage.setItem('preorder', JSON.stringify(response.data.preorder));
                 }
                 if (response.data.recentlyViewedProducts) {
                     localStorage.setItem('recently_viewed', JSON.stringify(response.data.recentlyViewedProducts));
@@ -533,6 +747,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     const fallbackData = {
                         favorites: getLocalStorageData('favorites', []),
                         cart: getLocalStorageData('cart', []),
+                        preorder: getLocalStorageData('preorder', []),
                         recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
                     };
                     setState(prev => ({ ...prev, ...fallbackData }));
@@ -558,6 +773,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 if (user) {
                     updateState({
                         cart: cart,
+                        preorder: preorder,
                         favorites: favorites,
                         orders: orders,
                         recentlyViewedProducts: state.recentlyViewedProducts,
@@ -566,6 +782,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 }  else {
                     updateState({
                         cart: getLocalStorageData('cart', {}),
+                        preorder: getLocalStorageData('preorder', {}),
                         favorites: getLocalStorageData('favorites', []),
                         orders: getLocalStorageData('orders', []),
                         recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
@@ -604,6 +821,16 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 // e.newValue - новое значение (или null, если данные удалены)
                 updateState({ cart: JSON.parse(e.newValue || '{}') });
             }
+
+            if (e.key === 'orders') {
+                // e.newValue - новое значение (или null, если данные удалены)
+                updateState({ orders: JSON.parse(e.newValue || '{}') });
+            }
+
+            if (e.key === 'preorder') {
+                // e.newValue - новое значение (или null, если данные удалены)
+                updateState({ preorder: JSON.parse(e.newValue || '{}') });
+            }
         };
 
         window.addEventListener('storage', handleStorage);
@@ -625,24 +852,37 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         addToCart,
         updateCart,
         removeFromCart,
+        addToPreorder,
+        updatePreorder,
+        removeFromPreorder,
         addRecentlyViewedProd,
         clearCart,
+        clearPreorder,
         addOrder
         // Будущие методы добавятся здесь
     }), [
         state.cart,
+        state.preorder,
         state.favorites,
         state.orders,
         state.recentlyViewedProducts,
         state.isLoading,
         state.error,
+        state.cartTotal,
+        state.preorderTotal,
+        state.favoritesTotal,
+        state.ordersTotal, 
         addToFavorites,
         removeFromFavorites,
         addToCart,
         updateCart,
         removeFromCart,
+        addToPreorder,
+        updatePreorder,
+        removeFromPreorder,
         addRecentlyViewedProd,
         clearCart,
+        clearPreorder,
         addOrder
     ]);
 

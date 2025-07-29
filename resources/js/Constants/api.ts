@@ -1,6 +1,7 @@
 // resources/js/Constants/api.ts
 export const API_ENDPOINTS = {
     CART: '/api/products/cart',
+    PREORDER: '/api/products/preorder',
     RECENTLY_VIEWED: '/api/products/recently-viewed',
     USER_DATA: '/api/user-data',
     WAREHOUSES: '/api/warehouses',

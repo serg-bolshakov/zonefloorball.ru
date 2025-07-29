@@ -6,6 +6,7 @@ import axios from "axios";
 import AppContext, { IAppContextType } from "./AppContext";
 import { TUser, ICategoriesMenuArr, ICategoryItemFromDB } from "../Types/types";
 import { TCart } from "./UserData/UserDataContext";
+import { IOrder } from "@/Pages/Orders";
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -112,12 +113,14 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
     const [user, setUser] = useState<TUser | null>(null);
     const [categoriesMenuArr, setCategoriesMenuArr] = useState<ICategoriesMenuArr | null>(null);
     const [authBlockContentFinal, setAuthBlockContentFinal] = useState<string>('');
-    const [categoriesInfo, setCategoriesInfo] = useState<ICategoryItemFromDB[]  | null>(null);    // массив категорий. categoriesInfo может быть null или undefined (например, данные ещё не загружены), пропишем это в типе:
+    const [categoriesInfo, setCategoriesInfo] = useState<ICategoryItemFromDB[]  | null>(null);      // массив категорий. categoriesInfo может быть null или undefined (например, данные ещё не загружены), пропишем это в типе:
     const [cart, setCart] = useState<TCart>({});
+    const [preorder, setPreorder] = useState<TCart>({});
     const [favorites, setFavorites] = useState<number[]>([]);
     const [cartTotal, setCartTotal] = useState<number>(0);
+    const [preorderTotal, setPreorderTotal] = useState<number>(0);
     const [favoritesTotal, setFavoritesTotal] = useState<number>(0);
-    const [orders, setOrders] = useState<number[]>([]);
+    const [orders, setOrders] = useState<number[]>([]);                                             // здесь мы подразумеваем не массив объектов IOrder[], а именно массив id-шников!
     const [ordersTotal, setOrdersTotal] = useState<number>(0);
 
     // Загрузка данных при монтировании компонента
@@ -132,6 +135,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
                     setAuthBlockContentFinal(response.data.authBlockContentFinal);
                     setCategoriesInfo(response.data.categoriesInfo);
                     setCart(response.data.cart);
+                    setPreorder(response.data.preorder);
                     setFavorites(response.data.favorites);
                     setOrders(response.data.orders);
                 })
@@ -153,8 +157,8 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
         categoriesMenuArr, setCategoriesMenuArr,
         authBlockContentFinal, setAuthBlockContentFinal,
         categoriesInfo, setCategoriesInfo,
-        cart, favorites, cartTotal, favoritesTotal, orders, ordersTotal,
-        setCart, setFavorites, setCartTotal, setFavoritesTotal, setOrders, setOrdersTotal,
+        cart, preorder, favorites, cartTotal, preorderTotal, favoritesTotal, orders, ordersTotal,
+        setCart, setPreorder, setFavorites, setCartTotal, setPreorderTotal, setFavoritesTotal, setOrders, setOrdersTotal,
     }
 
     return (

@@ -53,6 +53,15 @@ class Product extends Model
         });
     }
 
+    /* Получить цену на продукт на условиях предзаказа. */
+    public function preorderPrice() {
+        return $this->hasOne(Price::class)->ofMany([
+            'id' => 'max',
+        ], function ($query) {
+            $query->where('price_type_id', '=', 4);
+        });
+    }
+
     /* Получить данные по отстакам на продукт. */
     public function productReport() {
         return $this->hasOne(ProductReport::class);

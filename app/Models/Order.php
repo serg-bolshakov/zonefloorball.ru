@@ -44,7 +44,8 @@ class Order extends Model {
         'pickup_point_id ',
         'access_hash',
         'access_expires_at',
-        'actual_legal_agreement_ip'
+        'actual_legal_agreement_ip',
+        'is_preorder'
         // ... другие поля
     ];
 
@@ -59,7 +60,8 @@ class Order extends Model {
         'status_id'                 => 'integer',
         'payment_method'            => PaymentMethod::class,
         'payment_status'            => PaymentStatus::class,
-        'payment_details'           => 'array'
+        'payment_details'           => 'array',
+        'is_preorder'               => 'boolean',
     ];
 
     /** Как это работает $casts в модели автоматически конвертирует:

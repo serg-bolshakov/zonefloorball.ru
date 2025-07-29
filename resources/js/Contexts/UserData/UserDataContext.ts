@@ -2,17 +2,19 @@
 
 import { createContext } from 'react';
 
-
 export type TCart = Record<number, number>; // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
+export type TPreorder = Record<number, number>; // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
 export type TRecentlyViewedProducts = Record<number, number>; // { [productId]: timestamp } — это один объект вида { 84: 123456789, 89: 123456790 }
 
 
 export interface UserDataState {
     cart                  : TCart;
+    preorder              : TPreorder;
     favorites             : number[];
-    orders                : number[];
+    orders                : number[];       // здесь мы подразумеваем не массив объектов IOrder[], а именно массив id-шников!
     recentlyViewedProducts: TRecentlyViewedProducts;
     cartTotal             : number; 
+    preorderTotal         : number; 
     favoritesTotal        : number; 
     ordersTotal           : number; 
     isLoading             : boolean;        // Статус загрузки
@@ -45,6 +47,23 @@ export interface UserDataContextType extends UserDataState {
     }>;
     
     clearCart: () => Promise<void>;
+
+    addToPreorder: ( productId: number, quantity: number ) => Promise<{  
+        preorderTotal: number;  // Полезно для отображения в UI
+        error?: string;     
+    }>;
+    
+    updatePreorder: (productId: number, quantity: number) => Promise<{  
+        preorderTotal: number;  // Полезно для отображения в UI
+        error?: string;     
+    }>;
+
+    removeFromPreorder: (productId: number) => Promise<{  
+        preorderTotal: number;
+        error?: string;     
+    }>;
+    
+    clearPreorder: () => Promise<void>;
 
     addOrder: (orderId: number) => Promise<void>;
 

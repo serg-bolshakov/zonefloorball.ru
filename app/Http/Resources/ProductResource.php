@@ -33,6 +33,7 @@ class ProductResource extends JsonResource
             'marka' => $this->marka ?? null,
             'price_actual' => $this->actualPrice->price_value ?? null,
             'price_regular' => $this->regularPrice->price_value ?? null,
+            'price_preorder' => $this->preorderPrice->price_value ?? null,
             'prod_status' => $this->product_status_id,
             'on_sale'               =>  $this->productReport->on_sale ?? null,
             'in_stock'              =>  $this->productReport->in_stock ?? null,
@@ -59,12 +60,13 @@ class ProductResource extends JsonResource
         
         // Инициализация значений по умолчанию
         $discountData = [
-            'price_with_rank_discount' => null,
-            'price_with_action_discount' => null,
-            'percent_of_rank_discount' => null,
-            'summa_of_action_discount' => null,
-            'price_special' => null,
-            'date_end' => $this->actualPrice->date_end ?? null,
+            'price_with_rank_discount'      => null,
+            'price_with_action_discount'    => null,
+            'percent_of_rank_discount'      => null,
+            'summa_of_action_discount'      => null,
+            'price_special'                 => null,
+            'price_preorder'                => $this->preorderPrice->price_value ?? null,
+            'date_end'                      => $this->actualPrice->date_end ?? null,
         ];
         
         if (!$user) {
@@ -72,9 +74,9 @@ class ProductResource extends JsonResource
         }
         
         $rankDiscountPercent = $user->rank?->price_discount ?? 0;
-        $actualPrice = $this->actualPrice->price_value ?? null;
-        $actualPriceDateEnd = $this->actualPrice->date_end ?? null;
-        $regularPrice = $this->regularPrice->price_value ?? null;
+        $actualPrice         = $this->actualPrice->price_value ?? null;
+        $actualPriceDateEnd  = $this->actualPrice->date_end ?? null;
+        $regularPrice        = $this->regularPrice->price_value ?? null;
 
         if ($actualPrice === $regularPrice && $rankDiscountPercent > 0) {
             $discountData['price_with_rank_discount'] = round($regularPrice - ($regularPrice * ($rankDiscountPercent / 100))); 

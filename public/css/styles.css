@@ -3858,7 +3858,7 @@ a.changing-form__submit-btn:hover {
 .user-productTable__nav-bar {
     display: flex;
     flex-wrap: wrap;
-    margin-bottom: 20px;
+    /* margin-bottom: 20px; */
 }
 
 .select_user-lk {
@@ -5465,6 +5465,17 @@ thead th:hover::after {
     padding: 4px 8px;
     /* background: #2196F3; */
     background: #16a74b;
+    color: white;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: background 0.2s;
+    height: 50%;
+}
+
+.product-qty-on-preorder {
+    /* display: inline-block; */
+    padding: 4px 8px;
+    background: #3b82f6;
     color: white;
     border-radius: 4px;
     text-decoration: none;

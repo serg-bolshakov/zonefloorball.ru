@@ -1,4 +1,4 @@
-// resources/js/Pages/CartPage.tsx
+// resources/js/Pages/Preorder.tsx
 import useAppContext from "@/Hooks/useAppContext";
     import { useUserDataContext } from "@/Hooks/useUserDataContext";
     import axios from "axios";
@@ -17,16 +17,16 @@ import useAppContext from "@/Hooks/useAppContext";
     import { useCallback } from "react";
     import NavBarBreadCrumb from "@/Components/NavBarBreadCrumb";
     import { API_ENDPOINTS } from "@/Constants/api";
-    import PriceBlock from "@/Components/Cart/PriceBlock";
-    import { QuantityControl } from "@/Components/Cart/QuantityControl";
-    import ProductsQuantityInCart from "@/Components/Cart/ProductsQuantityInCart";
-    import DiscountSummary from "@/Components/Cart/DiscountSummary";
-    import DeliverySelector from "@/Components/Cart/DeliverySelector";
+    import PriceBlock from "@/Components/Preorder/PriceBlock";
+    import { QuantityControl } from "@/Components/Preorder/QuantityControl";
+    import ProductsQuantityInPreorder from "@/Components/Preorder/ProductsQuantityInPreorder";
+    import DiscountSummary from "@/Components/Preorder/DiscountSummary";
+    import DeliverySelector from "@/Components/Preorder/DeliverySelector";
     import useModal from "@/Hooks/useModal";
     import AuthWarningModal from '../Components/OrderCheckoutModals/AuthWarningModal'; 
-    import { TCartCustomer } from "@/Types/cart";
-    import { TCartLegalCustomer } from "@/Types/cart";
-    import { TCartIndividualCustomer } from "@/Types/cart";
+    import { TPreorderCustomer } from "@/Types/preorder";
+    import { TPreorderLegalCustomer } from "@/Types/preorder";
+    import { TPreorderIndividualCustomer } from "@/Types/preorder";
     import { TUser } from "@/Types/types";
     import GuestCustomerDataModalForm from "@/Components/OrderCheckoutModals/GuestCustomerDataModalForm";
     import { ITransport, IDeliverySelectionData } from "@/Types/delivery";
@@ -41,30 +41,28 @@ import useAppContext from "@/Hooks/useAppContext";
     import { isLegalUser } from "@/Types/types";
     import LegalCustomerDataModalForm from "@/Components/OrderCheckoutModals/LegalCustomerDataModalForm";
     import { dateRu, formatServerDate } from "@/Utils/dateFormatter";
-    import CheckoutButton from "@/Components/Cart/CheckoutButton";
+    import CheckoutButton from "@/Components/Preorder/CheckoutButton";
     import Toast from "@/Components/Cart/Toast";
     import { TOrderAction } from "@/Types/orders";
 
-interface IHomeProps {  
+interface IPreorderProps {  
     title: string;
     robots: string;
     description: string;
     keywords: string;
-    transports: ITransport[];
 }
 
-const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, transports}) => {
+const Preorder: React.FC<IPreorderProps> = ({title, robots, description, keywords}) => {
     const { openModal, closeModal } = useModal();
     
     const { user } = useAppContext();
-    const { cart, cartTotal, updateCart, addToFavorites, removeFromCart, clearCart, addOrder, preorder, preorderTotal, updatePreorder, removeFromPreorder, clearPreorder, addToPreorder} = useUserDataContext();
-    const [cartProducts, setCartProducts] = useState<IProduct[]>([]);
+    const { preorder, preorderTotal, updatePreorder, addToFavorites, removeFromPreorder, clearPreorder, addOrder } = useUserDataContext();
     const [preorderProducts, setPreorderProducts] = useState<IProduct[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const [cartAmount, setCartAmount] = useState<number>(0);
-    const [regularAmount, setRegularAmount] = useState<number>(0); // Сумма без скидок
+    const [preorderAmount, setPreorderAmount] = useState<number>(0);
+    const [regularAmount, setRegularAmount]   = useState<number>(0); // Сумма без скидок
 
     const initialDeliveryData: IDeliverySelectionData = {        // initialDeliveryData можно переиспользовать (например, для сброса)...
         transportId: 0,
@@ -82,7 +80,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     const getInitialCustomerData = (
         user: TUser | null,
         deliveryData: { address?: string } = {}
-    ): TCartCustomer => {
+    ): TPreorderCustomer => {
       
         if (isIndividualUser(user)) {       // Теперь TS знает, что user - IIndividualUser
             return {
@@ -120,8 +118,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         };
     };
       
-    const [customerData, setCustomerData] = useState<TCartCustomer>(getInitialCustomerData(user));
-    // console.log('CartPage customerData', customerData);
+    const [customerData, setCustomerData] = useState<TPreorderCustomer>(getInitialCustomerData(user));
+    // console.log('PreorderPage customerData', customerData);
     const toastConfig = {
         position: "top-right" as const,
         autoClose: 1500, // Уведомление закроется через секунду-другую...
@@ -192,73 +190,6 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         // создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
         const signal = controller.signal;       // это объект AbortSignal, который передаётся в axios (или fetch).
 
-        if(cartTotal === 0) {
-            setCartProducts([]);
-            return;
-        }
-
-        const loadCart = async () => {
-            if(!cartTotal) {
-                setCartProducts([]);
-                return;
-            }
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                // console.log(cart);
-                const response = await axios.post(API_ENDPOINTS.CART, {
-                    products: cart, // Отправляем текущую корзину
-                }, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    },
-                    signal, // Передаём signal в конфиг axios
-                });
-
-                // Проверяем, не был ли запрос отменён
-                if (!signal.aborted) {
-                    setCartProducts(response.data.products?.data || []);
-                }
-            } catch (error) {
-                // Игнорируем ошибку, если запрос был отменён
-                if (!axios.isCancel(error)) {
-                    setError(getErrorMessage(error));
-                    toast.error('Ошибка загрузки:' + getErrorMessage(error), toastConfig);
-                }
-            } finally {
-                if (!signal.aborted) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        loadCart();
-
-        // Функция очистки: отменяем запрос при размонтировании или изменении cart
-        return () => {
-            controller.abort();
-        };
-
-    }, [cart]);
-
-    useEffect(() => {
-        if (cartProducts.length > 0) {
-          const regular = cartProducts.reduce((sum, p) => sum + (p.price_regular ?? 0) * (p.quantity ?? 0), 0);
-          const discounted = calculateCartTotalAmount(cartProducts);
-          
-          setRegularAmount(regular);
-          setCartAmount(discounted);
-        }
-    }, [cartProducts]);
-
-    
-    useEffect(() => {
-        const controller = new AbortController; // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
-        // создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
-        const signal = controller.signal;       // это объект AbortSignal, который передаётся в axios (или fetch).
-
         if(preorderTotal === 0) {
             setPreorderProducts([]);
             return;
@@ -274,8 +205,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
 
             try {
                 // console.log(preorder);
-                const response = await axios.post(API_ENDPOINTS.PREORDER, {
-                    products: preorder, // Отправляем текущий предзаказ
+                const response = await axios.post(API_ENDPOINTS.CART, {
+                    products: preorder, // Отправляем текущую корзину
                 }, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -292,7 +223,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 // Игнорируем ошибку, если запрос был отменён
                 if (!axios.isCancel(error)) {
                     setError(getErrorMessage(error));
-                    toast.error('Ошибка загрузки товаров предзаказа:' + getErrorMessage(error), toastConfig);
+                    toast.error('Ошибка загрузки:' + getErrorMessage(error), toastConfig);
                 }
             } finally {
                 if (!signal.aborted) {
@@ -303,7 +234,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
 
         loadPreorder();
 
-        // Функция очистки: отменяем запрос при размонтировании или изменении cart
+        // Функция очистки: отменяем запрос при размонтировании или изменении preorder
         return () => {
             controller.abort();
         };
@@ -313,10 +244,10 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     useEffect(() => {
         if (preorderProducts.length > 0) {
           const regular = preorderProducts.reduce((sum, p) => sum + (p.price_regular ?? 0) * (p.quantity ?? 0), 0);
-          const discounted = calculateCartTotalAmount(preorderProducts);
+          const discounted = calculatePreorderTotalAmount(preorderProducts);
           
           setRegularAmount(regular);
-          setCartAmount(discounted);
+          setPreorderAmount(discounted);
         }
     }, [preorderProducts]);
 
@@ -340,12 +271,12 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         }
     }, [addToFavorites]);
 
-    const handleRemoveFromCartClick = useCallback(async (productId: number) => {
+    const handleRemoveFromPreorderClick = useCallback(async (productId: number) => {
         openModal(null, 'confirm', {
             title: "Удалить из Корзины?",
             onConfirm: async () => {
                 try {
-                    const result = await removeFromCart(productId);    
+                    const result = await removeFromPreorder(productId);    
                     if (result.error) {
                         toast.error(result.error, toastConfig);
                     } else {
@@ -359,9 +290,9 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                 toast.success('Товар оставлен в Корзине', toastConfig);
             }
         });
-    }, [removeFromCart]);
+    }, [removeFromPreorder]);
 
-    const calculateCartTotalAmount = useCallback((products: IProduct[]): number => {
+    const calculatePreorderTotalAmount = useCallback((products: IProduct[]): number => {
         // console.log(products);
         return products.reduce((total, product) => {
             // Выбираем минимальную цену из доступных (акционная, ранговые скидки и т.д.)
@@ -385,14 +316,14 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     }, []);
 
     // Использование:
-    // console.log(cartProducts);
-    // console.log(calculateCartTotalAmount(cartProducts));
-    const memoizedcartAmount = useMemo(() => calculateCartTotalAmount(cartProducts), [cartProducts]);   // это уже излишество, наверное...
-    const formattedAmount = useMemo(() => formatPrice(cartAmount), [cartAmount]);                       // это уже излишество, наверное...
-    const memoizedProducts = useMemo(() => cartProducts, [cartProducts]);
+    // console.log(preorderProducts);
+    // console.log(calculatePreorderTotalAmount(preorderProducts));
+    const memoizedpreorderAmount = useMemo(() => calculatePreorderTotalAmount(preorderProducts), [preorderProducts]);   // это уже излишество, наверное...
+    const formattedAmount = useMemo(() => formatPrice(preorderAmount), [preorderAmount]);                       // это уже излишество, наверное...
+    const memoizedProducts = useMemo(() => preorderProducts, [preorderProducts]);
 
     // Создаем ref для хранения актуальных данных Покупателя
-    const customerDataRef = useRef<TCartCustomer>(customerData);
+    const customerDataRef = useRef<TPreorderCustomer>(customerData);
     customerDataRef.current = customerData; // Всегда актуальное значение
 
     const deliveryAddressRef = useRef<string>(deliveryData.address);
@@ -446,7 +377,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         openModal(
             <IndividualCustomerDataModalForm 
                 initialDeliveryAddress={deliveryData.address}
-                initialCustomerData={customerData as TCartIndividualCustomer}
+                initialCustomerData={customerData as TPreorderIndividualCustomer}
                 onSubmit={(data) => {       //  при сабмите формы физлица обновляем:
                     
                     // 3. Обновляем ref-ы (чтобы модалка получила актуальные данные)
@@ -487,7 +418,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         openModal(
             <LegalCustomerDataModalForm 
                 initialDeliveryAddress={deliveryData.address}
-                initialCustomerData={customerData as TCartLegalCustomer}
+                initialCustomerData={customerData as TPreorderLegalCustomer}
                 onSubmit={(data) => {       //  при сабмите формы юрлица обновляем:
                     
                     // 3. Обновляем ref-ы (чтобы модалка получила актуальные данные)
@@ -524,12 +455,12 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         
         openModal(
           <OrderConfirmation
-            products={cartProducts}
+            products={preorderProducts}
             deliveryData={deliveryDataRef.current}
             currentDeliveryAddress={deliveryAddressRef.current}
             customerData={customerDataRef.current} // Берем из ref
-            cartTotal={cartTotal}
-            cartAmount={cartAmount}
+            preorderTotal={preorderTotal}
+            preorderAmount={preorderAmount}
             regularTotal={regularAmount}
             onReserve={() => handleOrderAction('reserve', customerData)}
             onPay={() => handleOrderAction('pay', customerData)}
@@ -571,7 +502,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     
     const handleOrderAction = async (
         actionType: TOrderAction,
-        customerData: TCartCustomer
+        customerData: TPreorderCustomer
     ) => {
         
         if (submittingRef.current) return; // Защита от повторного нажатия
@@ -579,7 +510,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         
         try {
             const orderData = {
-                products: cartProducts.map(p => ({
+                products: preorderProducts.map(p => ({
                     id: p.id,
                     name: p.title,
                     quantity: p.quantity ?? 0,
@@ -595,8 +526,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     ...customerDataRef.current,
                 },
                 delivery: deliveryDataRef.current,
-                products_amount: cartAmount,
-                total: cartAmount + deliveryData.price,
+                products_amount: preorderAmount,
+                total: preorderAmount + deliveryData.price,
                 legal_agreement: isAgreed
             };
 
@@ -615,7 +546,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     setTimeout(() => {
                         // router.visit(res?.redirect || '/'); // Редирект через Inertia
                         addOrder(res.orderId);
-                        clearCart();                        // Обновляем стейт. Очищаем корзину
+                        clearPreorder();                        // Обновляем стейт. Очищаем корзину
                         if(res.redirect) {
                             // Для Robokassa и внешних сервисов
                             window.location.href = res.redirect; 
@@ -632,7 +563,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         }
     };
 
-    // console.log('cartAmount', cartAmount);
+    // console.log('preorderAmount', preorderAmount);
 
     return (    
         <MainLayout>
@@ -646,7 +577,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             <NavBarBreadCrumb />
 
             <div className="basket-wrapper">
-                <h1 className="basketTitle padding-top24px">Корзина покупок ({ cartTotal }) .</h1>
+                <h1 className="basketTitle padding-top24px">Корзина покупок ({ preorderTotal }) .</h1>
                 
                 {error && (
                     <div className="error-message">
@@ -656,13 +587,13 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
 
                 {isLoading ? (
                     <div></div>
-                ) : cartTotal > 0 ? (
+                ) : preorderTotal > 0 ? (
                     <>
                         
                         {/* Рисуем блок расчёта стоимости корзины без учёта стоимости доставки */}
                         <div className="basket-res__no-delivery">
-                            <ProductsQuantityInCart cartTotal={cartTotal} />
-                            <h3 className="basketPriceNoDeliveryBlockH3elemTotalAmount">на сумму: {formatPrice(cartAmount)} <sup>₽</sup></h3>
+                            <ProductsQuantityInPreorder preorderTotal={preorderTotal} />
+                            <h3 className="basketPriceNoDeliveryBlockH3elemTotalAmount">на сумму: {formatPrice(preorderAmount)} <sup>₽</sup></h3>
                         </div>
                         
                         {deliveryData.transportId == 0 && (
@@ -680,7 +611,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                         {deliveryData.price >= 0 && deliveryData.transportId > 0 && (
                         <>
                         <section>
-                            {cartAmount < regularAmount ? (
+                            {preorderAmount < regularAmount ? (
                                 <>
                                     {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (
                                         <>
@@ -689,7 +620,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                                 <h3 className='basketTotalAmountBlockH3elem2 line-through'>
                                                 {formatPrice(deliveryData.price + regularAmount)}
                                                 </h3>
-                                                <h3 className="color-red">{formatPrice(deliveryData.price + cartAmount)}&nbsp;<sup>&#8381;</sup></h3>
+                                                <h3 className="color-red">{formatPrice(deliveryData.price + preorderAmount)}&nbsp;<sup>&#8381;</sup></h3>
                                             </div>
                                         </>
                                     )
@@ -757,10 +688,10 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                         </>
                         )}
 
-                        {regularAmount > cartAmount && (
+                        {regularAmount > preorderAmount && (
                             <DiscountSummary 
                                 regularTotal={regularAmount}
-                                discountedTotal={cartAmount}
+                                discountedTotal={preorderAmount}
                             />
                         )}
 
@@ -778,7 +709,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                         <div className="basket-res__total">
                                             <p>сегодня в продаже: <span className="basket-quantity__span-tag" data-soldprodid={ product.id }>{ product.on_sale }</span> шт.</p>
                                             <div className="basket-delete__product-div">
-                                                <img className="basket-img__remove cursor-pointer"  onClick={() => handleRemoveFromCartClick(product.id)} data-removefrombasket={ product.id } src="/storage/icons/icon-trash.png" alt="icon-trash" title="Удалить товар из корзины" />
+                                                <img className="basket-img__remove cursor-pointer"  onClick={() => handleRemoveFromPreorderClick(product.id)} data-removefrombasket={ product.id } src="/storage/icons/icon-trash.png" alt="icon-trash" title="Удалить товар из корзины" />
                                                 <img className="basket-img__addtofavorites cursor-pointer"  onClick={() => handleFavoriteClick(product.id)} data-addtofavoritesfrombasketid={ product.id } src="/storage/icons/favorite.png" alt="icon-favorites" title="Добавить выбранный товар в Избранное" />
                                             </div> 
                                         </div>
@@ -836,9 +767,9 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                                     prodTitle={ product.title }
                                                     value={product.quantity ?? 0}
                                                     on_sale={product.on_sale ?? 0}
-                                                    updateCart={ updateCart }
+                                                    updatePreorder={ updatePreorder }
                                                     addToFavorites={ addToFavorites }
-                                                    removeFromCart={ removeFromCart }
+                                                    removeFromPreorder={ removeFromPreorder }
                                                 />
                                                 <a className="basket-row__priceValue">&nbsp;&nbsp;шт.,&nbsp;&nbsp;</a>
                                                 <a className="basket-row__priceValue">&nbsp;&nbsp;на сумму:&nbsp;&nbsp;</a>
@@ -862,7 +793,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     </>
 
                 ) : (
-                    <div className="empty-cart">
+                    <div className="empty-preorder">
                         Корзина пока пустая
                     </div>
                 )}
@@ -872,4 +803,4 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     );      
 };
 
-export default CartPage;
+export default Preorder;
