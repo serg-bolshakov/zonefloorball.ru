@@ -196,19 +196,19 @@ const Orders: React.FC<IOrdersProps> = ({
 
             <div className="orders-container">
                 <h1 className='margin-bottom12px'>История заказов</h1>
-                <div className="d-flex aline-items-center">
+                <div className="payment-buttons-grid margin-tb12px">
                     
                     <Link 
                         href="/products/catalog" 
                         as="button"
-                        className="back-btn"
+                        className="payment-button"
                         method="get"
                         replace // Важно! Не добавляет новую запись в историю
                     >
                         ← в главное меню
                     </Link>
 
-                    <Link href="/profile/products-table"><button className="order-confirmation__submit-btn primary">Создать новый заказ</button></Link>
+                    <Link href="/profile/products-table"><button className="payment-button">Создать новый заказ</button></Link>
                 </div>
 
                 {orders.meta.last_page > 1 && (
