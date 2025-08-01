@@ -679,7 +679,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                         {/* заводим блок расчёта итоговой суммы к оплате: */}
                         {deliveryData.price >= 0 && deliveryData.transportId > 0 && (
                         <>
-                        <section>
+                            <section>
                             {cartAmount < regularAmount ? (
                                 <>
                                     {(!(deliveryData.price === 0 && deliveryData.transportId === 3)) && (

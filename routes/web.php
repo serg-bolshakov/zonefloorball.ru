@@ -99,8 +99,8 @@ Route::middleware('web')->group(function () {
 
 // Маршруты для Inertia.js
 Route::match(['get', 'post'], '/', [IndexReactController::class, 'index'])->name('home');
-Route::match(['get', 'post'], '/products/cart', [CartController::class, 'index']);          // Обычная корзина
-Route::match(['get', 'post'], '/products/preorder', [PreorderController::class, 'index']);  // Предзаказы
+Route::match(['get', 'post'], '/products/cart', [CartController::class, 'index']);                                              // Обычная корзина
+Route::match(['get', 'post'], '/products/preorder', [PreorderController::class, 'index'])->middleware(['auth', 'verified']);    // Предзаказы
 Route::match(['get', 'post'], '/products/{category?}', [ProductController::class, 'index']);
 Route::match(['get', 'post'], '/products/card/{prodUrlSemantic}', [ProductCardController::class, 'index']);
 Route::match(['get', 'post'], '/products/basket', [BasketController::class, 'show']);

@@ -16,7 +16,7 @@ class PreorderController extends Controller
 {    
     public function index() {
         try {
-            return Inertia::render('PreorderPage', [
+            return Inertia::render('Preorder', [
                 'title' => 'Оформление предзаказа',
                 'robots' => 'NOINDEX,NOFOLLOW',
                 'description' => '',

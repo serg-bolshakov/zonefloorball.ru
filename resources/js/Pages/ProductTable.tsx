@@ -17,6 +17,7 @@ import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import MainLayout from '@/Layouts/MainLayout';
 import { Helmet } from 'react-helmet';
 import { TableQuantityControl } from '@/Components/ProductOrderTable/TableQuantityControl';
+import { TMode } from '@/Components/OrderProcess/OrderProcess';
 
 interface ProductTableProps {
     title: string;
@@ -33,7 +34,7 @@ interface ProductTableProps {
     sortOrder?: string;
     search: string;
     searchType: 'article' | 'title';    
-    tableMode: 'cart' | 'preorder';     // 'cart' — добавление в обычную корзину. 'preorder' — добавление в предзаказ.
+    tableMode: TMode;                   // 'cart' — добавление в обычную корзину. 'preorder' — добавление в предзаказ.
     categoryId?: number | null;
     categoryInfo?: ICategoryItemFromDB;
 }
@@ -362,12 +363,12 @@ const ProductTable: React.FC<ProductTableProps> = ({
     };
 
     // console.log(getMainCategories());
-    console.log('products', products);
-    console.log('cart', cart);
-    console.log('preorder', preorder);
-    console.log('cartQuantities', cartQuantities);
-    console.log('preorderQuantities', preorderQuantities);
-    console.log('tableMode', tableMode);
+    // console.log('products', products);
+    // console.log('cart', cart);
+    // console.log('preorder', preorder);
+    // console.log('cartQuantities', cartQuantities);
+    // console.log('preorderQuantities', preorderQuantities);
+    // console.log('tableMode', tableMode);
 
 
     return (
@@ -656,8 +657,6 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                                     {tableMode === 'preorder' && (
                                                         <div className="d-flex margin-bottom8px">
                                                             {(product.price_with_rank_discount && product.price_preorder && product.price_preorder < product.price_with_rank_discount) ? 
-                                                            // здесь логика следующая: product.actual_price - есть всегда - значение равно регулярной цене или сцециальной акционной цене (что из них меньше)
-                                                            // product.price_with_rank_discount !== null - появляется только в том случае, если пользователь авторизован и такая цена меньше product.actual_price - выводим ее!
                                                             (
                                                                 <div className='d-flex margin-bottom8px'>
                                                                     <span  className="color-red margin-bottom8px">{formatPrice(product.price_preorder ?? 0)}&nbsp;<sup>&#8381;</sup></span>

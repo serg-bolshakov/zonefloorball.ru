@@ -103,6 +103,7 @@ i { font-style: italic; }
 .w-275px { width: 275px; }
 .max-w-250px { max-width: 250px; }
 .max-w-285px { max-width: 285px; }
+.max-w-318px { max-width: 318px; }
 .max-w-320px { max-width: 320px; }
 .min-w-250px { min-width: 250px; }
 
@@ -5538,9 +5539,8 @@ thead th:hover::after {
   align-items: center;
   justify-content: center;
   width: 100%; /* Занимаем всю ширину ячейки */
-  padding: 10px 0;
+  padding: 8px 0;
   text-align: center;
-  background: #2196F3;
   color: white;
   border: none;
   border-radius: 4px;
@@ -5552,8 +5552,23 @@ thead th:hover::after {
   transition: all 0.2s ease;
   white-space: nowrap;
   
+  &[data-color="green"] {
+    background: #5cb85c;
+    &:hover { background: #0b7dda; }
+  }
+
+  &[data-color="grey"] {
+    background:#aaa;
+    &:hover { background: #0b7dda; }
+  }
+  
+  &[data-color="blue"] {
+    background: #2196F3;
+    &:hover { background: #1976D2; }
+  }
+
   &:hover {
-    background: #0b7dda;
+    /* background: #0b7dda; */
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
