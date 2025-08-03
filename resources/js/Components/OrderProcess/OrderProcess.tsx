@@ -28,7 +28,7 @@ import useAppContext from "@/Hooks/useAppContext";
     import { TUser } from "@/Types/types";
     import GuestCustomerDataModalForm from "@/Components/OrderCheckoutModals/GuestCustomerDataModalForm";
     import { ITransport, IDeliverySelectionData } from "@/Types/delivery";
-    import OrderConfirmation from "@/Components/OrderCheckoutModals/OrderConfirmation";
+    import OrderProcessConfirmation from "./OrderProcessConfirmation";
     import { IIndividualUser, IOrgUser } from "@/Types/types";
     import useCreateOrder from "@/Hooks/useCreateOrder";
     import { router } from '@inertiajs/react';
@@ -55,7 +55,6 @@ interface IOrderProcessProps {
 }
 
 export const OrderProcess = ({ mode, title, robots, description, keywords, transports }: IOrderProcessProps) => {
-  // Всё, что можно обобщить
 
     // Функция для склонения слова "товар"
     const getProductWord = (quantity: number): string => {
@@ -75,15 +74,8 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
     const { openModal, closeModal } = useModal();
     const { user } = useAppContext(); 
 
-    const [cartProducts, setCartProducts] = useState<IProduct[]>([]);
-    const [preorderProducts, setPreorderProducts] = useState<IProduct[]>([]);
-    
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-
-    const [cartAmount, setCartAmount]         = useState<number>(0);
-    const [preorderAmount, setPreorderAmount] = useState<number>(0);
-    const [regularAmount, setRegularAmount]   = useState<number>(0); // Сумма без скидок
     
     const initialDeliveryData: IDeliverySelectionData = {        // initialDeliveryData можно переиспользовать (например, для сброса)...
         transportId: 0,
@@ -103,6 +95,10 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
             deliveryData: { address?: string } = {}
         ): TCartCustomer => {
           
+            console.log('Инициализация пользователя в приложении. user на входе:', user);
+            console.log('Инициализация пользователя в приложении. user физлицо?:', isIndividualUser(user));
+            console.log('Инициализация пользователя в приложении. user юрлицо?:', isLegalUser(user));
+            
             if (isIndividualUser(user)) {       // Теперь TS знает, что user - IIndividualUser
                 return {
                     type: 'individual',
@@ -140,7 +136,7 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
         };
           
     const [customerData, setCustomerData] = useState<TCartCustomer>(getInitialCustomerData(user));
-    // console.log('CartPage customerData', customerData);
+    // console.log('OrderProcess customerData. Определение юзера при инициализации', customerData);
 
     const toastConfig = {
         position: "top-right" as const,
@@ -207,14 +203,15 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
         setIsAgreed(newValue);
     };
 
+    const [currentProducts, setCurrentProducts] = useState<IProduct[]>([]);
+    const [currentAmount, setCurrentAmount]     = useState(0);
+    const [regularAmount, setRegularAmount]     = useState<number>(0); // Сумма без скидок
+
     // Выбираем данные в зависимости от режима
-        const currentItems = mode === 'cart' ? cart           : preorder;
         const currentTotal = mode === 'cart' ? cartTotal      : preorderTotal;
-        const currentAmount= mode === 'cart' ? cartAmount     : preorderAmount;
         const updateItems  = mode === 'cart' ? updateCart     : updatePreorder;
         const removeItem   = mode === 'cart' ? removeFromCart : removeFromPreorder;
         const clearAll     = mode === 'cart' ? clearCart      : clearPreorder;
-        const tableLink    = mode === 'cart' ? clearCart      : clearPreorder;
 
     // Выносим тексты в константы для удобства
         const MODE_TEXTS = {
@@ -231,6 +228,20 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                 errorRemove: "Не удалось удалить из Предзаказа",
                 remainText: "Товар оставлен в Предзаказе",
                 availability: "доступно в предзаказ"
+            }
+        };
+
+    // Конфигурация режимов
+        const modeConfig = {
+            cart: {
+                apiEndpoint: API_ENDPOINTS.CART,
+                sourceData: cart,
+                total: cartTotal
+            },
+            preorder: {
+                apiEndpoint: API_ENDPOINTS.PREORDER,
+                sourceData: preorder,
+                total: preorderTotal
             }
         };
 
@@ -276,18 +287,22 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
     }, []);
 
     useEffect(() => {
+        const { apiEndpoint, sourceData, total } = modeConfig[mode];
+        console.log('useEffect, apiEndpoint', apiEndpoint);
+        console.log('useEffect, sourceData', sourceData);
+        console.log('useEffect, total', total);
         const controller = new AbortController; // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
         // создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
         const signal = controller.signal;       // это объект AbortSignal, который передаётся в axios (или fetch).
 
-        if(preorderTotal === 0) {
-            setPreorderProducts([]);
+        if(total === 0) {
+            setCurrentProducts([]);
             return;
         }
 
-        const loadPreorder = async () => {
-            if(!preorderTotal) {
-                setPreorderProducts([]);
+        const loadProducts = async () => {
+            if(!total) {
+                setCurrentProducts([]);
                 return;
             }
             setIsLoading(true);
@@ -295,8 +310,8 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
 
             try {
                 // console.log(preorder);
-                const response = await axios.post(API_ENDPOINTS.PREORDER, {
-                    products: preorder, // Отправляем текущий предзаказ
+                const response = await axios.post(apiEndpoint, { 
+                    products: sourceData , // Отправляем текущий предзаказ/корзину
                 }, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
@@ -307,14 +322,15 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
 
                 // Проверяем, не был ли запрос отменён
                 if (!signal.aborted) {
-                    setPreorderProducts(response.data.products?.data || []);
+                    const products = response.data.products?.data || [];
+                    console.log('products', products);
+                    setCurrentProducts(products);
                 }
-                // console.log('OrderProcess.tsx, useEffect, response', response.data);
             } catch (error) {
                 // Игнорируем ошибку, если запрос был отменён
                 if (!axios.isCancel(error)) {
                     setError(getErrorMessage(error));
-                    toast.error('Ошибка загрузки товаров предзаказа:' + getErrorMessage(error), toastConfig);
+                    toast.error(`Ошибка загрузки (${mode}): ${getErrorMessage(error)}`, toastConfig);
                 }
             } finally {
                 if (!signal.aborted) {
@@ -323,44 +339,42 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
             }
         };
 
-        loadPreorder();
+        loadProducts();
 
         // Функция очистки: отменяем запрос при размонтировании или изменении cart
-        return () => {
-            controller.abort();
-        };
-
-    }, [preorder]);
+        return () => controller.abort();
+    }, [user, mode, modeConfig[mode].sourceData]);
 
     useEffect(() => {
-        if (preorderProducts.length > 0) {
-
-          const regular = preorderProducts.reduce((sum, p) => sum + (p.price_regular ?? 0) * (p.quantity ?? 0), 0);
-          const discounted = calculateTotalAmount(preorderProducts, mode);
-          console.log('OrderProcess.tsx, useEffect, preorderProducts', preorderProducts);
-          console.log('OrderProcess.tsx, useEffect, discounted', discounted);
-          setRegularAmount(regular);
-          setPreorderAmount(discounted);
+        if (currentProducts.length > 0) {
+            console.log('mode', mode);
+            const regular = currentProducts.reduce((sum, p) => sum + (p.price_regular ?? 0) * (p.quantity ?? 0), 0);
+            const discounted = calculateTotalAmount(currentProducts, mode);
+            
+            setRegularAmount(regular);
+            setCurrentAmount(discounted);
         }
-    }, [preorderProducts]);
+    }, [mode, currentProducts]);
 
     useEffect(() => {
+        // console.log('Инициализация customerData. Текущий user:', user);
         const newCustomerData = getInitialCustomerData(user);
         setIsAgreed(!!user && !user.needReconfirm);
         setIsNeedReconfirm(user?.needReconfirm || false);
+        // console.log('Новые данные покупателя:', newCustomerData);
         setCustomerData(newCustomerData);
     }, [user]);
 
     // Создаем ref для хранения актуальных данных Покупателя
     const customerDataRef = useRef<TCartCustomer>(customerData);
     customerDataRef.current = customerData; // Всегда актуальное значение
-
+    
     const deliveryAddressRef = useRef<string>(deliveryData.address);
     deliveryAddressRef.current = deliveryData.address;
-
+    
     const deliveryDataRef = useRef<IDeliverySelectionData>(deliveryData);
-    deliveryDataRef.current = deliveryData;    
-
+    deliveryDataRef.current = deliveryData;
+    
     // Удаление товарной позиции из Корзины / Предзаказа
     const handleRemoveClick = useCallback(async (productId: number) => {
         const modeTexts = MODE_TEXTS[mode];
@@ -475,10 +489,13 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
     };
 
     // При оформлении заказа авторизованным юридическим лицом: Модалка с формой данных авторизованного юридического лица
+    // const handleContinueAsLegal = useCallback(() => {
     const handleContinueAsLegal = () => {
         closeModal();
-        // console.log('Customer Data', customerData);
-        // console.log('deliveryData.address', deliveryData.address);
+        // console.log('Обработчкик оформления заказа/предзаказа. Данные покупателя на входе', customerData);
+        // console.log('Обработчкик оформления заказа/предзаказа. Адрес доставки на входе', deliveryData.address);
+        // console.log('Обработчкик оформления заказа/предзаказа. Текущий выбранный режим на входе', mode);
+        
         openModal(
             <LegalCustomerDataModalForm 
                 initialDeliveryAddress={deliveryData.address}
@@ -513,19 +530,20 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                 onCancel={() => handleCancelClick()}
             />
         )
-    };
+    }
+    // }, [user, deliveryData.address]); // Зависимости;
 
     const openOrderConfirmationModal = () => {
-        
         openModal(
-          <OrderConfirmation
-            products={cartProducts}
+          <OrderProcessConfirmation
+            products={currentProducts}
             deliveryData={deliveryDataRef.current}
             currentDeliveryAddress={deliveryAddressRef.current}
             customerData={customerDataRef.current} // Берем из ref
-            cartTotal={cartTotal}
-            cartAmount={cartAmount}
+            currentTotal={currentTotal}
+            currentAmount={currentAmount}
             regularTotal={regularAmount}
+            mode={mode}
             onReserve={() => handleOrderAction('reserve', customerData)}
             onPay={() => handleOrderAction('pay', customerData)}
             onPreorder={() => handleOrderAction('preorder', customerData)}
@@ -535,12 +553,18 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
         );
     };
     
-
     // Обработчик кнопки "Оформить заказ/Предзаказ"
     const handleCheckoutClick = useCallback(() => {
+        // console.log('Обработчик кнопки "Оформить заказ/Предзаказ');
+        // console.log('Пользователь', user);
+        // console.log('Физическое лицо?', isIndividualUser(user));
+        // console.log('Юридическое лицо?', isLegalUser(user));
         if (mode === 'cart') {
             // Логика для обычного заказа
-            console.log('Оформление заказа');
+            // console.log('Оформление обычного заказа.');
+            // console.log('Пользователь', user);
+            // console.log('Физическое лицо?', isIndividualUser(user));
+            // console.log('Юридическое лицо?', isLegalUser(user));
             if (user) {                         // Авторизованный пользователь
                 if (isIndividualUser(user)) { 
                     handleContinueAsIndividual(); 
@@ -557,6 +581,10 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
             }
         } else {
             // Логика для предзаказа
+            // console.log('Оформление предзаказа');
+            // console.log('Пользователь', user);
+            // console.log('Физическое лицо?', isIndividualUser(user));
+            // console.log('Юридическое лицо?', isLegalUser(user));
             if (user) {                         // Авторизованный пользователь
                 if (isIndividualUser(user)) { 
                     handleContinueAsIndividual(); 
@@ -568,7 +596,12 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                 handleCancelClick();
             }
         }
-    }, [mode]); // Зависимость от mode    
+    }, [mode, user, customerData, deliveryData.address]); 
+    
+    // Логируем при изменении зависимостей
+    useEffect(() => {
+        // console.log('Функция handleCheckoutClick обновлена! user:', user);
+    }, [handleCheckoutClick]);
 
     // Обработчик кнопки "Отмена"
     const handleCancelClick = () => {
@@ -587,10 +620,21 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
         
         if (submittingRef.current) return; // Защита от повторного нажатия
         submittingRef.current = true;
+
+        // Дополнительные проверки:
+        if (!currentProducts.length) {
+            toast.error('Нет товаров для оформления');
+            return;
+        }
+
+        if (actionType === 'preorder' && !user) {
+            toast.error('Требуется авторизация для предзаказов');
+            return;
+        }
         
         try {
             const orderData = {
-                products: cartProducts.map(p => ({
+                products: currentProducts.map(p => ({
                     id: p.id,
                     name: p.title,
                     quantity: p.quantity ?? 0,
@@ -601,13 +645,14 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                     percent_of_rank_discount: p.percent_of_rank_discount ?? 0,      // имеет значение только у авторизованных пользователей: размер скидки в процентах (int) согласно рангу пользователя
                     summa_of_action_discount: p.summa_of_action_discount ?? 0,      // имеет значение только у авторизованных пользователей, если применена скидка на товар (не скидка по рангу)
                     price_special: p.price_special ?? 0,                            // price_special есть только у авторизованных пользователей и равна = price: p.price_actual для гостей и всех, всех, всех
+                    price_preorder: p.price_preorder ?? 0,
                 })),
                 customer: {
                     ...customerDataRef.current,
                 },
                 delivery: deliveryDataRef.current,
-                products_amount: cartAmount,
-                total: cartAmount + deliveryData.price,
+                products_amount: currentAmount,
+                total: currentAmount + deliveryData.price,
                 legal_agreement: isAgreed
             };
 
@@ -619,17 +664,17 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                 
                     // 1. Закрываем модалку
                     closeModal();
-                    toast.success(res?.message || `Заказ успешно ${actionType === 'pay' ? 'оплачен' : 'оформлен'}`);
+                    toast.success(res?.message || (actionType === 'preorder' ? 'Предварительный заказ успешно оформлен' : `Заказ успешно ${actionType === 'pay' ? 'оплачен' : 'оформлен'}`));
                         // Не сбрасываем isSubmitting тут - форма уже закрыта
 
-                    // 3. Редирект через 1.5 || 2 секунды + Очистка корзины...
+                    // 3. Редирект через 1.5 || 2 секунды + Очистка корзины/предзаказа...
                     setTimeout(() => {
-                        // router.visit(res?.redirect || '/'); // Редирект через Inertia
                         addOrder(res.orderId);
-                        clearCart();                        // Обновляем стейт. Очищаем корзину
+                        actionType === 'preorder' ? clearPreorder() : clearCart();                        // Обновляем стейт. Очищаем корзину / предзаказ
                         if(res.redirect) {
                             // Для Robokassa и внешних сервисов
-                            window.location.href = res.redirect; 
+                            // window.location.href = res.redirect;
+                            window.location.assign(res.redirect); // Лучше чем href или хуже? Будем смотреть...
                         } else {
                             router.visit('/'); // Внутренний переход
                         }
@@ -637,17 +682,28 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                 }
             });
         } catch (error) {
-            toast.error(`Ошибка при ${actionType === 'pay' ? 'оплате' : 'резервировании'}`);
+            const message = getErrorMessage(error);
+            toast.error(
+                actionType === 'preorder'
+                    ? `Ошибка: ${message} при оформлении предварительного заказа` 
+                    : `Ошибка: ${message} при ${actionType === 'pay' ? 'оплате' : 'резервировании'}`
+                );
+                console.error('OrderProcess (line 679) error:', error);
         } finally {
             submittingRef.current = false;
         }
     };
 
     const memoizedProducts = useMemo(() => {
-        const products = mode === 'cart' ? cartProducts : preorderProducts;
+        const products = currentProducts;
         return products.filter(p => p != null);                                 // Фильтрация null/undefined
-    }, [mode, cartProducts, preorderProducts]);                                 // При изменении mode произойдет пересчет значения.
+    }, [mode, currentProducts]);                                 // При изменении mode произойдет пересчет значения.
 
+    // console.log('Первоначальная загрузка страницы');
+    // console.log('Пользователь', user);
+    // console.log('Физическое лицо?', isIndividualUser(user));
+    // console.log('Юридическое лицо?', isLegalUser(user));
+    
   return (
     <MainLayout>
         <Helmet>
@@ -660,8 +716,11 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
         <NavBarBreadCrumb />
     
         <div className="basket-wrapper">
-            <h1 className="basketTitle padding-top24px">{mode === 'cart' ? `Корзина (${ cartTotal }) .` : `Предзаказ (${ preorderTotal }) .`}</h1>
-            
+            <div className="max-w-318px  padding-top8px">
+                <Link href="/profile/products-table?tableMode=preorder"><button className="payment-button" data-color="grey">←&nbsp;&nbsp;&nbsp;перейти в режим таблицы</button></Link>
+            </div>
+            <h1 className="basketTitle">{mode === 'cart' ? `Корзина (${ cartTotal }) .` : `Предзаказ (${ preorderTotal }) .`}</h1>
+
             {error && (
                 <div className="error-message">
                     Ошибка: {error}. Попробуйте обновить страницу.
@@ -675,15 +734,13 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                         {/* Рисуем блок расчёта стоимости предзаказа без учёта стоимости доставки */}
                         <div className="basket-res__no-delivery">
                             <h3>Всего {/* в {mode === 'cart' ? 'корзине' : 'предзаказе'} */}: <strong>{formatQuantity(currentTotal)}</strong> {getProductWord(currentTotal)},</h3>
-                            <h3 className="basketPriceNoDeliveryBlockH3elemTotalAmount">на сумму: {formatPrice(mode === 'cart' ? cartAmount : preorderAmount)} <sup>₽</sup></h3>
+                            <h3 className="basketPriceNoDeliveryBlockH3elemTotalAmount">на сумму: {formatPrice(currentAmount)} <sup>₽</sup></h3>
                         </div>
                         
                         {deliveryData.transportId == 0 && (
                             <>
+                                
                                 <div className="color-green h-28px l-h-24px">Для начала оформления {mode === 'cart' ? 'заказа' : 'предзаказа'} необходимо выбрать способ доставки/получения...</div>
-                                <div className="max-w-318px margin-bottom8px">
-                                    <Link href="/profile/products-table?tableMode=preorder"><button className="payment-button" data-color="grey">←&nbsp;&nbsp;&nbsp;перейти в режим таблицы</button></Link>
-                                </div>
                             </>
                         )}
 
@@ -769,11 +826,9 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                                                 mode={mode}
                                                 isPulsing={isAgreed}
                                             />
-
                                         </div>
                                     </section>
                                 )}  
-
                             </>
                         )}
 
@@ -879,12 +934,7 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                                                 <PriceBlockOrderProcessing 
                                                     key={`price-${mode}-${product.id}`}
                                                     mode={mode}
-                                                    product={{ 
-                                                        ...product,
-                                                        // quantity: product.quantity,
-                                                        // price_regular: product.price_regular,
-                                                        // price_actual: product.price_actual,
-                                                        // price_preorder: product.price_preorder
+                                                    product={{ ...product, // quantity: product.quantity, price_regular: product.price_regular, price_actual: product.price_actual, price_preorder: product.price_preorder
                                                     }}
                                                 />
                                                 
@@ -897,19 +947,20 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                         </div>
                     </>
                     ) : (
+                    // Кнопка-стрелка "Создать предзаказ"
                     <div className="orders-container">
                         <div className="payment-buttons-grid margin-tb12px">
                             <Link 
                                 href="/products/catalog" 
                                 as="button"
-                                className="payment-button"
+                                className="payment-button" data-color="green"
                                 method="get"
                                 replace // Важно! Не добавляет новую запись в историю
                             >
                                 ← в главное меню
                             </Link>
         
-                            <Link href="/profile/products-table?tableMode=preorder"><button className="payment-button">Создать предзаказ</button></Link>
+                            <Link href="/profile/products-table?tableMode=preorder"><button className="payment-button" data-color="green">Создать предзаказ</button></Link>
                         </div>
                     </div>
                 )

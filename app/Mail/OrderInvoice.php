@@ -184,7 +184,7 @@ class OrderInvoice extends Mailable
             
             // если цена идёт со скидкой, нужно сделать две цены в графе "Цена" - сверху актуальная, снизу - перечёркнутую
             if($item->price < $item->regular_price) {
-                $productDiscount = $item->applied_discount ?? $item->regular_price - $item->price; // с проверкой на null applied_discount (это поле пока не заполняем пока, как раз и должно быть null) - пока значение рассчитываем
+                $productDiscount = ($item->applied_discount ?? $item->regular_price - $item->price) * $item->quantity; // с проверкой на null applied_discount (это поле пока не заполняем пока, как раз и должно быть null) - пока значение рассчитываем
                 $productDiscountFormatted = number_format((float)$productDiscount, 0,",", " ");
                 $dataAboutGoodsForMailBody .= '<tr><td style="text-align: center;">' . $i . '</td><td>' . $productArticle . '</td><td>' . $productName . '</td><td style="text-align: center;">' . $item->quantity . '
                 &nbsp;шт.</td><td style="text-align: right;">' . $productPrice . '</sup></td><td style="text-align: right;">' . $productAmountFormatted . 

@@ -153,18 +153,18 @@ const LegalCustomerDataModalForm: React.FC<LegalCustomerDataModalForm> = ({
                     <motion.button 
                         whileHover={{ scale: 1.1 }}  
                         whileTap={{ scale: 0.9 }}
-                        animate={{
-                            scale: [1, 1.05, 0.95], // Пульсация
-                            transition: { 
-                            repeat: Infinity, 
-                            repeatDelay: 1,
-                            duration: 0.9 
-                            }
-                        }}
+                        // animate={{
+                        //     scale: [1, 1.05, 0.95], // Пульсация
+                        //     transition: { 
+                        //     repeat: Infinity, 
+                        //     repeatDelay: 1,
+                        //     duration: 0.9 
+                        //     }
+                        // }}
                         type='submit'
                         className="order-btn"
                     >
-                        Верно
+                        Вперёд
                     </motion.button>
                     
                 </div>

@@ -201,14 +201,14 @@ const Orders: React.FC<IOrdersProps> = ({
                     <Link 
                         href="/products/catalog" 
                         as="button"
-                        className="payment-button"
+                        className="payment-button" data-color="green"
                         method="get"
                         replace // Важно! Не добавляет новую запись в историю
                     >
                         ← в главное меню
                     </Link>
 
-                    <Link href="/profile/products-table"><button className="payment-button">Создать новый заказ</button></Link>
+                    <Link href="/profile/products-table"><button className="payment-button" data-color="green">Создать новый заказ</button></Link>
                 </div>
 
                 {orders.meta.last_page > 1 && (

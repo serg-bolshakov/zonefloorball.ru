@@ -1,4 +1,4 @@
-// resources/js/Components/OrderCheckoutModals/OrderConfirmation.tsx
+// resources/js/Components/OrderProcess/OrderProcessConfirmation.tsx
 import { IProduct } from "@/Types/types";
 import { IDeliverySelectionData } from "@/Types/delivery";
 import { TCartCustomer, TCartGuestCustomer, TCartIndividualCustomer, TCartLegalCustomer } from "@/Types/cart";
@@ -6,21 +6,21 @@ import useAppContext from "@/Hooks/useAppContext";
 import { formatPrice } from '@/Utils/priceFormatter';
 import ProductItem from "@/Components/Cart/ProductItem";
 import { motion } from 'framer-motion';
-// import { isGuest, isIndividual, isLegal } from '@/Types/types';
 import { isIndividualUser, isLegalUser } from "@/Types/types";
 import { GuestCustomerInfo } from "../Cart/OrderConfirmation/GuestCustomerInfo";
 import { IndividualCustomerInfo } from "../Cart/OrderConfirmation/IndividualCustomerInfo";
 import { LegalCustomerInfo } from "../Cart/OrderConfirmation/LegalCustomerInfo";
 import { useState } from "react";
 
-interface IOrderConfirmationProps {
+interface IOrderProcessConfirmationProps {
     products: IProduct[];
     deliveryData: IDeliverySelectionData;
     currentDeliveryAddress: string;
     customerData: TCartCustomer;
-    cartTotal: number;
-    cartAmount: number;
+    currentTotal: number;
+    currentAmount: number;
     regularTotal: number;
+    mode: 'cart' | 'preorder';
     onReserve: () => Promise<void>;
     onPay: () => Promise<void>;
     onPreorder: () => Promise<void>;
@@ -28,14 +28,15 @@ interface IOrderConfirmationProps {
     onCancel: () => void;
 }
 
-const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
+const OrderProcessConfirmation: React.FC<IOrderProcessConfirmationProps> = ({
     products,
     deliveryData,
     currentDeliveryAddress,
     customerData,
-    cartTotal,
-    cartAmount,
+    currentTotal,
+    currentAmount,
     regularTotal,
+    mode,
     onReserve,
     onPay,
     onPreorder, 
@@ -48,10 +49,23 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     const handleAction = async (type: 'pay' | 'reserve' | 'preorder') => {
         if (currentAction) return;
         setCurrentAction(type);
+
         try {
-            await (type === 'pay' ? onPay() : onReserve());
+            switch (type) {
+                case 'pay':
+                    await onPay();
+                    break;
+                case 'reserve':
+                    await onReserve();
+                    break;
+                case 'preorder':
+                    await onPreorder();
+                    break;
+                default:
+                    throw new Error(`Неизвестный тип действия: ${type}`);
+            }
         } finally {
-            setCurrentAction('preorder');
+            setCurrentAction(null);
         }
     };
 
@@ -59,17 +73,18 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     const isProcessing = currentAction !== null;
     const isPaying = currentAction === 'pay';
     const isReserving = currentAction === 'reserve';
+    const isPreordering = currentAction === 'preorder';
 
     const { user } = useAppContext();
     
     const deliveryText = deliveryData.transportId === 1 
-        ? `${currentDeliveryAddress}` 
+        ? `Самовывоз. Пункт выдачи заказов: ${currentDeliveryAddress}` 
         : deliveryData.transportId === 2 
             ? `Доставка средствами продавца по городу Нижнему Новгороду по адресу: ${currentDeliveryAddress}`
             : `Доставка: ${currentDeliveryAddress}`
     ;
 
-    const discountAmount = regularTotal - cartAmount;
+    const discountAmount = regularTotal - currentAmount;
     const discountPercent = Math.round((discountAmount / regularTotal) * 100);
 
     // Добавим проверку для deliveryData.price:
@@ -110,8 +125,8 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                         />
                     ))}                    
                 </div>
-                <p className="order-form__total-price-p">Всего товаров ({cartTotal}) на сумму: {formatPrice(cartAmount)}&nbsp;<sup>&#8381;</sup></p>
-                {cartAmount < regularTotal && (
+                <p className="order-form__total-price-p">Всего товаров ({currentTotal}) на сумму: {formatPrice(currentAmount)}&nbsp;<sup>&#8381;</sup></p>
+                {currentAmount < regularTotal && (
                     <>
                         <div className="d-flex flex-sb flex-wrap fs12">
                             <p className="">Скидка на товары составила:</p>
@@ -144,7 +159,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                 {/* Итог */}
                 <div className="d-flex flex-sb margin-tb12px">
                     <span className="basket-order__product-clearance-span">Итого к оплате:</span>
-                    <span className="basket-order__product-clearance-span">{formatPrice(cartAmount + deliveryData.price)}&nbsp;<sup>₽</sup></span>
+                    <span className="basket-order__product-clearance-span">{formatPrice(currentAmount + deliveryData.price)}&nbsp;<sup>₽</sup></span>
                 </div>
 
                 {/* Кнопки действий */}
@@ -171,7 +186,19 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                         </motion.button>
                     )}
                     
-                    { (isIndividualUser(user) || isLegalUser(user)) && (
+                    { (isIndividualUser(user) || isLegalUser(user)) && mode === 'preorder' && (
+                        <motion.button 
+                            disabled={isProcessing}
+                            whileHover={isProcessing ? {} : buttonAnimation.hover}  
+                            whileTap={isProcessing ? {} : buttonAnimation.tap}
+                            onClick={() => handleAction('preorder')}
+                            className="order-confirmation__submit-btn"
+                        >
+                            { isLegalUser(user) && ( isPreordering ? 'Готовим предзаказ' : 'Предзаказ' )}
+                        </motion.button>
+                    )}
+
+                    { (isIndividualUser(user) || isLegalUser(user)) && mode === 'cart' && (
                         <motion.button 
                             disabled={isProcessing}
                             whileHover={isProcessing ? {} : buttonAnimation.hover}  
@@ -183,7 +210,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                             { isLegalUser(user) && ( isReserving ? 'Готовим счёт' : 'Счёт на оплату' )}
                         </motion.button>
                     )}
-                    { !isLegalUser(user) && (
+                    { !isLegalUser(user) && mode === 'cart' && (
                         <motion.button 
                             disabled={isProcessing}     // хотя... Framer Motion должен автоматически игнорировать анимации при disabled
                             {...(!isProcessing && {
@@ -203,4 +230,4 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     );
 };
 
-export default OrderConfirmation;
+export default OrderProcessConfirmation;

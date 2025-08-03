@@ -114,7 +114,7 @@ const MainShowcase = () => {
                         />
                         {/* Финальный фолбэк */}
                         <img
-                            src="/storage/images/main/images/showcase/showcase-eyewear.jpg"
+                            src="/storage/images/showcase/showcase-eyewear.jpg"
                             className="main-content__image"
                             alt="eyewear"
                         />
@@ -134,7 +134,7 @@ const MainShowcase = () => {
                         />
                         {/* Финальный фолбэк */}
                         <img
-                            src="/storage/images/main/images/main/apparel.jpg"
+                            src="/storage/images/main/apparel.jpg"
                             className="main-content__image"
                             alt="apparel"
                         />
@@ -154,7 +154,7 @@ const MainShowcase = () => {
                         />
                         {/* Финальный фолбэк */}
                         <img
-                            src="/storage/images/main/images/showcase/showcase-bags.jpg"
+                            src="/storage/images/showcase/showcase-bags.png"
                             className="main-content__image"
                             alt="bags"
                         />
@@ -174,7 +174,7 @@ const MainShowcase = () => {
                         />
                         {/* Финальный фолбэк */}
                         <img
-                            src="/storage/images/main/images/main/accessories.jpg"
+                            src="/storage/images/main/accessories.jpg"
                             className="main-content__image"
                             alt="accessories"
                         />
@@ -194,7 +194,7 @@ const MainShowcase = () => {
                         />
                         {/* Финальный фолбэк */}
                         <img
-                            src="/storage/images/main/images/main/basic-collection.jpg"
+                            src="/storage/images/main/basic-collection.jpg"
                             className="main-content__image"
                             alt="basic-collection"
                         />
