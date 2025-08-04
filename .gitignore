@@ -3,6 +3,7 @@
 /node_modules
 /public/build
 /public/hot
+/public/sitemap.xml
 # С косой чертой в конце будут игнорироваться только папки:
 /public/storage/invoices/**
 /public/storage
