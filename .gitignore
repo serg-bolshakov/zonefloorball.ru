@@ -1,9 +1,9 @@
 # Косая черта перед именем файла соответствует файлу в корне репозитория:
 /.phpunit.cache
-/sitemap.xml
 /node_modules
 /public/build
 /public/hot
+/sitemap.xml
 /public/sitemap.xml
 
 # С косой чертой в конце будут игнорироваться только папки:
