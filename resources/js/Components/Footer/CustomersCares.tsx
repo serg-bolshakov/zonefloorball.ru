@@ -18,7 +18,7 @@ const CustomersCares: React.FC = () => {
             </div>
             <div className="footer-auth__div">
                 <p className="margin-top12px text-align-left margin-bottom12px">
-                    Сайт в разработке. Только для информации.<br /><span className='color-red'>Открытие 31 июля 2025&nbsp;г.</span>
+                    Сайт в разработке. Только для информации.<br /><span className='color-red'>Открытие в августе 2025&nbsp;г.</span>
                 </p>
                 <p className="margin-top12px margin-bottom12px">Можно <a href="https://floorball.nnov.ru/htdocs/shop/">перейти на сайт&nbsp;</a>флорбольной экипировки<br />
                 или в наш флорбольный <a href="https://floorball.nnov.ru/market/floorball-sticks">Интернет-магазин&nbsp;</a></p>
