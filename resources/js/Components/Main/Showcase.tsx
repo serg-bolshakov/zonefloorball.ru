@@ -94,7 +94,7 @@ const MainShowcase = () => {
                         />
                         {/* Финальный фолбэк */}
                         <img
-                            src="/storage/images/showcase/showcase-goalkeepers.jpg"
+                            src="/storage/images/showcase/showcase-goalkeepers.png"
                             className="main-content__image"
                             alt="goalie"
                         />
@@ -114,7 +114,7 @@ const MainShowcase = () => {
                         />
                         {/* Финальный фолбэк */}
                         <img
-                            src="/storage/images/showcase/showcase-eyewear.jpg"
+                            src="/storage/images/showcase/showcase-eyewear.png"
                             className="main-content__image"
                             alt="eyewear"
                         />
