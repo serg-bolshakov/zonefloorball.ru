@@ -150,7 +150,6 @@ class StickProductCardService extends BaseProductCardService
 
         // фишка с выбором значений из массива любого уровня вложенности по ключу - отличная фишка - нужно будет подумать как использовать - пока комментирую...
         // $prodUrlSemanticArr = $this->extractUniqueUrls($propsVariants, 'prod_url_semantic');
-        // dd($prodUrlSemanticArr);
         return $propsVariants;
     }
     

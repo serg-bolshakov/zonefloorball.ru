@@ -42,7 +42,6 @@ jobs:
           # команда php artisan migrate --force применяет миграции без подтверждения... может быть это опасным? Надо подумать, что это именно то, что нам нужно...
           # после деплоя очищаем кэш Laravel-я, чтобы изменения вступили в силу. Добавляем в скрипт команду: php artisan optimize:clear
         run: |
-          run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
