@@ -17,5 +17,5 @@ Disallow: /checkout/
 Disallow: /compare/
 Clean-param: utm_source /products/
 
-# Задержка между запросами (в секундах)
-Crawl-delay: 2
+Sitemap: https://www.zonefloorball.ru/sitemap.xml
+Host: https://www.zonefloorball.ru

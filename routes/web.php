@@ -146,6 +146,11 @@ Route::get('/generate-sitemap', [SiteMapXmlController::class, 'generate']);
 // Маршрут для HTML-карты сайта:
 Route::get('/sitemap', [SiteMapController::class, 'index']);
 
+// XML-версия
+Route::get('/sitemap.xml', function() {
+    return response()->file(public_path('sitemap.xml'))->header('Content-Type', 'text/xml');
+});
+
 /*Route::post('/sync-orders-list', function (Request $request) {
     // Получаем данные из запроса
     // $ordersIdsArr = json_decode($request->input('orderslistfromlocalstorageinheader')); - это не работает! json_decode по умолчанию преобразует JSON-строку в объект (stdClass), а не в ассоциативный массив.
