@@ -58,7 +58,7 @@ jobs:
             --exclude='node_modules' \
             --exclude='.env' \
             --exclude='vite.config.js' \
-            --exclude='public/sitemap.xml' \ 
+            --exclude='public/sitemap.xml' \
             ./ $SSH_USERNAME@$SSH_HOST:$TEMP_DIR/
 
           # Копируем файлы из временной директории в целевую от имени fastuser
@@ -73,7 +73,7 @@ jobs:
               --exclude='public/storage' \
               --exclude='storage/app/public' \
               --exclude='resources/views/app.blade.php' \
-              --exclude='public/sitemap.xml' \ 
+              --exclude='public/sitemap.xml' \
               $TEMP_DIR/ /var/www/fastuser/data/www/zonefloorball.ru/
 
             # Удаляем временную директорию
