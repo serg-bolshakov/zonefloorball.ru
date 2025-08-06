@@ -14,6 +14,7 @@
             'product_id', 
             'order_id',
             'quantity',
+            'is_preorder',
             'expires_at',
             'paid_at',
             'cancelled_at'

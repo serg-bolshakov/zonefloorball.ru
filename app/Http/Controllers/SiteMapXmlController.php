@@ -33,12 +33,12 @@ class SiteMapXmlController extends Controller
 
                 foreach($category as $key=>$value) {                                
                     if(isset($value->prop_url_semantic) && ($key != 0)) { 
-                        $sitemap->add(Url::create("/products/catalog?{$category[0]->url_semantic}={$value->prop_title }&{$value->prop_title}={$value->prop_url_semantic}")
+                        $sitemap->add(Url::create("/products/catalog?{$category[0]->url_semantic}={$value->prop_title }\&{$value->prop_title}={$value->prop_url_semantic}")
                         ->setPriority(0.9)
                         ->setLastModificationDate($value->updated_at ?? now()));
                     
                     } elseif(!empty($value->model) && $key != 0) {
-                        $sitemap->add(Url::create("/products/catalog?{$value->url_semantic}=model&model={$value->model}")
+                        $sitemap->add(Url::create("/products/catalog?{$value->url_semantic}=model\&model={$value->model}")
                         ->setPriority(0.9)
                         ->setLastModificationDate($value->updated_at ?? now()));
 

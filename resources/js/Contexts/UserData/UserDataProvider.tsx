@@ -413,7 +413,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         }
     }, [user]);
 
-    const addToPreorder = useCallback(async (productId: number, quantity: number = 1) => {
+    const addToPreorder = useCallback(async (productId: number, quantity: number = 1, expectedDate: string  | null) => {
         try {
             //Валидация quantity:
             if (quantity <= 0 || !Number.isInteger(quantity)) {
@@ -451,7 +451,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 // console.log('quantity', newPreorder[productId]);
                 await axios.post('/preorder/items', { 
                     product_id: productId,
-                    quantity: newPreorder[productId]
+                    quantity: newPreorder[productId],
+                    expected_delivery_date: expectedDate
                 });    
             } else {
                 // localStorage.setItem('preorder', JSON.stringify(newPreorder));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.
@@ -530,7 +531,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         }
     }, [user, state.preorder]);  
 
-    const updatePreorder = useCallback(async (productId: number, quantity: number): Promise<{ preorderTotal: number; error?: string; }> => {
+    const updatePreorder = useCallback(async (productId: number, quantity: number, expectedDate: string | null): Promise<{ preorderTotal: number; error?: string; }> => {
         try {
             //Валидация quantity:
             if (quantity <= 0 || !Number.isInteger(quantity)) {
@@ -551,7 +552,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 console.log('quantity', newPreorder[productId]);
                 await axios.post('/preorder/items', { 
                     product_id: productId,
-                    quantity: newPreorder[productId]
+                    quantity: newPreorder[productId],
+                    expected_delivery_date: expectedDate
                 });    
             } else {
                 // localStorage.setItem('preorder', JSON.stringify(newPreorder));    // При этом автоматически генерируется событие storage для всех других вкладок, где открыт тот же сайт.

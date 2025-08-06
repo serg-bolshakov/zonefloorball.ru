@@ -1,2 +1,21 @@
 User-agent: *
-Disallow:
+
+Disallow: /admin/
+Disallow: /login/
+Disallow: /register/
+Disallow: /orders/
+Disallow: /api/
+Disallow: /storage/
+Disallow: /vendor/
+Disallow: /nova/
+Disallow: /telescope/
+Disallow: /horizon/
+Disallow: /*.env$
+Disallow: /*.git$
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /compare/
+Clean-param: utm_source /products/
+
+# Задержка между запросами (в секундах)
+Crawl-delay: 2

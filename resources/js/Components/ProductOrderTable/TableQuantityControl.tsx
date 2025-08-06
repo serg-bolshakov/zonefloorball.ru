@@ -29,9 +29,10 @@ interface TableQuantityControlProps {
     value: number;
     on_sale: number;
     on_preorder: number;
+    expectedDate: string | null;
     tableMode: 'cart' | 'preorder'; // Явно передаём режим
     updateCart: (prodId: number, value: number) => Promise<{ cartTotal: number; error?: string; }>;
-    updatePreorder: (prodId: number, value: number) => Promise<{ preorderTotal: number; error?: string }>;
+    updatePreorder: (prodId: number, value: number, expectedDate: string | null) => Promise<{ preorderTotal: number; error?: string }>;
     addToFavorites: (prodId: number) => Promise<{ favoritesTotal: number; error?: string }>;
     removeFromCart: (prodId: number) => Promise<{ cartTotal: number; error?: string; }>;
     removeFromPreorder: (prodId: number) => Promise<{ preorderTotal: number; error?: string }>; 
@@ -55,6 +56,7 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
          */
         on_sale,
         on_preorder,
+        expectedDate,
         tableMode,
         updateCart,
         updatePreorder,
@@ -145,7 +147,7 @@ export const TableQuantityControl: React.FC<TableQuantityControlProps> = ({
             } else {
                 result = newValue === 0
                     ? await removeFromPreorder(prodId)
-                    : await updatePreorder(prodId, newValue);
+                    : await updatePreorder(prodId, newValue, expectedDate);
             }
 
             if (result.error) throw new Error(result.error);

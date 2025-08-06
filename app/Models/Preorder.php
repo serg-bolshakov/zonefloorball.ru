@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Preorder extends Model {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'product_id', 'quantity', 'deleted_at'];
+    protected $fillable = ['user_id', 'product_id', 'quantity', 'expected_delivery_date', 'deleted_at'];
 
     // Отношения
     public function user(): BelongsTo {
@@ -23,8 +23,9 @@ class Preorder extends Model {
     // использовать осторожно! Лучше не использовать! 
     public static function rules(): array {
         return [
-            'product_id' => 'required|exists:products,id',
-            'quantity'   => 'required|integer|min:1', 
+            'product_id'                    => 'required|exists:products,id',
+            'quantity'                      => 'required|integer|min:1', 
+            'expected_delivery_date'        => 'nullable|date|after:today'
         ];
     }
 

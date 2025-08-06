@@ -20,7 +20,8 @@ interface IQuantityOrderProcessingControlProps {
     value: number;
     on_sale: number;
     on_preorder: number;
-    updateItems: (id: number, qty: number) => Promise<{ error?: string }>;
+    expectedDate: string | null;
+    updateItems: (id: number, qty: number, date: string | null) => Promise<{ error?: string }>;
     addToFavorites: (id: number) => Promise<{ favoritesTotal: number; error?: string }>;
     removeItem: (id: number) => Promise<{ error?: string }>;
     mode: TMode;
@@ -44,6 +45,7 @@ export const QuantityOrderProcessingControl: React.FC<IQuantityOrderProcessingCo
          */
         on_sale,
         on_preorder,
+        expectedDate,
         updateItems,
         addToFavorites,
         removeItem,
@@ -157,7 +159,7 @@ export const QuantityOrderProcessingControl: React.FC<IQuantityOrderProcessingCo
     };
 
     const handleQuantityUpdate = async (newValue: number) => {
-        const result = await updateItems(prodId, newValue);
+        const result = await updateItems(prodId, newValue, expectedDate);
         if (result.error) throw new Error(result.error);
         setLocalValue(newValue);
     };

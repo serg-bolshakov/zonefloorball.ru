@@ -64,17 +64,16 @@ trait FilterTrait {
     // выбираем доступные размеры для указанной категории товаров
     public function getFilterSizes($categoryId, $prodStatus = 1) {
 
-        if($prodStatus == 1) {
+        if($prodStatus == 2) {
             $whereFromProdStatus = '1';
         } else {
-            $whereFromProdStatus = "'1' OR products.product_status_id = $prodStatus";
+            $whereFromProdStatus = "products.product_status_id = $prodStatus";
         }
 
-        $filtersCategorySizes = DB::table('products')
+        $filtersCategorySizes = DB::table('products')->whereRaw($whereFromProdStatus)
             ->select('size_title', 'size_value', 'size_recommendation')
             ->join('sizes', 'products.size_id', '=', 'sizes.id') 
             ->where('sizes.category_id', '=', $categoryId) 
-            ->whereRaw($whereFromProdStatus) 
             ->distinct()
             ->get();
         return $filtersCategorySizes;
@@ -82,18 +81,17 @@ trait FilterTrait {
 
     public function getFiltersBladeStiffness($categoryId = 2, $prodStatus = 1){
 
-        if($prodStatus == 1) {
+        if($prodStatus == 2) {
             $whereFromProdStatus = '1';
         } else {
-            $whereFromProdStatus = "'1' OR products.product_status_id = $prodStatus";
+            $whereFromProdStatus = "products.product_status_id = $prodStatus";
         }
 
-        $filtersBladeStiffness = DB::table('products')
+        $filtersBladeStiffness = DB::table('products')->whereRaw($whereFromProdStatus)
             ->select('properties.prop_title', 'properties.prop_value', 'properties.prop_value_view')
             ->leftJoin('product_property', 'product_property.product_id', '=', 'products.id') 
             ->leftJoin('properties', 'properties.id', '=', 'product_property.property_id') 
             ->where('properties.prop_title', 'LIKE', 'blade_stiffness') 
-            ->whereRaw($whereFromProdStatus) 
             ->distinct()
             ->get();
         return $filtersBladeStiffness;
@@ -107,10 +105,10 @@ trait FilterTrait {
             $whereFromProdCat = "categories.id = $categoryId";
         } 
 
-        if($prodStatus == 1) {
+        if($prodStatus == 2) {
             $whereFromProdStatus = '1';
         } else {
-            $whereFromProdStatus = "'1' OR products.product_status_id = $prodStatus";
+            $whereFromProdStatus = "products.product_status_id = $prodStatus";
         }
         
         $brands = DB::table('brands')
@@ -127,18 +125,17 @@ trait FilterTrait {
     // жёсткость рукояток клюшек
     public function getFilterShaftFlexes($prodStatus = 1) {
 
-        if($prodStatus == 1) {
+        if($prodStatus == 2) {
             $whereFromProdStatus = '1';
         } else {
             $whereFromProdStatus = "products.product_status_id = $prodStatus";
         }
 
-        $filterShaftFlexes = DB::table('products')
+        $filterShaftFlexes = DB::table('products')->whereRaw($whereFromProdStatus)
             ->select('properties.prop_title', 'properties.prop_value', 'properties.prop_value_view')
             ->leftJoin('product_property', 'product_property.product_id', '=', 'products.id') 
             ->leftJoin('properties', 'properties.id', '=', 'product_property.property_id') 
             ->where('properties.prop_title', 'LIKE', 'shaft_flex') 
-            ->whereRaw($whereFromProdStatus) 
             ->distinct()
             ->get();
         return $filterShaftFlexes;
@@ -152,18 +149,17 @@ trait FilterTrait {
             $hook = 'hook_blade';
         }
 
-        if($prodStatus == 1) {
+        if($prodStatus == 2) {
             $whereFromProdStatus = '1';
         } else {
             $whereFromProdStatus = "products.product_status_id = $prodStatus";
         }
         
-        $filterHooks = DB::table('products')
+        $filterHooks = DB::table('products')->whereRaw($whereFromProdStatus)
             ->select('properties.prop_title', 'properties.prop_value', 'properties.prop_value_view')
             ->leftJoin('product_property', 'product_property.product_id', '=', 'products.id') 
             ->leftJoin('properties', 'properties.id', '=', 'product_property.property_id') 
             ->where('properties.prop_title', 'LIKE', "$hook") 
-            ->whereRaw($whereFromProdStatus) 
             ->distinct()
             ->get();
         return $filterHooks;
@@ -171,18 +167,17 @@ trait FilterTrait {
 
     // размер клюшек по длине рукоятки
     public function getFilterStickSizes($prodStatus = 1) {
-
-        if($prodStatus == 1) {
+        // Если впоследствии, мы реализуем возможность пользователю выбрать опцию типа: "Включить архивные модели", то передавая значение 2 (id - товара в архиве), мы убираем требование отслеживать статус товара... но не знаю...
+        if($prodStatus == 2) {
             $whereFromProdStatus = '1';
         } else {
             $whereFromProdStatus = "products.product_status_id = $prodStatus";
         }
 
-        $filterStickSizes = DB::table('products')
+        $filterStickSizes = DB::table('products')->whereRaw($whereFromProdStatus) 
             ->select('size_title', 'size_value', 'size_recommendation')
             ->join('sizes', 'products.size_id', '=', 'sizes.id') 
-            ->where('sizes.category_id', '=', '1') 
-            ->whereRaw($whereFromProdStatus) 
+            ->where('sizes.category_id', '=', '1')
             ->distinct()
             ->get();
         return $filterStickSizes;

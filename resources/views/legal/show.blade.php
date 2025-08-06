@@ -11,7 +11,7 @@
     <meta name="csrf-token" 	content="{{ csrf_token() }}">
     <link type="image/png" sizes="16x16" 	rel="icon" href="{{ asset('favicons/favicon-16x16.png')   }}">
     <link type="image/png" sizes="32x32" 	rel="icon" href="{{ asset('favicons/favicon-32x32.png')   }}">
-    <link type="image/png" sizes="96x96" 	rel="icon" href="{{ asset('favicons/favicon--96x96.png')  }}">
+    <link type="image/png" sizes="96x96" 	rel="icon" href="{{ asset('favicons/favicon-96x96.png')  }}">
     <link type="image/png" sizes="120x120" 	rel="icon" href="{{ asset('favicons/favicon-120x120.png') }}">
     <link type="image/png" sizes="256x256" 	rel="icon" href="{{ asset('favicons/favicon-256x256.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">

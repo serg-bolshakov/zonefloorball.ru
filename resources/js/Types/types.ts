@@ -338,7 +338,7 @@ export interface IProductItemFromDB {
     product_ean?: number | null;
     created_at?: string | null;
     updated_at?: string | null;
-    product_status_id?: boolean | null;
+    product_status_id: number;
     author_id?: number| null;
 }
 

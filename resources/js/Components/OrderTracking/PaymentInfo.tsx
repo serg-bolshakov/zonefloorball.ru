@@ -23,6 +23,7 @@ export const PaymentInfo: React.FC<{ payment: IOrderPayment }> = ({ payment }) =
                         className="payment-button"
                         target="_blank" 
                         rel="noopener noreferrer"
+                        data-color="blue"
                     >
                         Скачать счет
                     </a>
@@ -35,7 +36,7 @@ export const PaymentInfo: React.FC<{ payment: IOrderPayment }> = ({ payment }) =
                         target="_blank"
                         className="payment-form"
                     >
-                        <button type="submit" className="payment-button">
+                        <button type="submit" className="payment-button" data-color="blue">
                             Оплатить заказ
                         </button>
                     </form>

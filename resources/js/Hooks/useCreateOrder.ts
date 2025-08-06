@@ -39,6 +39,7 @@ interface IOrderResponse {
     status: 'success' | 'error';
     orderId: number;
     clearCart?: boolean;
+    clearPreorder?: boolean;
     redirect?: string;
     message?: string;
 }
@@ -58,12 +59,6 @@ const useCreateOrder = () => {
 
     const createOrder = useCallback(async <T extends TCartCustomer>(
         orderData: OrderData<T>,
-        /* options: {
-        //     isReserve?: boolean;
-        //     isPay?: boolean;
-        //     paymentMethod?: 'online' | 'bank_transfer' | 'cash';
-        //     onSuccess?: (response: IOrderResponse) => void;
-        // } */
         options: IOrderOptions
     ): Promise<IOrderResponse> => {
 
@@ -75,18 +70,14 @@ const useCreateOrder = () => {
         const controller = new AbortController();       // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
         controllerRef.current = controller;
 
-        console.log(orderData);
-        console.log(options);
-        console.log('options.paymentMethod', options.paymentMethod);
+        console.log('useCreateOrder, orderData', orderData);
+        console.log('useCreateOrder, options', options);
+        console.log('useCreateOrder, options.paymentMethod', options.paymentMethod);
 
         try {
           setIsLoading(true);
           //setError(null);
     
-          /* const endpoint = options.isReserve 
-            ? API_ENDPOINTS.ORDER_CREATE
-            : API_ENDPOINTS.ORDER_CREATE;*/
-
           const endpoint = API_ENDPOINTS.ORDER_CREATE;
     
           const response = await axios.post<IOrderResponse>(endpoint, {

@@ -18,9 +18,11 @@ enum OrderStatus: int {
     case COMPLETED              =12;    // Заказ завершён (товар получен, заказ оплачен, претензий у сторон нет)
     case RETURNED               =13;    // Оформлен возврат товара
     case NULLIFY                =14;    // Счёт/резерв не оплачен в течение 3-х дней: аннулирован, товары снимаются с резерва, счёт не подлежит оплате, делать недействительным
+    case PREORDER               =15;    // Предзаказ
     
-    public function title(): string {
-        return match($this) {
+    public function title(?string $latestDate = null): string {   // title() - для отображения статуса пользователю
+        
+        $base = match($this) {
             self::PENDING                   => 'Ожидание обработки',
             self::CREATED                   => 'Заказ создан',
             self::RESERVED                  => 'Товар зарезервирован',
@@ -35,7 +37,29 @@ enum OrderStatus: int {
             self::COMPLETED                 => 'Завершён',
             self::RETURNED                  => 'Оформлен возврат',
             self::NULLIFY                   => 'Аннулирован',
+            self::PREORDER                  => 'Ожидание поступления товара',
             default                         => 'Неизвестно'
+        };
+
+        return $latestDate && $this === self::PREORDER
+            ? "{$base} (до {$latestDate})"
+            : $base;
+    }
+        /** Где брать $latestDate: 
+         * В сервисе при подтверждении заказа
+         *       $latestDate = $order->items()
+         *           ->where('is_preorder', true)
+         *           ->max('expected_delivery_date');
+         */
+
+    
+    public function getDefaultComment(): string {
+        return match($this) {
+            self::CREATED => 'Покупатель создал заказ',
+            self::PREORDER => 'Покупатель оформил предзаказ',
+            self::RESERVED => 'Товары зарезервированы',
+            // ... остальные статусы
+            default => 'Статус изменён'
         };
     }
 
@@ -65,6 +89,7 @@ enum OrderStatus: int {
             12 => self::COMPLETED,
             13 => self::RETURNED,
             14 => self::NULLIFY,
+            15 => self::PREORDER,
             default => throw new \InvalidArgumentException("Неизвестный статус: $value")
         };
     }

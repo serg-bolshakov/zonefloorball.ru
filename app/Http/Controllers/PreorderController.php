@@ -89,23 +89,26 @@ class PreorderController extends Controller
     public function update(Request $request) {
         
         $validated = $request->validate([
-            'product_id' => 'required|integer|exists:products,id',
-            'quantity' => 'required|integer|min:1'
+            'product_id'                    => 'required|integer|exists:products,id',
+            'quantity'                      => 'required|integer|min:1',
+            'expected_delivery_date'        => 'nullable|date|after:today'
         ]);
                 
         $updated = Preorder::where('user_id', Auth::id())
             ->where('product_id', $validated['product_id'])
             ->update([
-                'quantity'      => $validated['quantity'],
-                'deleted_at'    => null // Сбрасываем мягкое удаление
+                'quantity'                  => $validated['quantity'],
+                'deleted_at'                => null, // Сбрасываем мягкое удаление
+                'expected_delivery_date'    => $validated['expected_delivery_date']
         ]);
 
         // Если записи не было - создаём
         if ($updated === 0) {
             Preorder::create([
-                'user_id' => Auth::id(),
-                'product_id' => $validated['product_id'],
-                'quantity' => $validated['quantity']
+                'user_id'                   => Auth::id(),
+                'product_id'                => $validated['product_id'],
+                'quantity'                  => $validated['quantity'],
+                'expected_delivery_date'    => $validated['expected_delivery_date']
             ]);
         }
 

@@ -631,6 +631,13 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
             toast.error('Требуется авторизация для предзаказов');
             return;
         }
+
+        console.log('OrderProcess, handleOrderAction, currentProducts', currentProducts);
+        console.log('OrderProcess, handleOrderAction, customer', customerDataRef.current);
+        console.log('OrderProcess, handleOrderAction, delivery', deliveryDataRef.current);
+        console.log('OrderProcess, handleOrderAction, products_amount', currentAmount);
+        console.log('OrderProcess, handleOrderAction, total', currentAmount + deliveryData.price);
+        console.log('OrderProcess, handleOrderAction, action', actionType);
         
         try {
             const orderData = {
@@ -645,7 +652,8 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                     percent_of_rank_discount: p.percent_of_rank_discount ?? 0,      // имеет значение только у авторизованных пользователей: размер скидки в процентах (int) согласно рангу пользователя
                     summa_of_action_discount: p.summa_of_action_discount ?? 0,      // имеет значение только у авторизованных пользователей, если применена скидка на товар (не скидка по рангу)
                     price_special: p.price_special ?? 0,                            // price_special есть только у авторизованных пользователей и равна = price: p.price_actual для гостей и всех, всех, всех
-                    price_preorder: p.price_preorder ?? 0,
+                    price_preorder: mode === 'preorder' ? getPreorderPrice(p) : null,
+                    expected_delivery_date: p.expected_receipt_date ?? null
                 })),
                 customer: {
                     ...customerDataRef.current,
@@ -925,6 +933,7 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                                                     value={product.quantity ?? 0}
                                                     on_sale={product.on_sale ?? 0}
                                                     on_preorder={product.on_preorder ?? 0}
+                                                    expectedDate={product.expected_receipt_date ?? null}
                                                     updateItems={mode === 'cart' ? updateCart : updatePreorder}
                                                     removeItem={mode === 'cart' ? removeFromCart : removeFromPreorder}
                                                     addToFavorites={ addToFavorites }

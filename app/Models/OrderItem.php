@@ -19,6 +19,8 @@ class OrderItem extends Model
         'order_id', 
         'product_id',
         'quantity',
+        'is_preorder',
+        'expected_delivery_date',
         'price',
         'regular_price',
     ];

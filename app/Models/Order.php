@@ -233,5 +233,58 @@ class Order extends Model {
             );
         });
     }
+
+    /** Инкапсулирует логику отметки заказа как неудачного
+     *      Может переиспользоваться в любом месте приложения - пока нигде в коде не используется
+     *      При попытке его "заюзывания" в коде - перепроверить на соответствие с предыдущим методом changeStatus
+     */
+    public function markAsFailed(string $errorMessage): void {
+        DB::transaction(function () use ($errorMessage) {
+            $this->update([
+                'status_id' => OrderStatus::FAILED->value,
+                'error_log' => $errorMessage
+            ]);
+            
+            $this->statusHistories()->create([
+                'old_status' => $this->getOriginal('status_id'), // Берём исходное значение из БД     
+                'new_status' => OrderStatus::FAILED->value,
+                'comment' => $errorMessage
+            ]);
+        });
+    }
+
+    public function getLatestDeliveryDate(): ?Carbon {
+        
+        if (!$this->is_preorder) {
+            // Или для обычных заказов:
+            return null;
+            // return $this->delivery_date 
+            //     ? Carbon::parse($this->delivery_date)
+            //     : now()->addDays(config('app.default_delivery_days'));
+        }
+        
+        // Для предзаказов берём самую позднюю дату
+        $dateString = $this->items()
+            ->whereNotNull('expected_delivery_date')
+            ->orderByDesc('expected_delivery_date')
+            ->value('expected_delivery_date');
+        \Log::debug('getLatestDeliveryDate', ['dateString' =>$dateString,
+                                              'return' => $dateString ? Carbon::parse($dateString) : null]);      
+
+        return $dateString ? Carbon::parse($dateString) : null;
+    }
+
+    public function getDeliveryEstimate(): ?string {
+        
+        if (!$this->is_preorder) return null;
+
+        $date = $this->getLatestDeliveryDate();
+        \Log::debug('Delivery estimate', [
+            'raw_date' => $date,
+            'formatted' => $date?->format('d.m.Y')
+        ]);
+        
+        return $date?->format('d.m.Y');
+    }
 }
 

@@ -18,6 +18,7 @@ import PropVariants from '@/Components/ProductCard/PropVariants';
 import RecentlyViewedProducts from '@/Components/ProductCard/RecentlyViewedProducts';
 import useAppContext from '@/Hooks/useAppContext';
 import { useUserDataContext } from '@/Hooks/useUserDataContext';
+import { PRODUCT_STATUSES } from '@/Constants/productStatuses';
 
 const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants}) => {
     const { user } = useAppContext();
@@ -167,7 +168,7 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                                 />
                             )}
                             
-                            {prodInfo.actualPrice && (
+                            {prodInfo.actualPrice && (prodInfo.product_status_id === PRODUCT_STATUSES.ACTIVE) && ((prodInfo.productReport.on_sale ?? 0) > 0 || (prodInfo.productReport.reserved ?? 0) > 0 || (prodInfo.productReport.on_preorder ?? 0) > 0) &&(
                                 <PriceBlock 
                                     actualPrice={prodInfo.actualPrice} 
                                     regularPrice={prodInfo.regularPrice}
@@ -178,13 +179,15 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                             )}
                                 
                             <div className="card-product__detail-status-block">
-                                {prodInfo.actualPrice ? (
+                                {prodInfo.actualPrice && (prodInfo.product_status_id === PRODUCT_STATUSES.ACTIVE) ? (
                                     <StatusBlock productReport={prodInfo.productReport} productUnit={prodInfo.productUnit} />
                                 ) : (
-                                    <div className="card-product__detail-status">В архиве</div>
+                                    <div className="card-product__detail-status">В продаже больше не будет. Модель в архиве.</div>
                                 )}
 
-                                <ProductActions prodInfo={prodInfo} />
+                                {(prodInfo.product_status_id === PRODUCT_STATUSES.ACTIVE) && (
+                                    <ProductActions prodInfo={prodInfo} />
+                                )}
                             </div>
                         </section>
                     </section>

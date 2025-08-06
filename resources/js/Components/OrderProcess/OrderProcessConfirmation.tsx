@@ -112,7 +112,7 @@ const OrderProcessConfirmation: React.FC<IOrderProcessConfirmationProps> = ({
     return (
         <>
             <div className="basket-order__confirmation">
-                <h2 className="registration-form__input-item"><span className="registration-form__title">Проверяем и фиксируем заказ:</span></h2>
+                <h2 className="registration-form__input-item"><span className="registration-form__title">Проверяем и фиксируем { mode === 'cart' ? 'заказ' : 'предварительный заказ' }:</span></h2>
                         
                 {/* Перечень товаров в заказе: */}
                 <div className="basket-order__product-items">
@@ -194,7 +194,7 @@ const OrderProcessConfirmation: React.FC<IOrderProcessConfirmationProps> = ({
                             onClick={() => handleAction('preorder')}
                             className="order-confirmation__submit-btn"
                         >
-                            { isLegalUser(user) && ( isPreordering ? 'Готовим предзаказ' : 'Предзаказ' )}
+                            { isLegalUser(user) && ( isPreordering ? 'Готовим предзаказ' : 'Оформить' )}
                         </motion.button>
                     )}
 

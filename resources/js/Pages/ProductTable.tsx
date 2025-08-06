@@ -363,7 +363,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
     };
 
     // console.log(getMainCategories());
-    // console.log('products', products);
+    console.log('products', products);
     // console.log('cart', cart);
     // console.log('preorder', preorder);
     // console.log('cartQuantities', cartQuantities);
@@ -686,6 +686,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                                                 : preorderQuantities[product.id] || 0}
                                                             on_sale={product.on_sale ?? 0}
                                                             on_preorder={product.on_preorder ?? 0}
+                                                            expectedDate={product.expected_receipt_date ?? null}
                                                             tableMode={tableMode}
                                                             updateCart={ updateCart }
                                                             updatePreorder={ updatePreorder }

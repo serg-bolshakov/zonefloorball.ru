@@ -10,14 +10,14 @@ use App\Http\Resources\ProductResource;
 class ProductCardController extends Controller
 {    
 
-    public function index($prodUrlSemantic) {
+    public function index($prodUrlSemantic, $prodStatus = 1) {
 
         $responseData = $this->getResponseData($prodUrlSemantic);
         // dd($responseData);
         return Inertia::render('ProductCard', $responseData);
     }
         
-    protected function getResponseData($prodUrlSemantic) {
+    protected function getResponseData($prodUrlSemantic, $prodStatus = 1) {
         // Получаем продукт с нужными отношениями
         $product = Product::with(['actualPrice', 'regularPrice', 'category', 'brand', 'size', 'properties', 
         'productMainImage', 'productCardImgOrients', 'actualPrice', 'regularPrice', 'productShowCaseImage', 

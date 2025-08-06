@@ -9,7 +9,7 @@ use App\Models\Product;
 class StickProductCardService extends BaseProductCardService
 {
     
-    public function getSimilarProps() {
+    public function getSimilarProps($prodStatus = 1) {
     
         // сначала смотрим хват текущего товара:
         $currentProductPropHookTitle = $currentProductPropHookValue = '';
@@ -44,6 +44,7 @@ class StickProductCardService extends BaseProductCardService
             ->where('properties.prop_title', 'like', 'hook')
             ->where('properties.prop_value_view', '!=', $currentProductPropHookValue)
             ->where('products.id', '!=', $this->product->id)
+            ->where('products.product_status_id', '=', $prodStatus)
             ->distinct()
         ->first();
 
@@ -55,7 +56,8 @@ class StickProductCardService extends BaseProductCardService
                 ['products.category_id', $this->product->category_id],
                 ['products.brand_id', $this->product->brand_id],
                 ['products.model', 'like', '%' . $this->product->model . '%'],
-                ['products.marka', 'like', '%' . $this->product->marka . '%']
+                ['products.marka', 'like', '%' . $this->product->marka . '%'],
+                ['products.product_status_id', $prodStatus],
             ])
             ->distinct()
             ->get()
@@ -81,6 +83,7 @@ class StickProductCardService extends BaseProductCardService
                     ['props.prop_value_view', $currentProductPropHookValue],
                     ['s.size_title', 'like', 'shaft_length'],
                     ['s.size_value', $currentProductSize],
+                    ['p.product_status_id', $prodStatus],
                 ])                 
             ->first();
 
@@ -92,7 +95,7 @@ class StickProductCardService extends BaseProductCardService
             $possibleShaftLengthArr[] = $row;
         }  
         
-        foreach ($resultpossibleShaftLengthForProductCard as $possibleShaftLengthForProductCard) {
+        /* foreach ($resultpossibleShaftLengthForProductCard as $possibleShaftLengthForProductCard) {
             $row = [];
             $classCurrent = "";
             $currentProductSize = $possibleShaftLengthForProductCard;
@@ -111,6 +114,7 @@ class StickProductCardService extends BaseProductCardService
                     ['props.prop_value_view', $currentProductPropHookValue],
                     ['s.size_title', 'like', 'shaft_length'],
                     ['s.size_value', $currentProductSize],
+                    ['p.product_status_id', 1],
                 ])                 
             ->first();
 
@@ -120,7 +124,7 @@ class StickProductCardService extends BaseProductCardService
             $row['prod_url_semantic'] = $resNewItem['prod_url_semantic'];
             $row['classCurrent'] = $classCurrent;
             $possibleShaftLengthArr[] = $row;
-        }  
+        }*/  
 
         // мы получаем в $possibleShaftLengthArr значения длин рукоятки в двух экземплярах (дубли) - при переборе данных попадают и правые, и левые... но нужно посмотреть логику - возможно где там исправить
         // пока удаляем дубли "руками": 

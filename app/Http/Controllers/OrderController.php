@@ -30,6 +30,7 @@ use App\Mail\NewOrder;
 use App\Mail\NewOrderForCustomer;
 use App\Mail\OrderInvoice;
 use App\Mail\OrderReserve;
+use App\Mail\OrderMailFactory;
 use Illuminate\Support\Facades\Mail;        // Чтобы отправить сообщение, используем метод to фасада Mail
 
 use App\Traits\CalculateDiscountTrait;
@@ -94,15 +95,27 @@ class OrderController extends Controller {
         }
 
         // Объявим переменную ДО транзакции, чтобы её не потерять в блоке try - catch
-        $order = $redirect = null; 
-
+        $order = $redirect = null;
+        
         try {
                 DB::transaction(function () use ($request, &$order, &$redirect) {       // Передаём $order в транзакцию по ссылке
 
+                $isPreorder = false;
+
                 $validated = $request->validate([
                     'action'        => ['required', 'string', Rule::in(OrderAction::forRequest($request))],
-                    'paymentMethod' => ['required', 'string', Rule::in(['online', 'bank_transfer', 'cash']) ]
+                    'paymentMethod' => ['required', 'string', Rule::in(['online', 'bank_transfer', 'cash'])],
                 ]);
+
+                $action = OrderAction::tryFrom($validated['action'])                                        // tryFrom() (стандартный метод enum), Строгая конвертация строки в enum с проверкой, Вернёт null при невалидном значении
+                    ?? throw new \InvalidArgumentException('Invalid action: ' . $validated['action']);
+                // Вариант 2 (если нужен дефолтный PREORDER): $action = OrderAction::forRequest($request); // Без исключений!
+
+                $isPreorder = $action === OrderAction::PREORDER;
+                $statusId = match($isPreorder) {
+                    true  => OrderStatus::PREORDER->value,
+                    false => OrderStatus::CREATED->value
+                };
                 
                 \Log::debug('OrderController@create $validated:', [ '$validated' => $validated]);
 
@@ -165,7 +178,7 @@ class OrderController extends Controller {
                     }
                     \Log::debug('orderRecipientEmailrderRecipientTel:', [ 'orderRecipientEmail' => $orderRecipientEmail]);
 
-                // 3. Создаём заказ со статусом "создан": case CREATED                = 2;
+                // 3. Создаём заказ (предзаказ) со статусом "создан": case CREATED / PREORDER               = 2 / 15;
                     \Log::debug('OrderStatus::CREATED', [ 'OrderStatus::CREATED' => OrderStatus::CREATED]);
                     $orderData = [
                         'order_number'              => $orderNumber,
@@ -182,20 +195,40 @@ class OrderController extends Controller {
                         'order_recipient_names'     => $orderRecipientNames,
                         'order_recipient_tel'       => $orderRecipientTel,
                         'email'                     => $orderRecipientEmail,
-                        'status_id'                 => OrderStatus::CREATED->value,
+                        'status_id'                 => $statusId,
                         'access_hash'               => Str::random(32),
                         'actual_legal_agreement_ip' => $user->initial_legal_agreement_ip ?? $request->ip(),
+                        'is_preorder'               => $isPreorder,
                     ];
                     $order = Order::create($orderData);
                     \Log::debug('order:', [ 'order' => $order]);
 
                     // Логируем статус
-                    OrderStatusHistory::create([
-                        'order_id'          => $order->id,
-                        'old_status'        => OrderStatus::PENDING->value,                 // 1
-                        'new_status'        => OrderStatus::CREATED->value,                 // 2
-                        'comment'           => 'Пользователь создал заказ'
-                    ]);
+                        $newStatus = $isPreorder 
+                            ? OrderStatus::PREORDER                                         // 15
+                            : OrderStatus::CREATED;                                         // 2
+                        
+                        /*  На данном этапе работатьне будет, потому что товары ещё не внесены в БД заказа (предзаказа)
+                            $latestDate = $order->getLatestDeliveryDate();
+
+                            $deliveryText = $latestDate 
+                                ? "ожидание до ".$latestDate->format('d.m.Y')
+                                : "срок поставки будет уточнён";
+                        */        
+
+                        $comment = $isPreorder
+                            // ? "Пользователь оформил предзаказ ($deliveryText)"
+                            ? 'Покупатель оформил предзаказ'
+                            : 'Покупатель оформил заказ';
+                            // Позже заменим на:
+                            // $comment = $status->generateComment($latestDate);
+
+                        OrderStatusHistory::create([
+                            'order_id'          => $order->id,
+                            'old_status'        => OrderStatus::PENDING->value,                 // 1
+                            'new_status'        => $newStatus->value,                 
+                            'comment'           => $comment
+                        ]);
                 
                 // 4. Добавляем товары в таблицу order_items (id, name, order_id, product_id, quantity, price, regular_price, created_at, updated_at) и резервируем их
                     if (empty($request->input('products'))) {
@@ -206,11 +239,27 @@ class OrderController extends Controller {
 
                     foreach ($request->input('products') as $item) {
                         \Log::debug('orderController:', [ 'order_item' => $item]);
-                        // 1. Создаём позицию заказа
+                        // 1. Создаём позицию заказа/предзаказ
                             // выбираем цену, которая была зафиксирована на момент продажу товара (с учётом возможной скидки за ранг пользователя):
-                            $productFinalPrice = (isset($item['price_with_rank_discount'])  && $item['price_with_rank_discount'] != 0 && $item['price_with_rank_discount'] < $item['price']) 
-                                ? $item['price_with_rank_discount']
-                                : $item['price'];
+                            /* $productFinalPrice = match($isPreorder) {
+                                true  => $item['price_preorder'],
+                                false => (isset($item['price_with_rank_discount'])  && $item['price_with_rank_discount'] != 0 && $item['price_with_rank_discount'] < $item['price']) 
+                                    ? $item['price_with_rank_discount']
+                                    : $item['price']
+                            }; */
+
+                            $productFinalPrice = match(true) {
+                                // 1. Сначала проверяем предзаказ
+                                $isPreorder => ($item['price_preorder'] ?? $item['price']),
+
+                                // 2. Только если НЕ предзаказ - проверяем скидку
+                                !empty($item['price_with_rank_discount']) && 
+                                    ($item['price_with_rank_discount'] < $item['price']) => 
+                                        $item['price_with_rank_discount'],
+
+                                // 3. Если ничего не подошло - базовая цена
+                                default => $item['price']
+                            };
 
                             $items[] = [
                                 'name'     => $item['name'],
@@ -218,57 +267,117 @@ class OrderController extends Controller {
                                 'price'    => (float)$productFinalPrice,
                                 'tax'      => 'none' // Ставка НДС (без НДС)
                             ];
-                                
-                        OrderItem::create([
-                            'order_id'      => $order->id,
-                            'product_id'    => $item['id'],
-                            'quantity'      => $item['quantity'],
-                            'price'         => $productFinalPrice,
-                            'regular_price' => $item['price_regular'] ?? $item['price'] // Если нет regular, используем price
-                        ]);
 
-                        // 2. Резервируем товар
-                        try {
-                            $productReport = ProductReport::where('product_id', $item['id'])
-                                ->lockForUpdate() // Решает проблему "гонки"
-                                ->first();
-                            
-                            if (!$productReport) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах"); }
-                            if ($productReport->on_sale < $item['quantity']) { throw new \Exception("Недостаточно товара на складе"); }
+                            $expectedDeliveryDate = null;
+                            if ($isPreorder) {
+                                try {
+                                    $expectedDeliveryDate = $item['expected_delivery_date']
+                                        ? Carbon::parse($item['expected_delivery_date'])
+                                        : now()->addDays(3);
+                                        
+                                    // Корректировка если дата в прошлом
+                                    if ($expectedDeliveryDate->isPast()) {
+                                        $expectedDeliveryDate = now()->addDays(3);
+                                    }
+                                } catch (\Exception $e) {
+                                    // На случай ошибок парсинга
+                                    $expectedDeliveryDate = now()->addDays(3);
+                                }
+                            }
 
-                            $productReport->update([
-                                'on_sale'   => (int)$productReport->on_sale - (int)$item['quantity'],
-                                'reserved'  => (int)$productReport->reserved + (int)$item['quantity'],
+                            OrderItem::create([
+                                'order_id'                  => $order->id,
+                                'product_id'                => $item['id'],
+                                'quantity'                  => $item['quantity'],
+                                'is_preorder'               => $isPreorder,
+                                'expected_delivery_date'    => $expectedDeliveryDate?->format('Y-m-d'),
+                                'price'                     => $productFinalPrice,
+                                'regular_price'             => $item['price_regular'] ?? $item['price'] // Если нет regular, используем price
                             ]);
-                        } catch (\Exception $e) {
-                            \Log::error("Ошибка резервирования товара", [
-                                'product_id' => $item['id'],
-                                'error' => $e->getMessage()
-                            ]);
-                            throw $e; // Пробрасываем выше для отката транзакции
-                        }
+
+                        // 2. Резервируем товар (уменьшаем количество доступного для предзаказа товара):
+                            /* if($isPreorder) {
+                                try {
+                                    $productReport = ProductReport::where('product_id', $item['id'])
+                                        ->lockForUpdate() // Решает проблему "гонки" (Пессимистичная блокировка (lockForUpdate()) - защита от гонки ресурсов)
+                                        ->first();
+                                    
+                                    if (!$productReport) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах"); }
+                                    if ($productReport->on_preorder < $item['quantity']) { throw new \Exception("Недостаточно товара на складе"); }
+
+                                    $productReport->update([
+                                        'on_preorder'   => (int)$productReport->on_preorder - (int)$item['quantity'],
+                                        'preordered'    => (int)$productReport->preordered + (int)$item['quantity'],
+                                    ]);
+                                } catch (\Exception $e) {
+                                    \Log::error("Ошибка предварительного резервирования товара", [
+                                        'product_id' => $item['id'],
+                                        'error' => $e->getMessage()
+                                    ]);
+                                    throw $e; // Пробрасываем выше для отката транзакции
+                                }
+                            } else {
+                                try {
+                                    $productReport = ProductReport::where('product_id', $item['id'])
+                                        ->lockForUpdate() // Решает проблему "гонки"
+                                        ->first();
+                                    
+                                    if (!$productReport) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах"); }
+                                    if ($productReport->on_sale < $item['quantity']) { throw new \Exception("Недостаточно товара на складе"); }
+
+                                    $productReport->update([
+                                        'on_sale'   => (int)$productReport->on_sale - (int)$item['quantity'],
+                                        'reserved'  => (int)$productReport->reserved + (int)$item['quantity'],
+                                    ]);
+                                } catch (\Exception $e) {
+                                    \Log::error("Ошибка резервирования товара", [
+                                        'product_id' => $item['id'],
+                                        'error' => $e->getMessage()
+                                    ]);
+                                    throw $e; // Пробрасываем выше для отката транзакции
+                                }
+                            }*/
+
+                            try {
+                                $this->reserveProduct(
+                                    $item['id'],
+                                    $item['quantity'],
+                                    $isPreorder ? 'on_preorder' : 'on_sale',
+                                    $isPreorder ? 'preordered'  : 'reserved'
+                                );
+                            } catch (\Exception $e) {
+                                \Log::error($isPreorder 
+                                    ? "Ошибка предварительного резервирования" 
+                                    : "Ошибка резервирования", 
+                                    ['error' => $e->getMessage()]
+                                );
+                                throw $e;
+                            }
 
                         // 3. Логируем резерв
-                        ProductReservation::create([
-                            'product_id'    => $item['id'],
-                            'order_id'      => $order->id,
-                            'quantity'      => $item['quantity'],
-                            'expires_at'    => WorkingDaysService::getExpirationDate(3)
-                        ]);
+                            ProductReservation::create([
+                                'product_id'    => $item['id'],
+                                'order_id'      => $order->id,
+                                'quantity'      => $item['quantity'],
+                                'is_preorder'   => $isPreorder,
+                                'expires_at'    => WorkingDaysService::getExpirationDate(3)
+                            ]);
                     }
                 
-                // 5. Логируем полученные покупателем скидки: вызываем сервис для логирования (применения - закомментировал) скидок:
-                    // app(DiscountService::class)->logExistingDiscounts($order);   // Только логируем!
-                    $this->discountService->logExistingDiscounts($order);           // Только логируем!
+                // 5. Логируем полученные покупателем скидки: 
+                    // Оставим пока только для обычных заказов (не для предзаказов)
+                    if (!$isPreorder && $this->discountService) {
+                        $this->discountService->logExistingDiscounts($order);   // Только логируем!
+                    }
 
                 // 6. Генерируем PDF и готовим письма:
                     // 6.1 Создаём экземпляр Mailable
-                        // $orderMail = new OrderReserve($order, $user);
-                        $orderMail = match ($user->client_type_id) {
+                        /* $orderMail = match ($user->client_type_id) {
                             1 => new OrderReserve($order, $user),
                             2 => new OrderInvoice($order, $user),
                             default => new OrderReserve($order, $user)
-                        };
+                        }; */
+                        $orderMail = OrderMailFactory::create($order, $user);
                     
                     // 6.2 Генерируем уникальное имя для PDF
                         $sanitizedOrderNumber = $orderMail->sanitizeOrderNumber($orderNumber);
@@ -289,11 +398,12 @@ class OrderController extends Controller {
                         }
 
                     // 6.4 Пересоздаём экземпляр OrderReserve с обновлённым объектом $newOrder
-                        $orderMail = match ($user->client_type_id) {
+                        /* $orderMail = match ($user->client_type_id) {
                             1 => new OrderReserve($order, $user),               // Для физических лиц делаем "Резерв"
                             2 => new OrderInvoice($order, $user),               // Для юридических лиц формируем счёт
                             default => new OrderReserve($order, $user)
-                        };
+                        }; */
+                        $orderMail = OrderMailFactory::create($order, $user);
 
                     // 6.5 Генерируем и сохраняем PDF
                         $orderMail->buildPdfAndSave($relativePath);
@@ -386,8 +496,8 @@ class OrderController extends Controller {
                             match ($validated['action']) {
                                 OrderAction::PAY->value         => $redirect = $this->processPayment($order, $paymentUrl, $orderMail),
                                 OrderAction::RESERVE->value     => $this->processReserve($order, $orderMail),
-                                OrderAction::PREORDER->value    => $this->processPreOrder(),
-                                default => throw new \InvalidArgumentException('Invalid action')
+                                OrderAction::PREORDER->value    => $this->processPreOrder($order, $orderMail),
+                                default                         => throw new \InvalidArgumentException('Invalid action')
                             };
                             
                         } catch (\Exception $e) {
@@ -397,10 +507,9 @@ class OrderController extends Controller {
                     } elseif ($order && $order->payment_status !== 'paid' && $user->client_type_id == '2') {
                         // Если покупатель юридическое лицо
                         try {
-                            
                             match ($validated['action']) {
                                 OrderAction::RESERVE->value     => $this->processReserve($order, $orderMail),
-                                OrderAction::PREORDER->value    => $this->processPreOrder(),
+                                OrderAction::PREORDER->value    => $this->processPreOrder($order, $orderMail),
                                 default => throw new \InvalidArgumentException('Invalid action')
                             };
                             
@@ -416,28 +525,37 @@ class OrderController extends Controller {
             return response()->json([
                 'status'    => 'success',
                 'orderId'   => $order->id,
-                'clearCart' => true,            // Флаг для фронта
+                // 'clearCart' => true,            // Флаг для фронта - надо подумать... здесь может быть и предзаказ... пока ничего не передаём...
                 'redirect'  => $redirect,       // Фронт сам решит куда редиректить (либо null, либо ссылка на оплату)
-                'message'   => 'Заказ успешно создан'
+                'message'   => $isPreorder ? 'Предварительный заказ оформлен' : 'Заказ успешно создан'
             ]);
         
         } catch (\Throwable $e) {     // \Throwable — это базовый интерфейс в PHP, который реализуют: Все исключения (\Exception) и Ошибки (\Error, например TypeError)
             // Обработка ошибок с доступом к $order
-            \Log::error('Order failed: '.$e->getMessage());
+            \Log::error('Order processing failed', [
+                'exception' => $e,
+                
+            ]);
 
             if (isset($order) && $order->exists) {  
                 /** isset($order) Проверяет, что переменная $order определена (не null).
                  * $order->exists Убеждается, что модель: Была успешно сохранена (save()), или Загружена из БД (find(), first() и т.д.)
                  */
+                // $order->markAsFailed($e->getMessage());                             // Метод модели Order - markAsFailed инкапсулирует логику обновления статуса потом подумаем... 
                 $order->update(['status_id' => OrderStatus::FAILED->value]);
 
                 // Логируем статус
-                    OrderStatusHistory::create([
+                    /* OrderStatusHistory::create([
                         'order_id'          => $order->id,
                         'old_status'        => OrderStatus::CREATED->value,                 // 2
                         'new_status'        => OrderStatus::FAILED->value,                  // 6
                         'comment'           => $e->getMessage()
-                    ]);
+                    ]);*/
+                    
+                    $order->changeStatus(
+                        newStatus: OrderStatus::OrderStatus::FAILED,
+                        comment: $e->getMessage()
+                    );
                  
                 // Освобождаем резервы
                     $order->items()->each(function($item) {
@@ -447,18 +565,43 @@ class OrderController extends Controller {
                                 ->first();
                             
                             if (!$productReport) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по остаткам"); }
-                            $productReport->update([
-                                'reserved'  => (int)$productReport->reserved - (int)$item['quantity'],
-                            ]);
+                            
+                            if($isPreorder) {
+                                // Перед обновлением остатков двойная проверка
+                                if ($productReport->preordered < $item->quantity) {
+                                    \Log::warning('Invalid preorder quantity', [
+                                        'current' => $productReport->preordered,
+                                        'requested' => $item->quantity
+                                    ]);
+                                    $productReport->preordered = 0;
+                                } else {
+                                    $productReport->decrement('preordered', $item->quantity);
+                                }
+                                /* $productReport->update([
+                                    'preordered'  => (int)$productReport->preordered - (int)$item['quantity'],
+                                ]); */
+                            } else {
+                                if ($productReport->reserved < $item->quantity) {
+                                    \Log::warning('Invalid reserved quantity', [
+                                        'current' => $productReport->reserved,
+                                        'requested' => $item->quantity
+                                    ]);
+                                    $productReport->reserved = 0;
+                                } else {
+                                    $productReport->decrement('preordered', $item->quantity);
+                                }
+                                /* $productReport->update([
+                                    'reserved'  => (int)$productReport->reserved - (int)$item['quantity'],
+                                ]);*/   
+                            }
 
                             $productReservation = ProductReservation::where('product_id', $item['id'])->where('order_id', $validated['InvId'])
                                 ->lockForUpdate() 
                                 ->first();
                             if (!$productReservation) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по резервированию"); }
                             $productReservation->update([
-                                'cancelled_at' => now()->toDateTimeString(),
-                            ]);
-
+                                'cancelled_at' => now(),
+                            ]);     
                         } catch (\Exception $e) {
                             \Log::error("Ошибка снятия товара с резерва", [
                                 'product_id' => $item['id'],
@@ -469,18 +612,25 @@ class OrderController extends Controller {
 
             } else {
                 // Заказа нет в БД — что-то пошло не так при создании
-                \Log::error('Order creation failed completely');
+                \Log::error('Order failed, missing in DB', [
+                    'order_id' => $order->id ?? null,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'user' => auth()->id(),
+                    'items' => $items ?? null
+                ]);
             }
 
             ErrorNotifierService::notifyAdmin($e, [
-                'Order failed: '.$e->getMessage(),
-                'stage' => 'OrderController@create'
+                'order_id'      => $order->id ?? null,
+                'stage'         => 'OrderController@create'
             ]);
                     
             return response()->json([
-                'status' => 'error',
-                'message' => 'Ошибка при оформлении заказа',
-                'error_code' => 'ORDER_CREATION_FAILED'
+                'status'        => 'error',
+                'message'       => 'Ошибка при оформлении заказа',
+                'error'         => config('app.debug') ? $e->getMessage() : null,
+                'error_code'    => 'ORDER_CREATION_FAILED'
             ], 500);
         }
     }      
@@ -886,7 +1036,7 @@ class OrderController extends Controller {
                 return Inertia::render('OrderExpired');
             }
 
-            \Log::debug('LegalOrder status_id:', [ 'history' => OrderStatus::tryFrom((int)$order->status_id)?->title()]);
+            \Log::debug('LegalOrder status_id:', [ 'history' => OrderStatus::tryFrom((int)$order->status_id)?->title($order->getDeliveryEstimate())]);
             \Log::debug('LegalOrder Loaded statusHistory:', [
                 'type' => get_class($order->statusHistory),
                 'first_item' => $order->statusHistory->first()?->toArray()
@@ -904,11 +1054,19 @@ class OrderController extends Controller {
                         'status' => [
                             'id' => $order->status_id,
                             'name' => OrderStatus::tryFrom((int)$order->status_id)?->title() ?? 'Не указан',    // Используем enum
-                            'history' => $order->statusHistory?->map(function(OrderStatusHistory $item) {       // Оператор null-safe (?.) Автоматически обрабатывает случай, когда statusHistory равен null.
-                                \Log::debug('History item raw:', ['history' => $item->new_status->title()]);    
+                            'history' => $order->statusHistory?->map(function(OrderStatusHistory $item) use ($order) {       // Оператор null-safe (?.) Автоматически обрабатывает случай, когда statusHistory равен null.
+                                \Log::debug('History item raw status:', [
+                                    'new_status' => $item->new_status,
+                                    'target_status' => OrderStatus::PREORDER
+                                ]);
+
+                                $latestDate = $item->new_status === OrderStatus::PREORDER
+                                    ? $order->getDeliveryEstimate()
+                                    : null;
+                                \Log::debug('Calculated date:', ['date' => $latestDate]);   
                                 return [
                                     'date'      => Carbon::parse($item->created_at)->format('d.m.Y H:i'),            // Преобразуем строку в Carbon
-                                    'status'    => $item->new_status?->title() ?? 'Неизвестный статус',            
+                                    'status'    => $item->new_status?->title($latestDate),            
                                     'comment'   => $item->comment
                                 ];
                             })->toArray() ?? [] // Возвращаем пустой массив если history null
@@ -1000,7 +1158,7 @@ class OrderController extends Controller {
         
     }
 
-    // переподим номер счёта типа 1-25-07/12 в 1-25-07-12
+    // переводим номер счёта типа 1-25-07/12 в 1-25-07-12
     public function hyphenedOrderNumber($orderNumber) {
         // Заменяем недопустимые символы на дефис
         return preg_replace('/[\/\- ]/', '-', $orderNumber);
@@ -1062,7 +1220,7 @@ class OrderController extends Controller {
                 'order_id'          => $order->id,
                 'old_status'        => OrderStatus::CREATED->value,                 // 2
                 'new_status'        => OrderStatus::RESERVED->value,                // 3
-                'comment'           => 'Пользователь подтвердил заказ'
+                'comment'           => 'Продавец подтвердил заказ'
             ]);
 
             return $paymentUrl;
@@ -1120,5 +1278,47 @@ class OrderController extends Controller {
                 'stage' => 'OrderController@create for postponed payment processReserve method Mailing process'
             ]);
         }
+    }
+
+// Авторизованному пользователю, выбравшему "Предзаказ" (пока отложенная оплата ): 
+    public function processPreOrder($order, $orderMail) {
+        // Явная проверка на false
+        if ($order->is_client_informed !== false) {
+            return;
+        }
+
+        // 9. Отправляем заказ по email... сразу
+        try {
+            Mail::to($order->email)->bcc(config('mail.admin_email'))->send($orderMail);
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to send Preorder email: '.$e->getMessage());
+            
+            ErrorNotifierService::notifyAdmin($e, [
+                'order_id' => $order->id ?? null,
+                'error' => $e->getMessage(),
+                'stage' => 'OrderController@processPreOrder method Mailing process'
+            ]);
+        }
+    }
+
+    protected function reserveProduct(
+            int $productId, 
+            int $quantity,
+            string $stockField, // 'on_preorder' или 'on_sale'
+            string $reservedField // 'preordered' или 'reserved'
+        ) {
+        $productReport = ProductReport::where('product_id', $productId)
+            ->lockForUpdate()
+            ->firstOrFail(); // Автоматически выбрасывает исключение
+            
+        if ($productReport->{$stockField} < $quantity) {
+            throw new \Exception("Недостаточно товара ID: $productId для резервирования");
+        }
+
+        $productReport->update([
+            $stockField => $productReport->{$stockField} - $quantity,
+            $reservedField => $productReport->{$reservedField} + $quantity,
+        ]);
     }
 }

@@ -48,12 +48,12 @@ export interface UserDataContextType extends UserDataState {
     
     clearCart: () => Promise<void>;
 
-    addToPreorder: ( productId: number, quantity: number ) => Promise<{  
+    addToPreorder: ( productId: number, quantity: number, expectedDate: string | null ) => Promise<{  
         preorderTotal: number;  // Полезно для отображения в UI
         error?: string;     
     }>;
     
-    updatePreorder: (productId: number, quantity: number) => Promise<{  
+    updatePreorder: (productId: number, quantity: number, expectedDate: string | null) => Promise<{  
         preorderTotal: number;  // Полезно для отображения в UI
         error?: string;     
     }>;

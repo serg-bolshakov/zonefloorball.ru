@@ -54,6 +54,14 @@ use Laravel\Sanctum\HasApiTokens;
         'password' => 'hashed',
     ];
 
+    // Типы клиентов
+        const CLIENT_TYPE_INDIVIDUAL = 1;
+        const CLIENT_TYPE_LEGAL      = 2;
+    
+    // Уровни доступа
+        const ACCESS_CLIENT          = 1;
+        const ACCESS_GUEST           = 6;
+
     // метод для проверки актуальности согласий оферты и пользовательского соглашения:
     public function needsLegalReconfirm(): bool {
         $latestPrivacyVersion = LegalDocument::getCurrentVersion('privacy_policy')->version;
@@ -106,6 +114,30 @@ use Laravel\Sanctum\HasApiTokens;
     public function isIndividualEntrepreneur(string $inn): bool {
         // ИП имеют ИНН физлица (12 цифр)
         return strlen(preg_replace('/\D/', '', $inn)) === 12;
+    }
+
+    /** Определяет является ли пользвователь зарегистрированным физическим лицом */
+    public function isIndividual(): bool {
+        return (int)$this->client_type_id === self::CLIENT_TYPE_INDIVIDUAL 
+            && (int)$this->user_access_id === self::ACCESS_CLIENT;
+    }
+
+    /** Определяет является ли пользвователь зарегистрированным юридическим лицом (ИП или организацией) */
+    public function isLegal(): bool {
+        return (int)$this->client_type_id === self::CLIENT_TYPE_LEGAL 
+            && (int)$this->user_access_id === self::ACCESS_CLIENT;
+    }
+
+    public function isGuest(): bool {
+        return (int)$this->user_access_id === self::ACCESS_GUEST;                                        // user_access_id === 6 - "guest"
+    }
+
+    public function getClientType(): string {
+        if ($this->isGuest()) {
+            return 'guest';
+        }
+        
+        return $this->isLegal() ? 'legal' : 'individual';
     }
 }
 
