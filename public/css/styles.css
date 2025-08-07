@@ -311,10 +311,17 @@ main {
     font-weight: 400;
 }
 
-.header-secondline__aside--left, .header-secondline__aside--right {
+.header-secondline__aside--left {
     display: flex;
     margin-top: 12px;
-    justify-content: space-between;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.header-secondline__aside--right {
+    display: flex;
+    margin-top: 12px;
+    justify-content: flex-end;
     align-items: center;
 }
 
