@@ -470,7 +470,7 @@ nav ul>li>a, nav>ul>li, nav>dl>dt, nav>div>p {
 
 .header-auth__dropdown--block {
     position: relative; /* Добавляем позиционирование */
-    z-index: 1000; /* Указываем z-index */
+    z-index: 9999; /* Указываем z-index */
     text-align: center;
     padding: 4px;
     border-radius: 4px;
