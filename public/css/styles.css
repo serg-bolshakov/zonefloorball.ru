@@ -423,7 +423,7 @@ nav ul>li>a, nav>ul>li, nav>dl>dt, nav>div>p {
     display: none;
     transition: opacity 0.3s, visibility 0.3s;
     position: absolute;
-    left: -140px; 
+    left: -155px; 
     top: -50px;
 }
 
