@@ -272,12 +272,12 @@ const Header: React.FC = () => {
 
                 <div className="header-secondline__aside--right">
                     <div id='headerauthblockdiv' className="header-auth__dropdown">
-                        <img src="/storage/icons/expand-arrow.png" alt="external-link" />
                         <div className="header-auth__block--menu">
                             <div className="header-auth__dropdown--block">
                                 <p dangerouslySetInnerHTML={{ __html: authBlockContentFinal }} />
                             </div>
                         </div>
+                        <img src="/storage/icons/expand-arrow.png" alt="external-link" />
                     </div>
                     <span className="header-auth__user--status">
                         {user ? user.name : 'Гость'}

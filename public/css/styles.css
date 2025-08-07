@@ -422,7 +422,10 @@ nav ul>li>a, nav>ul>li, nav>dl>dt, nav>div>p {
     background-color:rgb(244, 244, 244);
     display: none;
     transition: opacity 0.3s, visibility 0.3s;
-  }
+    position: absolute;
+    left: -140px; 
+    top: -50px;
+}
 
 .header-auth__dropdown {
     margin-left: 12px;
