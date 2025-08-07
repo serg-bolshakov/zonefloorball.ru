@@ -559,7 +559,7 @@ class OrderController extends Controller {
                     ]);*/
                     
                     $order->changeStatus(
-                        newStatus: OrderStatus::OrderStatus::FAILED,
+                        newStatus: OrderStatus::FAILED,
                         comment: $e->getMessage()
                     );
                  
