@@ -527,6 +527,7 @@ class OrderController extends Controller {
                 'orderId'   => $order->id,
                 // 'clearCart' => true,            // Флаг для фронта - надо подумать... здесь может быть и предзаказ... пока ничего не передаём...
                 'redirect'  => $redirect,       // Фронт сам решит куда редиректить (либо null, либо ссылка на оплату)
+                // 'message'   => $order->is_preorder ? 'Предварительный заказ оформлен' : 'Заказ успешно создан'
                 'message'   => $isPreorder ? 'Предварительный заказ оформлен' : 'Заказ успешно создан'
             ]);
         
@@ -535,6 +536,11 @@ class OrderController extends Controller {
             \Log::error('Order processing failed', [
                 'exception' => $e,
                 
+            ]);
+
+            \Log::error('Is order isset and exists', [
+                'isset' => isset($order),
+                'exists' => $order->exists,
             ]);
 
             if (isset($order) && $order->exists) {  
@@ -566,7 +572,7 @@ class OrderController extends Controller {
                             
                             if (!$productReport) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по остаткам"); }
                             
-                            if($isPreorder) {
+                            if($order->is_preorder) {
                                 // Перед обновлением остатков двойная проверка
                                 if ($productReport->preordered < $item->quantity) {
                                     \Log::warning('Invalid preorder quantity', [
