@@ -20,6 +20,8 @@ class StickProductCardService extends BaseProductCardService
             }
         }
 
+        // dd($currentProductPropHookTitle);    // hook 
+        
         // смотрим отличные характеристики текущего товара:
         $currentProductSizeTitle = $this->product->size->size_title; // shaft_length
         $currentProductSizeValue = $this->product->size->size_value; // 55
@@ -48,7 +50,7 @@ class StickProductCardService extends BaseProductCardService
             ->distinct()
         ->first();
 
-        // проверяем есть ли в продаже клюшки такой же модели, но с другой длиной рукоятки:
+                // проверяем есть ли в продаже клюшки такой же модели, но с другой длиной рукоятки:
         $possibleShaftLengthArr = [];
         $resultpossibleShaftLengthForProductCard = Product::select('sizes.size_value')
             ->leftJoin('sizes', 'products.size_id', '=', 'sizes.id')
@@ -86,14 +88,21 @@ class StickProductCardService extends BaseProductCardService
                     ['p.product_status_id', $prodStatus],
                 ])                 
             ->first();
-
-            ($currentProductSizeValue == $possibleShaftLengthForProductCard) ? $classCurrent = 'cardStick-shaftLength__item-active' : $classCurrent = 'cardStick-shaftLength__item'; 
             
-            $row['size_value'] = $possibleShaftLengthForProductCard;
-            $row['prod_url_semantic'] = $resNewItem['prod_url_semantic'];
-            $row['classCurrent'] = $classCurrent;
-            $possibleShaftLengthArr[] = $row;
+            ($currentProductSizeValue == $possibleShaftLengthForProductCard) ? $classCurrent = 'cardStick-shaftLength__item-active' : $classCurrent = 'cardStick-shaftLength__item'; 
+            if(!empty($resNewItem)) {
+                // dump($resNewItem);
+                $row['size_value'] = $possibleShaftLengthForProductCard;
+                $row['prod_url_semantic'] = $resNewItem['prod_url_semantic'];
+                $row['classCurrent'] = $classCurrent;
+            }        
+            
+            if(!empty($row)) {
+                $possibleShaftLengthArr[] = $row;
+            }
         }  
+
+        // dd($possibleShaftLengthArr); 
         
         /* foreach ($resultpossibleShaftLengthForProductCard as $possibleShaftLengthForProductCard) {
             $row = [];
@@ -128,23 +137,27 @@ class StickProductCardService extends BaseProductCardService
 
         // мы получаем в $possibleShaftLengthArr значения длин рукоятки в двух экземплярах (дубли) - при переборе данных попадают и правые, и левые... но нужно посмотреть логику - возможно где там исправить
         // пока удаляем дубли "руками": 
-        $propsVariants['possibleShaftLengthForProductCard'] = array_reduce(
-            $possibleShaftLengthArr,
-            function (array $carry, array $item) {
-                static $uniqueUrls = [];      // Статическая переменная для хранения уникальных URL
+        $propsVariants['possibleShaftLengthForProductCard'] = [];
+        // dd($possibleShaftLengthArr); 
+        if(isset($possibleShaftLengthArr) && !empty($possibleShaftLengthArr)) {
+            $propsVariants['possibleShaftLengthForProductCard'] = array_reduce(
+                $possibleShaftLengthArr,
+                function (array $carry, array $item) {
+                    static $uniqueUrls = [];      // Статическая переменная для хранения уникальных URL
+                    
+                    $url = $item['prod_url_semantic'];
+                    
+                    if (!isset($uniqueUrls[$url])) {
+                        $uniqueUrls[$url] = true; // Помечаем URL как использованный
+                        $carry[] = $item;         // Добавляем элемент в результат
+                    }
+                    
+                    return $carry;
+                },
+                [] // Начальное значение (пустой массив)
+            );
+        }
                 
-                $url = $item['prod_url_semantic'];
-                
-                if (!isset($uniqueUrls[$url])) {
-                    $uniqueUrls[$url] = true; // Помечаем URL как использованный
-                    $carry[] = $item;         // Добавляем элемент в результат
-                }
-                
-                return $carry;
-            },
-            [] // Начальное значение (пустой массив)
-        );
-        
         $propsVariants['resultpossibleHookForProductCard'] = $possibleHookForProductCard;
         $propsVariants['propHook'] = $currentProductPropHookValue;
 
