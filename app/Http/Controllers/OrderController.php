@@ -527,8 +527,7 @@ class OrderController extends Controller {
                 'orderId'   => $order->id,
                 // 'clearCart' => true,            // Флаг для фронта - надо подумать... здесь может быть и предзаказ... пока ничего не передаём...
                 'redirect'  => $redirect,       // Фронт сам решит куда редиректить (либо null, либо ссылка на оплату)
-                // 'message'   => $order->is_preorder ? 'Предварительный заказ оформлен' : 'Заказ успешно создан'
-                'message'   => $isPreorder ? 'Предварительный заказ оформлен' : 'Заказ успешно создан'
+                'message'   => $order->is_preorder ? 'Предварительный заказ оформлен' : 'Заказ успешно создан'
             ]);
         
         } catch (\Throwable $e) {     // \Throwable — это базовый интерфейс в PHP, который реализуют: Все исключения (\Exception) и Ошибки (\Error, например TypeError)
@@ -564,14 +563,23 @@ class OrderController extends Controller {
                     );
                  
                 // Освобождаем резервы
-                    $order->items()->each(function($item) {
+                    $order->items()->each(function($item) use ($order) {
                         try {
-                            $productReport = ProductReport::where('product_id', $item['id'])
+                            $productReport = ProductReport::where('product_id', $item['product_id'])
                                 ->lockForUpdate() // Решает проблему "гонки"
                                 ->first();
+
+                            \Log::error('productReport', [
+                                'productReport' => $productReport,
+                                'order exists' => $order->exists,
+                            ]);
                             
-                            if (!$productReport) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по остаткам"); }
+                            if (!$productReport) { throw new \Exception("Товар ID: {$item['product_id']} не найден в отчётах по остаткам"); }
                             
+                            \Log::error('is_preorder', [
+                                'is_preorder' => $order->is_preorder,
+                                'order exists' => $order->exists,
+                            ]);
                             if($order->is_preorder) {
                                 // Перед обновлением остатков двойная проверка
                                 if ($productReport->preordered < $item->quantity) {
@@ -582,6 +590,7 @@ class OrderController extends Controller {
                                     $productReport->preordered = 0;
                                 } else {
                                     $productReport->decrement('preordered', $item->quantity);
+                                    $productReport->increment('on_preorder', $item->quantity);
                                 }
                                 /* $productReport->update([
                                     'preordered'  => (int)$productReport->preordered - (int)$item['quantity'],
@@ -594,17 +603,18 @@ class OrderController extends Controller {
                                     ]);
                                     $productReport->reserved = 0;
                                 } else {
-                                    $productReport->decrement('preordered', $item->quantity);
+                                    $productReport->decrement('reserved', $item->quantity);
+                                    $productReport->increment('on_sale', $item->quantity);
                                 }
                                 /* $productReport->update([
                                     'reserved'  => (int)$productReport->reserved - (int)$item['quantity'],
                                 ]);*/   
                             }
 
-                            $productReservation = ProductReservation::where('product_id', $item['id'])->where('order_id', $validated['InvId'])
+                            $productReservation = ProductReservation::where('product_id', $item['product_id'])->where('order_id', $order->id)
                                 ->lockForUpdate() 
                                 ->first();
-                            if (!$productReservation) { throw new \Exception("Товар ID: {$item['id']} не найден в отчётах по резервированию"); }
+                            if (!$productReservation) { throw new \Exception("Товар ID: {$item['product_id']} не найден в отчётах по резервированию"); }
                             $productReservation->update([
                                 'cancelled_at' => now(),
                             ]);     

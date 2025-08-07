@@ -21,20 +21,22 @@ class ErrorNotifierService
                     );
                 } 
             */
-                    // шлём ошибку мне в любом случае...
-            Mail::to('serg.bolshakov@gmail.com')->send(
-                new ErrorNotification($exception, $context)
-            );
             
             \Log::error($exception->getMessage(), array_merge(
                 ['exception' => $exception],
                 $context
             ));
             
+            // шлём ошибку мне в любом случае...
+            Mail::to(config('mail.admin_email'))->send(
+                new ErrorNotification($exception, $context)
+            );
+            
         } catch (\Throwable $e) {
             \Log::critical('Failed to send error notification', [
                 'original_error' => $exception->getMessage(),
-                'notification_error' => $e->getMessage()
+                'notification_error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
         }
     }
