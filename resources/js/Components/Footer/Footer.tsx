@@ -23,9 +23,6 @@ const Footer: React.FC = () => {
                 </div>
                 <div className="footer-block">
                     <h2>ИНФОРМАЦИЯ</h2>
-                    <div className="vite-test">
-                        Если это зелёный пунктирный прямоугольник — Vite работает!
-                    </div>
                     <Info />
                 </div>
                 <div className="footer-block">
