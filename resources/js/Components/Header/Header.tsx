@@ -20,7 +20,7 @@ const Header: React.FC = () => {
     const location = useSafeLocation();
 
     useEffect(() => {
-        if (user) {
+        if (user && user.user_access_id == 1) {
             const isProfile = location.pathname === '/profile';
             setAuthBlockContentFinal(
                 `${user.name},<br>мы рады общению. Вы можете: ` +
@@ -280,7 +280,9 @@ const Header: React.FC = () => {
                         <img src="/storage/icons/expand-arrow.png" alt="external-link" />
                     </div>
                     <span className="header-auth__user--status">
-                        {user ? user.name : 'Гость'}
+                        {user 
+                            ? user.user_access_id === 2 ? 'Администратор' : user.name
+                            : 'Гость'}
                     </span>
 
                     <motion.div className="header-icon__block" whileHover={{ scale: 0.95 }} whileTap={{ scale: 0.95 }}>

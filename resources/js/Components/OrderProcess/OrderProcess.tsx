@@ -632,12 +632,12 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
             return;
         }
 
-        console.log('OrderProcess, handleOrderAction, currentProducts', currentProducts);
-        console.log('OrderProcess, handleOrderAction, customer', customerDataRef.current);
-        console.log('OrderProcess, handleOrderAction, delivery', deliveryDataRef.current);
-        console.log('OrderProcess, handleOrderAction, products_amount', currentAmount);
-        console.log('OrderProcess, handleOrderAction, total', currentAmount + deliveryData.price);
-        console.log('OrderProcess, handleOrderAction, action', actionType);
+        // console.log('OrderProcess, handleOrderAction, currentProducts', currentProducts);
+        // console.log('OrderProcess, handleOrderAction, customer', customerDataRef.current);
+        // console.log('OrderProcess, handleOrderAction, delivery', deliveryDataRef.current);
+        // console.log('OrderProcess, handleOrderAction, products_amount', currentAmount);
+        // console.log('OrderProcess, handleOrderAction, total', currentAmount + deliveryData.price);
+        // console.log('OrderProcess, handleOrderAction, action', actionType);
         
         try {
             const orderData = {

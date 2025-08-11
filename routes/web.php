@@ -20,6 +20,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\ProductsTableController;
 use App\Http\Controllers\LegalController;
+use App\Http\Controllers\AdminController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -192,13 +193,16 @@ Route::get('/profile/orders', [OrderController::class, 'getOrders'])
     ->middleware(['auth', 'verified'])
     ->name('profile.orders');
 
-/*Route::get('/legal/privacy-policy', function () {
-    return view('legal.privacy-policy'); // Шаблон с текстом политики
-})->name('legal.privacy');
+// Роуты для админки
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+    
+    Route::get('/products/sticks/add', function () {
+        return Inertia::render('AdminProductsSticksAdd');
+    })->name('admin.products.sticks.add');
 
-Route::get('/legal/offer', function () {
-    return view('legal.offer'); // Шаблон с офертой
-})->name('legal.offer');*/
+    // Другие админ-роуты...
+});
 
 // Отображение документов пользователям
 Route::get('/legal/{type}', [LegalController::class, 'show'])

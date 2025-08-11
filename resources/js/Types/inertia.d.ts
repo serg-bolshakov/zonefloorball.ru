@@ -1,4 +1,5 @@
 // resources/js/Types/inertia.d.ts
+
 // Назначение:            Типизация данных, приходящих от сервера через Inertia.js. 
 // Пример использования:  Пропсы страниц, общие данные (например, deliveryPrice)
 // Где доступен:          Во всех компонентах, использующих usePage()
@@ -14,18 +15,15 @@ declare module '@inertiajs/core' {
   }
 }
 
-/** Оптимизированная структура (рекомендуемая)
-  resources/
-    js/
-      Types/
-        inertia.d.ts       # Типы Inertia.js
-        delivery/          # Типы доставки
-          widget.d.ts      # Типы виджета Почты России
-          api.d.ts         # Типы API-ответов
-        index.d.ts         # Главный файл экспорта типов
- 
+declare module '@inertiajs/react' {
+  interface Route {
+    current: (name: string | RegExp) => boolean;
+  }
+}
 
-  Разделение ответственности:
-    - inertia.d.ts — только для типов, связанных с Inertia.js
-    - delivery/*.d.ts — для бизнес-логики доставки
- */
+declare interface AdminMenuItem {
+  label: string;
+  path: string;
+  icon?: React.ReactNode;
+}
+

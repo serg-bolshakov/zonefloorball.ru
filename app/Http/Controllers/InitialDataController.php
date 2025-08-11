@@ -25,6 +25,10 @@
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();
                 $userData = $this->getUserAuthData($user, $request);
 
+                \Log::debug('userData', [
+                    'userData' => $userData,                                     
+                ]);
+
                 \Log::debug('URL Check', [
                     'current_path' => $request->path(),                                     // api/initial-data
                     'referer' => $request->header('referer'),                               // http://127.0.0.1:8000/profile
@@ -44,6 +48,7 @@
                         'email'                     => $user->email,
                         'client_type_id'            => $user->client_type_id,
                         'client_rank_id'            => $user->client_rank_id,
+                        'user_access_id'            => $user->user_access_id,
                         'org_inn'                   => $user->org_inn,
                         'org_kpp'                   => $user->org_kpp,
                         'org_addr'                  => $user->org_addr,
@@ -87,9 +92,18 @@
                 ];
             }
 
-            
+            $isAdmin = $request->is('admin') || ($request->header('referer') && str_contains($request->header('referer'), '/admin'));
+            if($user->user_access_id == '2') {          // Администратор
+                return [
+                    'auth_content' => 'Дорогой наш Администратор!' . ',<br>мы рады общению. Вы можете: '
+                    . '<br><a href="' . ($isAdmin ? '/' : '/admin/dashboard') . '">'
+                    . ($isAdmin ? 'выйти из админки' : 'войти в админку') 
+                    . '</a> или <a href="/logout">выйти из системы</a>',
+                ];
+            }
+
             $isProfile = $request->is('profile') || ($request->header('referer') && str_contains($request->header('referer'), '/profile'));
-           
+
             return [
                 'auth_content' => $user->name . ',<br>мы рады общению. Вы можете: '
                     . '<br><a href="' . ($isProfile ? '/' : '/profile') . '">'

@@ -44,6 +44,18 @@ class ProductController extends Controller
         }
     }
 
+    public function checkSimilar(Request $request) {
+        $similar = Product::where('brand_id', $request->brand)
+            ->where('model', $request->model)
+            ->where('shaft_flex', $request->shaftFlex)
+            ->first();
+
+        return response()->json([
+            'exists' => !!$similar,
+            'data' => $similar
+        ]);
+    }
+
     protected function getResponseData(Request $request) {
         // Получаем данные из URL
         $categoryId = $this->urlParser->getCategoryId();
@@ -177,4 +189,6 @@ class ProductController extends Controller
             })
             ->select('products.*', 'actual_prices.price_value as actual_price', 'regular_prices.price_value as regular_price');
     }
+
+
 }

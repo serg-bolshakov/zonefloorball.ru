@@ -1,5 +1,126 @@
-.vite-test {
-  color: green;
-  border: 2px dashed green;
-  padding: 1rem;
+/* resources/css/admin.css */
+.admin-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: 'Arial', sans-serif;
+}
+
+.admin-content {
+  flex: 1;
+  padding: 20px;
+  background: #fff;
+}
+
+.admin-menu {
+  width: 220px;
+  background: #f0f0f0;
+  border-right: 1px solid #d1d1d1;
+}
+
+.menu-header {
+  padding: 12px 15px;
+  background: #003366;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.menu-item {
+  display: block;
+  padding: 8px 15px 8px 25px;
+  color: #333;
+  text-decoration: none;
+  font-size: 13px;
+  border-left: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.menu-item:hover {
+  background: #e1e1e1;
+  border-left-color: #003366;
+}
+
+/* Активное состояние */
+.menu-item.active {
+  border-left-color: #ff9b00;
+  background: #e1e1e1;
+}
+
+.document-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.document-table th {
+  background: #f0f0f0;
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.document-table td {
+  padding: 8px;
+  border: 1px solid #eee;
+}
+
+.document-table tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.document-table tr:hover {
+  background: #f0f7ff;
+}
+
+.btn-edit, .btn-delete {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-edit { color: #0066cc; }
+.btn-delete { color: #cc0000; }
+
+/* Кнопки действий */
+.btn-1c {
+  background: #003366;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 3px;
+  font-size: 13px;
+}
+
+.stick-form-container {
+  max-width: 1200px;
+  margin: 20px auto;
+}
+
+.form-steps {
+  display: flex;
+  margin-bottom: 20px;
+  gap: 5px;
+}
+
+.step-tab {
+  padding: 10px 15px;
+  background: #f0f0f0;
+  border: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.step-tab.active {
+  background: #003366;
+  color: white;
+}
+
+.step-tab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.form-content {
+  background: white;
+  padding: 20px;
+  border: 1px solid #eee;
 }

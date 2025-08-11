@@ -8,5 +8,6 @@ export const API_ENDPOINTS = {
     DELIVERY_OPTIONS: '/api/delivery-options',
     ORDER_CREATE: '/api/orders/create',
     FAVORITES_PRODUCTS: '/api/products/favorites',
-    // USER_SYNC: '/api/user/sync',
-} as const; // `as const` для точной типизации
+    // CHECK_SIMILAR_PRODUCTS: (categoryId: number) => `/api/check-similar/products/category/${categoryId}`,
+    CHECK_SIMILAR_PRODUCTS: '/api/check-similar/products',
+} as const; // `as const` для точной типизации, as const гарантирует, что значения нельзя изменить

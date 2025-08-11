@@ -2935,7 +2935,7 @@ a.registration-form__submit-btn, .order-btn {
 }
 
 .productAddition {
-    width: 1280px;
+    /* width: 100%; */
     margin: 0 auto 24px auto;
     background-color: rgb(248, 248, 228);
     padding: 8px;
@@ -2945,7 +2945,7 @@ a.registration-form__submit-btn, .order-btn {
     font-size: 12px;
     color: rgba(0, 0, 0);
     text-align:left;
-    border-radius: 0 8px;
+    border-radius: 8px;
     border: 1px solid #cecece;
 }
   
@@ -3127,7 +3127,6 @@ a.registration-form__submit-btn, .order-btn {
     box-shadow: inset 0px 20px 20px #ffffff;
     border-radius: 8px;
     padding: 8px 14px;
-    margin: 4px 0 4px 0;
     width: 200px;
 }
   

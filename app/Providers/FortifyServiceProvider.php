@@ -63,15 +63,21 @@ class FortifyServiceProvider extends ServiceProvider
         });*/
 
         // 26.05.2025 решили задачу переадресации пользователя после авторизации на ту страницу, с которой он инициировал процесс авторизации: пробовал передать корректный URL через сессию,
-        // но в процессе авторизации происходила регенерация session_id и URL терялся. Задача решена путём передачи корректного URL
-        // через куки. Корректный URL для переадресации "отловили" в AuthServiceProvider - только там это можно сделать... как оказалось...
+        // но в процессе авторизации происходила регенерация session_id и URL терялся. Задача решена путём передачи корректного URL через куки. 
+        // Корректный URL для переадресации "отловили" в AuthServiceProvider - только там это можно сделать... как оказалось...
         $this->app->instance(LoginResponse::class, new class implements LoginResponse {
             public function toResponse($request)
             {
                 $redirectUrl = $request->cookie('login_redirect', '/');
-                // $redirectUrl = session()->pull('login_original_url', '/');
-                // $redirectUrl = session('login_original_url', '/');
-                // session()->forget('login_original_url'); // Очищаем
+                
+                \Log::debug('Login success', [
+                    'request' => $request->cookie(),
+                ]);
+                if (Auth::check()) {
+                    \Log::debug('Login success check authed:', [ 'isAuthed' => Auth::check(), 'user' => Auth::user()->user_access_id,]);
+                } else {
+                    \Log::debug('Login success check authed:', [ 'user' => '!authed',]);
+                }
                 
                 return redirect($redirectUrl);
             }
