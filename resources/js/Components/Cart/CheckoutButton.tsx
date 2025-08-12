@@ -18,7 +18,7 @@ const CheckoutButton = ({ disabled, onClick, isPulsing }: IButtonProps) => (
             transition: { repeat: Infinity, repeatDelay: 2 }
         } : {}}
     >
-        Оформить заказ
+        Купить
     </motion.button>
 );
 
