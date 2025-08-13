@@ -60,7 +60,7 @@ export type TValidatedNewStickStep1ForSimilar = {
 
 interface Step1FormProps {
     state: TNewStickFormState;
-    data: TNewStickFormStep1;
+    data : TNewStickFormStep1;
     onChange: (step: 1, data: Partial<TNewStickFormStep1>) => void; // Передаём обновлённые поля
     // onSubmit: (data: TRawFormStep1) => void;
 }
@@ -268,13 +268,22 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
                 <input
                   className="productAddition-form__input-shaftFlex" 
                   type="radio"
-                  name="shaftFlex"
+                  name="shaftFlexId"
                   value={String(flex.id)} // Конвертируем в строку // Всегда строка в DOM!
                   checked={data.shaftFlexId === String(flex.id)}
                   onChange={handleChange}
                 />
               </div>
             ))}
+            <span className="productAddition-error margin-left8px">
+            *
+            {errors?.shaftFlexId && (
+              <>
+                <br />
+                {errors?.shaftFlexId}
+              </>
+            )}
+          </span>
         </div>
 
         {/* Цвет */}
