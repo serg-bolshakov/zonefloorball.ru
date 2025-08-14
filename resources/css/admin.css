@@ -124,3 +124,9 @@
   padding: 20px;
   border: 1px solid #eee;
 }
+
+.Toastify__toast-container {
+  z-index: 9999;
+  position: fixed;
+  font-family: inherit;
+}

@@ -13,10 +13,7 @@ type TSteps = {
     similarProducts?: IProduct[];           // Для подсказок
   };
 
-  2: { 
-    /* тип для шага 2 */ 
-    raw: TNewStickFormStep1;               
-  };
+  // 2: { /* тип для шага 2 */ };
   // 3?: { /* тип для шага 3 */ };
   // 4?: { /* тип для шага 4 */ };
 };
@@ -84,19 +81,19 @@ export const stickFormReducer = (
   switch (action.type) {                                // Возвращает новое состояние на основе типа действия (action.type) 
     case 'UPDATE_FORM_DATA': {
         const step = action.step;
-        if (!state.steps[step]) return state;
-        
+        console.log('const UPDATE_FORM_DATA input step', step);
+        console.log('const UPDATE_FORM_DATA input data', action.payload);
         return {
             ...state,
             steps: {
-                ...state.steps,
-                [step]: {
-                        ...state.steps[step],
-                        raw: {
-                            ...state.steps[step].raw,
-                            ...action.payload
-                        },
-                    errors: undefined // Сбрасываем ошибки при обновлении
+            ...state.steps,
+            [step]: {
+                    ...state.steps[step],
+                    raw: {
+                    ...state.steps[step].raw,
+                    ...action.payload // Здесь должно быть частичное обновление
+                    },
+                    errors: undefined // Сбрасываем ошибки при изменении
                 }
             }
         };
@@ -168,7 +165,7 @@ export const stickFormReducer = (
   }
 };
 
-// Начальное состояние
+// Инициализируем начальное состояние
 export const initialState: TNewStickFormState = {
     currentStep: 1,
     productId: null,
@@ -176,8 +173,26 @@ export const initialState: TNewStickFormState = {
     isLoading: false,
     error: null,
     steps: { 
-        1: { raw: {} }, 
-        2: { raw: {} }, 
+        1: { raw: {
+                // ... все поля
+                article    : '', // Пустая строка вместо undefined
+                brandId    : '',
+                model      : '',
+                marka      : '',
+                shaftFlexId: '',
+                colour     : '',
+                material   : '',
+                stickSizeId: '',
+                weight     : '',
+                prod_desc  : '',
+                hookId     : '',
+                iffId      : '',
+                errors     : {},
+                
+            }, 
+            errors: undefined
+        }, 
+        // 2: { raw: {} }, 
         // ... 
     },
     

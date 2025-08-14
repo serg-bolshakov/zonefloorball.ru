@@ -45,14 +45,68 @@ class ProductController extends Controller
     }
 
     public function checkSimilar(Request $request) {
-        $similar = Product::where('brand_id', $request->brand)
-            ->where('model', $request->model)
-            ->where('shaft_flex', $request->shaftFlex)
-            ->first();
+        \Log::debug('Similar products search before', [
+            'params' => $request->all(),
+        ]);
+
+        $validated = $request->validate([
+            'article'       => 'required|string',
+            'brandId'       => 'required|integer',
+            'categoryId'    => 'required|integer',
+            'model'         => 'nullable|string',
+            'marka'         => 'nullable|string',
+            'colour'        => 'nullable|string',
+        ]);
+
+        // 1. Сначала проверяем существование товара с таким артикулом
+        \Log::debug('Similar products search article', [
+            'article' => $request->article,
+        ]);
+
+        $article = preg_replace('/\D/', '', $request->article); // Оставляем только цифры
+        $existingProduct = Product::where('article', $article)->first();
+        
+        \Log::debug('Similar products search existingProduct', [
+            'existingProduct' => $existingProduct,
+        ]);
+
+        if ($existingProduct) {
+            return response()->json([
+                'exists' => true,
+                'isExactMatch' => true, // Флаг точного совпадения по артикулу
+                'message' => 'Товар с данным артикулом уже существует в БД',
+                'data' => [$existingProduct],
+                'count' => 1
+            ]);
+        }
+
+        // 2. Поиск похожих товаров (кроме текущего артикула)
+        $similarProducts = Product::where('brand_id', $request->brandId)
+            ->where('category_id', $request->categoryId)
+            ->where('article', '!=', $request->article) // Исключаем текущий артикул
+            ->where(function($query) use ($request) {
+                $query->whereNull('model')->orWhere('model', $request->model);
+            })
+            ->where(function($query) use ($request) {
+                $query->whereNull('marka')->orWhere('marka', $request->marka);
+            })
+            ->where(function($query) use ($request) {
+                $query->whereNull('colour')->orWhere('colour', $request->colour);
+            })
+            ->get();
+
+        \Log::debug('Similar products search result', [
+            'count' => $similarProducts->count()
+        ]);
 
         return response()->json([
-            'exists' => !!$similar,
-            'data' => $similar
+            'exists' => $similarProducts->isNotEmpty(),
+            'isExactMatch' => false, // Это похожие товары, но не точный дубликат
+            'message' => $similarProducts->isNotEmpty() 
+                ? 'Найдены похожие товары' 
+                : 'Похожих товаров не найдено',
+            'data' => $similarProducts,
+            'count' => $similarProducts->count()
         ]);
     }
 

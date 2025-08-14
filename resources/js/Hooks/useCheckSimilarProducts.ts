@@ -50,7 +50,7 @@ const useCheckSimilarProducts = () => {
 
           try {
             const endpoint = API_ENDPOINTS.CHECK_SIMILAR_PRODUCTS;
-      
+            console.log('checkSimilarProduct requestData', requestData);
             const response = await axios.post<ISimilarProductResponse>(endpoint, {
               ...requestData, 
               action: 'checkSimilarProduct', 

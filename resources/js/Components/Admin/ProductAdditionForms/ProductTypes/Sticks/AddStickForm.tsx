@@ -1,11 +1,12 @@
 // components/Admin/ProductAdditionForms/AddStickForm.tsx
-import { useReducer, useCallback } from 'react';
+import { useReducer, useCallback, useRef, useEffect } from 'react';
 import { stickFormReducer, initialState } from '../../reducers/stickFormReducer';
 import NewStickStep1Form from './NewStickFormStep1';
 import { TNewStickFormStep1, TValidatedNewStickStep1 } from './NewStickFormStep1';
-import { сonvertFormData, validateStep } from '@/Utils/validators/stickFormValidators';
+import { сonvertFormData, validateStep, validatePartStepForRequestSimilar, сonvertFormDataForRequestSimilar } from '@/Utils/validators/stickFormValidators';
 import useCheckSimilarProducts from '@/Hooks/useCheckSimilarProducts';
 import { toast } from 'react-toastify';
+import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import { getErrorMessage } from '@/Utils/error';
 
 // Общий тип для всей формы
@@ -18,14 +19,21 @@ export type TFormNewStickData = {
 export type TStepNumber = keyof TFormNewStickData; // 1 | 2 | 3 | 4
 
 const AddStickForm = () => {
-    const [state, dispatch] = useReducer(stickFormReducer, initialState);
+    
+    const [state, dispatch] = useReducer(stickFormReducer, initialState);   
     const { checkSimilarProduct } = useCheckSimilarProducts();
-  
+    const stateRef = useRef(state);
+    // Актуализируем ref при каждом изменении состояния
+    useEffect(() => {
+      stateRef.current = state;
+    }, [state]);
+    
     // Обновление данных текущего шага
     const updateFormData = <T extends TStepNumber>(
         step: T,
         data: Partial<TFormNewStickData[T]>
     ) => {
+      
       dispatch({
           type: 'UPDATE_FORM_DATA',
           step,
@@ -33,54 +41,54 @@ const AddStickForm = () => {
       });
     };
   
-  // Проверка похожих товаров
-    const handleCheckSimilar = useCallback(async () => {
-      dispatch({ type: 'SET_LOADING', payload: true });
-      const step = state.currentStep;
-      const formData = state.steps[step].raw;
+    // Проверка похожих товаров
+    const handleCheckSimilar = async () => {
+        const { currentStep, steps } = stateRef.current;
+        const formData = steps[currentStep].raw;
 
-      try {
-        
+        console.log('Актуальные данные из ref:', formData);       // Для отладки
+              
         // 1. Синхронная валидация перед диспатчем
-        const errors = validateStep(step, formData);
-
+        const errors = validatePartStepForRequestSimilar(formData);
         if (Object.keys(errors).length > 0) {
-          dispatch({ 
-            type: 'SET_STEP_ERRORS', 
-            step, 
-            payload: errors 
-          });
+          dispatch({ type: 'SET_STEP_ERRORS', step: currentStep, payload: errors });
           return; // Прерываем если есть ошибки
         }
         
         // 2. Конвертация данных
         // Если ошибок при заполнении формы нет, валидируем заполненные поля для отправки на сервер (строковые значения, полученные из формы, мы должны преобразовать в числовые значения (где требуется)):
-        const converted = сonvertFormData(step, formData);
+        const converted = сonvertFormDataForRequestSimilar(formData);
         console.log('[CheckSimilar] Payload:', converted); // Логирование для отладки
-        // 3. Запрос к API
-        const res = await checkSimilarProduct(converted, {
-          onSuccess: (res) => {
-              const message = res.data?.length 
-                ? `Найдено ${res.data.length} аналогов`
-                : 'Похожих товаров не найдено';
-
-              toast.success(res?.message || message);
         
-              // Дополнительная обработка успешного ответа
-              /* if(res.data) {
-                dispatch({ 
-                    type: 'SET_SIMILAR_PRODUCTS', 
-                    payload: res.data 
-                });
-              }*/
+        // 3. Запрос к API
+        dispatch({ type: 'SET_LOADING', payload: true });
+        try {
+          
+          const res = await checkSimilarProduct(converted, {
+            onSuccess: (res) => {
+                const message = res.data?.length 
+                  ? `Найдено ${res.data.length} аналогов`
+                  : 'Похожих товаров не найдено';
 
-             //Унификация обработки пустого ответа - пока так оставим, далее посмотрим...
-              dispatch({ 
-                type: 'SET_SIMILAR_PRODUCTS',
-                step: 1, 
-                payload: res.data || [] // Всегда массив, даже пустой
-              });   
-          },
+                toast.success( res.message ? `${res.message} (${message})` : message );
+          
+                // Дополнительная обработка успешного ответа
+                /* if(res.data) {
+                  dispatch({ 
+                      type: 'SET_SIMILAR_PRODUCTS', 
+                      payload: res.data 
+                  });
+                }*/
+                console.log('message', message);
+                console.log('res', res.message);
+              
+                //Унификация обработки пустого ответа - пока так оставим, далее посмотрим...
+                dispatch({ 
+                  type: 'SET_SIMILAR_PRODUCTS',
+                  step: currentStep, 
+                  payload: res.data || [] // Всегда массив, даже пустой
+                });   
+            },
         });
         
       } catch (error) {
@@ -91,7 +99,7 @@ const AddStickForm = () => {
       } finally {
           dispatch({ type: 'SET_LOADING', payload: false });
       }
-  }, [state.currentStep, checkSimilarProduct]);
+    }; // Зависимости не нужны, так как используем ref
 
   const handleNext = (stepData: any) => {
     //
@@ -119,11 +127,14 @@ const AddStickForm = () => {
       {/* Отображение текущего шага */}
       <div className="form-content">
         {state.currentStep === 1 && (
-          <NewStickStep1Form 
-            state={initialState}
+          <NewStickStep1Form
             data={state.steps[1].raw}
-            onChange={updateFormData}
-            // onNext={handleNext}
+            errors={state.steps[1].errors || {}}
+            similarProducts={state.steps[1].similarProducts}
+            onChange={(data) => updateFormData(1, data)}
+            onCheckSimilar={handleCheckSimilar}
+            // onCreateProduct={handleCreateProduct}
+            isLoading={state.isLoading}
           />
         )}
 

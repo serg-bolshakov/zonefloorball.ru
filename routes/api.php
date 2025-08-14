@@ -64,3 +64,6 @@ Route::get('/test', function () {
 Route::middleware('auth:sanctum')->get('/test-auth', function (Request $request) {
     return ['user' => $request->user()];
 });
+
+// Роут для проверки наличия похожего товара в БД при добавлении нового
+Route::post('/check-similar/products', [ProductController::class, 'checkSimilar']);

@@ -15,19 +15,19 @@ import { TNewStickFormState } from '../../reducers/stickFormReducer';
 // Типы для невалидированной формы (все поля optional)
 export type TNewStickFormStep1 = {
     /* поля шага 1 */ 
-    article?    : string;
-    brandId?    : string;                   // Храним как строку (значение из input.value)
-    model?      : string;
-    marka?      : string;
-    shaftFlexId?: string;                   // Храним как строку (значение из input.value)
-    colour?     : string;
-    material?   : string;
-    stickSizeId?: string;                   // Храним как строку (значение из input.value)
-    weight?     : string;                   // Храним как строку (значение из input.value)
-    prod_desc?  : string;
-    hookId?     : string;                   // Храним как строку (значение из input.value)
-    iffId?      : string;                   // Храним как строку (значение из input.value)
-    errors?     : Record<string, string>;
+    article    : string;
+    brandId    : string;                   // Храним как строку (значение из input.value)
+    model      : string;
+    marka      : string;
+    shaftFlexId: string;                   // Храним как строку (значение из input.value)
+    colour     : string;
+    material   : string;
+    stickSizeId: string;                   // Храним как строку (значение из input.value)
+    weight     : string;                   // Храним как строку (значение из input.value)
+    prod_desc  : string;
+    hookId     : string;                   // Храним как строку (значение из input.value)
+    iffId      : string;                   // Храним как строку (значение из input.value)
+    errors     : Record<string, string>;
 };
 
 // Типы для валидированных форм ... с правильными типами полей
@@ -59,100 +59,31 @@ export type TValidatedNewStickStep1ForSimilar = {
 };
 
 interface Step1FormProps {
-    state: TNewStickFormState;
-    data : TNewStickFormStep1;
-    onChange: (step: 1, data: Partial<TNewStickFormStep1>) => void; // Передаём обновлённые поля
-    // onSubmit: (data: TRawFormStep1) => void;
+    data: TNewStickFormStep1;
+    errors: Record<string, string>;
+    similarProducts?: IProduct[];
+    onChange: (data: Partial<TNewStickFormStep1>) => void;
+    onCheckSimilar: () => void;
+    // onCreateProduct: () => void;
+    isLoading: boolean;
 }
 
-const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) => {
-
-  const { errors } = data;
-
-  // Частичная валидация для отправки запроса на наличие возможного дубликата оформляемого товара
-  const validateFormFieldsForSimilarChecking = () => {
-    /*const newErrors: Record<string, string> = {};
-    // Введён ли артикул нового товара в требуемом диапазоне
-    if (!formData.article) {
-      newErrors.article = 'Обязательное поле';
-    } else if (!/^\d{4,8}$/.test(formData.article)) {
-      newErrors.article = 'Должен быть длиной от 4 до 8 цифр';
-    }
-    // Указан ли бренд нового товара
-    if (!formData.brandId) {
-      newErrors.brandId = 'Выберите бренд';
-    }
-  
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;*/
-  };
-
-  // Валидация всей формы
-  /*const validate = () => {
-    const newErrors: Record<string, string> = {};
-    
-    if (!formData.article) {
-      newErrors.article = 'Обязательное поле';
-    } else if (!/^\d{4,8}$/.test(formData.article)) {
-      newErrors.article = 'Должен быть длиной от 4 до 8 цифр';
-    }
-    
-    if (!formData.brandId) {
-      newErrors.brandId = 'Выберите бренд';
-    }
-    
-    if (!formData.stickSizeId) {
-      newErrors.stickSizeId = 'Укажите длину клюшки';
-    }
-     
-    if (!formData.hookId) {
-      newErrors.hookId = 'Выберите игровую сторону (хват)';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };*/
-
-  // Обработчик отправки заявки на просмотр похожего товара
-  const handleSubmitAskSameProduct = async (e: React.FormEvent) => {
-      /*e.preventDefault();
-    
-      if (!validateForSimilarChecking()) return;
-      if (submittingRef.current) return; // Защита от повторного нажатия
-      submittingRef.current = true;
-      
-      try {
-            const requestData = {
-              categoryId: CATEGORY.STICKS,
-              brandId: formData.brandId,
-              model: formData.model || null,
-              marka: formData.marka || null,
-              shaftFlexId: formData.shaftFlexId || null,
-              colour: formData.colour || null,
-            };
-            console.log('Отправляемые данные для запроса на наличие похожего товара', requestData);
-            await checkSimilarProduct(requestData, {
-            onSuccess: (res) => {
-              toast.success(res?.message || 'Проверка выполнена успешно');
-              // Дополнительная обработка успешного ответа
-            },
-            onError: (error) => {
-              console.error('Checking error:', error);
-            }
-          });
-      } catch (error) {
-      if (!axios.isCancel(error)) {
-        const message = getErrorMessage(error);
-        toast.error(`Ошибка: ${message}`);
-      }
-    } finally {
-      submittingRef.current = false;
-    }*/
-  };
+const NewStickFormStep1: React.FC<Step1FormProps> = ({
+    data,
+    errors,
+    similarProducts,
+    onChange,
+    onCheckSimilar,
+    // onCreateProduct,
+    isLoading
+}) => {
 
   // Обработчик изменений
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    onChange(1, { [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    console.log('name', name);
+    console.log('value', value);
+    onChange({ [e.target.name]: e.target.value });
   };
   
   // Обработчик отправки
@@ -163,8 +94,14 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
     }*/
   };
 
+  const testToast = () => {
+    toast.success('Тестовое уведомление');
+    console.log('Toast вызван');
+  };
+
   return (
     <div className="productAddition">
+      <button onClick={testToast}>Проверить toast</button>
       <form onSubmit={handleSubmit}> 
         <p className="productAddition-form__input-item">
           <span className="productAddition-form__title">
@@ -182,7 +119,7 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
             className="productAddition-form__input productAddition-form__input-article"
             type="text"
             name="article"
-            value={data.article || ''}
+            value={data.article}
             onChange={handleChange} 
             required
           />
@@ -234,7 +171,7 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
             className="productAddition-form__input productAddition-form__input-model"
             type="text"
             name="model"
-            value={data.model || ''}
+            value={data.model}
             onChange={handleChange}
           />
           <span className="productAddition-form__clearance">
@@ -250,7 +187,7 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
               className="productAddition-form__input productAddition-form__input-marka" 
               type="text" 
               name="marka"
-              value={data.marka || ''}
+              value={data.marka}
               onChange={handleChange}
             />
             {errors?.marka && (
@@ -303,9 +240,9 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
         </div>
         
         <button 
-          className={`${state.isLoading ? 'productAddition-form__submit-btn-out basket-button_disabled' : 'productAddition-form__submit-btn-out'}`}
-          //onClick={handleCheckSimilar}
-          disabled={state.isLoading}
+          className={`${isLoading ? 'productAddition-form__submit-btn-out basket-button_disabled' : 'productAddition-form__submit-btn-out'}`}
+          onClick={onCheckSimilar}
+          disabled={isLoading}
         >
           Проверить есть ли подобный товар
         </button>
@@ -317,7 +254,7 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
               className="productAddition-form__input productAddition-form__input-material"
               type="text"
               name="material"
-              value={data.material || ''}
+              value={data.material}
               onChange={handleChange}
             />
             {errors?.material && (
@@ -361,7 +298,7 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
               className="productAddition-form__input productAddition-form__input-weight"
               type="text"
               name="weight"
-              value={data.weight || ''}
+              value={data.weight}
               onChange={handleChange}
             />
             {errors?.weight && (
@@ -375,7 +312,7 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
             <textarea 
                 className="productAddition-form__input productAddition-form__input-description"
                 name="prod_desc"
-                value={data.prod_desc || ''}
+                value={data.prod_desc}
                 onChange={handleChange}
             />
             {errors?.prod_desc && (
@@ -433,7 +370,7 @@ const NewStickFormStep1: React.FC<Step1FormProps> = ({ state, data, onChange }) 
         <button 
           // onClick={handleCreateProduct} 
           className="productAddition-button__stage1 productAddition-form__submit-btn margin-right12px"
-          disabled={state.isLoading}
+          disabled={isLoading}
         >
           Сохранить и продолжить
         </button>
