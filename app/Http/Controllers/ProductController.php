@@ -75,13 +75,13 @@ class ProductController extends Controller
                 'exists' => true,
                 'isExactMatch' => true, // Флаг точного совпадения по артикулу
                 'message' => 'Товар с данным артикулом уже существует в БД',
-                'data' => [$existingProduct],
+                'data' => $existingProduct,
                 'count' => 1
             ]);
         }
 
         // 2. Поиск похожих товаров (кроме текущего артикула)
-        $similarProducts = Product::where('brand_id', $request->brandId)
+        $similarProduct = Product::where('brand_id', $request->brandId)
             ->where('category_id', $request->categoryId)
             ->where('article', '!=', $request->article) // Исключаем текущий артикул
             ->where(function($query) use ($request) {
@@ -93,20 +93,19 @@ class ProductController extends Controller
             ->where(function($query) use ($request) {
                 $query->whereNull('colour')->orWhere('colour', $request->colour);
             })
-            ->get();
+            ->first();
 
         \Log::debug('Similar products search result', [
-            'count' => $similarProducts->count()
+            'similarProduct' => $similarProduct
         ]);
 
         return response()->json([
-            'exists' => $similarProducts->isNotEmpty(),
+            'exists' => $similarProduct->isNotEmpty(),
             'isExactMatch' => false, // Это похожие товары, но не точный дубликат
-            'message' => $similarProducts->isNotEmpty() 
+            'message' => $similarProduct->isNotEmpty() 
                 ? 'Найдены похожие товары' 
                 : 'Похожих товаров не найдено',
-            'data' => $similarProducts,
-            'count' => $similarProducts->count()
+            'data' => $similarProduct,
         ]);
     }
 

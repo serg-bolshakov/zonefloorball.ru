@@ -1,4 +1,4 @@
-// hooks/useCheckSimilarProduct.ts
+// resources/js/Hooks/useCheckSimilarProduct.ts
 
 import { useCallback, useState } from 'react';
 import axios from 'axios';
@@ -26,7 +26,7 @@ export type TRequestSimilarData = {
 interface ISimilarProductResponse {
     status: 'success' | 'error';
     message?: string;
-    data?: IProduct[];
+    data?: IProduct;
 }
 
 // Расширяем интерфейс options
@@ -34,7 +34,7 @@ interface IRequestOptions {
     onSuccess?: (response: ISimilarProductResponse) => void;
 }
 
-const useCheckSimilarProducts = () => {
+const useCheckSimilarProduct = () => {
       const controllerRef = useRef<AbortController | null>(null);
 
       const checkSimilarProduct = useCallback(
@@ -50,7 +50,6 @@ const useCheckSimilarProducts = () => {
 
           try {
             const endpoint = API_ENDPOINTS.CHECK_SIMILAR_PRODUCTS;
-            console.log('checkSimilarProduct requestData', requestData);
             const response = await axios.post<ISimilarProductResponse>(endpoint, {
               ...requestData, 
               action: 'checkSimilarProduct', 
@@ -65,7 +64,6 @@ const useCheckSimilarProducts = () => {
       
             if (!controller.signal.aborted) {
               options.onSuccess?.(response.data);
-              console.log('Response', response.data);
               return response.data;
             }
 
@@ -95,4 +93,4 @@ const useCheckSimilarProducts = () => {
     
 };
 
-export default useCheckSimilarProducts;
+export default useCheckSimilarProduct;

@@ -18,14 +18,14 @@ const CustomersCares: React.FC = () => {
             </div>
             <div className="footer-auth__div">
                 <p className="margin-top12px text-align-left margin-bottom12px">
-                    Сайт в разработке. Только для информации.<br /><span className='color-red'>Открытие в августе 2025&nbsp;г.</span>
+                    Сайт работает в <span className='color-red'>тестовом режиме</span>. Информация актуальна. Добро пожаловать!
                 </p>
                 <p className="margin-top12px margin-bottom12px">Можно <a href="https://floorball.nnov.ru/htdocs/shop/">перейти на сайт&nbsp;</a>флорбольной экипировки<br />
                 или в наш флорбольный <a href="https://floorball.nnov.ru/market/floorball-sticks">Интернет-магазин&nbsp;</a></p>
                 
                 <p className="">Сделано&nbsp;<a href="mailto:serg.bolshakov@gmail.com">Большаковым&nbsp;Сергеем</a>, 2025</p>
                 {/* <p>Демоверсия 0.0.5 <a href="https://github.com/serg-bolshakov/zonefloorball.ru" target="_blank" rel="noopener noreferrer"><span className="header-icon">Посмотреть</span></a> исходный код.</p> */}
-                <p className="margin-bottom12px">Буду рад сотрудничеству&nbsp;(<a href="/storage/docs/resume.pdf"  target="_blank" rel="noopener noreferrer"><span className="cursive header-icon">resume.pdf</span></a><span className="cursive">, 68 Кб</span>). <span className='strong'>Интернет-магазин "под ключ". Администрирование</span>.</p>
+                {/* <p className="margin-bottom12px">Буду рад сотрудничеству&nbsp;(<a href="/storage/docs/resume.pdf"  target="_blank" rel="noopener noreferrer"><span className="cursive header-icon">resume.pdf</span></a><span className="cursive">, 68 Кб</span>). <span className='strong'>Интернет-магазин "под ключ". Администрирование</span>.</p> */}
             </div>
         </>
     );

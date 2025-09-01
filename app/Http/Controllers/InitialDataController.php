@@ -372,12 +372,21 @@
                 
                 $groupedCategories = $categories->groupBy('parent_id');
                 //dump($groupedCategories);
+                // $rowSerie = [];
+
                 foreach($groupedCategories as $key=>$group) {
                     if(!$key) {
                         foreach($group as $mainElem) {
+                            // Всегда инициализируем переменную
+                            $rowSerie = [];
+                            
                             if($mainElem->id == 1) {  
-                                foreach($stickSeries as $serie) {
-                                    $rowSerie[$serie->id] = $serie;    
+                                
+                                // Проверяем, что $stickSeries не пустой
+                                if(!empty($stickSeries)) {
+                                    foreach($stickSeries as $serie) {
+                                        $rowSerie[$serie->id] = $serie;    
+                                    }
                                 }
     
                                 $row[$mainElem->id] = $rowSerie;

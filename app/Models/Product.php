@@ -4,11 +4,34 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
- 
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log; 
 
-class Product extends Model
-{
+class Product extends Model {
     use HasFactory;
+
+    protected $fillable = [
+        'article',
+        'title', 
+        'category_id',
+        'brand_id',
+        'model',
+        'marka',
+        'size_id',
+        'product_unit_id',
+        'colour',
+        'material',
+        'weight',
+        'prod_desc',
+        'prod_url_semantic',
+        'tag_title',
+        'meta_name_description',
+        'meta_name_keywords',
+        'iff_id',
+        'product_ean',
+        'product_status_id',
+        'author_id'
+    ];
 
     # мы говорили, что каждая категория имеет много товаров... мы связали категории и их продукты отношением hasMany... Но это зависит от точки зрения...
     # Если посмотреть со стороны продукта(товара), то каждый товар принадлежит одной категории. Это значит, что товар можно связать с категорией отношением belongsTo. Сделаем это:
@@ -67,9 +90,43 @@ class Product extends Model
         return $this->hasOne(ProductReport::class);
     }
 
+    /* Получить ссылку на src - изображения, которое используем при оформлении товара. */
+    public function getImgSrcAttribute() {                          // Объявление accessor в модели
+        // как работает: отношение с получением значения:
+        // $this - это текущий продукт
+        $image = $this->hasOne(Image::class)->orderBy('created_at')->first();
+        return $image ? $image->img_link : null;
+
+        /* Использование:
+                $baseName = $product->img_src; // Обратить внимание на snake_case!!!
+                Laravel автоматически преобразует вызов $product->img_src в вызов метода getImgSrcAttribute() благодаря соглашению:
+                get + ImgSrc + Attribute = getImgSrcAttribute()
+
+                Что происходит при обращении: $baseName = $product->img_src; -> превращается в: $baseName = $product->getImgSrcAttribute();
+                // Который выполняет:
+                    $image = $product->hasOne(Image::class)->orderBy('created_at')->first();
+                    $baseName = $image ? $image->img_link : null;
+        */
+        
+        // как НЕ работает!!!:  return $this->hasOne(Image::class)->orderBy('created_at')->img_link;  // именно первая ссылка - это м.б. даже без расширения, просто базовое имя
+        // $this->hasOne(Image::class) возвращает объект отношения, а не саму модель Image.
+    }
+
+    // Более правильный вариант (наверное):
+    public function getBaseImagePathAttribute() {
+        // Используем уже загруженное отношение (если есть) - пока нету... подумаем...
+        /* if ($this->relationLoaded('firstImage')) {
+            return $this->firstImage->img_link;
+        }*/
+        
+        // Или загружаем первую картинку - тоже нет пока...
+        /* $image = $this->images()->orderBy('created_at')->first();
+        return $image ? $image->img_link : null;*/
+    }
+
     /* Получить ссылки на изображение для карточки товара. */
     public function productMainImage() {
-        return $this->hasOne(Image::class)->ofMany([
+        return $this->hasOne(Image::class)->ofMany([                // $this->hasOne(Image::class) возвращает объект отношения, а не саму модель Image.
             'id' => 'max',
         ], function ($query) {
             $query->where('img_main', '=', 1);
@@ -143,4 +200,20 @@ class Product extends Model
      *     ->get();
      */
 
+    # таблица товаров products, в который каждый продукт связан со своим статусом, прописываем связь:
+    public function status() {
+        return $this->belongsTo(ProductStatus::class);
+    }
+
+    // Изменить стату продукта/товара (product_status_id)
+    public function changeStatus(int $newStatusId): bool {
+        return DB::transaction(function () use ($newStatusId) {
+            return $this->update(['product_status_id' => $newStatusId]);
+        });
+    }
+
+    // Дополнительный хелпер для проверки статуса
+    public function isDraft(): bool {
+        return $this->product_status_id === ProductStatus::DRAFT;
+    }
 }

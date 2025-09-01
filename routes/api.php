@@ -20,6 +20,10 @@ use App\Http\Controllers\WarehouseController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PreorderController;
+use App\Http\Controllers\Api\StickController;
+use App\Http\Controllers\Api\StickPropertiesController;
+use App\Http\Controllers\Api\ProductPriceController;
+use App\Http\Controllers\Api\ImageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -67,3 +71,31 @@ Route::middleware('auth:sanctum')->get('/test-auth', function (Request $request)
 
 // Роут для проверки наличия похожего товара в БД при добавлении нового
 Route::post('/check-similar/products', [ProductController::class, 'checkSimilar']);
+
+// Роут. Сохранение шага 1. Создание новго товара (клюшки)
+Route::get('/products/sticks', [StickController::class, 'index']);              // Список
+Route::post('/products/sticks/create', [StickController::class, 'store']);      // Создание
+Route::get('/products/sticks/{id}', [StickController::class, 'show']);          // Просмотр
+Route::put('/products/sticks/{id}', [StickController::class, 'update']);        // Обновление
+Route::delete('/products/sticks/{id}', [StickController::class, 'destroy']);    // Удаление
+
+// Получение свойств для шага 2
+Route::get('/stick-properties/{productId}', [StickPropertiesController::class, 'getProperties']);
+
+// Добавление нового типа обмотки
+Route::post('/stick-properties/grip', [StickPropertiesController::class, 'addGrip']);
+
+// Добавление нового профиля
+Route::post('/stick-properties/profile', [StickPropertiesController::class, 'addProfile']);
+
+// Добавление новой модели крюка
+Route::post('/stick-properties/blade', [StickPropertiesController::class, 'addBlade']);
+
+// Сохранение шага 2
+Route::post('/stick-properties/save-step2/{productId}', [StickPropertiesController::class, 'saveStep2']);
+
+// Сохранение шага 3 (создание цен и начальных скидок)
+Route::post('/stick-properties/create-prices/{productId}', [ProductPriceController::class, 'storeStep3']);
+
+// Загрузка изображений товаров
+Route::post('/admin/products/{productId}/images', [ImageController::class, 'storeImages']);

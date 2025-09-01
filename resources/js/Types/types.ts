@@ -177,7 +177,7 @@ export interface ICategoriesMenuArr {
 
 export interface IProduct extends IProductReportFromDB {
     id: number;                                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
-    article?: number | null;
+    article?: string | null;
     title: string;                                  // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     category?: string | null;                       // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     category_id?: number | null;
@@ -189,14 +189,14 @@ export interface IProduct extends IProductReportFromDB {
     product_unit_id?: number | null;
     colour?: string | null;
     material?: string | null;   
-    weight?: number | null;
+    weight?: string | null;
     prod_desc?: string | null;
     prod_url_semantic?: string;                      // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     iff_id?: number | null;
     product_ean?: number | null;
-    actual_price?: number;
+    actual_price?: IPrice;
     price_actual?: number;                          // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
-    regular_price?: number;
+    regular_price?: IPrice;
     price_regular?: number;                         // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     price_preorder?: number;
     product_status_id?: number | null;
@@ -211,7 +211,28 @@ export interface IProduct extends IProductReportFromDB {
     date_end?                   : string;
 
     quantity?: number;
+
+    properties: IProperty[];
     
+}
+
+export interface IPrice {
+  id: number;
+  product_id: number;
+  price_type_id: number;
+  price_value: number;
+  date_start: string | null;
+  date_end: string | null;
+  created_at: string;
+  updated_at: string;
+  author_id: number;
+}
+
+export interface IProperty {
+    id: number;
+    prop_title: string;
+    prop_value?: string;
+    // ... другие поля
 }
 
 export interface IProductsResponse {

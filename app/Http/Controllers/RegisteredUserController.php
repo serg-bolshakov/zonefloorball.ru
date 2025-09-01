@@ -14,8 +14,7 @@ use Illuminate\Validation\ValidationException;
 
 use App\Rules\RegistrationRules;
 
-class RegisteredUserController extends Controller
-{
+class RegisteredUserController extends Controller {
     /**
      * Показывает форму регистрации.
      */

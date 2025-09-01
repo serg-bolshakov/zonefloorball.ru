@@ -66,11 +66,11 @@ class ValidationRules
         return [
             'required', 
             'confirmed', 
-            Password::min(3)
-                // ->letters()
-                // ->mixedCase()
-                // ->numbers()
-                // ->symbols()
+            Password::min(8)
+                ->letters()
+                ->mixedCase()
+                ->numbers()
+                ->symbols()
                 // ->uncompromised()
         ];
     }

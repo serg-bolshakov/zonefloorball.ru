@@ -21,21 +21,21 @@ const ProductDetails: React.FC<IProductDetails> = ({ prodInfo }) => {
             { prodInfo.weight && ( 
             <>
                 <div className="cardProduct-detail__name">Вес (г):</div>
-                <div className="cardStick-detail__value">{ prodInfo.weight }</div>
+                <div className="cardProduct-detail__value">{ prodInfo.weight }</div>
             </>
             )}
 
             { prodInfo.material && (
             <>  
                 <div className="cardProduct-detail__name">Материал:</div>
-                <div className="cardStick-detail__value">{ prodInfo.material }</div>
+                <div className="cardProduct-detail__value">{ prodInfo.material }</div>
             </>
             )}
 
             { prodInfo.iff_id && (
             <>
                 <div className="cardProduct-detail__name pop-up__cardProduct-hint modal-link" onClick={() => openModal(<IFF />)}>Наличие сертификата IFF:</div>
-                <div className="cardStick-detail__value">{ prodInfo.iff_id === 1 ? 'Да' : 'Нет' }</div>
+                <div className="cardProduct-detail__value">{ prodInfo.iff_id === 1 ? 'Да' : 'Нет' }</div>
             </>
             )}
 
