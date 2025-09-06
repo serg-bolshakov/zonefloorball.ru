@@ -21,7 +21,8 @@ interface Step4FormProps {
     onComplete: (images: IImage[]) => void;
     onCancel: () => void;
     isLoading: boolean;
-    onUpload: (files: File[], mainIndex: number, showcaseIndex: number, promoIndices: number[], orientations: Record<number, number>) => void;
+    // onUpload: (files: File[], mainIndex: number, showcaseIndex: number, promoIndices: number[], orientations: Record<number, number>) => void;
+    onUpload: (files: File[], mainIndices: number[], showcaseIndices: number[], promoIndices: number[], orientations: Record<number, number>) => void;
 }
 
 const NewStickFormStep4: React.FC<Step4FormProps> = ({
@@ -35,8 +36,10 @@ const NewStickFormStep4: React.FC<Step4FormProps> = ({
 }) => {
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [mainImageIndex, setMainImageIndex] = useState<number>(-1);
-    const [showcaseImageIndex, setShowcaseImageIndex] = useState<number>(-1);       // Только один для витрины
+    // const [mainImageIndex, setMainImageIndex] = useState<number>(-1);
+    // const [showcaseImageIndex, setShowcaseImageIndex] = useState<number>(-1);       // Только один для витрины
+    const [mainImages, setMainImages] = useState<number[]>([]);
+    const [showcaseImages, setShowcaseImages] = useState<number[]>([]);
     const [promoImages, setPromoImages] = useState<number[]>([]);
     const [orientations, setOrientations] = useState<Record<number, number>>({});
 
@@ -75,11 +78,13 @@ const NewStickFormStep4: React.FC<Step4FormProps> = ({
     // Обработчик загрузки
     const handleUpload = () => {
         if (uploadedFiles.length === 0) return;
-        
+        console.log('orientations', orientations);
         onUpload(
             uploadedFiles,
-            mainImageIndex,
-            showcaseImageIndex,
+            // mainImageIndex,
+            // showcaseImageIndex,
+            mainImages,
+            showcaseImages,
             promoImages,
             orientations
         );
@@ -90,8 +95,10 @@ const NewStickFormStep4: React.FC<Step4FormProps> = ({
         setUploadedFiles(prev => prev.filter((_, i) => i !== index));
         
         // Сбрасываем selections если удаляем выбранные файлы
-        if (mainImageIndex === index) setMainImageIndex(-1);
-        if (showcaseImageIndex === index) setShowcaseImageIndex(-1);
+        // if (mainImageIndex === index) setMainImageIndex(-1);
+        // if (showcaseImageIndex === index) setShowcaseImageIndex(-1);
+        setMainImages(prev => prev.filter(i => i !== index));
+        setShowcaseImages(prev => prev.filter(i => i !== index));
         setPromoImages(prev => prev.filter(i => i !== index));
         
         const newOrientations = { ...orientations };
@@ -182,7 +189,7 @@ const NewStickFormStep4: React.FC<Step4FormProps> = ({
                             </div>
 
                             <div style={{ marginTop: '10px', display: 'flex', flexWrap: 'wrap', gap: '15px' }}>
-                                {/* Главное изображение - radio button */}
+                                {/* Главное изображение - radio button 
                                 <label>
                                     <input
                                         type="radio"
@@ -191,15 +198,41 @@ const NewStickFormStep4: React.FC<Step4FormProps> = ({
                                         onChange={() => setMainImageIndex(index)}
                                     />
                                     Главное изображение
+                                </label>*/}
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={mainImages.includes(index)}
+                                        onChange={() => setMainImages(prev => 
+                                        prev.includes(index) 
+                                            ? prev.filter(i => i !== index)
+                                            : [...prev, index]
+                                        )}
+                                    />
+                                    Главное изображение
                                 </label>
 
-                                {/* Для витрины - radio button (только один) */}
+
+                                {/* Для витрины - radio button (только один) 
                                 <label>
                                     <input
                                         type="radio"
                                         name="showcaseImage"
                                         checked={showcaseImageIndex === index}
                                         onChange={() => setShowcaseImageIndex(index)}
+                                    />
+                                    Для витрины
+                                </label>*/}
+
+                                <label>
+                                    <input
+                                        type="checkbox"
+                                        checked={showcaseImages.includes(index)}
+                                        onChange={() => setShowcaseImages(prev => 
+                                        prev.includes(index) 
+                                            ? prev.filter(i => i !== index)
+                                            : [...prev, index]
+                                        )}
                                     />
                                     Для витрины
                                 </label>

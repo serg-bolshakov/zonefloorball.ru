@@ -261,6 +261,7 @@ class StickController extends Controller {
             $size = Size::find($data['stickSizeId']);
             if ($size) {
                 $urlParts[] = $size->size_value . 'cm';
+                $title .= " {$size->size_value}см";
             }
         }
 
@@ -278,7 +279,7 @@ class StickController extends Controller {
         $url = $data['article'] . '-klyushka-dlya-florbola-' . implode('-', $urlParts);
         
         // эта информация записывается в состояние и будет использована в шаге 4, где мы будем придумывать наименования файлов-картинок-для клюшек
-        $imgSrcBaseName = $data['article'] . '-klyushka-dlya-florbola-' . implode('-', $imgSrcParts);
+        $imgSrcBaseName = 'images/sticks/' . $data['article'] . '-klyushka-dlya-florbola-' . implode('-', $imgSrcParts);
 
         return [$title, $url, $imgSrcBaseName];
     }
@@ -304,19 +305,20 @@ class StickController extends Controller {
         $size = Size::find($data['stickSizeId']);
         $sizeCm = $size ? $size->size_value . 'см' : '';
 
-        return "Клюшка {$brandNames[$brandId]} {$brand->brand_view} {$sizeCm} Купить {$data['article']}";
+        // return "Клюшка {$brandNames[$brandId]} {$brand->brand_view} {$sizeCm} Купить {$data['article']}";
+        return "Клюшка флорбол {$brandNames[$brandId]} {$sizeCm} Купить {$data['article']}";
     }
 
     private function generateMetaDescription(array $data, Brand $brand): string {
         $size = Size::find($data['stickSizeId']);
         $sizeDescription = match(true) {
-            $size && $size->size_value <= 5     => 'детская',
-            $size && $size->size_value <= 8     => 'для детей и подростков',
-            $size && $size->size_value <= 10    => 'для подростков и взрослых игроков',
+            $data['stickSizeId'] && $data['stickSizeId'] <= 5     => 'детская',
+            $data['stickSizeId'] && $data['stickSizeId'] <= 8     => 'для детей и подростков',
+            $data['stickSizeId'] && $data['stickSizeId'] <= 10    => 'для подростков и взрослых игроков',
             default                             => 'для взрослых и высоких игроков'
         };
 
-        return "Клюшка {$brand->brand_view} {$sizeDescription}. {$data['article']}. Ведущий мировой производитель флорбольной экипировки.";
+        return "Клюшка {$brand->brand_view} {$sizeDescription}. {$data['article']}. Лучший мировой производитель флорбольной экипировки.";
     }
 
 }

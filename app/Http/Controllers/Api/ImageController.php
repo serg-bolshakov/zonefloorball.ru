@@ -46,13 +46,13 @@ class ImageController extends Controller
             Log::debug('📋 Метаданные распаршены:', $metadata);
 
             // Дополнительная валидация метаданных
-            if (!isset($metadata['mainIndex'])) {
-                Log::warning('❌ Отсутствует mainIndex в метаданных', $metadata);
+            /*if (!isset($metadata['mainIndices']) || empty($metadata['mainIndices'])) {
+                Log::warning('❌ Отсутствует mainIndices в метаданных', $metadata);
                 return response()->json([
                     'success' => false,
                     'message' => 'Отсутствуют необходимые метаданные'
                 ], 422);
-            }
+            }*/
             
             // Проверяем существование товара
             Log::debug("🔄 Поиск товара ID: {$productId}");
@@ -67,11 +67,13 @@ class ImageController extends Controller
                 Log::debug("📁 Получено файлов: " . count($files));
 
                 foreach ($files as $index => $file) {
-                    Log::debug("🔄 Обработка файла {$index}: {$file->getClientOriginalName()}");
+                    Log::debug("🔄 Обработка файла (индекс) {$index}: {$file->getClientOriginalName()}");
                     $imagePath = $this->storeImage($file, $product, $index, $metadata);
                     Log::debug("📸 Файл сохранен по пути: {$imagePath}");
 
-                    $isMain = $metadata['mainIndex'] == $index;
+                    // $isMain = $metadata['mainIndices'] == $index;
+                    $isMain = isset($metadata['mainIndices']) && !empty($metadata['mainIndices']) && in_array($index, $metadata['mainIndices']);
+
                     if ($isMain) {
                         $hasMainImage = true;
                         Log::debug("📌 Обнаружено главное изображение для файла {$index}");
@@ -91,8 +93,8 @@ class ImageController extends Controller
                     $imageData = [
                         'product_id' => $product->id,
                         'img_link' => $imagePath,
-                        'img_main' => $metadata['mainIndex'] == $index,
-                        'img_showcase' => isset($metadata['showcaseIndex']) && $metadata['showcaseIndex'] == $index,
+                        'img_main' => isset($metadata['mainIndices']) && in_array($index, $metadata['mainIndices']),
+                        'img_showcase' => isset($metadata['showCaseIndices']) && in_array($index, $metadata['showCaseIndices']),
                         'img_promo' => isset($metadata['promoIndices']) && in_array($index, $metadata['promoIndices']),
                         'img_orient_id' => $metadata['orientations'][$index] ?? null,
                         'author_id' => auth()->id(),
@@ -174,7 +176,7 @@ class ImageController extends Controller
     }
 
     private function storeImage($file, Product $product, $index, $metadata) {
-        Log::debug("🔄 Генерация имени для файла {$index}");
+        Log::debug("🔄 Генерация имени для файла индекс{$index}");
 
         $extension = $file->getClientOriginalExtension();
         Log::debug("🔄 Расширение исходного файла {$extension}");
@@ -195,10 +197,21 @@ class ImageController extends Controller
         
         // Определяем тип изображения для суффикса
         $suffix = '';
-        if ($metadata['mainIndex'] == $index) {
+        /* if ($metadata['mainIndex'] == $index) {
+                $suffix = '-main';
+                Log::debug("🏷️ Файл {$index} - основное изображение");
+            } elseif (isset($metadata['showcaseIndex']) && $metadata['showcaseIndex'] == $index) {
+                $suffix = '-showcase';
+                Log::debug("🏷️ Файл {$index} - для витрины");
+            } elseif (isset($metadata['promoIndices']) && in_array($index, $metadata['promoIndices'])) {
+                $suffix = '-promo';
+                Log::debug("🏷️ Файл {$index} - промо-изображение");
+        }*/
+
+        if (isset($metadata['mainIndices']) && in_array($index, $metadata['mainIndices'])) {
             $suffix = '-main';
             Log::debug("🏷️ Файл {$index} - основное изображение");
-        } elseif (isset($metadata['showcaseIndex']) && $metadata['showcaseIndex'] == $index) {
+        } elseif (isset($metadata['showCaseIndices']) && in_array($index, $metadata['showCaseIndices'])) {
             $suffix = '-showcase';
             Log::debug("🏷️ Файл {$index} - для витрины");
         } elseif (isset($metadata['promoIndices']) && in_array($index, $metadata['promoIndices'])) {

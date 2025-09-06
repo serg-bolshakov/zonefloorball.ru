@@ -29,7 +29,9 @@ class ProductController extends Controller
     }
     
     public function index(Request $request) {
+        \Log::debug('ProductController@index input', [ 'request' => $request->all()]);
         $responseData = $this->getResponseData($request);
+        \Log::debug('ProductController@index responseData', [ 'responseData' => $responseData]);
         return Inertia::render('Catalog', $responseData);
     }
 
@@ -100,9 +102,9 @@ class ProductController extends Controller
         ]);
 
         return response()->json([
-            'exists' => $similarProduct->isNotEmpty(),
-            'isExactMatch' => false, // Это похожие товары, но не точный дубликат
-            'message' => $similarProduct->isNotEmpty() 
+            'exists' => (bool)$similarProduct,
+            'isExactMatch' => false,                // Это похожие товары, но не точный дубликат
+            'message' => (bool)$similarProduct
                 ? 'Найдены похожие товары' 
                 : 'Похожих товаров не найдено',
             'data' => $similarProduct,
@@ -112,9 +114,17 @@ class ProductController extends Controller
     protected function getResponseData(Request $request) {
         // Получаем данные из URL
         $categoryId = $this->urlParser->getCategoryId();
+        \Log::debug('getResponseData categoryId', [
+            'categoryId' => $categoryId
+        ]);
        
         $filters    = $this->urlParser->getFilters();
         $filtersArr = $this->urlParser->getFilters();
+
+        \Log::debug('getResponseData filters', [
+            'filters' => $filters,
+            'filtersArr' => $filtersArr,
+        ]);
 
         // Получаем информацию о категории
         $categoryUrlSemantic = $this->getCategoryUrlSemantic();
@@ -127,7 +137,7 @@ class ProductController extends Controller
 
         // Создаём базовый запрос
         $query = Product::query()
-            ->with(['category', 'brand', 'properties', 'productShowCaseImage',])
+            ->with(['category', 'brand', 'properties', 'productShowCaseImage'])
            
             /*  набор фильтров, который был изначально... 
                 ...
@@ -140,6 +150,8 @@ class ProductController extends Controller
             
             ->orderBy($sortBy, $sortOrder)
         ;
+
+        // dd($query); 
 
         // Поиск по каталогу
         $searchTerm = $request->input('search');
@@ -167,9 +179,11 @@ class ProductController extends Controller
         // Применяем подзапросы для цен
         $this->applyPriceSubqueries($query);
        
+        // dd($query->get()->pluck('id'));
+
         // Выбираем сервис для фильтрации
         $filterService = CatalogServiceFactory::create($categoryUrlSemantic, $query);
-
+        
         // Применяем фильтры
         $filteredQuery = $filterService->applyFilters($filters);
         
@@ -211,15 +225,20 @@ class ProductController extends Controller
         // в части получения цен переходим из модели использования with на join: создаём подзапросы, которые будут возвращать только последние цены для каждого товара. 
         // Это аналогично тому, что делает ofMany в отношениях, но на уровне SQL:
         $latestActualPrice = DB::table('prices as p1')
-            ->select('p1.product_id', 'p1.price_value')
-            ->where('p1.date_end', '>', now())
-            ->orWhereNull('p1.date_end')
-            ->whereRaw('p1.id = (
-                SELECT MAX(p2.id)
-                FROM prices as p2
-                WHERE p2.product_id = p1.product_id
-                AND p2.price_type_id = 2
-            )');
+        ->select('p1.product_id', 'p1.price_value')
+        ->where(function($query) {
+                $query->where('p1.date_end', '>', now())
+                    ->orWhereNull('p1.date_end');
+            })
+        ->whereRaw('p1.id = (
+            SELECT MAX(p2.id)
+            FROM prices as p2
+            WHERE p2.product_id = p1.product_id
+            AND p2.price_type_id = 2
+        )');
+
+        // dd($latestActualPrice->get()->pluck('product_id'));
+        // dd($latestActualPrice->get()->groupBy('product_id'));
 
         // подзапрос для регулярной цены. Этот подзапрос вернёт последнюю регулярную цену для каждого товара:
         $latestRegularPrice = DB::table('prices as p1')
@@ -231,7 +250,7 @@ class ProductController extends Controller
             WHERE p2.product_id = p1.product_id
             AND p2.price_type_id = 2
         )');
-
+        // dd( $latestRegularPrice->get()->pluck('product_id'));
         // Присоединяем подзапросы
         $query
             ->leftJoinSub($latestActualPrice, 'actual_prices', function ($join) {
@@ -240,7 +259,8 @@ class ProductController extends Controller
             ->leftJoinSub($latestRegularPrice, 'regular_prices', function ($join) {
                 $join->on('products.id', '=', 'regular_prices.product_id');
             })
-            ->select('products.*', 'actual_prices.price_value as actual_price', 'regular_prices.price_value as regular_price');
+            ->select('products.*', 'actual_prices.price_value as actual_price', 'regular_prices.price_value as regular_price')
+            ->distinct();
     }
 
 

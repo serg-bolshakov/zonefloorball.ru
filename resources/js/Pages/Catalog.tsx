@@ -65,6 +65,7 @@ const defaultProducts: IProductsResponse = {
     },
 };
 
+console.log('defprods', defaultProducts);
 
 const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords, catalogCategoryName, catalogCategoryTitleImg, catDescription, filtersSetComponent,
     products = defaultProducts, // Используем значение по умолчанию
@@ -76,6 +77,7 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     categoryId,
 }) => {
 
+    console.log('prods', products);
     // Инициализируем состояние из пропсов (которые приходят из URL через Inertia)
     const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [searchType, setSearchType] = useState<'article' | 'title'>(initialSearchType);

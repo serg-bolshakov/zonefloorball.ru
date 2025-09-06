@@ -179,7 +179,7 @@ export const convertFormData = <T extends TStepNumber>(
             marka       : stepData.marka ??  null,
             shaftFlexId : Number(stepData.shaftFlexId),
             colour      : stepData.colour ? stepData.colour : null,
-            material    : stepData.marka ?? null,
+            material    : stepData.material ?? null,
             stickSizeId : Number(stepData.stickSizeId),                     // Отправляем как число      
             weight      : stepData.weight ?? null,                          // Явное преобразование
             prod_desc   : stepData.prod_desc ?? null,                       // Явное преобразование

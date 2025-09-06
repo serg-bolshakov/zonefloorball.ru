@@ -73,7 +73,7 @@ Route::middleware('auth:sanctum')->get('/test-auth', function (Request $request)
 Route::post('/check-similar/products', [ProductController::class, 'checkSimilar']);
 
 // Роут. Сохранение шага 1. Создание новго товара (клюшки)
-Route::get('/products/sticks', [StickController::class, 'index']);              // Список
+// Route::get('/products/sticks', [StickController::class, 'index']);           // Список - нет такого метода... удалить в следующий раз...
 Route::post('/products/sticks/create', [StickController::class, 'store']);      // Создание
 Route::get('/products/sticks/{id}', [StickController::class, 'show']);          // Просмотр
 Route::put('/products/sticks/{id}', [StickController::class, 'update']);        // Обновление

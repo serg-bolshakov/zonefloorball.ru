@@ -12,6 +12,8 @@ use App\Models\ProductProperty;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
+use App\Traits\TransliterateTrait;
+
 class StickPropertiesController extends Controller
 {
     // Вызывается при заполнении формы нового товара (клюшки) на этапе перехода на второй шаг, когда мы получаем id-нового товара:
@@ -183,6 +185,10 @@ class StickPropertiesController extends Controller
 
         try {
             $propValue = strtr(trim(strtolower($validated['name'])), ['-'=>'_', ' '=>'_']);
+
+            \Log::debug('StickPropertiesController addGrip propValue', [
+                'propValue' => $propValue,
+            ]);
             
             $property = Property::create([
                 'category_id' => 1,
@@ -191,7 +197,70 @@ class StickPropertiesController extends Controller
                 'prop_value' => $propValue,
                 'prop_value_view' => $validated['name'],
                 'prop_description' => 'Тип обмотки клюшки',
-                //'author_id' => auth()->id()
+                'author_id' => auth()->id()
+            ]);
+
+            return response()->json($property);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    public function addBlade(Request $request) {
+
+        \Log::debug('StickPropertiesController addBlade', [
+            'request' => $request->all(),
+        ]);
+
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^[\p{L}0-9\.\s-]+$/u',
+                // проверка на начало/конец
+                function ($attribute, $value, $fail) {
+                    if (preg_match('/^[-\s]|[\s-]$/', $value)) {
+                        $fail('Название не может начинаться или заканчиваться дефисом или пробелом');
+                    }
+                    if (preg_match('/[-\s]{2,}/', $value)) {
+                        $fail('Нельзя использовать несколько дефисов или пробелов подряд');
+                    }
+                },
+                Rule::unique('properties', 'prop_value_view')->where(function ($query) {
+                    return $query->where('category_id', 1)
+                        ->where('prop_title', 'blade_model');
+                })
+            ],
+            'brandId' => 'nullable|exists:brands,id'
+        ]);
+
+        \Log::debug('StickPropertiesController addBlade', [
+            'validated' => $validated,
+        ]);
+
+        try {
+            // $propValue = strtr(trim(strtolower($validated['name'])), ['.'=>'_', '-'=>'_', ' '=>'_']);
+            // Улучшение нормализации:
+            // $propValue = preg_replace('/[\.\s-]+/', '_', trim(strtolower($validated['name']))); - не работает с кириллицей...
+
+            $propValue = mb_strtolower(trim($validated['name']), 'UTF-8');
+            $propValue = strtr($propValue, ['.'=>'_', '-'=>'_', ' '=>'_']);
+
+            // $propValue = transliterate(mb_strtolower(trim($validated['name']), 'UTF-8'));
+            // $propValue = preg_replace('/[^a-z0-9_]+/', '_', $propValue); // Только латиница, цифры, _
+            
+            $propValue = preg_replace('/_+/', '_', $propValue); // Убираем повторяющиеся _
+            $propValue = trim($propValue, '_'); // Убираем _ с краев
+                        
+            $property = Property::create([
+                'category_id' => 1,
+                'brand_id' => $validated['brandId'] > 0 ? $validated['brandId'] : null,
+                'prop_title' => 'blade_model',
+                'prop_value' => $propValue,
+                'prop_value_view' => $validated['name'],
+                'prop_description' => 'Модель крюка клюшки',
+                'author_id' => auth()->id()
             ]);
 
             return response()->json($property);

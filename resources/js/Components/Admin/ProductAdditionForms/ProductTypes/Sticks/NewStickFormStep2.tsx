@@ -38,11 +38,6 @@ export type TValidatedNewStickStep2 = {
     gripId      : number | null, // здесь будет id-свойства типа обмотки для клюшки
     profileId   : number | null,
     bladeModel  : number | null, // здесь будет id-свойства типа крюка для клюшки
-
-    //newGripName: string;
-    //newGripBrandId: number;
-
-    
 };
 
 interface Step2FormProps {
@@ -73,6 +68,7 @@ const NewStickFormStep2: React.FC<Step2FormProps> = ({
     const [showProfileForm, setShowProfileForm] = useState(false);
     const [showBladeForm, setShowBladeForm] = useState(false);
     const [localNewGripError, setLocalNewGripError] = useState<string | null>(null);
+    const [localNewBladeError, setLocalNewBladeError] = useState<string | null>(null);
     
     console.log ('possibleProps', possibleProps);
     
@@ -80,7 +76,7 @@ const NewStickFormStep2: React.FC<Step2FormProps> = ({
         loading: propsLoading,
         addGrip,
         //addProfile,
-        //addBladeModel
+        addBladeModelForStick
     } = useStickProperties();
 
     // Обработчики изменений
@@ -151,20 +147,51 @@ const NewStickFormStep2: React.FC<Step2FormProps> = ({
         }
     }; */
 
-    /* const handleAddBladeModel = async (e: React.FormEvent) => {
+    const handleAddBladeModel = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // 1. Синхронная валидация локальной формы
+            const trimmedName = state.newBladeName?.trim(); 
+
+            if (!trimmedName) {
+                setLocalNewBladeError('Поле обязательно для заполнения');
+                return;
+            }
+
+            if (!/^[\p{L}0-9\.\s-]+$/u.test(trimmedName)) {                                                      // \p{L} - любые буквы (включая кириллицу)
+                setLocalNewBladeError('Наименование должно содержать только цифры, буквы, точки, пробелы и дефисы');
+                return;
+            }
+
+            // Дополнительная проверка: не начинается ли с дефиса или пробела
+            if (/^[-\s]/.test(trimmedName)) {
+                setLocalNewBladeError('Название не может начинаться с дефиса или пробела');
+                return;
+            }
+
+            // Проверка на несколько подряд идущих дефисов или пробелов
+            if (/[-\s]{2,}/.test(trimmedName)) {
+                setLocalNewBladeError('Нельзя использовать несколько дефисов или пробелов подряд');
+                return;
+            }
+
+        // 2. Конвертация данных
+        // Если ошибок при заполнении формы нет, валидируем заполненные поля для отправки на сервер (строковые значения, полученные из формы, мы должны преобразовать в числовые значения (где требуется)):
+        const brandIdValidated = Number(state.newBladeBrandId);
+
         try {
-            await addBladeModel({
-                name: state.newBladeName,
-                brandId: state.newBladeBrandId || null
+            await addBladeModelForStick({
+                productId: productId,
+                name: trimmedName,
+                brandId: brandIdValidated,
             });
             toast.success('Модель крюка успешно добавлена');
             setShowBladeForm(false);
-            onChange({ newBladeName: '', newBladeBrandId: '' });
+            onChange?.({ newBladeName: '', newBladeBrandId: '' });
         } catch (error) {
             toast.error('Ошибка при добавлении модели крюка');
         }
-    }; */
+    };
 
     // Обработчик отправки
     const handleSubmit = (e: React.FormEvent) => {
@@ -545,56 +572,74 @@ const NewStickFormStep2: React.FC<Step2FormProps> = ({
                         Добавить модель крюка
                     </button>
 
-                    {/* {showBladeForm && (
+                    {showBladeForm && (
                         <div className="addition-new-prop-form">
-                            <form onSubmit={handleAddBladeModel}>
-                                <p className="registration-form__input-item">
-                                    <span className="registration-form__title">
-                                        Добавление новой модели крюка
-                                    </span>
-                                </p>
-                                <p className="registration-form__input-item">
-                                    <label htmlFor="newBladeName">Наименование модели:</label>
+                            <p className="registration-form__input-item">
+                                <span className="registration-form__title">
+                                    Добавление новой модели крюка
+                                </span>
+                            </p>
+
+                            <div className="registration-form__input-item">
+                                <label htmlFor="newBladeName">Наименование модели крюка:</label>
+                                <span className="productAddition-error margin-left8px">
+                                *
+                                {localNewBladeError && (
+                                        <>
+                                        <br />
+                                        {localNewBladeError}
+                                        </>
+                                    )}
+                                </span>
+                                <span className="productAddition-form__clearance">
+                                    Модель пишется латинскими заглавными буквами (как в оригинале), далее: состав и прописью жёсткость (прописными буквами). Пример: EPIC PE REGULAR
+                                </span>
+
+                                <input
+                                    className="registration-form__input  margin-top12px"
+                                    type="text"
+                                    id="newBladeName"
+                                    name="newBladeName"
+                                    value={state.newBladeName || ''}
+                                    onChange={(e) => onChange?.({ newBladeName: e.target.value })}
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="productAddition-form__input-radiogroup">
+                                <label>Укажите бренд:</label>
+                                <div className='margin-top12px'>
                                     <input
-                                        className="registration-form__input"
-                                        type="text"
-                                        id="newBladeName"
-                                        name="newBladeName"
-                                        value={state.newBladeName || ''}
-                                        onChange={(e) => onChange({ newBladeName: e.target.value })}
-                                        required
+                                        type="radio"
+                                        id="bladeBrandAny"
+                                        name="newBladeBrandId"
+                                        value="0"
+                                        checked={!state.newBladeBrandId || state.newBladeBrandId === '0'}
+                                        onChange={(e) => onChange?.({ newBladeBrandId: e.target.value })}
                                     />
-                                </p>
-                                
-                                <div className="productAddition-form__input-radiogroup">
-                                    <label>Укажите бренд:</label>
-                                    <div>
+                                    <label htmlFor="bladeBrandAny">Подходит для любого бренда</label>
+                                </div>
+                                {Object.values(BRANDS).map(brand => (
+                                    <div key={`blade-brand-${brand.id}`}>
                                         <input
                                             type="radio"
-                                            id="bladeBrandAny"
+                                            id={`bladeBrand_${brand.id}`}
                                             name="newBladeBrandId"
-                                            value="0"
-                                            checked={!state.newBladeBrandId || state.newBladeBrandId === '0'}
-                                            onChange={(e) => onChange({ newBladeBrandId: e.target.value })}
+                                            value={String(brand.id)} // Конвертируем в строку // Всегда строка в DOM!
+                                            checked={state.newBladeBrandId === brand.id.toString()}
+                                            onChange={(e) => onChange?.({ newBladeBrandId: e.target.value })}
                                         />
-                                        <label htmlFor="bladeBrandAny">Подходит для любого бренда</label>
+                                        <label htmlFor={`bladeBrand_${brand.id}`}>{brand.name}</label>
                                     </div>
-                                    {Object.values(BRANDS).map(brand => (
-                                        <div key={`blade-brand-${brand.id}`}>
-                                            <input
-                                                type="radio"
-                                                id={`bladeBrand_${brand.id}`}
-                                                name="newBladeBrandId"
-                                                value={String(brand.id)} // Конвертируем в строку // Всегда строка в DOM!
-                                                checked={state.newBladeBrandId === brand.id.toString()}
-                                                onChange={(e) => onChange({ newBladeBrandId: e.target.value })}
-                                            />
-                                            <label htmlFor={`bladeBrand_${brand.id}`}>{brand.name}</label>
-                                        </div>
-                                    ))}
-                                </div>
-                                
-                                <button type="submit" className="registration-form__submit-btn">
+                                ))}
+                            </div>
+                            
+                            <div className='margin-top12px'>
+                                <button 
+                                    type="submit" 
+                                    className="registration-form__submit-btn margin-right12px"
+                                    onClick={handleAddBladeModel}
+                                    >
                                     Добавить
                                 </button>
                                 <button
@@ -604,9 +649,9 @@ const NewStickFormStep2: React.FC<Step2FormProps> = ({
                                 >
                                     Отменить
                                 </button>
-                            </form>
+                            </div>
                         </div>
-                    )} */}
+                    )} 
                 </div>
 
                 {/* Кнопки скрываем в read-only режиме */}

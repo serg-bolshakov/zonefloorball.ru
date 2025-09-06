@@ -2,6 +2,7 @@
 import React from 'react';
 import { IProductCardResponse } from '@/Types/prodcard';
 import useAppContext from '@/Hooks/useAppContext';
+import { formatServerDate } from '@/Utils/dateFormatter';
 
 interface IPriceBlock {
     actualPrice             : IProductCardResponse['prodInfo']['actualPrice'];
@@ -50,7 +51,7 @@ const PriceBlock: React.FC<IPriceBlock> = ({ actualPrice, regularPrice, price_re
             }
 
             { actualPrice.date_end && ( 
-                <div className="cardProduct-priceValidPeriod nobr">действует до: { actualPrice.date_end }</div>
+                <div className="cardProduct-priceValidPeriod nobr">действует до: { formatServerDate(actualPrice.date_end) }</div>
             )}
 
             { user && price_with_rank_discount && price_regular && (

@@ -418,17 +418,12 @@ const AddStickForm = () => {
 
     const handleImageUpload = async (
         files: File[], 
-        mainIndex: number, 
-        showcaseIndex: number, 
+        mainIndices: number[], 
+        showCaseIndices: number[], 
         promoIndices: number[], 
         orientations: Record<number, number>
     ) => {
         // Логика отправки на сервер
-        console.log('Files to upload:', files);
-        console.log('Main image index:', mainIndex);
-        console.log('Showcase image index:', showcaseIndex);
-        console.log('Promo indices:', promoIndices);
-        console.log('Orientations:', orientations);
         
         dispatch({ type: 'SET_LOADING', payload: true });
 
@@ -449,8 +444,8 @@ const AddStickForm = () => {
 
             // Добавляем метаданные - ВСЕ в JSON
             const metadata = {
-                mainIndex,
-                showcaseIndex, 
+                mainIndices,
+                showCaseIndices, 
                 promoIndices,
                 orientations
             };
@@ -486,10 +481,10 @@ const AddStickForm = () => {
                       productimgSrcBaseName: '',
                   }
               });*/
-              dispatch({ type: 'RESTORE_DRAFT', payload: initialState }); // очень красиво получилось... 
+              // dispatch({ type: 'RESTORE_DRAFT', payload: initialState }); // очень красиво получилось... 
 
               // 2. Затем удаляем localStorage - оформление завершено удаляем из локального хранилища запись: 
-              localStorage.removeItem('stick_form_process');
+              // localStorage.removeItem('stick_form_process');
               
         } catch (error: any) {
           // Обрабатываем все ошибки в одном месте

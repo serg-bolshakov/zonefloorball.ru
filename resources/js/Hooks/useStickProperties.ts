@@ -80,7 +80,30 @@ const useStickProperties = () => {
         }
     };
 
-    // Аналогичные функции для addProfile и addBlade...
+    const addBladeModelForStick = async (payload: { productId: number; name: string; brandId?: number }) => {
+        console.log('payload', payload);
+        
+        try {
+            setLoading(true);
+            const { data } = await axios.post('/api/stick-properties/blade', {
+                name: payload.name,
+                brandId: payload.brandId
+            });
+            toast.success('Модель крюка для клюшки успешно добавлена');
+
+            // Используем productId из payload для обновления
+            await fetchProperties(payload.productId); 
+            
+            return data;
+        } catch (err) {
+            toast.error('Ошибка при добавлении модели крюка для клюшки');
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Аналогичные функции для addProfile ...
 
     const saveStep2 = async (payload: any) => {
         try {
@@ -105,7 +128,7 @@ const useStickProperties = () => {
         properties,
         addGrip,
         // addProfile,
-        // addBlade,
+        addBladeModelForStick,
         fetchProperties,
         saveStep2,
         refetch: fetchProperties
