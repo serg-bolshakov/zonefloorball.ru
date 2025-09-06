@@ -73,7 +73,7 @@ export const validateStep = <T extends TStepNumber>(
             errors.shaftFlexId = 'Укажите жёсткость рукоятки клюшки';
         }
 
-        if (!/^[A-Za-z][a-zA-Z\s-]*$/.test(stepData.colour)) {
+        if (!/^[A-Za-z][a-zA-Z\/\s-]*$/.test(stepData.colour)) {
             errors.colour = 'Цвет пишется латинскими буквами';
         }
 

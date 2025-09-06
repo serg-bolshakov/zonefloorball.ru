@@ -111,6 +111,7 @@ const AddStickForm = () => {
           
                 // Дополнительная обработка успешного ответа
                 if(res.data) {
+                  console.log('check similar product response data', res.data);
                   dispatch({ 
                       type: 'SET_SIMILAR_PRODUCT',
                       step: 1, 

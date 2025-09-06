@@ -32,7 +32,7 @@ class StoreStickRequest extends FormRequest
             'material'      => 'nullable|string|max:255',
             'stickSizeId'   => 'required|integer|exists:sizes,id',
             'weight'        => 'nullable|string|max:12',
-            'prod_desc'     => 'nullable|string|max:255',
+            'prod_desc'     => 'nullable|string|max:4000',
             'hookId'        => 'required|integer|in:1,2,3',
             'iffId'         => 'required|integer|exists:iff_statuses,id',
         ];

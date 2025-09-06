@@ -84,6 +84,7 @@ class ProductController extends Controller
 
         // 2. Поиск похожих товаров (кроме текущего артикула)
         $similarProduct = Product::where('brand_id', $request->brandId)
+            ->with(['properties'])
             ->where('category_id', $request->categoryId)
             ->where('article', '!=', $request->article) // Исключаем текущий артикул
             ->where(function($query) use ($request) {
