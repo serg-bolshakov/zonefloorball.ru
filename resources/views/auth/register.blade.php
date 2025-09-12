@@ -100,7 +100,8 @@
             <input id="password" class="registration-form__input" name="password" type="password" required value="{{ old('password') }}" autocomplete="new-password">
             <a href="#" class="password-control" onclick="return show_hide_password(this);"></a>
             <span class="registration-error">*<br>@error('password') {{ $message }} @enderror</span>
-            <span class="productAddition-form__clearance">Пароль должен состоять как минимум из 8 символов, содержать в себе, как минимум, одну строчную и одну прописную (заглавную) буквы, иметь в своём составе, как минимум, одну цифру и один символ (косая черта/вопросительны знак...).</span><br>
+            <!-- <span class="productAddition-form__clearance">Пароль должен состоять как минимум из 8 символов, содержать в себе, как минимум, одну строчную и одну прописную (заглавную) буквы, иметь в своём составе, как минимум, одну цифру и один символ (косая черта/вопросительны знак...).</span><br> -->
+             <span class="productAddition-form__clearance">Пароль должен состоять как минимум из 8 символов, содержать в себе, как минимум, одну строчную и одну прописную (заглавную) буквы, одну цифру...</span><br>
         </p>
         
         <p class="registration-form__input-item password">

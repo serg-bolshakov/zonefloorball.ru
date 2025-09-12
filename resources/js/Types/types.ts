@@ -197,6 +197,8 @@ export interface IProduct extends IProductReportFromDB {
     actual_price?: IPrice;
     price_actual?: number;                          // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     regular_price?: IPrice;
+    action_price?: IPrice;
+    preorder_price?: IPrice;
     price_regular?: number;                         // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     price_preorder?: number;
     product_status_id?: number | null;

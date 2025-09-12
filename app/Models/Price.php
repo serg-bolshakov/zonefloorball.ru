@@ -10,6 +10,11 @@ class Price extends Model
 {
     use HasFactory;
 
+    const TYPE_INCOME   = 1;
+    const TYPE_REGULAR  = 2;
+    const TYPE_SPECIAL  = 3;
+    const TYPE_PREORDER = 4;
+
     protected $fillable = [
         'product_id',
         'price_type_id', 

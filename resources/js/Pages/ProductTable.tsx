@@ -347,7 +347,8 @@ const ProductTable: React.FC<ProductTableProps> = ({
         return `?${params.toString()}`;
     };
 
-    //console.log(products.data);
+    console.log('ProductTable', products.data);
+    console.log('ProductTable table mode', tableMode);
     //console.log (user);
 
     const webpPath = (imagePath: string) => {return imagePath.replace(/\.(jpg|png)$/, '.webp')};
@@ -595,7 +596,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                         </thead>
                         <tbody>
                             {products.data.map((product, index) => (
-                                product.on_sale !== undefined && product.on_sale > 0 && (
+                                (product.on_sale !== undefined && product.on_sale > 0 || (product.on_preorder && product.on_preorder > 0)) && (
                                         <tr key={product.id}>
                                             <td className="table-img">
                                                 <Link href={`/products/card/${product.prod_url_semantic}/`}>
@@ -619,22 +620,20 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                                 
                                                 <div className="margin-top8px">
                                                     {tableMode === 'cart' && (
-                                                        <div className="d-flex">
-                                                            {(product.price_with_rank_discount !== null) ? 
+                                                        <div className="d-flex  margin-bottom8px aline-items-center">
+                                                            {(product.price_with_rank_discount !== null && product.price_with_rank_discount) ? 
                                                             // здесь логика следующая: product.actual_price - есть всегда - значение равно регулярной цене или сцециальной акционной цене (что из них меньше)
                                                             // product.price_with_rank_discount !== null - появляется только в том случае, если пользователь авторизован и такая цена меньше product.actual_price - выводим ее!
                                                             (
-                                                                <>
-                                                                    <div className='d-flex margin-bottom8px'>
-                                                                        <span  className="color-red margin-bottom8px">{formatPrice(product.price_with_rank_discount ?? 0)}&nbsp;<sup>&#8381;</sup></span>
-                                                                        <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{product.percent_of_rank_discount}%</span>
-                                                                    </div>
-                                                                </>
+                                                                <div className='d-flex'>
+                                                                    <span  className="color-red margin-bottom8px">{formatPrice(product.price_with_rank_discount ?? 0)}&nbsp;<sup>&#8381;</sup></span>
+                                                                    <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{product.percent_of_rank_discount}%</span>
+                                                                </div>
                                                             ) : ( 
                                                             
                                                                 (product.price_actual ?? 0) < (product.price_regular ?? 0) ? (
                                                                     <>
-                                                                        <div className='d-flex margin-bottom8px'>
+                                                                        <div className='d-flex'>
                                                                             <span  className="color-red margin-bottom8px">{formatPrice(product.price_actual ?? 0)}&nbsp;<sup>&#8381;</sup></span>
                                                                             <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_actual ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
                                                                         </div>
@@ -643,24 +642,30 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                                                         </div> */}
                                                                     </>
                                                             ) : (
-                                                                <div>
+                                                                <div className='d-flex'>
                                                                     {formatPrice((product.price_regular ?? 0))}&nbsp;<sup>&#8381;</sup>
                                                                 </div>
                                                             ))}
                                                             
                                                             <div className="product-qty-on-sale margin-left24px nobr">
-                                                                {product.on_sale > 0 ? (`${product.on_sale} шт.`) : ('Временно отсутствует')} 
+                                                                {product.on_sale && product.on_sale > 0 ? (`${product.on_sale} шт.`) : ('Временно отсутствует')} 
                                                             </div>
 
                                                         </div>                                                        
                                                     )}
                                                     {tableMode === 'preorder' && (
                                                         <div className="d-flex margin-bottom8px">
-                                                            {(product.price_with_rank_discount && product.price_preorder && product.price_preorder < product.price_with_rank_discount) ? 
+                                                            {/* {(product.price_with_rank_discount && product.price_preorder && product.price_preorder < product.price_with_rank_discount) ? 
                                                             (
                                                                 <div className='d-flex margin-bottom8px'>
                                                                     <span  className="color-red margin-bottom8px">{formatPrice(product.price_preorder ?? 0)}&nbsp;<sup>&#8381;</sup></span>
                                                                     <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_preorder ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
+                                                                </div> */}
+                                                            {(product.price_preorder && product.price_regular) ? 
+                                                            (
+                                                                <div className='d-flex margin-bottom8px'>
+                                                                    <span  className="color-red margin-bottom8px">{formatPrice(product.price_preorder)}&nbsp;<sup>&#8381;</sup></span>
+                                                                    <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_preorder) / (product.price_regular) * 100))}%</span>
                                                                 </div>
                                                             ) : ( 
                                                                 !product.price_preorder && product.price_regular && (
@@ -706,7 +711,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
 
                                             {tableMode === 'preorder' && (
                                                 <td className="td-center">
-                                                    <div className=" product-qty-on-sale">{product.on_sale}</div>    
+                                                    <div className="product-qty-on-sale">{product.on_sale}</div>    
                                                 </td>    
                                             )}
                                                                                                       
@@ -721,21 +726,28 @@ const ProductTable: React.FC<ProductTableProps> = ({
                                                 <td  className="td-right">
                                                     <div className="d-flex margin-bottom8px flex-content-right">
                                                         {(product.on_preorder && product.on_preorder > 0 && product.price_with_rank_discount && product.price_preorder && product.price_preorder < product.price_with_rank_discount) ? 
-                                                        // здесь логика следующая: product.actual_price - есть всегда - значение равно регулярной цене или сцециальной акционной цене (что из них меньше)
-                                                        // product.price_with_rank_discount !== null - появляется только в том случае, если пользователь авторизован и такая цена меньше product.actual_price - выводим ее!
-                                                        (
-                                                            <>
-                                                                <span  className="color-red margin-bottom8px">{formatPrice(product.price_preorder ?? 0)}&nbsp;<sup>&#8381;</sup></span>
-                                                                <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_preorder ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
-                                                            </>
-                                                        ) : ( 
-                                                                product.on_preorder && product.on_preorder > 0 && !product.price_preorder && product.price_regular ? (
-                                                                <>
-                                                                <span  className="color-red margin-bottom8px">{formatPrice(product.price_regular * 0.9 )}&nbsp;<sup>&#8381;</sup></span>
-                                                                <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{10}%</span>
-                                                                </>
-                                                        ) : (
-                                                            <div className='d-flex margin-bottom8px'> </div>
+                                                            // здесь логика следующая: product.actual_price - есть всегда - значение равно регулярной цене или сцециальной акционной цене (что из них меньше)
+                                                            // product.price_with_rank_discount !== null - появляется только в том случае, если пользователь авторизован и такая цена меньше product.actual_price - выводим ее!
+                                                            (
+                                                                <div className='d-flex margin-bottom8px'>
+                                                                    <span  className="color-red margin-bottom8px">{formatPrice(product.price_preorder ?? 0)}&nbsp;<sup>&#8381;</sup></span>
+                                                                    <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_preorder ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
+                                                                </div>
+                                                            ) : ( 
+                                                                    product.on_preorder && product.on_preorder > 0 && !product.price_preorder && product.price_regular ? (
+                                                                    <div className='d-flex margin-bottom8px'>
+                                                                        <span  className="color-red margin-bottom8px">{formatPrice(product.price_regular * 0.9 )}&nbsp;<sup>&#8381;</sup></span>
+                                                                        <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{10}%</span>
+                                                                    </div>
+                                                            ) : (
+                                                                    product.on_preorder && product.on_preorder > 0 && product.price_preorder && product.price_regular ? (
+                                                                    <div className='d-flex margin-bottom8px'>
+                                                                        <span  className="color-red margin-bottom8px">{formatPrice(product.price_preorder)}&nbsp;<sup>&#8381;</sup></span>
+                                                                        <span className="cardProduct-priceDiscountInPercentage nobr">-&nbsp;{Math.ceil(100 - ((product.price_preorder ?? 0) / (product.price_regular ?? 1) * 100))}%</span>
+                                                                    </div>
+                                                            ) : (
+                                                                <div className='d-flex margin-bottom8px'></div>
+                                                            )
                                                         ))}
                                                     </div>
                                                 </td>

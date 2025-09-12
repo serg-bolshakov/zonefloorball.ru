@@ -29,8 +29,12 @@ class ProductsTableController extends Controller
     }
     
     public function index(Request $request) {
+        \Log::debug('ProductsTableController begin', [
+            '$request' => $request->all(),
+        ]);
         try {
             $responseData = $this->getResponseData($request);
+            // dd($responseData);
             return Inertia::render('ProductTable', $responseData);
         } catch (\Exception $e) {
             return response()->json([
@@ -120,17 +124,41 @@ class ProductsTableController extends Controller
 
         // Применяем подзапросы для цен
         $this->applyPriceSubqueries($query);
-       
+
+        // $test = $query->get();
+        // dd($test);
+        // dd($test->pluck('id', 'article')); // Ищем дубликаты
+
+
+        /* $latestPreorderPrice = DB::table('prices as p1')
+        ->select('p1.product_id', 'p1.price_value')
+        ->where(function($query) {
+            $query->where('p1.date_end', '>', now())
+                ->orWhereNull('p1.date_end');
+        })
+        ->whereRaw('p1.id = (
+            SELECT MAX(p2.id)
+            FROM prices as p2
+            WHERE p2.product_id = 221
+            AND p2.price_type_id = 3
+        )')
+        ->get();
+        dd($latestPreorderPrice);*/
+
         // Выбираем сервис для фильтрации
         $filterService = CatalogServiceFactory::create($categoryUrlSemantic, $query);
 
         // Применяем фильтры
         $filteredQuery = $filterService->applyFilters($filters);
         // dd($filteredQuery);
+
+        // $test = $filteredQuery->get();
+        // dd($test);
+        // dd($test->pluck('id', 'article')); // Ищем дубликаты
         
         // Пагинация
         $products = $filteredQuery->paginate($perPage, ['*'], 'page', $page);
-        // dump(new ProductCollection($products));
+        // dd(new ProductCollection($products));
         // dd($products);
         // Формируем данные для ответа
         $responseData = [
@@ -160,16 +188,19 @@ class ProductsTableController extends Controller
         // Подзапрос для актуальной цены
         // в части получения цен переходим из модели использования with на join: создаём подзапросы, которые будут возвращать только последние цены для каждого товара. 
         // Это аналогично тому, что делает ofMany в отношениях, но на уровне SQL:
+        
         $latestActualPrice = DB::table('prices as p1')
-            ->select('p1.product_id', 'p1.price_value')
-            ->where('p1.date_end', '>', now())
-            ->orWhereNull('p1.date_end')
-            ->whereRaw('p1.id = (
-                SELECT MAX(p2.id)
-                FROM prices as p2
-                WHERE p2.product_id = p1.product_id
-                AND p2.price_type_id = 2
-            )');
+        ->select('p1.product_id', 'p1.price_value')
+        ->where(function($query) {
+            $query->where('p1.date_end', '>', now())
+                ->orWhereNull('p1.date_end');
+        })
+        ->whereRaw('p1.id = (
+            SELECT MAX(p2.id)
+            FROM prices as p2
+            WHERE p2.product_id = p1.product_id
+            AND p2.price_type_id = 2
+        )');
 
         // подзапрос для регулярной цены. Этот подзапрос вернёт последнюю регулярную цену для каждого товара:
         $latestRegularPrice = DB::table('prices as p1')
@@ -182,6 +213,32 @@ class ProductsTableController extends Controller
             AND p2.price_type_id = 2
         )');
 
+        $latestActionPrice = DB::table('prices as p1') // price_type_id = 3 - price_special
+        ->select('p1.product_id', 'p1.price_value')
+        ->where(function($query) {
+            $query->where('p1.date_end', '>', now())
+                ->orWhereNull('p1.date_end');
+        })
+        ->whereRaw('p1.id = (
+            SELECT MAX(p2.id)
+            FROM prices as p2
+            WHERE p2.product_id = p1.product_id
+            AND p2.price_type_id = 3        
+        )');
+
+        $latestPreorderPrice = DB::table('prices as p1')
+        ->select('p1.product_id', 'p1.price_value')
+        ->where(function($query) {
+            $query->where('p1.date_end', '>', now())
+                ->orWhereNull('p1.date_end');
+        })
+        ->whereRaw('p1.id = (
+            SELECT MAX(p2.id)
+            FROM prices as p2
+            WHERE p2.product_id = p1.product_id
+            AND p2.price_type_id = 4
+        )');
+
         // Присоединяем подзапросы
         $query
             ->leftJoinSub($latestActualPrice, 'actual_prices', function ($join) {
@@ -190,6 +247,12 @@ class ProductsTableController extends Controller
             ->leftJoinSub($latestRegularPrice, 'regular_prices', function ($join) {
                 $join->on('products.id', '=', 'regular_prices.product_id');
             })
-            ->select('products.*', 'actual_prices.price_value as actual_price', 'regular_prices.price_value as regular_price');
+            ->leftJoinSub($latestActionPrice, 'action_prices', function ($join) {
+                $join->on('products.id', '=', 'action_prices.product_id');
+            })
+            ->leftJoinSub($latestPreorderPrice, 'preorder_prices', function ($join) {
+                $join->on('products.id', '=', 'preorder_prices.product_id');
+            })
+            ->select('products.*', 'actual_prices.price_value as actual_price', 'regular_prices.price_value as regular_price', 'action_prices.price_value as action_price', 'preorder_prices.price_value as preorder_price');
     }
 }

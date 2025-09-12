@@ -158,7 +158,7 @@ const NewStickFormStep2: React.FC<Step2FormProps> = ({
                 return;
             }
 
-            if (!/^[\p{L}0-9\.\s-]+$/u.test(trimmedName)) {                                                      // \p{L} - любые буквы (включая кириллицу)
+            if (!/^[\p{L}0-9()\.\s-]+$/u.test(trimmedName)) {                                                      // \p{L} - любые буквы (включая кириллицу)
                 setLocalNewBladeError('Наименование должно содержать только цифры, буквы, точки, пробелы и дефисы');
                 return;
             }

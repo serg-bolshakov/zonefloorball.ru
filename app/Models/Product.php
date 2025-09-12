@@ -63,7 +63,11 @@ class Product extends Model {
             'id' => 'max',
         ], function ($query) {
             $query->where('date_end', '>', now())
-                ->orWhereNull('date_end');
+                ->orWhereNull('date_end')
+                ->whereNotIn('price_type_id', [
+                    Price::TYPE_INCOME, 
+                    Price::TYPE_PREORDER
+                ]);
         });
     }
 

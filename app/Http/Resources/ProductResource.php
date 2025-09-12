@@ -16,7 +16,8 @@ class ProductResource extends JsonResource
      */
 
     public function toArray(Request $request): array {
-        // \Log::debug('expected_receipt_date:', ['request' => $this->productReport->expected_receipt_date ?? null]);
+        \Log::debug('ProductResource ToArray:', ['request' => $request->all()]);
+        \Log::debug('ProductResource ToArray this:', ['this' => $this]);
        
         $user = Auth::user() ?? null;
         // \Log::debug('ProductResource validated:', ['headers' => $request->headers->all(), '$userssss' => $user]);
@@ -46,12 +47,12 @@ class ProductResource extends JsonResource
         ];
         
         // если пользователь авторизован посчитаем его скидки и добавим в ответ:
-        if (!empty($user)) {
+        /*if (!empty($user)) {
             \Log::debug('ProductResources toArray', ['$user Debug' => $user]);
             $data = array_merge($data, $this->calculateDiscounts($user));
-        }
+        }*/
 
-       // \Log::debug('ProductResources toArray', ['$newdata' => $data]);
+        \Log::debug('ProductResources toArray data', ['$newdata' => $data]);
 
         return $data;      
     }
@@ -98,7 +99,7 @@ class ProductResource extends JsonResource
             $discountData['price_special'] = $actualPrice;
             $discountData['date_end']      = $actualPriceDateEnd;
         }
-
+        // dd($discountData); - не работает в режиме таблицы товаров
         return $discountData;
     }
     

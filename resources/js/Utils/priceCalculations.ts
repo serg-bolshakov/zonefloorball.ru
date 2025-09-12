@@ -13,6 +13,8 @@ export const getFinalProductPriceByMode = (
 export const getRealPreorderPrice = (product: IProduct): number => {
     if (product.price_preorder && product.price_with_rank_discount) {
         return Math.min(product.price_preorder, product.price_with_rank_discount);
+    } else if (product.price_preorder && product.price_preorder > 0) {
+        return product.price_preorder;
     }
     return (product.price_regular ?? 0) * 0.9; // Дефолтная скидка 10%
 };

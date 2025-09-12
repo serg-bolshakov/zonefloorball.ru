@@ -5,7 +5,7 @@ import { useUserDataContext } from '@/Hooks/useUserDataContext';
 import { motion } from 'framer-motion';
 import useSafeLocation from '@/Hooks/useSafeLocation';
 import { useEffect } from 'react';
-import { isLegalUser } from "@/Types/types";
+import { isLegalUser, isIndividualUser } from "@/Types/types";
 
 const Header: React.FC = () => {
     const { user, categoriesMenuArr, authBlockContentFinal, setAuthBlockContentFinal } = useAppContext();
@@ -16,7 +16,7 @@ const Header: React.FC = () => {
     const favoritesCount = favorites.length;
     const cartCount = cartTotal;
     const preorderCount = preorderTotal;
-
+    // console.log('preorderTotal', preorderTotal);
     const location = useSafeLocation();
 
     useEffect(() => {
@@ -307,7 +307,7 @@ const Header: React.FC = () => {
                         <p><Link className="header-icon" href="/products/cart">Корзина</Link></p>
                     </motion.div>
 
-                    {isLegalUser(user) && (
+                    {(isLegalUser(user) || isIndividualUser(user)) && (
                         <motion.div className="header-icon__block basket-logo__div" whileHover={{ scale: 0.95 }} whileTap={{ scale: 0.95 }}>
                             {preorderCount > 0 && ( <div className="header-basket__counter header-logo__counter color-red">{ preorderCount }</div> )}
                             <Link className="" href="/products/preorder"><img src="/storage/icons/combo-chart.png" alt="preorder" title="Предзаказ" /></Link>

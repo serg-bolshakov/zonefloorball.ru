@@ -70,7 +70,7 @@ class ValidationRules
                 ->letters()
                 ->mixedCase()
                 ->numbers()
-                ->symbols()
+                // ->symbols()
                 // ->uncompromised()
         ];
     }

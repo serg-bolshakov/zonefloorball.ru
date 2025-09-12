@@ -217,7 +217,7 @@ class StickPropertiesController extends Controller
                 'required',
                 'string',
                 'max:255',
-                'regex:/^[\p{L}0-9\.\s-]+$/u',
+                'regex:/^[\p{L}0-9()\.\s-]+$/u',
                 // проверка на начало/конец
                 function ($attribute, $value, $fail) {
                     if (preg_match('/^[-\s]|[\s-]$/', $value)) {

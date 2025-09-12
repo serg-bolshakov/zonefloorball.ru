@@ -95,9 +95,9 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
             deliveryData: { address?: string } = {}
         ): TCartCustomer => {
           
-            console.log('Инициализация пользователя в приложении. user на входе:', user);
-            console.log('Инициализация пользователя в приложении. user физлицо?:', isIndividualUser(user));
-            console.log('Инициализация пользователя в приложении. user юрлицо?:', isLegalUser(user));
+            // console.log('Инициализация пользователя в приложении. user на входе:', user);
+            // console.log('Инициализация пользователя в приложении. user физлицо?:', isIndividualUser(user));
+            // console.log('Инициализация пользователя в приложении. user юрлицо?:', isLegalUser(user));
             
             if (isIndividualUser(user)) {       // Теперь TS знает, что user - IIndividualUser
                 return {
@@ -261,9 +261,16 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
     
     // Вынесем логику определения цены в отдельные функции
     const getPreorderPrice = (product: IProduct): number => {
+        /* if (product.price_preorder && product.price_with_rank_discount && product.price_preorder < product.price_with_rank_discount) {
+            return product.price_preorder;
+        }*/
+
         if (product.price_preorder && product.price_with_rank_discount && product.price_preorder < product.price_with_rank_discount) {
             return product.price_preorder;
-        } 
+        } else if (product.price_preorder && product.price_preorder > 0) {
+            return product.price_preorder;
+        }
+
         return (product.price_regular ?? 0) * 0.9; // Дефолтная скидка 10%
     };
 
@@ -288,9 +295,9 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
 
     useEffect(() => {
         const { apiEndpoint, sourceData, total } = modeConfig[mode];
-        console.log('useEffect, apiEndpoint', apiEndpoint);
-        console.log('useEffect, sourceData', sourceData);
-        console.log('useEffect, total', total);
+        // console.log('useEffect, apiEndpoint', apiEndpoint);
+        // console.log('useEffect, sourceData', sourceData);
+        // console.log('useEffect, total', total);
         const controller = new AbortController; // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
         // создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
         const signal = controller.signal;       // это объект AbortSignal, который передаётся в axios (или fetch).
@@ -323,7 +330,7 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                 // Проверяем, не был ли запрос отменён
                 if (!signal.aborted) {
                     const products = response.data.products?.data || [];
-                    console.log('products', products);
+                    // console.log('products', products);
                     setCurrentProducts(products);
                 }
             } catch (error) {
@@ -347,7 +354,7 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
 
     useEffect(() => {
         if (currentProducts.length > 0) {
-            console.log('mode', mode);
+            // console.log('mode', mode);
             const regular = currentProducts.reduce((sum, p) => sum + (p.price_regular ?? 0) * (p.quantity ?? 0), 0);
             const discounted = calculateTotalAmount(currentProducts, mode);
             

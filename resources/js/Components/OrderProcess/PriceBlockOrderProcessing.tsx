@@ -14,7 +14,7 @@ interface IPriceBlock {
         price_actual?: number;
         price_special?: number;
         price_with_rank_discount?: number;
-        price_preorder?: number;
+        price_preorder?: number | null;
     };
     mode: TMode;
 }
@@ -22,6 +22,7 @@ interface IPriceBlock {
 const PriceBlockOrderProcessing: React.FC<IPriceBlock> = ({product, mode}) => {
     const getFinalProductAmount = useCallback(() => {
         const price = getFinalProductPriceByMode(product, mode);
+        // console.log('price', price);
         return price * (product.quantity ?? 0);
     }, [mode, product]); // Зависимости явные
 

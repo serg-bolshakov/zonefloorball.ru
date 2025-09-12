@@ -299,6 +299,12 @@ class StickController extends Controller {
             3 => 'Алетерс'
         ];
 
+        $brandNamesEng = [
+            1 => 'Unihoc',
+            2 => 'Zone', 
+            3 => 'Aleters'
+        ];
+
         // Явно приводим к int для гарантии, для перестраховки в сто тысяч первый раз
         $brandId = (int)$data['brandId'];
 
@@ -306,7 +312,7 @@ class StickController extends Controller {
         $sizeCm = $size ? $size->size_value . 'см' : '';
 
         // return "Клюшка {$brandNames[$brandId]} {$brand->brand_view} {$sizeCm} Купить {$data['article']}";
-        return "Клюшка флорбол {$brandNames[$brandId]} {$sizeCm} Купить {$data['article']}";
+        return "Клюшка флорбольная {$brandNames[$brandId]} {$brandNamesEng[$brandId]} {$sizeCm} Доставка Купить {$data['article']}";
     }
 
     private function generateMetaDescription(array $data, Brand $brand): string {
@@ -318,7 +324,7 @@ class StickController extends Controller {
             default                             => 'для взрослых и высоких игроков'
         };
 
-        return "Клюшка {$brand->brand_view} {$sizeDescription}. {$data['article']}. Лучший мировой производитель флорбольной экипировки.";
+        return "Клюшка {$brand->brand_view} {$sizeDescription}. {$data['article']}. Aleters Лучшие клюшки. Производитель флорбольной экипировки.";
     }
 
 }
