@@ -165,11 +165,15 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
                                     )}
                                 </div>
                                 { user && (
-                                    <p className="fs14">
+                                    <p className="fs12">
                                         { user.client_type_id === 1
                                         ? "... это моя специальная цена..."
-                                        : "... это наша специальная цена..."}
+                                        // : "... это наша специальная цена..."}
+                                        : '... наша цена'}
                                      </p>
+                                )}
+                                { product.price_preorder && product.price_preorder !== null && (
+                                   <p className="catalog-preorder-price"><span className="nobr">(на заказ: {formatPrice(product.price_preorder)}</span><sup>&#8381;</sup> )</p>
                                 )}
                             </div>
                         </div>             

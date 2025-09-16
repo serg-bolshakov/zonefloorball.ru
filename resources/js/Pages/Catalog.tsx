@@ -65,7 +65,7 @@ const defaultProducts: IProductsResponse = {
     },
 };
 
-console.log('defprods', defaultProducts);
+// console.log('defprods', defaultProducts);
 
 const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords, catalogCategoryName, catalogCategoryTitleImg, catDescription, filtersSetComponent,
     products = defaultProducts, // Используем значение по умолчанию
@@ -77,14 +77,14 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     categoryId,
 }) => {
 
-    console.log('prods', products);
+    // console.log('prods', products);
     // Инициализируем состояние из пропсов (которые приходят из URL через Inertia)
     const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [searchType, setSearchType] = useState<'article' | 'title'>(initialSearchType);
     const { user } = useAppContext();
 
-    console.log(searchTerm);
-    console.log(searchType);
+    // console.log(searchTerm);
+    // console.log(searchType);
 
     // Синхронизация при изменении URL (если пользователь нажимает "Назад")
     useEffect(() => {
@@ -110,7 +110,7 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     
     const [currentSortBy, setCurrentSortBy] = useState(sortBy);
     const [currentSortOrder, setCurrentSortOrder] = useState(sortOrder);
-    console.log('Catalog products', products);
+    // console.log('Catalog products', products);
     const currentPage = products.meta.current_page;
 
     // Чтение параметров из URL при загрузке страницы

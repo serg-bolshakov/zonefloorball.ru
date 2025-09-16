@@ -62,12 +62,13 @@ class Product extends Model {
         return $this->hasOne(Price::class)->ofMany([
             'id' => 'max',
         ], function ($query) {
-            $query->where('date_end', '>', now())
-                ->orWhereNull('date_end')
-                ->whereNotIn('price_type_id', [
-                    Price::TYPE_INCOME, 
-                    Price::TYPE_PREORDER
-                ]);
+            $query->where(function ($q) {
+                $q->where('date_end', '>', now())
+                ->orWhereNull('date_end');
+            })->whereIn('price_type_id', [
+                Price::TYPE_REGULAR, 
+                Price::TYPE_SPECIAL
+            ]);
         });
     }
 
@@ -85,7 +86,12 @@ class Product extends Model {
         return $this->hasOne(Price::class)->ofMany([
             'id' => 'max',
         ], function ($query) {
-            $query->where('price_type_id', '=', 4);
+            $query->where(function ($q) {
+                $q->where('date_end', '>', now())
+                ->orWhereNull('date_end');
+            })->where(function ($q) {
+                $q->where('price_type_id', Price::TYPE_PREORDER);
+            });
         });
     }
 

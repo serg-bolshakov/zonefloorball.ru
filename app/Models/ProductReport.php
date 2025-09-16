@@ -21,7 +21,7 @@ class ProductReport extends Model
         ];
 
         protected $casts = [
-            'expected_receipt_date' => 'datetime',
+            'expected_receipt_date' => 'date:Y-m-d',
             'in_stock' => 'integer',
             'on_sale' => 'integer',
             'reserved' => 'integer',

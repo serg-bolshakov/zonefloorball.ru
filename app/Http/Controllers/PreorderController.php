@@ -87,19 +87,25 @@ class PreorderController extends Controller
 
     // Добавление / обновление товара в предзаказ(е)
     public function update(Request $request) {
-        
+        \Log::debug('PreorderController: update', ['request' => $request->all()]);
         $validated = $request->validate([
             'product_id'                    => 'required|integer|exists:products,id',
             'quantity'                      => 'required|integer|min:1',
             'expected_delivery_date'        => 'nullable|date|after:today'
         ]);
-                
+        \Log::debug('PreorderController: update validated', ['validated' => $validated]);
+
+        // Преобразуем строку в правильный формат
+        $deliveryDate = $validated['expected_delivery_date'] 
+            ? date('Y-m-d', strtotime($validated['expected_delivery_date']))
+            : null;
+
         $updated = Preorder::where('user_id', Auth::id())
             ->where('product_id', $validated['product_id'])
             ->update([
                 'quantity'                  => $validated['quantity'],
                 'deleted_at'                => null, // Сбрасываем мягкое удаление
-                'expected_delivery_date'    => $validated['expected_delivery_date']
+                'expected_delivery_date'    => $deliveryDate
         ]);
 
         // Если записи не было - создаём
@@ -108,7 +114,7 @@ class PreorderController extends Controller
                 'user_id'                   => Auth::id(),
                 'product_id'                => $validated['product_id'],
                 'quantity'                  => $validated['quantity'],
-                'expected_delivery_date'    => $validated['expected_delivery_date']
+                'expected_delivery_date'    => $deliveryDate
             ]);
         }
 

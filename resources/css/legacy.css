@@ -1598,6 +1598,38 @@ input[type="checkbox"]:checked + label:after {
     /* background-color: aqua; */
 }
   
+.cardProduct-productPreorderPrice__block {
+    display: flex;
+    flex-direction: column; /* меняем направление на колонку */
+    border-radius: 8px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    font-family: 'Noto Sans';
+    font-size: 14px;
+    margin-top: 18px;
+    gap: 8px;
+}
+
+.preorder-notice {
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.catalog-preorder-price {
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 0.6em;
+    text-align: right;
+}
+
+/* Для внутренних элементов сохраняем flex */
+.cardProduct-productPreorderPrice__block > div:not(.preorder-notice) {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
 .cardProduct-priceCurrent {
     font-family: 'Inter';
     font-weight:600;

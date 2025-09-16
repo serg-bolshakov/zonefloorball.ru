@@ -19,11 +19,13 @@ class ProductCardController extends Controller
         
     protected function getResponseData($prodUrlSemantic, $prodStatus = 1) {
         // Получаем продукт с нужными отношениями
-        $product = Product::with(['actualPrice', 'regularPrice', 'category', 'brand', 'size', 'properties', 
+        $product = Product::with(['actualPrice', 'regularPrice', 'preorderPrice', 'category', 'brand', 'size', 'properties', 
         'productMainImage', 'productCardImgOrients', 'actualPrice', 'regularPrice', 'productShowCaseImage', 
         'properties', 'productReport', 'productUnit', 'productPromoImages'])->where('prod_url_semantic', $prodUrlSemantic)->first();
         
-        \Log::debug('CardController:', [ 'product' => $product->category_id]);
+        \Log::debug('ProductCardController:', [ 'product' => $product->category_id]);
+
+        // dd($product);
 
         if($product['actualPrice']->price_value < $product['regularPrice']->price_value) {
             $product['price_special'] = $product['actualPrice']->price_value;
@@ -34,12 +36,12 @@ class ProductCardController extends Controller
         // Создаем экземпляр ProductResource и преобразуем продукт
         $productResource = new ProductResource($product);
         $prodInfo = $productResource->toArray(request());
-        \Log::debug('CardController:', [ 'prodInfo' => $prodInfo]);
+        \Log::debug('ProductCardController:', [ 'prodInfo' => $prodInfo]);
         
         $categoryId = $product->category_id;
         $similarProductsService = ProductCardServiceFactory::create($categoryId, $product);    // Выбираем сервис для выборки в карточку товара аналогичных товаров, разных размеров/цветов...
         $propVariants = $similarProductsService->getSimilarProps();                             // Получаем различные варианты исполнения просматриваемого товара (размеры/цвета/модели...)
-
+        // dd($prodInfo);
         // dd($propVariants);
         return [
             'title' => $product->tag_title,
@@ -70,6 +72,7 @@ class ProductCardController extends Controller
                 // Отношения в camelCase:
                 'actualPrice' => $product->actualPrice,
                 'regularPrice' => $product->regularPrice,
+                'preorderPrice' => $product->preorderPrice,
                 'category' => $prodInfo['category'],
                 'brand' => $product->brand ?? null,
                 'size' => $product->size,

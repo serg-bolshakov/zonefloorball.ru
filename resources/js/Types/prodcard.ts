@@ -6,6 +6,7 @@ import { ICategoryItemFromDB, IBrandItemFromDB, ISizeItemFromDB, IProductItemFro
 export interface IProductCardGeneralProps extends IProductItemFromDB {
     actualPrice: IPriceItemFromDB;
     regularPrice: IPriceItemFromDB;
+    preorderPrice: IPriceItemFromDB;
     category: ICategoryItemFromDB;
     brand: IBrandItemFromDB;
     size: ISizeItemFromDB;

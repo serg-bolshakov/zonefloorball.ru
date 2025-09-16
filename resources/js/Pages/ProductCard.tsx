@@ -7,6 +7,7 @@ import NavBarBreadCrumb from '@/Components/NavBarBreadCrumb';
 import { IProductCardResponse } from '@/Types/prodcard';
 import ProductHeader from '@/Components/ProductCard/ProductHeader';
 import PriceBlock from '@/Components/ProductCard/PriceBlock';
+import PricePreorderBlock from '@/Components/ProductCard/PricePreorderBlock';
 import StatusBlock from '@/Components/ProductCard/StatusBlock';
 import ProductDetails from '@/Components/ProductCard/ProductDetails';
 import ProductDescription from '@/Components/ProductCard/ProductDescription';
@@ -188,6 +189,17 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                                 {(prodInfo.product_status_id === PRODUCT_STATUSES.ACTIVE) && (
                                     <ProductActions prodInfo={prodInfo} />
                                 )}
+                            </div>
+                            <div>
+                                {prodInfo.actualPrice && (prodInfo.product_status_id === PRODUCT_STATUSES.ACTIVE) && ((prodInfo.productReport.on_sale ?? 0) > 0 || (prodInfo.productReport.reserved ?? 0) > 0 || (prodInfo.productReport.on_preorder ?? 0) > 0) &&(
+                                <PricePreorderBlock 
+                                    preorderPrice={prodInfo.preorderPrice} 
+                                    regularPrice={prodInfo.regularPrice}
+                                    price_regular={prodInfo.price_regular ?? null}
+                                    price_with_rank_discount={prodInfo.price_with_rank_discount ?? null}
+                                    percent_of_rank_discount={prodInfo.percent_of_rank_discount ?? null}
+                                />
+                            )}
                             </div>
                         </section>
                     </section>

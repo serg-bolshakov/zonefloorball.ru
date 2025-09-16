@@ -11,6 +11,10 @@ class Preorder extends Model {
 
     protected $fillable = ['user_id', 'product_id', 'quantity', 'expected_delivery_date', 'deleted_at'];
 
+    protected $casts = [
+        'expected_delivery_date' => 'date:Y-m-d',
+    ];
+
     // Отношения
     public function user(): BelongsTo {
         return $this->belongsTo(User::class);
