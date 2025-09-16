@@ -171,7 +171,7 @@ class PaymentController extends Controller
                             if (!$productReport) { throw new \Exception("Товар ID: {$item['product_id']} не найден в отчётах по остаткам"); }
                             $productReport->update([
                                 'reserved'  => (int)$productReport->reserved - (int)$item['quantity'],
-                                'on_sale'   => (int)$productReport->on_sale + (int)$item['quantity']
+                                'on_sale'   => (int)$productReport->on_sale - (int)$item['quantity']
                             ]);
 
                             $productReservation = ProductReservation::where('product_id', $item['product_id'])->where('order_id', $order->id)  // ← Используем $order->id вместо $validated
