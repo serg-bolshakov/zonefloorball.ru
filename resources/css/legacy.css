@@ -136,6 +136,10 @@ i { font-style: italic; }
     text-align: left;
 }
 
+.text-align-right {
+    text-align: right;
+}
+
 .line-through {
     text-decoration: line-through;
 }
@@ -1617,8 +1621,9 @@ input[type="checkbox"]:checked + label:after {
 
 .catalog-preorder-price {
     margin-bottom: 8px;
+    margin-top: 8px;
     font-weight: 500;
-    font-size: 0.6em;
+    font-size: 0.75rem;
     text-align: right;
 }
 

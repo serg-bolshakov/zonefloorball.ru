@@ -3,6 +3,7 @@ import React from "react";
 import { Link, usePage } from '@inertiajs/react';
 import { IProductsResponse } from "../Types/types";
 import useAppContext from "@/Hooks/useAppContext";
+import AssortimentCard from "./Catalog/AssortimentCard";
 
 interface AssortimentCardsProps {
     products: IProductsResponse;
@@ -10,7 +11,7 @@ interface AssortimentCardsProps {
 
 const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
     // const generateId = useId(); // Используем useId
-    console.log('Products:', products); // Выводим продукты в консоль
+    // console.log('Products:', products); // Выводим продукты в консоль
     const { user } = useAppContext();
     const totalPages = products.meta.last_page;
     const currentPage = products.meta.current_page;
@@ -87,96 +88,102 @@ const AssortimentCards: React.FC<AssortimentCardsProps> = ({products}) => {
         return `?${params.toString()}`;
     };
 
+  
     return (
         <>
             {/* Рендерим товары */}
             {products.data.length > 0 ? (
                 <>
                     {products.data.map(product => (
-                        <div key={product.id} className="assortiment-card__block">
-                            <div className="assortiment-card__block-productImg">
-                                <Link href={`/products/card/${product.prod_url_semantic}`}><img src={`/storage/${product.img_link}`} 
-                                alt={[product.category, product.brand, product.model, product.marka].filter(Boolean).join(' ')} 
-                                title={[product.category, product.brand, product.model, product.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} /></Link>
-                            </div>
-                            <div className="assortiment-card__block-productInfo">
-                                <div className="assortiment-card_productName">
-                                    <Link href={`/products/card/${product.prod_url_semantic}`}>{product.title}</Link>
-                                </div>
+                        // <div key={product.id} className="assortiment-card__block">
+                        //     <div className="assortiment-card__block-productImg">
+                        //         <Link href={`/products/card/${product.prod_url_semantic}`}><img src={`/storage/${product.img_link}`} 
+                        //         alt={[product.category, product.brand, product.model, product.marka].filter(Boolean).join(' ')} 
+                        //         title={[product.category, product.brand, product.model, product.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} /></Link>
+                        //     </div>
+                        //     <div className="assortiment-card__block-productInfo">
+                        //         <div className="assortiment-card_productName">
+                        //             <Link href={`/products/card/${product.prod_url_semantic}`}>{product.title}</Link>
+                        //         </div>
                                
-                                <div className="assortiment-card_productPrice">
-                                    {/* Логика отображения цены */}
-                                    {product.prod_status !== 2 ? (
-                                        user && product.price_with_rank_discount && product.price_regular ? (
-                                            <>
-                                                <p className="priceCurrentSale">
-                                                    <span className="nobr">
-                                                        {formatPrice(product.price_with_rank_discount)} <sup>&#8381;</sup>
-                                                    </span>
-                                                </p>
-                                                <p className="priceBeforSale">
-                                                    <span className="nobr">
-                                                        {formatPrice(product.price_regular)} <sup>&#8381;</sup>
-                                                    </span>
-                                                </p>
-                                                <p className="priceDiscountInPercentage">
-                                                    <span className="nobr">
-                                                        - {product.percent_of_rank_discount}%
-                                                    </span>
-                                                </p>
-                                            </>
-                                        ) :
-                                            product.price_actual !== product.price_regular ? (
-                                                <>
-                                                    {product.price_actual !== null && product.price_actual !== undefined && (
-                                                        <p className="priceCurrentSale">
-                                                            <span className="nobr">
-                                                                {formatPrice(product.price_actual)} <sup>&#8381;</sup>
-                                                            </span>
-                                                        </p>
-                                                    )}
+                        //         <div className="assortiment-card_productPrice">
+                        //             {/* Логика отображения цены */}
+                        //             {product.prod_status !== 2 ? (              // Товар не находится в архиве
+                        //                 user && product.price_with_rank_discount && product.price_regular ? (
+                        //                     <>
+                        //                         <p className="priceCurrentSale">
+                        //                             <span className="nobr">
+                        //                                 {formatPrice(product.price_with_rank_discount)} <sup>&#8381;</sup>
+                        //                             </span>
+                        //                         </p>
+                        //                         <p className="priceBeforSale">
+                        //                             <span className="nobr">
+                        //                                 {formatPrice(product.price_regular)} <sup>&#8381;</sup>
+                        //                             </span>
+                        //                         </p>
+                        //                         <p className="priceDiscountInPercentage">
+                        //                             <span className="nobr">
+                        //                                 - {product.percent_of_rank_discount}%
+                        //                             </span>
+                        //                         </p>
+                        //                     </>
+                        //                 ) :
+                        //                     product.price_actual !== product.price_regular ? (
+                        //                         <>
+                        //                             {product.price_actual !== null && product.price_actual !== undefined && (
+                        //                                 <p className="priceCurrentSale">
+                        //                                     <span className="nobr">
+                        //                                         {formatPrice(product.price_actual)} <sup>&#8381;</sup>
+                        //                                     </span>
+                        //                                 </p>
+                        //                             )}
                                                     
-                                                    {product.price_regular !== null && product.price_regular !== undefined && (
-                                                        <p className="priceBeforSale">
-                                                            <span className="nobr">
-                                                                {formatPrice(product.price_regular)} <sup>&#8381;</sup>
-                                                            </span>
-                                                        </p>
-                                                    )}
+                        //                             {product.price_regular !== null && product.price_regular !== undefined && (
+                        //                                 <p className="priceBeforSale">
+                        //                                     <span className="nobr">
+                        //                                         {formatPrice(product.price_regular)} <sup>&#8381;</sup>
+                        //                                     </span>
+                        //                                 </p>
+                        //                             )}
 
-                                                    {product.price_regular !== null && product.price_regular !== undefined && product.price_actual !== null && product.price_actual !== undefined && (
-                                                        <p className="priceDiscountInPercentage">
-                                                            <span className="nobr">
-                                                                - {Math.ceil(100 - (product.price_actual / product.price_regular) * 100)}%
-                                                            </span>
-                                                        </p>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                product.price_regular !== null && product.price_regular !== undefined ? (
-                                                <p className="priceCurrent"><span className="nobr">{formatPrice(product.price_regular)}</span><sup>&#8381;</sup></p>
-                                                ) : (
-                                                    <p>Цена не указана</p>
-                                                )
-                                            )   
+                        //                             {product.price_regular !== null && product.price_regular !== undefined && product.price_actual !== null && product.price_actual !== undefined && (
+                        //                                 <p className="priceDiscountInPercentage">
+                        //                                     <span className="nobr">
+                        //                                         - {Math.ceil(100 - (product.price_actual / product.price_regular) * 100)}%
+                        //                                     </span>
+                        //                                 </p>
+                        //                             )}
+                        //                         </>
+                        //                     ) : (
+                        //                         product.price_regular !== null && product.price_regular !== undefined ? (
+                        //                         <p className="priceCurrent"><span className="nobr">{formatPrice(product.price_regular)}</span><sup>&#8381;</sup></p>
+                        //                         ) : (
+                        //                             <p>Цена не указана</p>
+                        //                         )
+                        //                     )   
 
-                                    ) : (
-                                        <p></p>
-                                    )}
-                                </div>
-                                { user && (
-                                    <p className="fs12">
-                                        { user.client_type_id === 1
-                                        ? "... это моя специальная цена..."
-                                        // : "... это наша специальная цена..."}
-                                        : '... наша цена'}
-                                     </p>
-                                )}
-                                { product.price_preorder && product.price_preorder !== null && (
-                                   <p className="catalog-preorder-price"><span className="nobr">(на заказ: {formatPrice(product.price_preorder)}</span><sup>&#8381;</sup> )</p>
-                                )}
-                            </div>
-                        </div>             
+                        //             ) : (
+                        //                 <p></p>
+                        //             )}
+                        //         </div>
+                        //         { user && (
+                        //             <p className="fs12">
+                        //                 { user.client_type_id === 1
+                        //                 ? "... это моя специальная цена..."
+                        //                 // : "... это наша специальная цена..."}
+                        //                 : '... наша цена'}
+                        //              </p>
+                        //         )}
+                        //         { product.price_preorder && product.price_preorder !== null && (
+                        //            <p className="catalog-preorder-price"><span className="nobr">(на заказ: {formatPrice(product.price_preorder)}</span><sup>&#8381;</sup> )</p>
+                        //         )}
+                        //     </div>
+                        // </div>          
+                        <AssortimentCard 
+                            key={product.id} 
+                            product={product} 
+                            user={user} 
+                        />   
                     ))}
                 
                     {/* Пагинация - вынес в родительский компонент - сравним, где будет лучше (на телефоне посмотрим)*/}

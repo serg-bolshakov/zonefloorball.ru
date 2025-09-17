@@ -6,7 +6,6 @@ import useAppContext from "@/Hooks/useAppContext";
 import { formatPrice } from '@/Utils/priceFormatter';
 import ProductItem from "@/Components/Cart/ProductItem";
 import { motion } from 'framer-motion';
-// import { isGuest, isIndividual, isLegal } from '@/Types/types';
 import { isIndividualUser, isLegalUser } from "@/Types/types";
 import { GuestCustomerInfo } from "../Cart/OrderConfirmation/GuestCustomerInfo";
 import { IndividualCustomerInfo } from "../Cart/OrderConfirmation/IndividualCustomerInfo";
@@ -92,7 +91,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
         }
     };
 
-    // console.log('products', products);
+    console.log('products', products);
 
     return (
         <>

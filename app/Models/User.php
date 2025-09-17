@@ -60,6 +60,7 @@ use Laravel\Sanctum\HasApiTokens;
     
     // Уровни доступа
         const ACCESS_CLIENT          = 1;
+        const ACCESS_ADMIN           = 2;
         const ACCESS_GUEST           = 6;
 
     // метод для проверки актуальности согласий оферты и пользовательского соглашения:
@@ -118,18 +119,18 @@ use Laravel\Sanctum\HasApiTokens;
 
     /** Определяет является ли пользвователь зарегистрированным физическим лицом */
     public function isIndividual(): bool {
-        return (int)$this->client_type_id === self::CLIENT_TYPE_INDIVIDUAL 
-            && (int)$this->user_access_id === self::ACCESS_CLIENT;
+        return (int)$this->client_type_id  === self::CLIENT_TYPE_INDIVIDUAL 
+            && (int)$this->user_access_id  === self::ACCESS_CLIENT;
     }
 
     /** Определяет является ли пользвователь зарегистрированным юридическим лицом (ИП или организацией) */
     public function isLegal(): bool {
-        return (int)$this->client_type_id === self::CLIENT_TYPE_LEGAL 
-            && (int)$this->user_access_id === self::ACCESS_CLIENT;
+        return (int)$this->client_type_id  === self::CLIENT_TYPE_LEGAL 
+            && ((int)$this->user_access_id === self::ACCESS_CLIENT || (int)$this->user_access_id === self::ACCESS_ADMIN);
     }
 
     public function isGuest(): bool {
-        return (int)$this->user_access_id === self::ACCESS_GUEST;                                        // user_access_id === 6 - "guest"
+        return (int)$this->user_access_id  === self::ACCESS_GUEST;                                        // user_access_id === 6 - "guest"
     }
 
     public function getClientType(): string {

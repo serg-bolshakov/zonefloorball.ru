@@ -179,9 +179,10 @@ class OrderReserve extends Mailable
 
             // если цена идёт со скидкой
             if($item->price < $item->regular_price) {
-                $productDiscount = $item->applied_discount ?? $item->regular_price - $item->price; // с проверкой на null applied_discount (это поле пока не заполняем пока, как раз и должно быть null) - пока значение рассчитываем
+                $oneProductUnitDiscount = $item->applied_discount ?? $item->regular_price - $item->price; // с проверкой на null applied_discount (это поле пока не заполняем пока, как раз и должно быть null) - пока значение рассчитываем
+                $productDiscount = $oneProductUnitDiscount * $item->quantity;
                 $productDiscountFormatted = number_format((float)$productDiscount, 0,",", " ");
-                $dataAboutGoodsForMailBody .= '<tr><td style="text-align: center;">' . $i . '</td><td>' . $productArticle . '</td><td>' . $productName . '</td><td style="text-align: center;">' . $item->quantity . '
+                $dataAboutGoodsForMailBody .= '<tr><td style="text-align: center;">' . $i . '</td><td style="text-align: center;">' . $productArticle . '</td><td>' . $productName . '</td><td style="text-align: center;">' . $item->quantity . '
                 &nbsp;шт.</td><td style="text-align: right;">' . $productPrice . '</sup></td><td style="text-align: right;">' . $productAmountFormatted . 
                 '</td><td style="text-align: right;"><font color="red">' . $productDiscountFormatted . '&nbsp;<sup>&#8381;</sup></font></td></tr>';
                 $i++;

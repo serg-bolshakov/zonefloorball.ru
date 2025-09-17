@@ -27,7 +27,10 @@ const PriceBlock: React.FC<IPriceBlock> = ({ actualPrice, regularPrice, price_re
     const { user } = useAppContext();
 
     console.log('actualPrice', actualPrice);
-    // console.log(user && price_with_rank_discount && price_regular);
+    console.log('regularPrice', regularPrice);
+    console.log('price_with_rank_discount', price_with_rank_discount);
+    console.log('percent_of_rank_discount', percent_of_rank_discount);
+    console.log('user', user);
     return (
         <section className="cardProduct-productPrice__block">
             <div>Лучшая цена:</div>
@@ -67,6 +70,23 @@ const PriceBlock: React.FC<IPriceBlock> = ({ actualPrice, regularPrice, price_re
                         <div className="basket-favorites__priceCurrentSale">{formatPrice(price_with_rank_discount)}</div>
                         <div className="cardProduct-priceBeforSale">{formatPrice(price_regular)} <sup>&#8381;</sup></div>
                         <div className="basket-favorites__priceDiscountInPercentage">- { percent_of_rank_discount }&#37;</div>
+                        )
+                    </div>
+                </>
+            )} 
+
+            { user && !price_with_rank_discount && price_regular && regularPrice.price_value && actualPrice.price_value && percent_of_rank_discount && user.client_type_id === 2 && (
+                <>    
+                    <p className="margin-tb12px">
+                        (  но для нас цена лучше:&nbsp;
+                    </p>
+                    
+                    <div className="d-flex padding-left16px">
+                        <div className="basket-favorites__priceCurrentSale">{formatPrice(actualPrice.price_value - Math.ceil(actualPrice.price_value * percent_of_rank_discount / 100))}</div>
+                        <div className="cardProduct-priceBeforSale">{formatPrice(price_regular)} <sup>&#8381;</sup></div>
+                        <div className="basket-favorites__priceDiscountInPercentage">
+                            - {Math.ceil(100 - ((actualPrice.price_value - Math.ceil(actualPrice.price_value * percent_of_rank_discount / 100)) / regularPrice.price_value) * 100)}%
+                        </div>
                         )
                     </div>
                 </>

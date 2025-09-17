@@ -95,6 +95,7 @@ class ProductResource extends JsonResource
                 // выводим для покупателя его выгоду от покупки товара по цене со кидкой по акции:
                 $discountData['summa_of_action_discount'] = $regularPrice - $actualPrice;
                 $discountData['price_with_action_discount'] = $actualPrice;
+                $discountData['percent_of_rank_discount'] = $rankDiscountPercent;
             }
         }
 

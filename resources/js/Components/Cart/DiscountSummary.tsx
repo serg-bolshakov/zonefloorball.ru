@@ -13,10 +13,9 @@ const DiscountSummary: React.FC<DiscountSummaryProps> = ({ regularTotal, discoun
   
     return (
       <div className="fs12 basket-res__no-delivery">
-        <p className="">Скидка на товары составила:</p>
-        <p className="color-red">
+        <p className="">Скидка на товары составила: &nbsp; <span className="color-red">
           {/* {new Intl.NumberFormat('ru-RU').format(discountAmount)} ₽ ({discountPercent}%) */}
-          {formatPrice(discountAmount)}<sup>₽</sup> (или {discountPercent}%)
+          {formatPrice(discountAmount)}<sup>₽</sup> (или {discountPercent}%)</span>
         </p>
       </div>
     );

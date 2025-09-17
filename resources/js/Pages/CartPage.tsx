@@ -44,6 +44,8 @@ import useAppContext from "@/Hooks/useAppContext";
     import CheckoutButton from "@/Components/Cart/CheckoutButton";
     import Toast from "@/Components/Cart/Toast";
     import { TOrderAction } from "@/Types/orders";
+    import { ACQUIRING_PERCENTAGE } from "@/Constants/global";
+    import { calculateFinalPrice } from '@/Utils/priceCalculations';
 
 interface IHomeProps {  
     title: string;
@@ -255,6 +257,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
 
     
     useEffect(() => {
+        // console.log('useEffect, preoeder');
         const controller = new AbortController; // AbortController - встроенный браузерный API для отмены операций (запросов, таймеров и т.д.)
         // создаёт объект, который позволяет отменить асинхронные операции (например, HTTP-запросы).
         const signal = controller.signal;       // это объект AbortSignal, который передаётся в axios (или fetch).
@@ -310,15 +313,16 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
 
     }, [preorder]);
 
-    useEffect(() => {
+    // Пока закомментировал и... всё заработало: корректно пересчитывается и стоимость корзины, и стоимость предзаказа... при переходе из корзины в предзаказ и обратно... хотя не должно было быть так по идее... почистим кеши и посмотрим...
+    /*useEffect(() => {
         if (preorderProducts.length > 0) {
           const regular = preorderProducts.reduce((sum, p) => sum + (p.price_regular ?? 0) * (p.quantity ?? 0), 0);
-          const discounted = calculateCartTotalAmount(preorderProducts);
+          const discounted = calculatePreorderTotalAmount(preorderProducts);
           
           setRegularAmount(regular);
           setCartAmount(discounted);
         }
-    }, [preorderProducts]);
+    }, [preorderProducts]);*/
 
     useEffect(() => {
         const newCustomerData = getInitialCustomerData(user);
@@ -361,8 +365,9 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
         });
     }, [removeFromCart]);
 
-    const calculateCartTotalAmount = useCallback((products: IProduct[]): number => {
-        // console.log(products);
+    /* const calculatePreorderTotalAmount = useCallback((products: IProduct[]): number => {
+        console.log('calculatePreorderTotalAmount products', products);
+        console.log('user', user);
         return products.reduce((total, product) => {
             // Выбираем минимальную цену из доступных (акционная, ранговые скидки и т.д.)
             const effectivePrice = Math.min(
@@ -374,7 +379,35 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
             // console.log(effectivePrice);
             return total + (effectivePrice * (product.quantity ?? 0));
         }, 0);
-    }, []);
+    }, []);*/
+
+    const calculateCartTotalAmount = useCallback((products: IProduct[]): number => {
+        // console.log('calculateCartTotalAmount products', products);
+        // console.log('isLegal2', isLegalUser(user));
+        return products.reduce((total, product) => {
+            // Определяем базовую цену в зависимости от типа товара
+            let basePrice = product.price_regular!;
+            
+            // Для товаров в корзине (не предзаказ)
+                if (isLegalUser(user) && !product.price_with_rank_discount && product.price_with_action_discount) {
+                    // Для юр. лиц со скидкой
+                    basePrice = product.price_with_action_discount - 
+                            Math.ceil(product.price_with_action_discount * ACQUIRING_PERCENTAGE);
+                } else if (product.price_with_rank_discount) {
+                    // Ранговая скидка
+                    basePrice = product.price_with_rank_discount;
+                } else if (product.price_with_action_discount) {
+                    // Акционная скидка
+                    basePrice = product.price_with_action_discount;
+                } else if (product.price_actual) {
+                    // Акционная скидка для гостей
+                    basePrice = product.price_actual;
+                } 
+
+            // Для предзаказов обычно используется price_actual или специальная цена
+            return total + (basePrice * (product.quantity ?? 1));
+        }, 0);
+    }, [isLegalUser(user)]); // Зависимость от статуса пользователя
     
     const handleTransportSelect = useCallback((data: IDeliverySelectionData) => {
         // setDeliveryData(data);   - можно и так... но так лучше:
@@ -385,10 +418,10 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     }, []);
 
     // Использование:
-    // console.log(cartProducts);
+    // console.log('cartProducts', cartProducts);
     // console.log(calculateCartTotalAmount(cartProducts));
-    const memoizedcartAmount = useMemo(() => calculateCartTotalAmount(cartProducts), [cartProducts]);   // это уже излишество, наверное...
-    const formattedAmount = useMemo(() => formatPrice(cartAmount), [cartAmount]);                       // это уже излишество, наверное...
+    // const memoizedcartAmount = useMemo(() => calculateCartTotalAmount(cartProducts), [cartProducts]);   // это уже излишество, наверное...
+    // const formattedAmount = useMemo(() => formatPrice(cartAmount), [cartAmount]);                       // это уже излишество, наверное...
     const memoizedProducts = useMemo(() => cartProducts, [cartProducts]);
 
     // Создаем ref для хранения актуальных данных Покупателя
@@ -587,7 +620,14 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                     id: p.id,
                     name: p.title,
                     quantity: p.quantity ?? 0,
-                    price: p.price_actual ?? 0,
+                    // price: p.price_actual ?? 0,
+                    price: calculateFinalPrice({
+                        price_regular: p.price_regular ?? 0,
+                        price_actual: p.price_actual ?? 0,
+                        price_with_action_discount: p.price_with_action_discount ?? null,
+                        price_with_rank_discount: p.price_with_rank_discount ?? null,
+                        isLegalUser: isLegalUser(user)
+                    }),
                     price_regular: p.price_regular ?? 0,
                     price_with_rank_discount: p.price_with_rank_discount ?? 0,      // имеет значение только у авторизованных пользователей, если применена скидка согласно рангу
                     price_with_action_discount: p.price_with_action_discount ?? 0,  // имеет значение только у авторизованных пользователей, если применена скидка согласно рангу
@@ -637,7 +677,8 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     };
 
     // console.log('cartAmount', cartAmount);
-
+    //console.log('isLegal', user?.client_type_id === 2);
+    
     return (    
         <MainLayout>
             <Helmet>
@@ -810,24 +851,38 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                     )}
 
                                     { user && product.price_with_rank_discount && product.price_regular && (
-                                    <>    
-                                        <p className="margin-tb12px">
-                                        { user.client_type_id === 1
-                                            ? "но для меня цена лучше: "
-                                            : "но для нас цена лучше: "}
+                                        <>    
+                                            <p className="margin-tb12px">
+                                            { user.client_type_id === 1
+                                                ? "но для меня цена лучше: "
+                                                : "но для нас цена лучше: "}
+                                                
+                                            </p>
                                             
-                                        </p>
-                                        
-                                        <div className="d-flex padding-left16px">
-                                            <div className="basket-favorites__priceCurrentSale">{formatPrice(product.price_with_rank_discount)}</div>
-                                            <div className="cardProduct-priceBeforSale">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
-                                            <div className="basket-favorites__priceDiscountInPercentage">- { product.percent_of_rank_discount }&#37;</div>
-                                        </div>
-                                    </>
+                                            <div className="d-flex padding-left16px">
+                                                <div className="basket-favorites__priceCurrentSale">{formatPrice(product.price_with_rank_discount)}</div>
+                                                <div className="cardProduct-priceBeforSale">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
+                                                <div className="basket-favorites__priceDiscountInPercentage">- { product.percent_of_rank_discount }&#37;</div>
+                                            </div>
+                                        </>
+                                    )} 
+
+                                    { user?.client_type_id === 2 && !product.price_with_rank_discount && product.price_regular && product.price_with_action_discount && (
+                                        <>    
+                                            <p className="margin-tb12px">
+                                                но для нас есть супер цена!:&nbsp;
+                                            </p>
+                                            
+                                            <div className="d-flex padding-left16px">
+                                                <div className="basket-favorites__priceCurrentSale">{formatPrice(product.price_with_action_discount - Math.ceil(product.price_with_action_discount * 0.05))}</div>
+                                                <div className="cardProduct-priceBeforSale">{formatPrice(product.price_regular)} <sup>&#8381;</sup></div>
+                                                <div className="basket-favorites__priceDiscountInPercentage">- {Math.ceil(100 - ((product.price_with_action_discount - Math.ceil(product.price_with_action_discount * 0.05)) / product.price_regular) * 100)}&#37;</div>
+                                            </div>
+                                        </>
                                     )} 
                                         <div className="basket-row__product">
                                             <p className="basket-Pelem__text-inbasket">В корзине сейчас:</p>
-                                            { product.percent_of_rank_discount && (
+                                            { product.percent_of_rank_discount && product.price_with_rank_discount && (
                                             <div className="d-flex">
                                                 <p className="padding-left16px margin-bottom8px">по спеццене со скидкой -  </p>
                                                 <p className="margin-bottom8px">{ product.percent_of_rank_discount }&#37;</p>
@@ -850,6 +905,7 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
                                                     key={`price-${product.id}`}
                                                     product={{ 
                                                         ...product,
+                                                        isLegal: isLegalUser(user),
                                                         quantity: product.quantity ?? 0,
                                                         price_regular: product.price_regular ?? 0,
                                                         price_actual: product.price_actual ?? 0
