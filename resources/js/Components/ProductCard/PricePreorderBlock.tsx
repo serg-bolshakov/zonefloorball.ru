@@ -16,7 +16,7 @@ const PricePreorderBlock: React.FC<IPricePreorderBlock> = ({ preorderPrice, regu
     
     const formatPrice = (price: number) => price.toLocaleString('ru-RU');
     const { user } = useAppContext();
-    console.log('preorderPrice', preorderPrice);
+    // console.log('preorderPrice', preorderPrice);
 
     return (
         <>  { preorderPrice && ( 

@@ -122,6 +122,7 @@ const OrderProcessConfirmation: React.FC<IOrderProcessConfirmationProps> = ({
                             key={product.id}
                             product={product}
                             index={index}
+                            mode={mode}
                         />
                     ))}                    
                 </div>
@@ -195,6 +196,7 @@ const OrderProcessConfirmation: React.FC<IOrderProcessConfirmationProps> = ({
                             className="order-confirmation__submit-btn"
                         >
                             { isLegalUser(user) && ( isPreordering ? 'Готовим предзаказ' : 'Оформить' )}
+                            { isIndividualUser(user) && ( isPreordering ? 'Создаём предзаказ' : 'Предзаказ' )}
                         </motion.button>
                     )}
 

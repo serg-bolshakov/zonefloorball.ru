@@ -33,7 +33,11 @@ const AssortimentCard = ({ product, user }: ProductCardProps) => {
 
     // Рассчитываем процент скидки
     const calculateDiscountPercentage = (regular: number, final: number): number => {
-        return Math.ceil(100 - (final / regular) * 100);
+        // console.log('regular', regular);
+        // console.log('final', final);
+        // console.log('final / regular', final / regular);
+        // console.log('discount', 100 - Math.ceil((final / regular) * 100));
+        return Math.round(100 - (final / regular) * 100);
     };
 
     const discountPercentage = product.price_regular && finalPrice 

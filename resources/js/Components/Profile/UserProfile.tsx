@@ -23,8 +23,8 @@ interface UserProfileProps {
 const UserProfile: React.FC<UserProfileProps> = ({ user, priceDiscountAccordingToTheRank, representPerson }) => {
     
     if (!user) return <div>Пользователь не загружен</div>;
-    console.log(isLegalUser(user));
-    console.log('representPerson', representPerson);
+    // console.log(isLegalUser(user));
+    // console.log('representPerson', representPerson);
 
         return (
             <>

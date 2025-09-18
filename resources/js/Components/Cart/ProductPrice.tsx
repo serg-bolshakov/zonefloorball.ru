@@ -1,19 +1,22 @@
 // resources/js/Components/Cart/ProductPrice.tsx - Компонент цены при верификации заказа
 
 import { formatPrice } from '@/Utils/priceFormatter';
-import { TUser } from '@/Types/types';
-import { calculateFinalPrice, getPriceDescription } from '@/Utils/priceCalculations';
+import { IProduct, TUser } from '@/Types/types';
+// import { calculateFinalPrice, getPriceDescription } from '@/Utils/priceCalculations';
+import { calculateProductPrice, getPriceDescription } from '@/Utils/priceCalculations';
 
 interface IProductPriceProps {
   user: TUser;
   isLegalUser: boolean;
   isIndividualUser: boolean;
-  price_actual: number;
-  price_regular: number;
-  price_special: number | null;
-  price_with_action_discount: number | null;
-  price_with_rank_discount: number | null;
+  // price_actual: number;
+  // price_regular: number;
+  // price_special: number | null;
+  // price_with_action_discount: number | null;
+  // price_with_rank_discount: number | null;
+  product: IProduct;
   showTotal?: boolean;
+  mode: 'cart' | 'preorder';
 }
 
 const ProductPrice = (props: IProductPriceProps) => {
@@ -21,25 +24,33 @@ const ProductPrice = (props: IProductPriceProps) => {
     user,
     isLegalUser,
     isIndividualUser,
-    price_actual,
-    price_regular,
-    price_with_action_discount,
-    price_with_rank_discount,
-    showTotal = true
+    // price_actual,
+    // price_regular,
+    // price_with_action_discount,
+    // price_with_rank_discount,
+    product,
+    showTotal = true,
+    mode
   } = props;
 
-  const finalPrice = calculateFinalPrice({
+  /*const finalPrice = calculateFinalPrice({
     price_regular,
     price_actual,
     price_with_action_discount,
     price_with_rank_discount,
     isLegalUser
+  });*/
+
+  const finalPrice = calculateProductPrice({
+    product: props.product, 
+    user: props.user,
+    mode: props.mode
   });
 
   const { message, className } = getPriceDescription(
     finalPrice,
-    price_regular,
-    price_with_rank_discount,
+    product.price_regular!,
+    product.price_with_rank_discount ?? null,
     isLegalUser,
     isIndividualUser
   );
@@ -48,8 +59,8 @@ const ProductPrice = (props: IProductPriceProps) => {
     <div className="product__price margin-tb4px fs12">
       <div>
         {message}: <span className={className}>{formatPrice(finalPrice)}&nbsp;<sup>₽</sup></span>
-        {showTotal && finalPrice < price_regular && (
-          <span className="price--original line-through"> ({formatPrice(price_regular)})</span>
+        {product.price_regular && showTotal && finalPrice < product.price_regular && (
+          <span className="price--original line-through"> ({formatPrice(product.price_regular)})</span>
         )}
       </div>
     </div>

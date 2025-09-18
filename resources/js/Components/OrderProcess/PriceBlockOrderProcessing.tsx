@@ -1,10 +1,10 @@
 //resources/js/Components/OrderProcessing/PriceBlockOrderProcessing.tsx
 import React from 'react';
-import { IProduct } from '@/Types/types';
+import { IProduct, TUser } from '@/Types/types';
 import { formatPrice } from '@/Utils/priceFormatter';
 import { TMode } from './OrderProcess';
 import { useCallback } from 'react';
-import { getFinalProductPriceByMode } from '@/Utils/priceCalculations';
+import { calculateProductPrice } from '@/Utils/priceCalculations';
 
 interface IPriceBlock {
     product: IProduct & {
@@ -17,14 +17,15 @@ interface IPriceBlock {
         price_preorder?: number | null;
     };
     mode: TMode;
+    user: TUser;
 }
 
-const PriceBlockOrderProcessing: React.FC<IPriceBlock> = ({product, mode}) => {
+const PriceBlockOrderProcessing: React.FC<IPriceBlock> = ({product, user, mode}) => {
     const getFinalProductAmount = useCallback(() => {
-        const price = getFinalProductPriceByMode(product, mode);
+        const finalPrice = calculateProductPrice({ product, user, mode });
         // console.log('price', price);
-        return price * (product.quantity ?? 0);
-    }, [mode, product]); // Зависимости явные
+        return finalPrice * (product.quantity ?? 0);
+    }, [mode, user, product]); // Зависимости явные
 
     return (
         <div className="d-flex aline-items-center">

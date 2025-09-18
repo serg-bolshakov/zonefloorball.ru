@@ -122,7 +122,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
                     
                     // Проверяем, не был ли запрос отменён
                     if (!signal.aborted) {
-                        console.log(response.data.data);
+                        // console.log(response.data.data);
                         setFavoriteProducts(response.data.data || []);
                     }
             } catch (error) {
@@ -227,7 +227,7 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
     }, [addToCart, cart]);
     
     const memoizedProducts = useMemo(() => favoriteProducts, [favoriteProducts]);
-    console.log(memoizedProducts);
+    // console.log(memoizedProducts);
     
     return (    
         <MainLayout>

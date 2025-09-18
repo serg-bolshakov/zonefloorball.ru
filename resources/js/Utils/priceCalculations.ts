@@ -1,8 +1,74 @@
 // Вынесем логику определения цены в отдельные функции
-import { IProduct } from "@/Types/types";
+// Utils/priceCalculations.ts
+
+import { IProduct, TUser, isLegalUser, isIndividualUser } from "@/Types/types";
 import { ACQUIRING_PERCENTAGE } from '@/Constants/global';
 
 export interface PriceCalculationParams {
+  product: IProduct;
+  user: TUser;
+  mode: 'cart' | 'preorder';
+  
+}
+
+export const calculateProductPrice = (params: PriceCalculationParams): number => {
+  const { product, user, mode = 'cart'} = params;
+  
+  if (mode === 'preorder') {
+    return getRealPreorderPrice(product);
+  }
+  
+  return getRealCartPrice(product, user);
+};
+
+export const getRealCartPrice = (product: IProduct, user: TUser): number => {
+
+    const userIsLegal = user ? isLegalUser(user) : false;
+  
+    // Приоритет 1: Для юрлиц с эквайрингом
+    if (userIsLegal && product.price_with_action_discount) {
+        return product.price_with_action_discount - 
+            Math.ceil(product.price_with_action_discount * ACQUIRING_PERCENTAGE);
+    }
+    
+    // Приоритет 2: Ранговая скидка
+    if (product.price_with_rank_discount) {
+        return product.price_with_rank_discount;
+    }
+    
+    // Приоритет 3: Акционная скидка
+    if (product.price_with_action_discount) {
+        return product.price_with_action_discount;
+    }
+    
+    // Приоритет 4: Минимальная из доступных цен
+    const prices = [
+        product.price_special,
+        product.price_actual,
+        product.price_regular
+    ].filter((p): p is number => p !== undefined && p !== null);
+    
+    return prices.length > 0 ? Math.min(...prices) : 0;
+};
+
+export const getRealPreorderPrice = (product: IProduct): number => {
+    // Приоритет 1: Цена предзаказа со скидкой
+    if (product.price_preorder && product.price_with_rank_discount) {
+        return Math.min(product.price_preorder, product.price_with_rank_discount);
+    }
+    
+    // Приоритет 2: Цена предзаказа
+    if (product.price_preorder) {
+        return product.price_preorder;
+    }
+    
+    // Приоритет 3: Дефолтная цена (90% от обычной)
+    return (product.price_regular ?? 0) * 0.9;
+};
+
+
+// Оставил для уже работающих участков кода, чтобы не посыпалось...
+export interface IPriceCalculationParams {
   price_regular: number;
   price_actual: number;
   price_with_action_discount: number | null;
@@ -10,7 +76,7 @@ export interface PriceCalculationParams {
   isLegalUser: boolean;
 }
 
-export const calculateFinalPrice = (params: PriceCalculationParams): number => {
+export const calculateFinalPrice = (params: IPriceCalculationParams): number => {
     const {
         price_regular,
         price_actual,
@@ -72,7 +138,7 @@ export const getPriceDescription = (
     };
 };
 
-export const getFinalProductPriceByMode = (
+/* export const getFinalProductPriceByMode = (
     product: IProduct, 
     mode: 'cart' | 'preorder'
     ): number => {
@@ -100,4 +166,4 @@ export const getRealCartPrice = (product: IProduct): number => {
     ].filter((p): p is number => (p !== undefined && p !== null));
 
     return prices.length > 0 ? Math.min(...prices) : 0;
-};
+};*/

@@ -712,7 +712,7 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
     const memoizedProducts = useMemo(() => {
         const products = currentProducts;
         return products.filter(p => p != null);                                 // Фильтрация null/undefined
-    }, [mode, currentProducts]);                                 // При изменении mode произойдет пересчет значения.
+    }, [mode, currentProducts]);                                                // При изменении mode произойдет пересчет значения.
 
     // console.log('Первоначальная загрузка страницы');
     // console.log('Пользователь', user);
@@ -950,6 +950,7 @@ export const OrderProcess = ({ mode, title, robots, description, keywords, trans
                                                 <PriceBlockOrderProcessing 
                                                     key={`price-${mode}-${product.id}`}
                                                     mode={mode}
+                                                    user={user}
                                                     product={{ ...product, // quantity: product.quantity, price_regular: product.price_regular, price_actual: product.price_actual, price_preorder: product.price_preorder
                                                     }}
                                                 />

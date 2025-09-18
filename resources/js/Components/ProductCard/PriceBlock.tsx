@@ -26,11 +26,11 @@ const PriceBlock: React.FC<IPriceBlock> = ({ actualPrice, regularPrice, price_re
     const formatPrice = (price: number) => price.toLocaleString('ru-RU');
     const { user } = useAppContext();
 
-    console.log('actualPrice', actualPrice);
-    console.log('regularPrice', regularPrice);
-    console.log('price_with_rank_discount', price_with_rank_discount);
-    console.log('percent_of_rank_discount', percent_of_rank_discount);
-    console.log('user', user);
+    // console.log('actualPrice', actualPrice);
+    // console.log('regularPrice', regularPrice);
+    // console.log('price_with_rank_discount', price_with_rank_discount);
+    // console.log('percent_of_rank_discount', percent_of_rank_discount);
+    // console.log('user', user);
     return (
         <section className="cardProduct-productPrice__block">
             <div>Лучшая цена:</div>

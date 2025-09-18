@@ -60,6 +60,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
     const isReserving = currentAction === 'reserve';
 
     const { user } = useAppContext();
+    const mode = 'cart'; // пишу руками: изначально не планировал этот блок использовать, написал один новый на два режима 'cart' & 'preorder' - этот блок используется только в режиме корзины, ставлю "костыль", чтобы передать через пропы в компонент ProductItem
     
     const deliveryText = deliveryData.transportId === 1 
         ? `${currentDeliveryAddress}` 
@@ -103,6 +104,7 @@ const OrderConfirmation: React.FC<IOrderConfirmationProps> = ({
                     {products.map((product, index) => (
                         <ProductItem 
                             user={user}
+                            mode={mode}
                             key={product.id}
                             product={product}
                             index={index}

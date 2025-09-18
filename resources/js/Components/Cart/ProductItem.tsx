@@ -4,23 +4,31 @@ import { IProduct, TUser } from "@/Types/types";
 import ProductPrice from "./ProductPrice";
 import { formatPrice } from '@/Utils/priceFormatter';
 import { isLegalUser, isIndividualUser } from "@/Types/types";
-import { calculateFinalPrice } from '@/Utils/priceCalculations';
+// import { calculateFinalPrice, getRealPreorderPrice } from '@/Utils/priceCalculations';
+import { calculateProductPrice } from "@/Utils/priceCalculations";
 
 interface IProductItemProps {
   product: IProduct;
   user: TUser;
   index: number;
+  mode: 'cart' | 'preorder';
 }
 
-const ProductItem = ({ product, user, index }: IProductItemProps) => {
-    const finalPrice = calculateFinalPrice({
-        price_regular: product.price_regular ?? 0,
-        price_actual: product.price_actual ?? 0,
-        price_with_action_discount: product.price_with_action_discount ?? null,
-        price_with_rank_discount: product.price_with_rank_discount ?? null,
-        isLegalUser: isLegalUser(user)
-    });
+const ProductItem = ({ product, user, index, mode = 'cart' }: IProductItemProps) => {
+  
+  // console.log('ProductItem, mode', mode);
+  
+  /*const finalPrice = mode == 'preorder' ? getRealPreorderPrice(product) :
+  
+  calculateFinalPrice({
+      price_regular: product.price_regular ?? 0,
+      price_actual: product.price_actual ?? 0,
+      price_with_action_discount: product.price_with_action_discount ?? null,
+      price_with_rank_discount: product.price_with_rank_discount ?? null,
+      isLegalUser: isLegalUser(user)
+  });*/
 
+  const finalPrice = calculateProductPrice({ product, user, mode });
   const total = (product.quantity ?? 0) * finalPrice;
 
   return (
@@ -29,7 +37,7 @@ const ProductItem = ({ product, user, index }: IProductItemProps) => {
         {index + 1}. {product.title}
       </h3>
       
-      <ProductPrice 
+      {/* <ProductPrice 
         user={user}
         isLegalUser={isLegalUser(user)}
         isIndividualUser={isIndividualUser(user)}
@@ -38,6 +46,15 @@ const ProductItem = ({ product, user, index }: IProductItemProps) => {
         price_special={product.price_special ?? null}
         price_with_action_discount={product.price_with_action_discount ?? null}
         price_with_rank_discount={product.price_with_rank_discount ?? null}
+        mode={mode}
+      /> */}
+
+      <ProductPrice 
+        user={user}
+        isLegalUser={isLegalUser(user)}
+        isIndividualUser={isIndividualUser(user)}
+        product={product}
+        mode={mode}
       />
       
       <div className="basket-order__product-clearance">

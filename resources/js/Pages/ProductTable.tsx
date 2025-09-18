@@ -347,9 +347,9 @@ const ProductTable: React.FC<ProductTableProps> = ({
         return `?${params.toString()}`;
     };
 
-    console.log('ProductTable', products.data);
-    console.log('ProductTable table mode', tableMode);
-    //console.log (user);
+    // console.log('ProductTable', products.data);
+    // console.log('ProductTable table mode', tableMode);
+    // console.log (user);
 
     const webpPath = (imagePath: string) => {return imagePath.replace(/\.(jpg|png)$/, '.webp')};
 
@@ -364,7 +364,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
     };
 
     // console.log(getMainCategories());
-    console.log('products', products);
+    // console.log('products', products);
     // console.log('cart', cart);
     // console.log('preorder', preorder);
     // console.log('cartQuantities', cartQuantities);

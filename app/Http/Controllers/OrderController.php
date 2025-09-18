@@ -1267,7 +1267,24 @@ class OrderController extends Controller {
 
         // 9. Отправляем заказ по email... сразу
         try {
-            Mail::to($order->email)->bcc(config('mail.admin_email'))->send($orderMail);
+            \Log::debug('OrderController processReserve emailing order:', [ 'order' => $order]);
+             $recipients = [$order->email];
+    
+            // Добавляем email организации для юрлиц
+            if ($order->order_client_type_id == 2) {
+                $user = User::find($order->order_client_id);
+                
+                if ($user && $user->email !== $order->email) {
+                    $recipients[] = $user->email;
+                    \Log::debug('Adding organization email:', ['org_email' => $user->email]);
+                }
+            }
+
+            // Mail::to($order->email)->bcc(config('mail.admin_email'))->send($orderMail);
+            // ПРАВИЛЬНЫЙ вариант - все получатели в to, админ в bcc
+            Mail::to($recipients)
+                ->bcc(config('mail.admin_email'))
+                ->send($orderMail);
 
             // 10. Только после успеха обновляем статус
             $order->update([
@@ -1305,7 +1322,24 @@ class OrderController extends Controller {
 
         // 9. Отправляем заказ по email... сразу
         try {
-            Mail::to($order->email)->bcc(config('mail.admin_email'))->send($orderMail);
+            // Mail::to($order->email)->bcc(config('mail.admin_email'))->send($orderMail);
+            $recipients = [$order->email];
+    
+            // Добавляем email организации для юрлиц
+            if ($order->order_client_type_id == 2) {
+                $user = User::find($order->order_client_id);
+                
+                if ($user && $user->email !== $order->email) {
+                    $recipients[] = $user->email;
+                    \Log::debug('Adding organization email:', ['org_email' => $user->email]);
+                }
+            }
+
+            // Mail::to($order->email)->bcc(config('mail.admin_email'))->send($orderMail);
+            // ПРАВИЛЬНЫЙ вариант - все получатели в to, админ в bcc
+            Mail::to($recipients)
+                ->bcc(config('mail.admin_email'))
+                ->send($orderMail);
 
         } catch (\Exception $e) {
             \Log::error('Failed to send Preorder email: '.$e->getMessage());
