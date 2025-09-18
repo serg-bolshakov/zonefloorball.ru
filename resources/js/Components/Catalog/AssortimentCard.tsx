@@ -60,64 +60,66 @@ const AssortimentCard = ({ product, user }: ProductCardProps) => {
                         {product.title}
                     </Link>
                 </div>
-       
-                <div className="assortiment-card_productPrice">
-                    {product.prod_status !== 2 ? (
-                        <>
-                            {/* Основная цена */}
-                            <p className={finalPrice < (product.price_regular ?? 0) ? "priceCurrentSale" : "priceCurrent"}>
-                                <span className="nobr">
-                                {formatPrice(finalPrice)} <sup>₽</sup>
-                                </span>
-                            </p>
 
-                            {/* Старая цена (если есть скидка) */}
-                            {finalPrice < (product.price_regular ?? 0) && (
-                                <p className="priceBeforSale">
-                                <span className="nobr">
-                                    {formatPrice(product.price_regular ?? 0)} <sup>₽</sup>
-                                </span>
+                <div className="d-flex aline-items-center">       
+                    <div className="assortiment-card_productPrice">
+                        {product.prod_status !== 2 ? (
+                            <>
+                                {/* Основная цена */}
+                                <p className={finalPrice < (product.price_regular ?? 0) ? "priceCurrentSale" : "priceCurrent"}>
+                                    <span className="nobr">
+                                    {formatPrice(finalPrice)} <sup>₽</sup>
+                                    </span>
                                 </p>
-                            )}
 
-                            {/* Процент скидки */}
-                            {finalPrice < (product.price_regular ?? 0) && (
-                                <p className="priceDiscountInPercentage">
-                                <span className="nobr">
-                                    - {discountPercentage}%
-                                </span>
-                                </p>
-                            )}
+                                {/* Старая цена (если есть скидка) */}
+                                {finalPrice < (product.price_regular ?? 0) && (
+                                    <p className="priceBeforSale">
+                                    <span className="nobr">
+                                        {formatPrice(product.price_regular ?? 0)} <sup>₽</sup>
+                                    </span>
+                                    </p>
+                                )}
 
-                            {/* Описание цены */}
-                            {/* <p className={`fs12  ${className}` }>
-                                {message}
-                            </p> */}
-                        </>
-                    ) : (
-                        <p>Товар в архиве</p>
+                                {/* Процент скидки */}
+                                {finalPrice < (product.price_regular ?? 0) && (
+                                    <p className="priceDiscountInPercentage">
+                                    <span className="nobr">
+                                        - {discountPercentage}%
+                                    </span>
+                                    </p>
+                                )}
+
+                                {/* Описание цены */}
+                                {/* <p className={`fs12  ${className}` }>
+                                    {message}
+                                </p> */}
+                            </>
+                        ) : (
+                            <p>Товар в архиве</p>
+                        )}
+                    </div>
+
+                    {/* Информация для пользователя */}
+                    {/* {user && (
+                    <p className="fs12">
+                        {user.client_type_id === 1
+                        ? "... это моя специальная цена..."
+                        : "... это наша специальная цена..."} 
+                        {message}
+                    </p>
+                    )}*/}
+
+                    {/* Цена предзаказа */}
+                    {product.price_preorder && (
+                    <div className="catalog-preorder-price">
+                        <span className="nobr">
+                            (на заказ: {formatPrice(product.price_preorder)}
+                        </span>
+                        <sup>₽</sup>&nbsp;)
+                    </div>
                     )}
-                </div>
-
-                {/* Информация для пользователя */}
-                {user && (
-                <p className="fs12">
-                    {/* {user.client_type_id === 1
-                    ? "... это моя специальная цена..."
-                    : "... это наша специальная цена..."} */}
-                    {message}
-                </p>
-                )}
-
-                {/* Цена предзаказа */}
-                {product.price_preorder && (
-                <p className="catalog-preorder-price">
-                    <span className="nobr">
-                    (на заказ: {formatPrice(product.price_preorder)}
-                    </span>
-                    <sup>₽</sup> )
-                </p>
-                )}
+                </div> 
             </div>
         </div>
     );
