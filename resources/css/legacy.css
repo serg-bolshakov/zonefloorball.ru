@@ -4049,7 +4049,6 @@ a.changing-form__submit-btn:hover {
     position: sticky;
     top: 0;
 	font-weight: bold;
-	text-align: left;
 	border: none;
 	padding: 8px 8px;
 	background: #f9a34b;
@@ -4086,19 +4085,6 @@ a.changing-form__submit-btn:hover {
 .user-lk__scroll-table table {
     width: 100%;
     border-collapse: collapse;
-}
-
-.user-lk__scroll-table thead th {
-    position: sticky;
-    top: 0;
-    font-weight: bold;
-    text-align: left;
-    border: none;
-    padding: 8px 8px;
-    background: #f9a34b;
-    font-size: 12px;
-    z-index: 2;
-    text-align: center;
 }
 
 .user-lk__scroll-table tbody td {

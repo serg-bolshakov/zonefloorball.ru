@@ -1,8 +1,9 @@
 <?php
-// app/Http/Controllers/AdminController.php
+// app/Http/Controllers/Admin/AdminController.php
 
-    namespace App\Http\Controllers;
+    namespace App\Http\Controllers\Admin;
     
+    use App\Http\Controllers\Controller;
     use Inertia\Inertia;
     use App\Models\Product;
     use App\Models\Order;

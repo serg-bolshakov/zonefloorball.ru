@@ -47,15 +47,35 @@
   background: #e1e1e1;
 }
 
+.admin__scroll-table {
+	  height: 500px;
+	  overflow: auto;
+	  margin-top: 20px;
+	  margin-bottom: 20px;
+	  border-bottom: 1px solid #eee;
+    position: relative;
+    /* font-family: Inter; */
+    font-size: 12px;
+    /* white-space: nowrap; */
+    scrollbar-width: thin;
+    /* scroll-padding-inline: 20px; */
+    -webkit-overflow-scrolling: touch; /*Плавная прокрутка на мобильных устройствах - но нам это здесь в общем не нужно...*/
+}
+
 .document-table {
   width: 100%;
   border-collapse: collapse;
-}
+} 
 
 .document-table th {
+  position: sticky;
+  top: 0;
+	font-weight: bold;
+	font-size: 12px;
+  z-index: 2;
+  text-align: center;
   background: #f0f0f0;
   padding: 8px;
-  text-align: left;
   border: 1px solid #ddd;
 }
 

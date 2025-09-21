@@ -20,7 +20,10 @@ const Sidebar = () => {
             items={[
                 { label: 'Номенклатура', path: '/admin/products' },
                 { label: 'Добавить', path: '/admin/products/add' },
-                { label: 'Добавить клюшку', path: '/admin/products/sticks/add' }
+                { label: 'Добавить клюшку', path: '/admin/products/sticks/add' },
+                { label: 'Остатки (ручная правка)', path: '/admin/stock-manual' },
+                // Позже добавить:
+                // { label: 'Импорт остатков (Excel)', path: '/admin/stock-import' },
             ]} 
         />
 

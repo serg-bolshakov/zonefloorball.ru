@@ -5,7 +5,6 @@ use App\Http\Controllers\BrandController;
 use App\Http\Controllers\BasketController;
 use App\Http\Controllers\PackageController;
 use App\Http\Controllers\ProfileController;
-// use Laravel\Fortify\Features;                                    // 06.01.2025  - 10.01.2025 - думаю, что это лишнее - можно будет удалить (осторожно)
 use App\Http\Controllers\RegisteredUserController;                  // 09.01.2025 Обновим файл routes/web.php, чтобы использовать наш самописный контроллер для регистрации:
 use App\Http\Controllers\Auth\ResendVerificationEmailController;    // 10.01.2025 делаем кнопку для повторной отправки ссылки на подтверждение электронной почты
 use App\Http\Controllers\PaymentController;
@@ -20,7 +19,8 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\PreorderController;
 use App\Http\Controllers\ProductsTableController;
 use App\Http\Controllers\LegalController;
-use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminStockController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -200,6 +200,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/products/sticks/add', function () {
         return Inertia::render('AdminProductsSticksAdd');
     })->name('admin.products.sticks.add');
+
+    // Используем POST для обновления одного значения (patch работает некорректно)
+    Route::post('/stock-manual/{productId}', [AdminStockController::class, 'manualUpdate'])->name('admin.stocks.manual.update');
+    // Страница с формой, которой реально нет
+    Route::get('/stock-manual', [AdminStockController::class, 'manual'])->name('admin.stocks.manual');
 
     // Другие админ-роуты...
 });

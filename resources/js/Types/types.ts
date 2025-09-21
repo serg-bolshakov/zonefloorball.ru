@@ -374,7 +374,7 @@ export interface IProductReportFromDB {
     coming_soon?: number;
     expected_receipt_date?: string | null;
     on_preorder?: number;
-    preodered?: number;
+    preordered?: number;
     created_at?: string | null;
     updated_at?: string | null;
 }
