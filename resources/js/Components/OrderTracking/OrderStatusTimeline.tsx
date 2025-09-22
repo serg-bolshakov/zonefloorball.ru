@@ -34,6 +34,9 @@ const getStatusColor = (status: string, isCurrent: boolean) => {
     if (statusLower.includes('создан') || statusLower.includes('зарезервирован')) {
         return '#9C27B0'; // Фиолетовый
     }
+    if (statusLower.includes('готов')) {
+        return '#f8fc08ff'; // Жёлтый
+    }
     
     return '#9E9E9E'; // Серый по умолчанию
 };

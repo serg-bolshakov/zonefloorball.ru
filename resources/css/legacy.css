@@ -5062,6 +5062,33 @@ select:hover {
         /* background: #4CAF50; */
         border: 2px solid white;
     }
+
+    /* Текущий статус - яркий с анимацией */
+    .timeline-event:first-child .timeline-point {
+        opacity: 1;
+        box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    /* Постепенное "затухание" для предыдущих статусов */
+    .timeline-event:nth-child(2) .timeline-point { opacity: 0.8; }
+    .timeline-event:nth-child(3) .timeline-point { opacity: 0.7; }
+    .timeline-event:nth-child(4) .timeline-point { opacity: 0.6; }
+    .timeline-event:nth-child(5) .timeline-point { opacity: 0.5; }
+    .timeline-event:nth-child(6) .timeline-point { opacity: 0.4; }
+    .timeline-event:nth-child(7) .timeline-point { opacity: 0.3; }
+
+    /* Для всех остальных статусов (если больше 7) */
+    .timeline-event:nth-child(n+8) .timeline-point { 
+        opacity: 0.2; 
+    }
+
+    /* Анимация пульсации для текущего статуса */
+    @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4); }
+        70% { box-shadow: 0 0 0 6px rgba(76, 175, 80, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(76, 175, 80, 0); }
+    }
     
     .timeline-content {
         background: white;
