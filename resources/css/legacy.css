@@ -5088,7 +5088,7 @@ select:hover {
 
         a {
             color: #1976d2;
-            text-decoration: underline;
+            text-decoration: none;
             
             &:hover {
                 color: #115293;
