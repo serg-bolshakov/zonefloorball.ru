@@ -19,6 +19,25 @@ const sanitizeHtml = (html: string): string => {
   );
 };
 
+// Функция для определения цвета точки по статусу
+const getStatusColor = (status: string, isCurrent: boolean) => {
+    if (isCurrent) return '#4CAF50'; // Зеленый для текущего
+    
+    const statusLower = status.toLowerCase();
+    
+    if (statusLower.includes('доставк') || statusLower.includes('в пути') || statusLower.includes('отправлен')) {
+        return '#2196F3'; // Синий
+    }
+    if (statusLower.includes('обработк') || statusLower.includes('подтвержден') || statusLower.includes('упакован')) {
+        return '#FF9800'; // Оранжевый
+    }
+    if (statusLower.includes('создан') || statusLower.includes('зарезервирован')) {
+        return '#9C27B0'; // Фиолетовый
+    }
+    
+    return '#9E9E9E'; // Серый по умолчанию
+};
+
 export const OrderStatusTimeline: React.FC<{ status: IOrderStatus }> = ({ status }) => {
     return (
         <div className="status-timeline">
@@ -28,21 +47,29 @@ export const OrderStatusTimeline: React.FC<{ status: IOrderStatus }> = ({ status
             </div>
             
             <div className="timeline">
-                {status.history && status.history.map((event, index) => (
-                    <div key={index} className="timeline-event">
-                        <div className="timeline-point"></div>
-                        <div className="timeline-content">
-                            <span className="event-date">{dateRu(event.date)}</span>
-                            <span className="event-status">{event.status}</span>
-                            {event.comment && (
-                              <p 
-                                className="event-comment"
-                                dangerouslySetInnerHTML={{ __html: sanitizeHtml(event.comment) }}
-                              />
-                            )}
+                {status.history && status.history.map((event, index) => {
+                    const isCurrent = index === 0; // Первый элемент - текущий статус
+                    const pointColor = getStatusColor(event.status, isCurrent);
+                    
+                    return (
+                        <div key={index} className="timeline-event">
+                            <div 
+                                className="timeline-point"
+                                style={{ 
+                                    backgroundColor: pointColor,
+                                    boxShadow: isCurrent ? `0 0 0 2px ${pointColor}33` : 'none'
+                                }}
+                            />
+                            <div className="timeline-content">
+                                <span className="event-date">{dateRu(event.date)}</span>
+                                <span className="event-status">{event.status}</span>
+                                {event.comment && (
+                                    <p className="event-comment" dangerouslySetInnerHTML={{ __html: event.comment }} />
+                                )}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );
