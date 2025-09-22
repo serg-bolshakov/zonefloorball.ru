@@ -5070,7 +5070,7 @@ select:hover {
         animation: pulse 2s infinite;
     }
 
-    /* Постепенное "затухание" для предыдущих статусов */
+    /* Постепенное "затухание" для предыдущих статусов - не очень результат понравился, пока комментирую...*/
     /* .timeline-event:nth-child(2) .timeline-point { opacity: 0.8; }
     .timeline-event:nth-child(3) .timeline-point { opacity: 0.7; }
     .timeline-event:nth-child(4) .timeline-point { opacity: 0.6; }

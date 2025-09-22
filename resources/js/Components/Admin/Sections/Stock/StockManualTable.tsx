@@ -307,7 +307,24 @@ export const StockManualTable: React.FC<IManualTableProps> = ({
                                 {/* Ячейки с inline-редактированием */}
                                 <td className="td-right">{product.article}</td>
                                 <td>{product.title}</td>
-                                <td className="td-right">{product.in_stock}</td>
+                                <td className="td-right"
+                                    onClick={() => handleEditStart(product.id, 'in_stock', product.in_stock)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {editingId === product.id && editField === 'in_stock' ? (
+                                        <input
+                                        type="number"
+                                        min="0"
+                                        value={editValue}
+                                        onChange={(e) => onEditValueChange(e.target.value)}
+                                        onBlur={() => handleSave(product.id, 'in_stock')}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSave(product.id, 'in_stock')}
+                                        autoFocus
+                                        />
+                                    ) : (
+                                        product.in_stock
+                                    )}
+                                </td>
                                 <td className="td-right"
                                     onClick={() => handleEditStart(product.id, 'on_sale', product.on_sale)}
                                     style={{ cursor: 'pointer' }}
@@ -326,9 +343,60 @@ export const StockManualTable: React.FC<IManualTableProps> = ({
                                         product.on_sale
                                     )}
                                 </td>
-                                <td className="td-right">{product.reserved}</td>
-                                <td className="td-right">{product.on_preorder}</td>
-                                <td className="td-right">{product.preordered}</td>
+                                <td className="td-right"
+                                    onClick={() => handleEditStart(product.id, 'reserved', product.reserved)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {editingId === product.id && editField === 'reserved' ? (
+                                        <input
+                                        type="number"
+                                        min="0"
+                                        value={editValue}
+                                        onChange={(e) => onEditValueChange(e.target.value)}
+                                        onBlur={() => handleSave(product.id, 'reserved')}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSave(product.id, 'reserved')}
+                                        autoFocus
+                                        />
+                                    ) : (
+                                        product.reserved
+                                    )}
+                                </td>
+                                <td className="td-right"
+                                    onClick={() => handleEditStart(product.id, 'on_preorder', product.on_preorder)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {editingId === product.id && editField === 'on_preorder' ? (
+                                        <input
+                                        type="number"
+                                        min="0"
+                                        value={editValue}
+                                        onChange={(e) => onEditValueChange(e.target.value)}
+                                        onBlur={() => handleSave(product.id, 'on_preorder')}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSave(product.id, 'on_preorder')}
+                                        autoFocus
+                                        />
+                                    ) : (
+                                        product.on_preorder
+                                    )}
+                                </td>
+                                <td className="td-right"
+                                    onClick={() => handleEditStart(product.id, 'preordered', product.preordered)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {editingId === product.id && editField === 'preordered' ? (
+                                        <input
+                                        type="number"
+                                        min="0"
+                                        value={editValue}
+                                        onChange={(e) => onEditValueChange(e.target.value)}
+                                        onBlur={() => handleSave(product.id, 'preordered')}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleSave(product.id, 'preordered')}
+                                        autoFocus
+                                        />
+                                    ) : (
+                                        product.preordered
+                                    )}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
