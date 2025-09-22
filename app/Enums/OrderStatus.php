@@ -31,7 +31,7 @@ enum OrderStatus: int {
             self::FAILED                    => 'Ошибка при создании',
             self::IN_PROCESSING             => 'В обработке',
             self::READY_TO_BE_DISPATCHED    => 'Готов к отгрузке/отправке покупателю',
-            self::SHIPPED                   => 'Отгружен',
+            self::SHIPPED                   => 'В пути',
             self::DELIVEVERED               => 'Доставлен',
             self::RECEIVED                  => 'Получен',
             self::COMPLETED                 => 'Завершён',
