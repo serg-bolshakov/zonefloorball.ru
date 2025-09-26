@@ -166,7 +166,9 @@ strong {
 .margin-left8px     { margin-left: 8px;   }
 .margin-left12px    { margin-left: 12px;   }
 .margin-right12px   { margin-right: 12px;  }
+.margin-left22px    { margin-left: 22px;   }
 .margin-left24px    { margin-left: 24px;   }
+.margin-left40px    { margin-left: 40px;   }
 .margin-right42px   { margin-right: 24px;  }
 
 .padding-left8px    { padding-left: 8px;   }
@@ -4414,6 +4416,7 @@ a.changing-form__submit-btn:hover {
 .rounded-full   { border-radius: 50%; }
 .transition-all { transition: all;}
 
+.bg-gray-50  { background-color: rgb(249 250 251); }
 .bg-gray-500 { background: gray; }
 .bg-white    { background: white; }
 
@@ -4799,7 +4802,7 @@ select:hover {
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.3s;
+  animation: fadeIn 0.3s ease-in-out;
   padding: 20px;
 }
 
@@ -4928,10 +4931,10 @@ select:hover {
 }
 
 /* Анимации */
-/* @keyframes fadeIn {
+@keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-} */
+}
 
 @keyframes zoomIn {
   from { 
@@ -5327,6 +5330,14 @@ select:hover {
   gap: 10px;
   margin-bottom: 15px;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.table-controls-block {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  align-content: center;
   flex-wrap: wrap;
 }
 

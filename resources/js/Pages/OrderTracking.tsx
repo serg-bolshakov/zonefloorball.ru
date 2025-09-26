@@ -23,9 +23,10 @@ interface IOrderTrackProps {
 export interface IOrderItem {
     product: {
         id: number;
-        name: string;
+        title: string;
         article: number;
     };
+    id: number;
     quantity: number;
     price: number;
     discount: number;
@@ -87,7 +88,7 @@ const OrderTracking: React.FC<IOrderTrackProps> = ({title, robots, description, 
         0
     ) + order.delivery.cost;
 
-    console.log('order', order);
+    // console.log('order', order);
 
     return (
         <MainLayout>

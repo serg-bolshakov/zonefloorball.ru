@@ -216,6 +216,8 @@ class Order extends Model {
         return OrderStatus::tryFrom($this->status_id);
     }
 
+    // не работает в случае обновления статуса из AdminOrderController - не получает нужную нам модель ({"this":{"App\\Models\\Order":[]}} - в логах)
+    // пока оставлю - возможно где-то была попытка заюзать данный метод - потом проверить... реализовал смену статуса заказа в самом контроллере AdminOrderController
     public function changeStatus(OrderStatus $newStatus, ?string $comment = null): void {
         // 1. Получаем текущий статус из БД
         // $oldStatus = $this->status_id;       

@@ -111,6 +111,20 @@
   font-size: 13px;
 }
 
+.search-btn {
+    padding: 8px 16px;
+    background: #3182ce;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-btn:hover {
+  background: #2c5282;
+}
+
 .stick-form-container {
   max-width: 1200px;
   margin: 20px auto;
@@ -187,4 +201,200 @@
   z-index: 9999;
   position: fixed;
   font-family: inherit;
+}
+
+
+.date-filter-controls {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.date-input {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.clear-date-button {
+    background: #ff4444;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.clear-date-button:hover {
+    background: #cc0000;
+}
+
+.apply-date-button {
+    padding: 6px 12px;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Admin Modal Overlay */
+.admin-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: admin-fadeIn 0.3s ease-in-out;
+  padding: 20px;
+}
+
+@keyframes admin-fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Admin Modal Content */
+.admin-modal-content {
+  background: white;
+  border-radius: 8px;
+  padding: 30px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  animation: admin-slideIn 0.3s ease-out;
+}
+
+@keyframes admin-slideIn {
+  from { 
+    opacity: 0;
+    transform: translateY(-30px) scale(0.95);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Admin Form Groups */
+.admin-form-group {
+  margin-bottom: 20px;
+}
+
+.admin-form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 600;
+  color: #333;
+}
+
+.admin-form-group .admin-current-status {
+  font-weight: 600;
+  color: #007bff;
+  padding: 4px 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+/* Admin Select and Textarea */
+.admin-modal-content select,
+.admin-modal-content textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.admin-modal-content select:focus,
+.admin-modal-content textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.admin-modal-content textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Admin Modal Actions */
+.admin-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.admin-modal-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.admin-modal-actions button[type="button"]:first-child {
+  background: #6c757d;
+  color: white;
+}
+
+.admin-modal-actions button[type="button"]:first-child:hover {
+  background: #545b62;
+}
+
+.admin-modal-actions .admin-btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.admin-modal-actions .admin-btn-primary:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.admin-modal-actions .admin-btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Admin Modal Header */
+.admin-modal-content h3 {
+  margin: 0 0 20px 0;
+  color: #333;
+  font-size: 1.5em;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 10px;
+}
+
+/* Admin Action Select */
+.admin-action-select {
+  padding: 6px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  font-size: 14px;
+}
+
+.admin-action-select:focus {
+  outline: none;
+  border-color: #007bff;
 }

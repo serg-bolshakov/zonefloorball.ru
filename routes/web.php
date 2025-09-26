@@ -21,6 +21,7 @@ use App\Http\Controllers\ProductsTableController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminStockController;
+use App\Http\Controllers\Admin\AdminOrderController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -205,6 +206,13 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/stock-manual/{productId}', [AdminStockController::class, 'manualUpdate'])->name('admin.stocks.manual.update');
     // Страница с формой, которой реально нет
     Route::get('/stock-manual', [AdminStockController::class, 'manual'])->name('admin.stocks.manual');
+
+    // Страница с формой, которой реально нет
+    Route::get('/orders', [AdminOrderController::class, 'index'])->name('admin.orders');
+
+    // Используем POST для обновления одного значения (patch работает некорректно)
+    Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status.update');
+    
 
     // Другие админ-роуты...
 });

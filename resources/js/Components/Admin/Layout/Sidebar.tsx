@@ -18,17 +18,27 @@ const Sidebar = () => {
         <MenuSection 
             title="Товары" 
             items={[
-                { label: 'Номенклатура', path: '/admin/products' },
-                { label: 'Добавить', path: '/admin/products/add' },
-                { label: 'Добавить клюшку', path: '/admin/products/sticks/add' },
+                { label: 'Номенклатура'           , path: '/admin/products' },
+                { label: 'Добавить'               , path: '/admin/products/add' },
+                { label: 'Добавить клюшку'        , path: '/admin/products/sticks/add' },
                 { label: 'Остатки (ручная правка)', path: '/admin/stock-manual' },
-                // Позже добавить:
+                
+                // Позже можно добавить:
                 // { label: 'Импорт остатков (Excel)', path: '/admin/stock-import' },
             ]} 
         />
 
+        <MenuSection 
+            title="Заказы" 
+            items={[
+                { label: 'Все заказы'       , path: '/admin/orders' },
+                { label: 'Требуют обработки', path: '/admin/orders?status=7' },
+                { label: 'Готовы к отправке', path: '/admin/orders?status=8' },
+            ]} 
+        />
+
         <MenuSection title="Документы" items={[
-            { label: 'Заказы', path: '/admin/orders' },
+            { label: 'Заказы'       , path: '/admin/orders' },
             { label: 'Оприходования', path: '/admin/inventory' }
         ]} />
 
