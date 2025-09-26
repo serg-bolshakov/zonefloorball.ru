@@ -44,6 +44,7 @@ export interface IPropVariants {
     resultpossibleHookForProductCard?: IPropsVariantsSecondLevel;
     possibleShaftLengthForProductCard?: IPropsVariantsSecondLevel[];
     resultotherColourBladeForCard?: IPropsVariantsSecondLevel[];
+    possiblePantsSizesForProductCard?: IPropsVariantsSecondLevel[];
 }
 
 export interface IPropsVariantsSecondLevel {
@@ -58,6 +59,7 @@ export interface IPropsVariantsSecondLevel {
     prop_value_view?: string;
     size_title?: string;
     size_value?: string | number;
+    size_value_view?: string | number;
     classCurrent?: string;
     img_main?: boolean | null;
     img_link?: string | null;

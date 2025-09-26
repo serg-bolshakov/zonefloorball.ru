@@ -57,7 +57,7 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
     const closeModal = useCallback(() => setIsModalOpen(false), []);
 
     // console.log('prodInfo', prodInfo);
-    // console.log('propVariants', propVariants);
+    console.log('propVariants', propVariants);
     // console.log('prodInfo.category_id', prodInfo.category_id);
 
     const imagePath = `/storage/${prodInfo.productMainImage.img_link}`;

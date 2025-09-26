@@ -8,21 +8,25 @@ class ProductCardServiceFactory
 {
     public static function create(?string $categoryId, $prodInfo): BaseProductCardService
     {
+        \Log::debug('ProductCardServiceFactory:', [ 'categoryId' => $categoryId, 'prodInfo' => $prodInfo]);
         switch ($categoryId) {
             case '1':
-                return new StickProductCardService($prodInfo);         // клюшек           sticks
+                return new StickProductCardService($prodInfo);              // клюшек           sticks
             case '2':
-                return new BladeProductCardService($prodInfo);         // крюков           blades
+                return new BladeProductCardService($prodInfo);              // крюков           blades
             case '3':
-                return new BallProductCardService($prodInfo);          // мячей            balls
+                return new BallProductCardService($prodInfo);               // мячей            balls
             // case '5':
-            //     return new BagProductCardService($prodInfo);           // сумок и чехлов   bags
+            //     return new BagProductCardService($prodInfo);             // сумок и чехлов   bags
             // case '6':
-            //     return new GripProductCardService($prodInfo);          // обмоток          grips
+            //     return new GripProductCardService($prodInfo);            // обмоток          grips
             // case '7':
-            //     return new EyewearsProductCardService($prodInfo);      // очков            eyewears
+            //     return new EyewearsProductCardService($prodInfo);        // очков            eyewears
             // case 'goalie':
-            //     return new GoalieProductCardService($prodInfo);        // вратарской экипировки
+            //     return new GoalieProductCardService($prodInfo);          // вратарской экипировки
+            case '10':
+                return new GoaliePantsProductCardService($prodInfo);        // вратарские штаны
+
             default:
                 return new GeneralProductCardService($prodInfo);       // общие принципы для всех категорий товаров
         }
