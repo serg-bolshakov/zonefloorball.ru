@@ -26,9 +26,11 @@ class ProductCardServiceFactory
             //     return new GoalieProductCardService($prodInfo);          // вратарской экипировки
             case '10':
                 return new GoaliePantsProductCardService($prodInfo);        // вратарские штаны
+            case '12':
+                return new GoalieKneesProductCardService($prodInfo);        // вратарские наколенники
 
             default:
-                return new GeneralProductCardService($prodInfo);       // общие принципы для всех категорий товаров
+                return new GeneralProductCardService($prodInfo);            // общие принципы для всех категорий товаров
         }
     }
 }

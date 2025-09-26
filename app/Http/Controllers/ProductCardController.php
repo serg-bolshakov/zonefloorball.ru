@@ -43,6 +43,7 @@ class ProductCardController extends Controller
         $propVariants = $similarProductsService->getSimilarProps();                             // Получаем различные варианты исполнения просматриваемого товара (размеры/цвета/модели...)
         // dd($prodInfo);
         // dd($propVariants);
+        \Log::debug('ProductCardController propVariants:', [ 'propVariants' => $propVariants]);
         return [
             'title' => $product->tag_title,
             'robots' => 'INDEX,FOLLOW',
