@@ -9,6 +9,25 @@ class ProductCardServiceFactory
     public static function create(?string $categoryId, $prodInfo): BaseProductCardService
     {
         \Log::debug('ProductCardServiceFactory:', [ 'categoryId' => $categoryId, 'prodInfo' => $prodInfo]);
+
+        // Категории, которые используют универсальный сервис размеров
+        $sizeCategories = [
+            // '10' => 'pants_size',   // вратарские штаны            - уже реализованы, чтобы не "мутить воду" - комментируем... 
+            // '12' => 'knees_size',   // вратарские наколенники      - уже реализованы, чтобы не "мутить воду" - комментируем... 
+            '13' => 'gloves_size',     // вратарские перчатки
+            '14' => 'groins_size',     // вратарские защита паха
+            '15' => 'necks_size',      // вратарские защита шеи
+            '17' => 'baules_size',     // размер сумок
+        ];
+        
+
+        if (isset($sizeCategories[$categoryId])) {
+            return new UniversalSizeProductCardService(
+                $prodInfo, 
+                $sizeCategories[$categoryId]
+            );
+        }
+
         switch ($categoryId) {
             case '1':
                 return new StickProductCardService($prodInfo);              // клюшек           sticks
@@ -28,6 +47,9 @@ class ProductCardServiceFactory
                 return new GoaliePantsProductCardService($prodInfo);        // вратарские штаны
             case '12':
                 return new GoalieKneesProductCardService($prodInfo);        // вратарские наколенники
+
+            case '13':
+                return new SizeProductCardService($prodInfo);               // вратарские перчатки
 
             default:
                 return new GeneralProductCardService($prodInfo);            // общие принципы для всех категорий товаров

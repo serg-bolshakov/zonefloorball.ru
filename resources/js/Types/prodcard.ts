@@ -46,6 +46,7 @@ export interface IPropVariants {
     resultotherColourBladeForCard?: IPropsVariantsSecondLevel[];
     possiblePantsSizesForProductCard?: IPropsVariantsSecondLevel[];
     possibleGoalieSizesForProductCard?: IPropsVariantsSecondLevel[];
+    possibleProductSizesForProductCard?: IPropsVariantsSecondLevel[];
 }
 
 export interface IPropsVariantsSecondLevel {

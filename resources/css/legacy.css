@@ -2008,6 +2008,7 @@ input[type="checkbox"]:checked + label:after {
     font-style: normal;
     font-size: 14px;
     color: rgba(0, 0, 0, 0.7);
+    background-color: #f8f9fa;
 }
 
 .cardStick-shaftLength__item-active a {
@@ -5684,3 +5685,29 @@ thead th:hover::after {
   gap: 12px;
   max-width: 300px; 
 }
+
+/* Универсальные стили для размеров в карточке товара*/
+.cardProduct-sizes__container {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    /* margin-top: 8px; */
+}
+
+/* .size-variant {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 8px 12px;
+    transition: all 0.3s ease;
+}
+
+.size-variant-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.size-value {
+    font-weight: 500;
+} */
