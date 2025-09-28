@@ -11,12 +11,13 @@ import UniversalSizeVariants from './UniversalSizeVariants';
 // Категории, использующие универсальный компонент размеров
 
 // Определяем типы
-type SizeCategoryId = 10 | 12 | 13 | 14 | 15 | 17;
+// type SizeCategoryId = 10 | 12 | 13 | 14 | 15 | 17;
+type SizeCategoryId = 13 | 14 | 15 | 17;
 
 // Константы с типизацией
 const SIZE_CATEGORIES: Record<SizeCategoryId, string> = {
-    10: 'pants_size',       // вратарские штаны
-    12: 'knees_size',       // вратарские наколенники
+    // 10: 'pants_size',       // вратарские штаны
+    // 12: 'knees_size',       // вратарские наколенники
     13: 'gloves_size',      // вратарские перчатки
     14: 'groins_size',      // вратарские защита паха
     15: 'necks_size',       // вратарские защита шеи
