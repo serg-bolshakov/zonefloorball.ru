@@ -28,7 +28,7 @@ const ProductDetails: React.FC<IProductDetails> = ({ prodInfo }) => {
             { prodInfo.material && (
             <>  
                 <div className="cardProduct-detail__name">Материал:</div>
-                <div className="cardProduct-detail__value">{ prodInfo.material }</div>
+                <div className="cardProduct-detail__value" dangerouslySetInnerHTML={{ __html: prodInfo.material }} />
             </>
             )}
 
