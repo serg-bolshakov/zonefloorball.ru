@@ -5825,15 +5825,15 @@ thead th:hover::after {
 }
 
 /* Адаптивность для видео плеера */
-.video-thumbnail video {
+/* .video-thumbnail video {
     max-width: 100%;
     height: auto;
-}
+} */
 
 .video-thumbnail img,
 .video-thumbnail video {
     width: 100%;
     max-width: 300px;
-    height: auto;
+    /* height: auto; */
     border-radius: 8px;
 }
