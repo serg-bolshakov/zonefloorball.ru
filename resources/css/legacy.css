@@ -5834,6 +5834,7 @@ thead th:hover::after {
 .video-thumbnail video {
     width: 100%;
     max-width: 300px;
+    max-height: 300px;
     /* height: auto; */
     border-radius: 8px;
 }
