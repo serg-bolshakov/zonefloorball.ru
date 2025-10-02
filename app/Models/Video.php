@@ -13,10 +13,17 @@ class Video extends Model {
     
     protected $fillable = [
         'link',
+        'source_type', // 'vk' или 'hosted'
+        'file_path',   // путь к локальному файлу
         'poster',
         'duration', 
         'comment',
         'created_at',
+    ];
+
+    // Каст для автоматического приведения типов
+    protected $casts = [
+        'duration' => 'integer',
     ];
 
     // Связь многие-ко-многим с товарами

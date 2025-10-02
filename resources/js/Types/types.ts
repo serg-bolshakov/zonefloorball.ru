@@ -311,8 +311,10 @@ export interface IPropertyItemFromDB {
 
 export interface IVideoItemFromDB {
     id: number;
-    link: string;
+    link: string | null;
     poster: string;
+    source_type: string; // 'vk' или 'hosted'
+    file_path: string | null;   // путь к локальному файлу
     duration: number; // продолжительность в секундах
     comment: string | null;
     created_at: string | null;

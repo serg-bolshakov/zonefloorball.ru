@@ -4,10 +4,13 @@ import { motion } from 'framer-motion';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 
 interface PropVideo {
+    id: number;
     comment: string | null;
-    link: string;
+    link: string | null;
     poster: string;
     duration: number;
+    source_type: 'vk' | 'hosted';
+    file_path: string | null;
 }
 
 interface ProductVideoProps {
@@ -25,7 +28,7 @@ const ProductVideos: React.FC<ProductVideoProps> = ({ videos }) => {
     <section className="product-video-section">
         {videos && videos.length > 0 && (
             <>
-                <h3>Смотреть на VK</h3>
+                 <h3>Видеообзоры</h3>
                 <div className="cardProduct-imgPromo">
                     {/* {videos.map(video => (
                         <motion.div 
@@ -64,12 +67,12 @@ const ProductVideos: React.FC<ProductVideoProps> = ({ videos }) => {
                         </motion.a>
                     ))} */}
 
-                    {videos.map(video => (
+                    {/* {videos.map(video => (
                         <motion.a 
                             href={video.link} 
                             target="_blank" 
                             rel="noopener noreferrer"
-                            key={video.link} 
+                            key={video.id} 
                             className="video-link-card"
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -92,7 +95,66 @@ const ProductVideos: React.FC<ProductVideoProps> = ({ videos }) => {
                                 <span className="video-comment">{video.comment}</span>
                             )}
                         </motion.a>
-                    ))}
+                    ))} */}
+
+                    {videos.map(video => (
+                        <div key={video.id} className="video-item">
+                            {video.source_type === 'vk' && video.link ? (
+                                // VK видео - ссылка
+                                <motion.a 
+                                    href={video.link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="video-link-card"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <div className="video-thumbnail">
+                                        <LazyLoadImage
+                                            src={`/storage/${video.poster}`}
+                                            alt={video.comment || 'Видео на VK'}
+                                            effect="opacity"
+                                            threshold={500}
+                                        />
+                                        <span className="video-duration-badge">
+                                            {formatDuration(video.duration)}
+                                        </span>
+                                        <div className="video-platform-indicator">Просмотр на VK Видео</div>
+                                    </div>
+                                    {video.comment && (
+                                        <span className="video-comment">{video.comment}</span>
+                                    )}
+                                </motion.a>
+                            ) : (
+                                // Локальное видео - HTML5 video
+                                <motion.div 
+                                    className="video-link-card"
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <div className="video-thumbnail  margin-bottom8px">
+                                        <video
+                                            controls
+                                            poster={`/storage/${video.poster}`}
+                                            className="hosted-video-player"
+                                        >
+                                            <source 
+                                                src={`/storage/${video.file_path}`} 
+                                                type="video/mp4" 
+                                            />
+                                            Ваш браузер не поддерживает встроенные видео
+                                        </video>
+                                        <span className="video-duration-badge">
+                                            {formatDuration(video.duration)}
+                                        </span>
+                                    </div>
+                                    {video.comment && (
+                                        <span className="video-comment">{video.comment}</span>
+                                    )}
+                                </motion.div>
+                            )}
+                        </div>
+                    ))} 
                 </div> 
             </>
         )}
