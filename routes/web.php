@@ -22,6 +22,7 @@ use App\Http\Controllers\LegalController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminStockController;
 use App\Http\Controllers\Admin\AdminOrderController;
+use App\Http\Controllers\Admin\AdminProductsController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -198,6 +199,8 @@ Route::get('/profile/orders', [OrderController::class, 'getOrders'])
 Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     
+    Route::get('/products-table', [AdminProductsController::class, 'index'])->name('admin.products.table');
+
     Route::get('/products/sticks/add', function () {
         return Inertia::render('AdminProductsSticksAdd');
     })->name('admin.products.sticks.add');

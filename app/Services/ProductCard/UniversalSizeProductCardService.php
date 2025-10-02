@@ -32,6 +32,10 @@ class UniversalSizeProductCardService extends BaseProductCardService
         // Получаем доступные размеры для этой модели
         $availableSizes = $this->getAvailableSizes($sizePattern, $prodStatus);
         
+        Log::debug('UniversalSizeProductCardService:', [    
+            'availableSizes' => $availableSizes,
+        ]);
+
         // Формируем данные для отображения
         return $this->formatSizeVariants($availableSizes, $sizePattern, $prodStatus);
     }
@@ -50,6 +54,7 @@ class UniversalSizeProductCardService extends BaseProductCardService
     protected function getSizePatternByCategory($categoryId)
     {
         $sizePatterns = [
+            6  => 'grips_size',         // обмотки
             10 => 'pants_size',         // вратарские штаны
             12 => 'knees_size',         // вратарские наколенники  
             13 => 'gloves_size',        // вратарские перчатки
@@ -65,17 +70,41 @@ class UniversalSizeProductCardService extends BaseProductCardService
     
     protected function getAvailableSizes($sizePattern, $prodStatus)
     {
-        return Product::select('sizes.size_value', 'sizes.size_value_view')
+        Log::debug('getAvailableSizes:', [    
+            'sizePattern' => $sizePattern,
+            'prodStatus' => $prodStatus,
+            'products.category_id'  => $this->product->category_id,
+            'products.brand_id'     => $this->product->brand_id,
+            'products.model'        => $this->product->model,
+            'products.marka'        => $this->product->marka
+        ]);
+
+        $query = Product::select('sizes.size_value', 'sizes.size_value_view')
             ->leftJoin('sizes', 'products.size_id', '=', 'sizes.id')
             ->where([
                 ['products.category_id', $this->product->category_id],
                 ['products.brand_id', $this->product->brand_id],
-                ['products.model', 'like', '%' . $this->product->model . '%'],
-                ['products.marka', 'like', '%' . $this->product->marka . '%'],
+                // ['products.model', 'like', '%' . $this->product->model . '%'],
+                // ['products.marka', 'like', '%' . $this->product->marka . '%'],
                 ['products.product_status_id', $prodStatus],
                 ['sizes.size_title', 'like', $sizePattern],
-            ])
-            ->distinct()
+            ]);
+
+        // Условия для model с учетом NULL
+            if ($this->product->model !== null) {
+                $query->where('products.model', 'like', '%' . $this->product->model . '%');
+            } else {
+                $query->whereNull('products.model');
+            }
+
+        // Условия для marka с учетом NULL
+        if ($this->product->marka !== null) {
+            $query->where('products.marka', 'like', '%' . $this->product->marka . '%');
+        } else {
+            $query->whereNull('products.marka');
+        }
+
+        return $query->distinct()
             ->get()
             ->pluck('size_value_view', 'size_value')
             ->toArray();
@@ -94,12 +123,26 @@ class UniversalSizeProductCardService extends BaseProductCardService
                 ->where([
                     ['p.category_id', $this->product->category_id],
                     ['p.brand_id', $this->product->brand_id],
-                    ['p.model', 'like', '%' . $this->product->model . '%'],
-                    ['p.marka', 'like', '%' . $this->product->marka . '%'],
+                    // ['p.model', 'like', '%' . $this->product->model . '%'],
+                    // ['p.marka', 'like', '%' . $this->product->marka . '%'],
                     ['s.size_title', 'like', $sizePattern],
                     ['s.size_value', $sizeValue],
                     ['p.product_status_id', $prodStatus],
                 ])
+                ->where(function($query) {
+                    if ($this->product->model !== null) {
+                        $query->where('p.model', 'like', '%' . $this->product->model . '%');
+                    } else {
+                        $query->whereNull('p.model');
+                    }
+                })
+                ->where(function($query) {
+                    if ($this->product->marka !== null) {
+                        $query->where('p.marka', 'like', '%' . $this->product->marka . '%');
+                    } else {
+                        $query->whereNull('p.marka');
+                    }
+                })
                 ->first();
             
             if ($sizeProduct) {
@@ -140,12 +183,13 @@ class UniversalSizeProductCardService extends BaseProductCardService
     protected function getSizeTypeLabel($sizePattern)
     {
         $labels = [
+            'grips_size'    => 'Длина обмотки',
             'gloves_size'   => 'Размер перчаток',
             'pants_size'    => 'Размер штанов',
             'knees_size'    => 'Размер наколенников',
             'groins_size'   => 'Размер защиты паха',
             'necks_size'    => 'Размер защиты шеи',
-            'baules_size'   => 'Размер сумки',
+            'baules_size'   => 'Объём сумки',
         ];
         
         return $labels[$sizePattern] ?? 'Размер';

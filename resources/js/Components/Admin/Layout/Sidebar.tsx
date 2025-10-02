@@ -18,7 +18,7 @@ const Sidebar = () => {
         <MenuSection 
             title="Товары" 
             items={[
-                { label: 'Номенклатура'           , path: '/admin/products' },
+                { label: 'Номенклатура'           , path: '/admin/products-table' },
                 { label: 'Добавить'               , path: '/admin/products/add' },
                 { label: 'Добавить клюшку'        , path: '/admin/products/sticks/add' },
                 { label: 'Остатки (ручная правка)', path: '/admin/stock-manual' },

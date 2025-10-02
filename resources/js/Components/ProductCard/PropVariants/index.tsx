@@ -12,10 +12,11 @@ import UniversalSizeVariants from './UniversalSizeVariants';
 
 // Определяем типы
 // type SizeCategoryId = 10 | 12 | 13 | 14 | 15 | 17;
-type SizeCategoryId = 13 | 14 | 15 | 17;
+type SizeCategoryId = 6 | 13 | 14 | 15 | 17;
 
 // Константы с типизацией
 const SIZE_CATEGORIES: Record<SizeCategoryId, string> = {
+    6:  'grips_size',       // обмотки
     // 10: 'pants_size',       // вратарские штаны
     // 12: 'knees_size',       // вратарские наколенники
     13: 'gloves_size',      // вратарские перчатки
@@ -25,6 +26,7 @@ const SIZE_CATEGORIES: Record<SizeCategoryId, string> = {
 };
 
 const SIZE_LABELS: Record<string, string> = {
+    grips_size : 'Длина ленты',
     pants_size : 'Размер штанов',
     knees_size : 'Размер наколенников', 
     gloves_size: 'Размер перчаток',
@@ -45,7 +47,7 @@ interface Props {
 }
 
 const PropVariants: React.FC<Props> = ({ propVariants, categoryId }) => {
-
+  
   // Если категория использует универсальные размеры
   if (isSizeCategory(categoryId)) {
     const sizeKey = SIZE_CATEGORIES[categoryId];

@@ -12,6 +12,7 @@ class ProductCardServiceFactory
 
         // Категории, которые используют универсальный сервис размеров
         $sizeCategories = [
+            '6'  => 'grips_size',      // обмотки
             // '10' => 'pants_size',   // вратарские штаны            - уже реализованы, чтобы не "мутить воду" - комментируем... 
             // '12' => 'knees_size',   // вратарские наколенники      - уже реализованы, чтобы не "мутить воду" - комментируем... 
             '13' => 'gloves_size',     // вратарские перчатки
@@ -20,7 +21,8 @@ class ProductCardServiceFactory
             '17' => 'baules_size',     // размер сумок
         ];
         
-
+        \Log::debug('ProductCardServiceFactory:', [ 'isset' => isset($sizeCategories[$categoryId])]);
+        
         if (isset($sizeCategories[$categoryId])) {
             return new UniversalSizeProductCardService(
                 $prodInfo, 
