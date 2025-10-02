@@ -21,7 +21,7 @@ class ProductCardController extends Controller
         // Получаем продукт с нужными отношениями
         $product = Product::with(['actualPrice', 'regularPrice', 'preorderPrice', 'category', 'brand', 'size', 'properties', 
         'productMainImage', 'productCardImgOrients', 'actualPrice', 'regularPrice', 'productShowCaseImage', 
-        'properties', 'productReport', 'productUnit', 'productPromoImages'])->where('prod_url_semantic', $prodUrlSemantic)->first();
+        'properties', 'productReport', 'productUnit', 'productPromoImages', 'videos'])->where('prod_url_semantic', $prodUrlSemantic)->first();
         
         \Log::debug('ProductCardController:', [ 'product' => $product->category_id]);
 
@@ -78,6 +78,7 @@ class ProductCardController extends Controller
                 'brand' => $product->brand ?? null,
                 'size' => $product->size,
                 'properties' => $product->properties,
+                'videos' => $product->videos,
                 'productMainImage' => $product->productMainImage,
                 'productCardImgOrients' => $product->productCardImgOrients[0],
                 'productShowCaseImage' => $product->productShowCaseImage,

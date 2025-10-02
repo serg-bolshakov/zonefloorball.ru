@@ -309,6 +309,13 @@ export interface IPropertyItemFromDB {
     author_id?: number| null;
 }
 
+export interface IVideoItemFromDB {
+    id: number;
+    link: string;
+    comment: string | null;
+    created_at: string | null;
+}
+
 export interface IImageItemFromDB {
     id: number,
     product_id?: number;

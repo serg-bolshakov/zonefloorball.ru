@@ -226,4 +226,9 @@ class Product extends Model {
     public function isDraft(): bool {
         return $this->product_status_id === ProductStatus::DRAFT;
     }
+
+    // Получить все видео для товара
+    public function videos() {
+        return $this->belongsToMany(Video::class, 'product_video');
+    }
 }

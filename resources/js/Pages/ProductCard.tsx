@@ -20,6 +20,7 @@ import RecentlyViewedProducts from '@/Components/ProductCard/RecentlyViewedProdu
 import useAppContext from '@/Hooks/useAppContext';
 import { useUserDataContext } from '@/Hooks/useUserDataContext';
 import { PRODUCT_STATUSES } from '@/Constants/productStatuses';
+import ProductVideos from '@/Components/ProductCard/ProductVideos';
 
 const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants}) => {
     const { user } = useAppContext();
@@ -56,8 +57,8 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
     // Оптимизация рендеринга: useCallback для функции закрытия (Остановка распространения события для контента модалки)
     const closeModal = useCallback(() => setIsModalOpen(false), []);
 
-    // console.log('prodInfo', prodInfo);
-    console.log('propVariants', propVariants);
+    console.log('prodInfo', prodInfo);
+    // console.log('propVariants', propVariants);
     // console.log('prodInfo.category_id', prodInfo.category_id);
 
     const imagePath = `/storage/${prodInfo.productMainImage.img_link}`;
@@ -204,9 +205,10 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                         </section>
                     </section>
                     
-                    <section className="cardProduct-descDetails__block">                        
+                    <section className="cardProduct-descDetails__block">                    
                         <ProductDescription prodInfo={prodInfo} />
                         <ProductDetails     prodInfo={prodInfo} />
+                        <ProductVideos videos={prodInfo.videos} />    
                     </section>
 
                     {prodInfo?.productPromoImages && (

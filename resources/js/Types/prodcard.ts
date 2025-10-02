@@ -1,6 +1,6 @@
 // resources/js/Types/prodcard.ts
 import { ICategoryItemFromDB, IBrandItemFromDB, ISizeItemFromDB, IProductItemFromDB,IProductUnitFromDB,
-        IPropertyItemFromDB, IImageItemFromDB, IImgOrientItemFromDB, IPriceItemFromDB, IProductReportFromDB
+        IPropertyItemFromDB, IVideoItemFromDB, IImageItemFromDB, IImgOrientItemFromDB, IPriceItemFromDB, IProductReportFromDB
  } from "./types";
 
 export interface IProductCardGeneralProps extends IProductItemFromDB {
@@ -11,6 +11,7 @@ export interface IProductCardGeneralProps extends IProductItemFromDB {
     brand: IBrandItemFromDB;
     size: ISizeItemFromDB;
     properties: IPropertyItemFromDB; 
+    videos: IVideoItemFromDB[];
     productMainImage: IImageItemFromDB;
     productCardImgOrients: IImgOrientItemFromDB;
     productShowCaseImage: IImageItemFromDB;
