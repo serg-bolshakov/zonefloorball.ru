@@ -5755,7 +5755,7 @@ thead th:hover::after {
     flex-direction: column;
     align-items: center;
     text-decoration: none;
-    color: #007BFF;;
+    color: #007BFF;
     transition: all 0.3s ease;
     padding: 12px;
     border-radius: 8px;
@@ -5771,4 +5771,28 @@ thead th:hover::after {
     margin-bottom: 8px;
     font-weight: 500;
     font-size: 14px;
+}
+
+.video-thumbnail {
+    position: relative;
+    display: inline-block;
+}
+
+.video-duration-badge {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.video-comment {
+    display: block;
+    margin-top: 8px;
+    font-weight: 500;
+    color: #007BFF;
 }

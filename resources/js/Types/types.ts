@@ -312,6 +312,8 @@ export interface IPropertyItemFromDB {
 export interface IVideoItemFromDB {
     id: number;
     link: string;
+    poster: string;
+    duration: number; // продолжительность в секундах
     comment: string | null;
     created_at: string | null;
 }

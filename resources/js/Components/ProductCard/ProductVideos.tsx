@@ -7,12 +7,18 @@ interface PropVideo {
     comment: string | null;
     link: string;
     poster: string;
+    duration: number;
 }
 
 interface ProductVideoProps {
     videos: PropVideo[] | null;
 }
 
+const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
 
 const ProductVideos: React.FC<ProductVideoProps> = ({ videos }) => {
   return (
@@ -37,7 +43,7 @@ const ProductVideos: React.FC<ProductVideoProps> = ({ videos }) => {
                         </motion.div>
                     ))} */}
 
-                    {videos.map(video => (
+                    {/* {videos.map(video => (
                         <motion.a 
                             href={video.link} 
                             target="_blank" 
@@ -55,6 +61,36 @@ const ProductVideos: React.FC<ProductVideoProps> = ({ videos }) => {
                                 effect="opacity"
                                 threshold={500}
                             />
+                        </motion.a>
+                    ))} */}
+
+                    {videos.map(video => (
+                        <motion.a 
+                            href={video.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            key={video.link} 
+                            className="video-link-card"
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                        >
+                            <div className="video-thumbnail">
+                                <LazyLoadImage
+                                    src={`/storage/${video.poster}`}
+                                    alt={`${video.comment || 'Видеообзор'}`}
+                                    className="cursor-pointer margin-tb8px"
+                                    effect="opacity"
+                                    threshold={500}
+                                />
+                                {video.duration && (
+                                    <span className="video-duration-badge">
+                                        {formatDuration(video.duration)}
+                                    </span>
+                                )}
+                            </div>
+                            {video.comment && (
+                                <span className="video-comment">{video.comment}</span>
+                            )}
                         </motion.a>
                     ))}
                 </div> 

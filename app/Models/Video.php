@@ -13,7 +13,8 @@ class Video extends Model {
     
     protected $fillable = [
         'link',
-        'poster', 
+        'poster',
+        'duration', 
         'comment',
         'created_at',
     ];
