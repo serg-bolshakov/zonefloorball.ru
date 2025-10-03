@@ -5844,17 +5844,11 @@ thead th:hover::after {
     cursor: pointer;
 }
 
-/* Адаптивность для видео плеера */
-/* .video-thumbnail video {
-    max-width: 100%;
-    height: auto;
-} */
-
 .video-thumbnail img,
 .video-thumbnail video {
     width: 100%;
     max-width: 300px;
-    height: 300px; /* фиксированная высота для единообразия*/
+    height: 200px; /* фиксированная высота для единообразия*/
     border-radius: 8px;
     object-fit: cover; /* чтобы не было чёрных полей, заполнялось полностью */
 }
