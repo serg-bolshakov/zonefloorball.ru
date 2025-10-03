@@ -5852,3 +5852,21 @@ thead th:hover::after {
     border-radius: 8px;
     object-fit: cover; /* чтобы не было чёрных полей, заполнялось полностью */
 }
+
+/* Градиент вместо чёрных полос */
+.video-thumbnail video {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Красивые тени и переходы */
+.video-thumbnail img,
+.video-thumbnail video {
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.video-thumbnail img:hover,
+.video-thumbnail video:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
