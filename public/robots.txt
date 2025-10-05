@@ -17,5 +17,17 @@ Disallow: /checkout/
 Disallow: /compare/
 Clean-param: utm_source /products/
 
+User-agent: YandexBot
+Allow: /*.css$
+Allow: /*.js$
+Allow: /css/
+Allow: /js/
+
+User-agent: YandexMobileBot
+Allow: /*.css$
+Allow: /*.js$
+Allow: /css/
+Allow: /js/
+
 Sitemap: https://www.zonefloorball.ru/sitemap.xml
 Host: https://www.zonefloorball.ru
