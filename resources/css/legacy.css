@@ -830,7 +830,12 @@ footer a:active {
     -ms-overflow-style: none;
     scrollbar-width: none;
     margin: 0 0 14px 0;
+    padding: 8px 0;
     font-family: 'Inter';
+    height: 36px;
+    /* background-color: yellow; */
+    border-bottom: 1px solid #e9ecef;
+    border-top: 1px solid #e9ecef;
 }
 
 /* Style the list */
@@ -860,14 +865,23 @@ ul.breadcrumb li a.activeBreadcrumb:hover {
 /* Add a color to all links inside the list */
 ul.breadcrumb li a {
     font-size: 12px;
-    color: #188fea;
+    /* color: #188fea; */
+    color:#058f05;
     text-decoration: none;
+    background: #f8f9fa;
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
 }
 
 /* Add a color on mouse-over */
 ul.breadcrumb li a:hover {
     color: #01447e;
-    text-decoration: underline;
+    /* text-decoration: underline; */
+    background: #e9ecef;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .nav-bar__ul-li {
