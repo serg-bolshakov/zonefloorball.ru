@@ -1096,7 +1096,7 @@ ul.breadcrumb li a:hover {
   .assortiment-card__block {
     flex: 0 1 100% !important; /* или flex: 1 1 100% */
     max-width: 100%;
-    margin: 8px auto  !important;
+    margin: 4px 4px 4px auto  !important;
     /* background-color: red; */
     box-sizing: border-box;
     /* flex: 0 1 270px;
