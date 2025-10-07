@@ -226,15 +226,15 @@ strong {
 
     .panel {
         margin: 8px 0;
-        font-size: 14px;
-        line-height: 1.6;
+        font-size: 16px;
+        line-height: 1.8;
         /* background-color: red !important; */
     }
 
     .products-filter__title>p {
         font-size: 8px;
         font-weight: normal;
-        background-color: yellow !important;
+        /* background-color: yellow !important; */
     }
 
     .header-secondline, .header-secondline__aside--left, .header-secondline__aside--right {
