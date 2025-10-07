@@ -501,10 +501,10 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                             </div>
                             
                             <div className="filters-content">
-                            <div className="category-description">
-                                <p dangerouslySetInnerHTML={{ __html: catDescription }} />
-                            </div>
-                            {getAsideComponent()}
+                                <div className="category-description">
+                                    <p dangerouslySetInnerHTML={{ __html: catDescription }} />
+                                </div>
+                                {getAsideComponent()}
                             </div>
                         </aside>   
 
