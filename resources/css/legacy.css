@@ -221,12 +221,20 @@ strong {
     }
 
     .accordion {
-        font-size: 8px;
+        font-size: 16px;
+    }
+
+    .panel {
+        margin: 8px 0;
+        font-size: 14px;
+        line-height: 1.6;
+        /* background-color: red !important; */
     }
 
     .products-filter__title>p {
         font-size: 8px;
         font-weight: normal;
+        background-color: yellow !important;
     }
 
     .header-secondline, .header-secondline__aside--left, .header-secondline__aside--right {
@@ -1161,6 +1169,7 @@ ul.breadcrumb li a:hover {
     border-radius: 4px;
     outline: none;
     transition: 0.4s;
+    /* background-color: yellow; */
 } 
 
 /* Добавить цвет фона для кнопки, если она нажата (добавить .активный класс с JS), 
@@ -1178,6 +1187,7 @@ ul.breadcrumb li a:hover {
     overflow: hidden;
     /* font-size: 1.25vmax; */
     align-items: center;
+    /* background-color: green; */
 } 
 
 .panel p, .panel li {
