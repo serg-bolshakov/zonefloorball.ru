@@ -19,6 +19,7 @@ import { router } from '@inertiajs/react';
 import { Link, usePage } from '@inertiajs/react';
 import { ICategoryItemFromDB } from '../Types/types';
 import useAppContext from '@/Hooks/useAppContext';
+import { useScrollPosition } from '@/Hooks/useScrollPosition';
 // import axios from 'axios';
 
 interface ICatalogProps {
@@ -85,6 +86,46 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
 
     // console.log(searchTerm);
     // console.log(searchType);
+
+    // Сохраняем позицию прокрутки перед обновлением
+    /* useEffect(() => {
+        const handleBeforeUnload = () => {
+            sessionStorage.setItem('scrollPos', window.scrollY.toString());
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);*/
+
+    // Восстанавливаем позицию прокрутки после загрузки
+    /*useEffect(() => {
+        const savedScrollPos = sessionStorage.getItem('scrollPos');
+        if (savedScrollPos) {
+            window.scrollTo(0, parseInt(savedScrollPos));
+        }
+    }, []);*/
+
+    // Восстанавливаем позицию прокрутки после загрузки
+    /*useEffect(() => {
+        const savedScrollPos = sessionStorage.getItem('scrollPos');
+        if (savedScrollPos) {
+            // Небольшая задержка для стабилизации DOM
+            setTimeout(() => {
+                window.scrollTo(0, parseInt(savedScrollPos));
+            }, 100);
+        }
+    }, []);*/
+
+    // Вызов хука по отслеживанию позиции
+    const scrollPosition = useScrollPosition();
+
+    // Затем сохраняем позицию не только при beforeunload, но и при изменении фильтров
+    useEffect(() => {
+        sessionStorage.setItem('scrollPos', scrollPosition.toString());
+    }, [scrollPosition]); // Сохраняем позицию при каждом ее изменении
 
     // Синхронизация при изменении URL (если пользователь нажимает "Назад")
     useEffect(() => {
@@ -250,20 +291,20 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
 
     // Функция для мобильного отображения
     const MobileFiltersButton = () => (
-    <div className="mobile-filters-button-container">
-        <button 
-            className="mobile-filters-button"
-            onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-        >
-            <span className="filter-icon">⚙️</span>
-            <span className="filter-text">Подобрать по параметрам</span>
-            <span className="menu-icon">☰</span>
-            {filtersCount > 0 && (
-                <span className="filters-badge">{filtersCount}</span>
-            )}
-        </button>
-    </div>
-);
+        <div className="mobile-filters-button-container">
+            <button 
+                className="mobile-filters-button"
+                onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+            >
+                <span className="filter-icon">⚙️</span>
+                <span className="filter-text">Подобрать по параметрам</span>
+                <span className="menu-icon">☰</span>
+                {filtersCount > 0 && (
+                    <span className="filters-badge">{filtersCount}</span>
+                )}
+            </button>
+        </div>
+    );
 
     // Получаем количество активных фильтров - мы получаем набор доступных фильтров непосредственно в компоненте, а не здесь - подумаем, когда "руки дойдут"
     const filtersCount = Object.values(filters).filter(value => 
