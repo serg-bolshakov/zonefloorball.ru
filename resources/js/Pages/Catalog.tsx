@@ -245,6 +245,60 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
         return (totalPages > 1) ? pages : [];   // пагинацию возвращаем, если количество страниц больше одной...
     };
     
+    // Отображение меню фильтров и описания категории для адаптивной вёрстки
+    const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
+    // Функция для мобильного отображения
+    const MobileFiltersButton = () => (
+    <div className="mobile-filters-button-container">
+        <button 
+            className="mobile-filters-button"
+            onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+        >
+            <span className="filter-icon">⚙️</span>
+            <span className="filter-text">Подобрать по параметрам</span>
+            <span className="menu-icon">☰</span>
+            {filtersCount > 0 && (
+                <span className="filters-badge">{filtersCount}</span>
+            )}
+        </button>
+    </div>
+);
+
+    // Получаем количество активных фильтров - мы получаем набор доступных фильтров непосредственно в компоненте, а не здесь - подумаем, когда "руки дойдут"
+    const filtersCount = Object.values(filters).filter(value => 
+    Array.isArray(value) ? value.length > 0 : Boolean(value)
+    ).length;
+
+    // Добавим закрытие по клику вне области и escape:
+    /* useEffect(() => {
+        const handleEscape = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+            setIsFiltersOpen(false);
+            }
+        };
+
+        const handleClickOutside = (e: MouseEvent) => {
+            const filtersPanel = document.querySelector('.aside-with-filters');
+            const filtersButton = document.querySelector('.mobile-filters-button');
+            
+            if (isFiltersOpen && 
+                filtersPanel && 
+                !filtersPanel.contains(e.target as Node) &&
+                !filtersButton?.contains(e.target as Node)) {
+            setIsFiltersOpen(false);
+            }
+        };
+
+        document.addEventListener('keydown', handleEscape);
+        document.addEventListener('click', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('keydown', handleEscape);
+            document.removeEventListener('click', handleClickOutside);
+        };
+    }, [isFiltersOpen]);*/
+
     return (
         <>
             <MainLayout>
@@ -382,12 +436,38 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                     </div>
 
                     <div className="products-content">
-                        <aside className="aside-with-filters">
-                        <div className="category-description">
-                            <p dangerouslySetInnerHTML={{ __html: catDescription }} />
-                        </div>
+                        {/* Мобильная кнопка фильтров */}
+                        <MobileFiltersButton />
+
+                        {/* Боковая панель с фильтрами */}
+
+                        {/* <aside className="aside-with-filters">
+                            <div className="category-description">
+                                <p dangerouslySetInnerHTML={{ __html: catDescription }} />
+                            </div>
                             {getAsideComponent()}
+                        </aside>    */}
+
+                        <aside className={`aside-with-filters ${isFiltersOpen ? 'filters-open' : ''}`}>
+                            <div className="filters-header">
+                            <h3>Фильтры</h3>
+                            <button 
+                                className="close-filters"
+                                onClick={() => setIsFiltersOpen(false)}
+                            >
+                                ×
+                            </button>
+                            </div>
+                            
+                            <div className="filters-content">
+                            <div className="category-description">
+                                <p dangerouslySetInnerHTML={{ __html: catDescription }} />
+                            </div>
+                            {getAsideComponent()}
+                            </div>
                         </aside>   
+
+                        
                         <section className="assortiment-cards">
                             <AssortimentCards products={products} />
                         </section>
