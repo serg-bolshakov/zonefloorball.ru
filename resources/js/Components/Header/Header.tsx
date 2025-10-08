@@ -64,7 +64,7 @@ const Header: React.FC = () => {
                         <p className="logo-text margin-top8px">Россия. Флорбол. Создано со знанием дела.</p>
                     </div>
                     <div className="fs14 slogan">
-                        &mdash;&nbsp;Участие важно,<br />
+                        &mdash;&nbsp;Участие важно,&nbsp;<br />
                         но главное&nbsp;&mdash;&nbsp;это победа!
                     </div>
                 </div>
