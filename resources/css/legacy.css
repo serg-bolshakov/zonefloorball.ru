@@ -1892,7 +1892,7 @@ input[type="checkbox"]:checked + label:after {
     /* margin-bottom: 8px; */
     /* margin-top: 8px; */
     font-weight: 500;
-    font-size: 0.75rem;
+    font-size: 14px;
     text-align: right;
 }
 
