@@ -57,11 +57,11 @@ const Header: React.FC = () => {
             <header>
                 <div className="header-top__line--welcome d-flex flex-sb flex-wrap">
                     <div className="header-top__line--left">
+                        <p className="logo-text margin-bottom4px">Флорбол. Россия. Создано со знанием дела.</p>
                         <span className="welcome__text">Добро пожаловать</span>&nbsp;
                         <span className="welcome__invitation">
                             в команду Алетерс<sup className="tm-tooltip" data-tooltip="Зарегистрированная торговая марка">&reg;</sup>
                         </span>
-                        <p className="logo-text margin-top8px">Россия. Флорбол. Создано со знанием дела.</p>
                     </div>
                     <div className="fs14 slogan">
                         &mdash;&nbsp;Участие важно,&nbsp;<br />
