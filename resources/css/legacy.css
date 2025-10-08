@@ -213,10 +213,18 @@ strong {
     footer p, a{
         font-size: small;
     }
+
+    .logo-text {
+        font-size: 14px;
+    }
 }
 
 @media(max-width: 400px) {
     html {
+        font-size: 12px;
+    }
+
+    .logo-text {
         font-size: 12px;
     }
 
@@ -235,10 +243,6 @@ strong {
         font-size: 8px;
         font-weight: normal;
         /* background-color: yellow !important; */
-    }
-
-    .header-secondline, .header-secondline__aside--left, .header-secondline__aside--right {
-        width: 100%;
     }
 
     /* Увеличенные кнопки */
@@ -344,15 +348,15 @@ main {
 
 .header-secondline__aside--left {
     display: flex;
-    margin-top: 12px;
-    justify-content: flex-start;
+    /* margin-top: 12px; */
+    /* justify-content: flex-start; */
     align-items: center;
 }
 
 .header-secondline__aside--right {
     display: flex;
-    margin-top: 12px;
-    justify-content: flex-end;
+    /* margin-top: 12px; */
+    /* justify-content: flex-end; */
     align-items: center;
 }
 
@@ -1050,6 +1054,26 @@ ul.breadcrumb li a:hover {
 /* медиа-запрос, чтобы на мобильных фильтры просто уходили вниз под карточки: */
 @media (max-width: 768px) and (orientation: portrait) {
   /* Стили для мобильного телефона в портретной ориентации */
+  
+  .header-secondline__aside--left {
+    display: none;
+  }
+
+  /* Правому блоку больше не нужна полная ширина */
+  .header-secondline__aside--right {
+      width: auto; 
+      margin-left: auto; /* Это прижмет его к правому краю */
+      margin-right: 0;   /* Сбросит автоматический отступ справа */
+  }
+
+  .slogan {
+      width: auto; 
+      margin-left: auto; /* Это прижмет его к правому краю */
+      margin-right: 0;   /* Сбросит автоматический отступ справа */
+      margin-top: 8px;
+      margin-bottom: 8px;
+  }
+
   .products-content {
     display: block;
     padding: 8px;
