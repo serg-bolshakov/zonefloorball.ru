@@ -1067,12 +1067,24 @@ ul.breadcrumb li a:hover {
   }
 
   .slogan {
-      width: auto; 
-      margin-left: auto; /* Это прижмет его к правому краю */
-      margin-right: 0;   /* Сбросит автоматический отступ справа */
-      margin-top: 8px;
-      margin-bottom: 8px;
-  }
+        font-size: 10px;
+        line-height: 1.2;
+        text-align: center;
+        margin-left: auto; /* Это прижмет его к правому краю */
+        margin-right: 0;   /* Сбросит автоматический отступ справа */
+        margin-bottom: 8px;
+    }
+    
+    .slogan br {
+        display: none; /* Убираем переносы */
+    }
+
+    .slogan::after {
+        content: " 🏆";
+        font-size: 16px;
+        cursor: help;
+        /* Можно добавить тултип через title attribute */
+    }
 
   .products-content {
     display: block;

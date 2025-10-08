@@ -61,7 +61,7 @@ const Header: React.FC = () => {
                         <span className="welcome__invitation">
                             в команду Алетерс<sup className="tm-tooltip" data-tooltip="Зарегистрированная торговая марка">&reg;</sup>
                         </span>
-                        <p className="logo-text margin-top8px">Россия. Создано со знанием дела.</p>
+                        <p className="logo-text margin-top8px">Россия. Флорбол. Создано со знанием дела.</p>
                     </div>
                     <div className="fs14 slogan">
                         &mdash;&nbsp;Участие важно,<br />
@@ -71,7 +71,7 @@ const Header: React.FC = () => {
             </header>
             
             <header className="header-secondline d-flex flex-wrap aline-items-center">
-                
+
                 <Link href="/"><img className="header-logo__img" src="/storage/icons/logo.png" alt="logo" title="Перейти на главную страницу сайта" /></Link>
                 <div className="header-secondline__aside--left">
                     <nav>
