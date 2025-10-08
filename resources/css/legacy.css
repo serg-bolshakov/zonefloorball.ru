@@ -346,6 +346,13 @@ main {
     font-weight: 400;
 }
 
+.slogan::after {
+    content: " 🏆";
+    font-size: 16px;
+    cursor: help;
+    /* Можно добавить тултип через title attribute */
+}
+
 .header-secondline__aside--left {
     display: flex;
     /* margin-top: 12px; */
@@ -1077,13 +1084,6 @@ ul.breadcrumb li a:hover {
     
     .slogan br {
         display: none; /* Убираем переносы */
-    }
-
-    .slogan::after {
-        content: " 🏆";
-        font-size: 16px;
-        cursor: help;
-        /* Можно добавить тултип через title attribute */
     }
 
   .products-content {
