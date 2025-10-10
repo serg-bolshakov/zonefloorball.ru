@@ -1338,7 +1338,11 @@ class OrderController extends Controller {
             // Mail::to($order->email)->bcc(config('mail.admin_email'))->send($orderMail);
             // ПРАВИЛЬНЫЙ вариант - все получатели в to, админ в bcc
             Mail::to($recipients)
-                ->bcc(config('mail.admin_email'))
+            //  ->bcc(config('mail.admin_email'))
+                ->bcc([
+                    config('mail.admin_email'),
+                    config('mail.boss_email')
+                ])
                 ->send($orderMail);
 
         } catch (\Exception $e) {

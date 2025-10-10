@@ -117,6 +117,7 @@ return [
     */
 
     'admin_email' => env('ADMIN_EMAIL', 'serg.bolshakov@gmail.com'),
+    'boss_email' => env('BOSS_EMAIL', 'avp-lad@yandex.ru'),
 
     /*
     |--------------------------------------------------------------------------
