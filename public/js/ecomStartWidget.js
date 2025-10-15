@@ -6,5 +6,5 @@ ecomStartWidget({
     callbackFunction: getChoosedAddressInfoTariffAndDeliveryTime,
     start_location: 'обл Нижегородская, г Нижний Новгород',
     startZip: '603087', 
-    dimensions: [{ length: 120, width: 24, height: 8 }]
+    dimensions: [{ length: 120, width: 24, height: 16 }]
 });
