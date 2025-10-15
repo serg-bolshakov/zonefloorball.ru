@@ -108,7 +108,11 @@ class PaymentController extends Controller
                                     
                                 // 6.6 Отправляем письмо    
                                     Mail::to($order->email)
-                                    ->bcc(config('mail.admin_email'))
+                                    //->bcc(config('mail.admin_email'))
+                                    ->bcc([
+                                        config('mail.admin_email'),
+                                        config('mail.boss_email')
+                                    ])
                                     ->send($orderMail);
 
                                     $order->update([
