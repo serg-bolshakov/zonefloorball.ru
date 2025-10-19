@@ -41,18 +41,20 @@ const HowChooseStick = () => {
                                 <strong>Поставьте клюшку на пол вдоль туловища</strong>
                             </div>
                         </div>
-                        <div className="step-number">2</div>
-                        <div className="step-content">
-                            <strong>Проверьте высоту макушки клюшки:</strong>
-                            <div className="height-range">
-                                <div className="range-min">
-                                    <div className="marker">⬆️</div>
-                                    <span>Минимум: выше пупка на 5-6 см</span>
-                                </div>
-                                <div className="range-max">
-                                    <div className="marker">⬇️</div>
-                                    <span>Максимум: не выше уровня груди</span>
-                                </div>
+                        <div className="method-step">
+                            <div className="step-number">2</div>
+                            <div className="step-content">
+                                <strong>Проверьте высоту макушки клюшки:</strong>
+                            </div>
+                        </div>
+                        <div className="height-range">
+                            <div className="range-min">
+                                <div className="marker">⬆️</div>
+                                <span>Минимум: выше пупка на 5-6 см</span>
+                            </div>
+                            <div className="range-max">
+                                <div className="marker">⬇️</div>
+                                <span>Максимум: не выше уровня груди</span>
                             </div>
                         </div>
                     </div>
@@ -61,7 +63,7 @@ const HowChooseStick = () => {
 
             <div className="growth-tip">
                 <div className="tip-card">
-                    <h3>👦 Для растущих игроков</h3>
+                    <h3 className="margin-bottom24px">👦 Для растущих игроков</h3>
                     <p>Дети за лето могут вырасти на <strong>3-5 см</strong> - учитывайте это при выборе!</p>
                     <p>Лучше взять с небольшим запасом.</p>
                 </div>
@@ -74,10 +76,10 @@ const HowChooseStick = () => {
                         <div className="formula-step">
                             <span className="formula-part">Длина рукоятки</span>
                             <span className="formula-operator">+ 10 см</span>
-                            <span className="formula-result">= Общая длина клюшки</span>
+                            <span className="formula-result">= Длина клюшки</span>
                         </div>
                         <div className="formula-step">
-                            <span className="formula-part">Общая длина клюшки</span>
+                            <span className="formula-part">Длина клюшки</span>
                             <span className="formula-operator">+ 6 см</span>
                             <span className="formula-result">= Габаритная высота</span>
                         </div>
@@ -110,8 +112,9 @@ const HowChooseStick = () => {
                     <h3>🎯 Нужна помощь с выбором?</h3>
                     <p>Не уверены в размере? Мы поможем!</p>
                     <div className="help-actions">
-                        <p>📞 Напишите нам в соцсетях</p>
-                        <p>📏 Укажите рост игрока</p>
+                        {/* <p>📞 Напишите нам в соцсетях</p> */}
+                        <p>💬 Напишите нам в соцсетях</p>
+                        <p>📏 Укажите рост и возраст игрока</p>
                         <p>🎯 Мы подберём идеальный вариант</p>
                     </div>
                 </div>

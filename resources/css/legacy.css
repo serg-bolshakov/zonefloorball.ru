@@ -6646,6 +6646,7 @@ thead th:hover::after {
 
 .formula-step {
     display: flex;
+    flex-direction: column;
     align-items: center;
     gap: 12px;
     margin: 12px 0;
