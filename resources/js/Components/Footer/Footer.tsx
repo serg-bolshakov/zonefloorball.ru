@@ -4,15 +4,9 @@ import React from 'react';
 import RangeOfProducts from './RangeOfProducts';
 import Info from './Info';
 import Articles from './Articles';
-import useModal from '../../Hooks/useModal';    
 import CustomersCares from "./CustomersCares";
 
 const Footer: React.FC = () => {
-
-    // Отображение модального окна в Footer. В к. Footer мы используем состояние модального окна:
-    const { modal, closeModal } = useModal();
-    // modal — это не стейт в классическом понимании (не хук useState), а значение, которое возвращается из контекста.
-    // closeModal — это функция, которая также возвращается из контекста.
 
     return (
         <>

@@ -629,14 +629,25 @@ footer a:active {
 }
 
 .contacts-social {
-    margin: 10px 0;
     display: flex;
+    gap: 12px;
+    margin: 12px 0;
+    justify-content: left;
+    flex-wrap: wrap;
+}
+
+.contacts-social a {
+    transition: transform 0.2s ease;
+}
+
+.contacts-social a:hover {
+    transform: scale(1.1);
 }
 
 .contacts-social img {
-    width: 20px;
-    height: 20px;
-    margin-right: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
 }
 
 .paymentDelivery-methods {
@@ -6279,4 +6290,428 @@ thead th:hover::after {
 .active-category {
   background: #007bff;
   color: white;
+}
+
+.purchase-option {
+    margin: 24px 0;
+    padding: 16px;
+    border-left: 3px solid #007bff;
+    background: #f8f9fa;
+}
+
+.accent-text {
+    color: #2c3e50;
+    margin-bottom: 12px;
+}
+
+.instruction {
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+}
+
+.option {
+    margin: 8px 0;
+}
+
+.pickup-info {
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-size: 0.875rem;
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.lead-text {
+    font-size: 1.125rem;
+    color: #666;
+    font-style: italic;
+}
+
+.footer-about__timeline-section {
+    margin: 32px 0;
+}
+
+.footer-about__timeline-item {
+    display: flex;
+    align-items: flex-start;
+    margin: 24px 0;
+    gap: 16px;
+}
+
+.footer-about__timeline-year {
+    background: #007bff;
+    color: white;
+    padding: 4px 6px;
+    border-radius: 8px;
+    font-weight: bold;
+    min-width: 80px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.footer-about__timeline-content h3 {
+    margin: 0 0 8px 0;
+    color: #2c3e50;
+}
+
+.expertise-section {
+    display: grid;
+    gap: 16px;
+    margin: 32px 0;
+}
+
+.expertise-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.foundation-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 2px solid #e9ecef;
+}
+
+.foundation-card {
+    text-align: center;
+    background: #e8f4ff;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.lead-text {
+    font-size: 1.125rem;
+    color: #666;
+}
+
+.payment-section, .delivery-section, .notification-section {
+    margin: 40px 0;
+}
+
+.payment-methods, .delivery-options {
+    display: grid;
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.method-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.method-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+}
+
+.method-content h3 {
+    margin: 0 0 4px 0;
+    color: #2c3e50;
+}
+
+.payment-info {
+    background: #e8f4ff;
+    padding: 16px;
+    border-radius: 8px;
+    margin-top: 16px;
+}
+
+.delivery-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.delivery-card.highlight {
+    background: #fff3cd;
+    border-left-color: #ffc107;
+}
+
+.delivery-card h3 {
+    margin: 0 0 12px 0;
+    color: #2c3e50;
+}
+
+.delivery-card ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.pickup-info p {
+    margin: 8px 0;
+}
+
+.notification-card {
+    background: #e8f4ff;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.email-contact {
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    margin: 12px 0;
+    font-size: 1.1rem;
+}
+
+.email-note {
+    color: #666;
+    font-size: 0.9rem;
+    margin-left: 8px;
+}
+
+.warning-text {
+    color: #856404;
+    background: #fff3cd;
+    padding: 8px 12px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.return-conditions {
+    display: grid;
+    gap: 20px;
+    margin: 24px 0;
+}
+
+.condition-card {
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid;
+}
+
+.condition-card.success {
+    background: #f8fff9;
+    border-left-color: #28a745;
+}
+
+.condition-card.warning {
+    background: #fff8f8;
+    border-left-color: #dc3545;
+}
+
+.condition-card h3 {
+    margin: 0 0 12px 0;
+}
+
+.warranty-section, .quality-section, .expert-help-section, .closing-section {
+    margin: 32px 0;
+}
+
+.warranty-card, .quality-card, .expert-card, .closing-card {
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.warranty-card {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+}
+
+.warning-note {
+    background: white;
+    padding: 16px;
+    border-radius: 6px;
+    margin: 12px 0;
+}
+
+.advice-box {
+    background: #e8f4ff;
+    padding: 16px;
+    border-radius: 6px;
+    margin-top: 12px;
+}
+
+.quality-card {
+    background: #f8f9fa;
+    border-left: 4px solid #007bff;
+}
+
+.expert-card.highlight {
+    background: #e8f4ff;
+    border: 2px solid #007bff;
+}
+
+.mutual-respect {
+    text-align: center;
+    font-style: italic;
+    background: white;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 16px;
+}
+
+.closing-card {
+    text-align: center;
+    background: #f8fff9;
+    border: 1px solid #d4edda;
+}
+
+.measurement-guide {
+    margin: 24px 0;
+}
+
+.guide-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.check-method {
+    margin-top: 16px;
+}
+
+.method-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.step-number {
+    background: #007bff;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.height-range {
+    margin: 12px 0;
+    padding: 16px;
+    background: white;
+    border-radius: 6px;
+}
+
+.range-min, .range-max {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 8px 0;
+}
+
+.marker {
+    font-size: 1.2rem;
+}
+
+.growth-tip {
+    margin: 24px 0;
+}
+
+.tip-card {
+    background: #fff3cd;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #ffc107;
+}
+
+.calculation-section {
+    margin: 24px 0;
+}
+
+.calculation-card {
+    background: #e8f4ff;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.formula {
+    margin: 16px 0;
+}
+
+.formula-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+}
+
+.formula-operator {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.formula-result {
+    font-weight: bold;
+    color: #28a745;
+}
+
+.example-section {
+    margin: 24px 0;
+}
+
+.example-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.example-details {
+    margin: 16px 0;
+}
+
+.spec-item {
+    margin: 8px 0;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 4px;
+}
+
+.recommendation {
+    background: #d4edda;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 16px;
+    text-align: center;
+}
+
+.expert-help {
+    margin: 32px 0;
+}
+
+.help-card.highlight {
+    background: #e8f4ff;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px solid #007bff;
+    text-align: center;
+}
+
+.help-actions {
+    margin: 16px 0;
+}
+
+.help-actions p {
+    margin: 8px 0;
+    padding: 8px;
+    background: white;
+    border-radius: 4px;
 }
