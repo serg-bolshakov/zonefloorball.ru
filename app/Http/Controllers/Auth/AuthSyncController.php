@@ -171,9 +171,7 @@ class AuthSyncController extends Controller {
             'quantity_changes' => []
         ];
 
-        \Log::debug('SyncCart data', [
-            '$result begin' => $result,
-        ]);
+        // \Log::debug('SyncCart data', ['$result begin' => $result]);
 
         // 2. Загрузка данных: получаем все необходимые данные за 2 запроса
         $existingItems = Cart::where('user_id', $user->id)
@@ -203,18 +201,14 @@ class AuthSyncController extends Controller {
 
             */
 
-        \Log::debug('SyncCart step 2', [
-            '$existingItems' => $existingItems,
-        ]);
+        // \Log::debug('SyncCart step 2', ['$existingItems' => $existingItems]);
 
         $productIds = array_unique(array_merge(             // получаем синхронизированный массив id-товаров корзины покупателей     
             array_keys($localCart),
             $existingItems->keys()->toArray()
         ));
 
-        \Log::debug('SyncCart step 2', [
-            '$productIds' => $productIds,
-        ]);
+        // \Log::debug('SyncCart step 2', ['$productIds' => $productIds]);
 
         /*$products = Product::with('productReport')
             ->whereIn('id', $productIds)
@@ -230,10 +224,7 @@ class AuthSyncController extends Controller {
             ->get()
             ->keyBy('id');
 
-        \Log::debug('SyncCart step 2', [
-            '$products' => $products,
-        ]);
-
+        // \Log::debug('SyncCart step 2', ['$products' => $products]);
 
         /*// 3. Обработка локальных данных
         foreach ($localCart as $productId => $quantity) {
@@ -304,9 +295,7 @@ class AuthSyncController extends Controller {
             }
         }
 
-        \Log::debug('SyncCart step 3', [
-            '$productIds' => 'sucsess',
-        ]);
+        // \Log::debug('SyncCart step 3', ['$productIds' => 'sucsess']);
 
         
         // 5. Сохранение в БД (4. Обновление корзины)
@@ -340,9 +329,7 @@ class AuthSyncController extends Controller {
             );
         });
 
-        \Log::debug('SyncCart final', [
-            '$result' => $result,
-        ]);
+        // \Log::debug('SyncCart final', ['$result' => $result]);
 
         return $result;
     }

@@ -183,7 +183,7 @@ const Orders: React.FC<IOrdersProps> = ({
         return `?${params.toString()}`;
     };
 
-    console.log(orders.data.length);
+    // console.log(orders.data.length);
 
     return (
         <MainLayout>

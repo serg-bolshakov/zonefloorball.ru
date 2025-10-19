@@ -109,22 +109,22 @@ const FavoritesPage: React.FC<IHomeProps> = ({title, robots, description, keywor
             setError(null);
 
             try {
-                    const response = await axios.post('/products/favorites-get', {          
-                        ids: favorites,
-                        token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
-                    }, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        },
-                        signal, // Передаём signal в конфиг axios          
-                    });
-                    
-                    // Проверяем, не был ли запрос отменён
-                    if (!signal.aborted) {
-                        // console.log(response.data.data);
-                        setFavoriteProducts(response.data.data || []);
-                    }
+                const response = await axios.post('/products/favorites-get', {          
+                    ids: favorites,
+                    token: getCookie('XSRF-TOKEN') // Автоматически добавляется в Laravel
+                }, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    signal, // Передаём signal в конфиг axios          
+                });
+                
+                // Проверяем, не был ли запрос отменён
+                if (!signal.aborted) {
+                    // console.log(response.data.data);
+                    setFavoriteProducts(response.data.data || []);
+                }
             } catch (error) {
                 // Игнорируем ошибку, если запрос был отменён
                 if (!axios.isCancel(error)) {

@@ -2,9 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { usePage, router } from '@inertiajs/react';
 import { CompactPagination } from '@/Components/CompactPagination';
-import { Pagination } from '@/Components/Pagination';
-import { IProduct } from '@/Types/types';
-import { useForm } from '@inertiajs/inertia-react';
 
 // Используем ваш готовый компонент пагинации и поиска!
 //import { CompactPagination } from '@/Components/UI/Pagination/CompactPagination'; 

@@ -25,16 +25,14 @@
                 $user = $request->user();   // если пользователь авторизован: $user = Auth::user();
                 $userData = $this->getUserAuthData($user, $request);
 
-                \Log::debug('userData', [
-                    'userData' => $userData,                                     
-                ]);
+                // \Log::debug('userData', ['userData' => $userData]);
 
-                \Log::debug('URL Check', [
+                /*\Log::debug('URL Check', [
                     'current_path' => $request->path(),                                     // api/initial-data
                     'referer' => $request->header('referer'),                               // http://127.0.0.1:8000/profile
                     'is_profile' => $request->is('profile') ||                              // true
                                 str_contains($request->header('referer'), '/profile'),
-                ]);
+                ]);*/
 
                 return response()->json([
                     'user' => $user ? [
@@ -208,9 +206,7 @@
                 );
             });
 
-            \Log::debug('getUserCart final', [
-                '$result' => $result,
-            ]);
+            // \Log::debug('getUserCart final', ['$result' => $result]);
 
             return $result;
         }
@@ -310,9 +306,7 @@
                 );
             });
 
-            \Log::debug('getUserPreorder final', [
-                '$result' => $result,
-            ]);
+            // \Log::debug('getUserPreorder final', ['$result' => $result]);
 
             return $result;
         }

@@ -17,7 +17,10 @@ class ProductResource extends JsonResource
 
     public function toArray(Request $request): array {
         // \Log::debug('ProductResource ToArray:', ['request' => $request->all()]);
-        \Log::debug('ProductResource ToArray this:', ['expected_receipt_date' => $this->productReport->expected_receipt_date]);
+        // \Log::debug('ProductResource ToArray this regularPrice:', ['regularPrice' => $this->regularPrice ?? null]);
+        // \Log::debug('ProductResource ToArray this preorderPrice:', ['preorderPrice' => $this->preorderPrice ?? null]);
+        // \Log::debug('ProductResource ToArray this actionPrice:', ['actionPrice' => $this ?? null]);
+        // \Log::debug('ProductResource ToArray this actualPrice:', ['actualPrice' => $this->actualPrice ?? null]);
        
         $user = Auth::user() ?? null;
         //\Log::debug('ProductResource validated:', ['headers' => $request->headers->all(), '$userssss' => $user]);
@@ -48,11 +51,11 @@ class ProductResource extends JsonResource
         
         // если пользователь авторизован посчитаем его скидки и добавим в ответ:
         if (!empty($user)) {
-            \Log::debug('ProductResources toArray', ['$user Debug' => $user]);
+            // \Log::debug('ProductResources toArray', ['$user Debug' => $user]);
             $data = array_merge($data, $this->calculateDiscounts($user));
         }
 
-        \Log::debug('ProductResources toArray data', ['$newdata' => $data]);
+        // \Log::debug('ProductResources toArray data', ['$newdata' => $data]);
 
         return $data;      
     }
@@ -80,7 +83,7 @@ class ProductResource extends JsonResource
         $actualPriceDateEnd  = $this->actualPrice->date_end ?? null;
         $regularPrice        = $this->regularPrice->price_value ?? null;
 
-        \Log::debug('ProductResources calculateDiscounts', ['input user' => $user]);
+        // \Log::debug('ProductResources calculateDiscounts', ['input user' => $user]);
 
         if ($actualPrice === $regularPrice && $rankDiscountPercent > 0) {
             $discountData['price_with_rank_discount'] = round($regularPrice - ($regularPrice * ($rankDiscountPercent / 100))); 

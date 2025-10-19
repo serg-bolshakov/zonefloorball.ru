@@ -74,7 +74,7 @@ const LegalUserFields: React.FC<ILegalUserFieldsProps> = ({ user, representPerso
     // Достаём setUser из контекста
     const { setUser } = useAppContext();
 
-    console.log('user', user);
+    // console.log('user', user);
 
     // Активная форма редактирования
     const [activeForm, setActiveForm] = useState<TEditableField>(null);
@@ -94,8 +94,8 @@ const LegalUserFields: React.FC<ILegalUserFieldsProps> = ({ user, representPerso
 
     // Базовая валидация при изменении (без debounce). Отказ от debounce: простая валидация на лету (onChange)
     const validateField = (name: string, value: string): boolean => {
-        console.log('validator name', name);
-        console.log('validator value', value);
+        // console.log('validator name', name);
+        // console.log('validator value', value);
         let error = '';
         let isValid = true;
         switch (name) {
@@ -228,8 +228,8 @@ const LegalUserFields: React.FC<ILegalUserFieldsProps> = ({ user, representPerso
         const hasFormChanges = fields.some(field => 
             formData[field] !== initialData[field]
         );
-        console.log('checkChanges fields', fields);
-        console.log('checkChanges hasFormChanges', hasFormChanges);
+        // console.log('checkChanges fields', fields);
+        // console.log('checkChanges hasFormChanges', hasFormChanges);
 
 
         // Если пользователь активировал чекбокс - считаем это изменением
@@ -260,12 +260,12 @@ const LegalUserFields: React.FC<ILegalUserFieldsProps> = ({ user, representPerso
     // Отправка формы
     const handleSubmit = async (e: React.FormEvent, fields: (keyof TFormData)[]) => {
         e.preventDefault();
-        console.log('handleSubmit fields', fields);
-        console.log(!!checkChanges(['phone']));
-        console.log(errors.phone);
+        // console.log('handleSubmit fields', fields);
+        // console.log(!!checkChanges(['phone']));
+        // console.log(errors.phone);
         // Проверяем, есть ли изменения (дублируем для безопасности) - сделали кнопку неактивной, если нет никаких изменени...
         const hasChanges = (fields: (keyof TFormData)[]): boolean => {
-            console.log('hasChanges', fields);
+            // console.log('hasChanges', fields);
             const hasFormChanges = fields.some(field => 
                 formData[field] !== initialData[field]
             );

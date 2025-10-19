@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AdminStockController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminProductsController;
+use App\Http\Controllers\Admin\AdminProductPriceController;
 
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
@@ -216,6 +217,8 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     // Используем POST для обновления одного значения (patch работает некорректно)
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status.update');
     
+    Route::post('/products/{product}/update-prices', [AdminProductPriceController::class, 'updatePrices']);
+    Route::post('/products/{product}/update-status', [AdminProductsController::class, 'updateStatus']);
 
     // Другие админ-роуты...
 });

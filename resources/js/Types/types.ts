@@ -195,22 +195,28 @@ export interface IProduct extends IProductReportFromDB {
     iff_id?: number | null;
     product_ean?: number | null;
     actual_price?: IPrice;
-    price_actual?: number;                          // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    price_actual?: number | null;                          // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    special_price_date_end?: string | null;
+    special_price_date_start?: string | null;
     regular_price?: IPrice;
+    special_price?: IPrice;
+    special_price_current?: IPrice;
     action_price?: IPrice;
     preorder_price?: IPrice;
-    price_regular?: number;                         // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
-    price_preorder?: number;
-    product_status_id?: number | null;
-    prod_status?: number | null;                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
-    img_link?: string | null;                        // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    price_regular?              : number | null;                         // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    price_preorder?             : number | null;
+    preorder_price_date_end?    : string | null;
+    preorder_price_date_start?  : string | null;
+    product_status_id?          : number | null;
+    prod_status?                : number | null;                     // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
+    img_link?                   : string | null;                        // значение передаётся из app/Http/Resources/ProductResource.php в каталог товаров в раздел assortimentCards
     
-    price_with_rank_discount?   : number;
-    price_with_action_discount? : number;
-    percent_of_rank_discount?   : number;
-    summa_of_action_discount?   : number;
-    price_special?              : number;
-    date_end?                   : string;
+    price_with_rank_discount?   : number | null;
+    price_with_action_discount? : number | null;
+    percent_of_rank_discount?   : number | null;
+    summa_of_action_discount?   : number | null;
+    price_special?              : number | null;
+    date_end?                   : string | null;
 
     quantity?: number;
 
@@ -221,13 +227,13 @@ export interface IProduct extends IProductReportFromDB {
 export interface IPrice {
   id: number;
   product_id: number;
-  price_type_id: number;
+  price_type_id?: number;
   price_value: number;
   date_start: string | null;
   date_end: string | null;
-  created_at: string;
-  updated_at: string;
-  author_id: number;
+  created_at?: string;
+  updated_at?: string;
+  author_id?: number;
 }
 
 export interface IProperty {

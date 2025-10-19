@@ -398,3 +398,65 @@
   outline: none;
   border-color: #007bff;
 }
+
+/* Price Fields */
+.price-fields {
+    margin: 20px 0;
+}
+
+.price-field {
+    margin-bottom: 25px;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    background: #f8f9fa;
+}
+
+.price-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.price-field input[type="number"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 16px;
+}
+
+/* Date Range */
+.date-range {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.date-field {
+    display: flex;
+    flex-direction: column;
+}
+
+.date-field label {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #6c757d;
+}
+
+.date-field input[type="date"] {
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Disabled state */
+.admin-btn-primary:disabled {
+    background: #6c757d !important;
+    cursor: not-allowed;
+    transform: none !important;
+}

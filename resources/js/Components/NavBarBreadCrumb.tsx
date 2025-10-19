@@ -144,8 +144,8 @@ const NavBarBreadCrumb: React.FC = () => {
         );
     }*/
 
-    console.log('category_choosed', categoriesInfo);
-    console.log('current_path', currentPath);
+    // console.log('category_choosed', categoriesInfo);
+    // console.log('current_path', currentPath);
         
     return (
         <>

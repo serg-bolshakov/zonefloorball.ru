@@ -575,10 +575,10 @@ const CartPage: React.FC<IHomeProps> = ({title, robots, description, keywords, t
     
     // Обработчик кнопки "Оформить заказ"
     const handleCheckoutClick = () => {
-        console.log('Версия корзины. Обработчик кнопки "Оформить заказ');
-        console.log('Пользователь', user);
-        console.log('Физическое лицо?', isIndividualUser(user));
-        console.log('Юридическое лицо?', isLegalUser(user));
+        // console.log('Версия корзины. Обработчик кнопки "Оформить заказ');
+        // console.log('Пользователь', user);
+        // console.log('Физическое лицо?', isIndividualUser(user));
+        // console.log('Юридическое лицо?', isLegalUser(user));
         if (user) {                         // Авторизованный пользователь
             if (isIndividualUser(user)) { 
                 handleContinueAsIndividual(); 

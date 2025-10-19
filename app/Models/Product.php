@@ -58,13 +58,36 @@ class Product extends Model {
     /**
      * Получить текущую цену на продукт.
      */
-    public function actualPrice() {
+    /*public function actualPrice() {
         return $this->hasOne(Price::class)->ofMany([
             'id' => 'max',
         ], function ($query) {
             $query->where(function ($q) {
                 $q->where('date_end', '>', now())
                 ->orWhereNull('date_end');
+            })->whereIn('price_type_id', [
+                Price::TYPE_REGULAR, 
+                Price::TYPE_SPECIAL
+            ]);
+        });
+    }*/
+
+    public function actualPrice() {
+        return $this->hasOne(Price::class)->ofMany([
+            'price_type_id' => 'max', // Сначала SPECIAL (3), потом REGULAR (2)
+            'id' => 'max',
+        ], function ($query) {
+            $query->where(function ($q) {
+                // Условия на период действия
+                $q->where(function ($subQ) {
+                    $subQ->where('date_end', '>', now())
+                        ->orWhereNull('date_end');
+                })
+                // Условия на начало действия - ТОЛЬКО действующие
+                ->where(function ($subQ) {
+                    $subQ->where('date_start', '<=', now())
+                        ->orWhereNull('date_start');
+                });
             })->whereIn('price_type_id', [
                 Price::TYPE_REGULAR, 
                 Price::TYPE_SPECIAL
@@ -78,6 +101,54 @@ class Product extends Model {
             'id' => 'max',
         ], function ($query) {
             $query->where('price_type_id', '=', 2);
+        });
+    }
+
+    /* Получить специальную цену для ПОКУПАТЕЛЯ (не админа) на продукт (по акции), если таковая есть. */
+    public function specialPrice() {
+        return $this->hasOne(Price::class)->ofMany([
+            'id' => 'max',
+        ], function ($query) {
+            $query->where('price_type_id', Price::TYPE_SPECIAL)
+                ->where(function ($q) {
+                    // Условия на период действия
+                    $q->where(function ($subQ) {
+                        $subQ->where('date_end', '>', now())
+                            ->orWhereNull('date_end');
+                    })
+                    // Условия на начало действия - ТОЛЬКО действующие акции
+                    ->where(function ($subQ) {
+                        $subQ->where('date_start', '<=', now())
+                            ->orWhereNull('date_start');
+                    });
+                });
+        });
+    }
+
+    /**
+     * Все специальные цены (включая будущие) для админки
+     */
+    public function adminSpecialPrices() {
+        return $this->hasMany(Price::class)
+            ->where('price_type_id', Price::TYPE_SPECIAL)
+            ->orderBy('date_start', 'desc')
+            ->orderBy('id', 'desc');
+    }
+
+    /**
+     * Актуальная + будущая специальная цена для админки
+     */
+    
+    public function adminSpecialPrice() {
+        return $this->hasOne(Price::class)->ofMany([
+            'id' => 'max',
+        ], function ($query) {
+            $query->where('price_type_id', Price::TYPE_SPECIAL)
+                ->where(function ($q) {
+                    $q->where('date_end', '>', now())
+                        ->orWhereNull('date_end');
+                });
+            // Убрано условие на date_start - показываем и будущие
         });
     }
 

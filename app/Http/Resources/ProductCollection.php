@@ -16,9 +16,10 @@ class ProductCollection extends ResourceCollection
     */
 
     public function toArray(Request $request): array {
-
+        // \Log::debug('ProductCollection:', ['ProductCollection request' => $request->all()]);
         return [
             'data' => $this->collection->map(function ($product) {
+                // \Log::debug('ProductCollection:', ['ProductCollection product' => $product]);
                 return new ProductResource($product);
             }),
             

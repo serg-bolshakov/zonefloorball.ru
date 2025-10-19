@@ -208,10 +208,10 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
     // Отправка формы
     const handleSubmit = async (e: React.FormEvent, fields: (keyof TFormData)[]) => {
         e.preventDefault();
-        console.log('handleSubmit fields', fields);
+        // console.log('handleSubmit fields', fields);
         // Проверяем, есть ли изменения (дублируем для безопасности) - сделали кнопку неактивной, если нет никаких изменени...
         const hasChanges = (fields: (keyof TFormData)[]): boolean => {
-            console.log('hasChanges', fields);
+            // console.log('hasChanges', fields);
             const hasFormChanges = fields.some(field => 
                 formData[field] !== initialData[field]
             );
@@ -306,7 +306,7 @@ const IndividualUserFields: React.FC<IIndividualUserFieldsProps> = ({ user }) =>
                             return acc;
                         }, {} as Record<string, string>);*/
                         
-                        console.log(payload);
+                        // console.log(payload);
                         const response = await axios.put('/profile', payload);
 
                         // Важное изменение: обновляем контекст

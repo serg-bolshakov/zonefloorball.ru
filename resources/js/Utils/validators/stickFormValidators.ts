@@ -140,7 +140,7 @@ export const validateStep = <T extends TStepNumber>(
             }
         }
         
-         // Валидация дат
+        // Валидация дат
         if(stepData.specialPriceDateStart || stepData.specialPriceDateFinish) {
             const start = stepData.specialPriceDateStart;
             const finish = stepData.specialPriceDateFinish;

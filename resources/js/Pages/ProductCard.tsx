@@ -57,7 +57,7 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
     // Оптимизация рендеринга: useCallback для функции закрытия (Остановка распространения события для контента модалки)
     const closeModal = useCallback(() => setIsModalOpen(false), []);
 
-    console.log('prodInfo', prodInfo);
+    // console.log('prodInfo', prodInfo);
     // console.log('propVariants', propVariants);
     // console.log('prodInfo.category_id', prodInfo.category_id);
 

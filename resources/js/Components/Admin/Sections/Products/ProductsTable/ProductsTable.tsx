@@ -1,8 +1,8 @@
 // resources/js/Components/Admin/Sections/Products/ProductsTable/ProductTable.tsx
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePage, router } from '@inertiajs/react';
-import { IProductsResponse, IProduct, TSecondLevel } from '@/Types/types';
+import { IProductsResponse, IProduct, TSecondLevel, IPrice } from '@/Types/types';
 import { formatPrice } from '@/Utils/priceFormatter';
 import useAppContext from '@/Hooks/useAppContext';
 import { ICategoryMenuItem } from '@/Types/types';
@@ -14,20 +14,18 @@ import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 import { Slide, Zoom, Flip, Bounce } from 'react-toastify';
 import MainLayout from '@/Layouts/MainLayout';
+import { ProductPricesEditor } from '../ProductPricesEditor';
 
 interface ProductsTableProps {
-    // catalogCategoryName: string;
-    // catalogCategoryTitleImg: string;
-    // catName: string;
-    // catDescription: string;
     products: IProductsResponse;        // Добавляем продукты - products обязателен — это не просто массив, а объект с пагинацией...
     sortBy?: string;
     sortOrder?: string;
     search: string;
-    searchType: 'article' | 'title';    
+    searchType: 'article' | 'id' | 'title';    
     categoryId?: number | null;
     categoryInfo?: ICategoryItemFromDB;
     onStatusChange: (orderId: number, newStatus: number) => void;
+    onPricesChange: (productId: number, newPrices: IPrice[]) => void;
     onRowClick: (orderId: number) => void;
 }
 
@@ -63,14 +61,23 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
     searchType: initialSearchType = 'article',
     categoryId,
     categoryInfo,
+    onPricesChange
 }) => {
 
     // Инициализируем состояние из пропсов (которые приходят из URL через Inertia)
     const [searchTerm, setSearchTerm] = useState(initialSearch);
-    const [searchType, setSearchType] = useState<'article' | 'title'>(initialSearchType);
+    const [searchType, setSearchType] = useState<'article' | 'id' | 'title'>(initialSearchType);
 
     const [selectedAction, setSelectedAction] = useState<string>('');
     const [showStatusModal, setShowStatusModal] = useState(false);
+    const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
+    
+    const searchInputRef = useRef<HTMLInputElement>(null);
+    useEffect(() => {
+        if (searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [searchType]);
     
     // Синхронизация при изменении URL (если пользователь нажимает "Назад")
     useEffect(() => {
@@ -84,6 +91,11 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
     const [isLoading, setIsLoading] = useState(false);
 
     const handleSearch = () => {
+        // Дополнительная валидация
+        if (searchType === 'id' && !/^\d+$/.test(searchTerm.trim())) {
+            alert('Для поиска по ID введите только цифры');
+            return;
+        }
         const params = {
             page: 1, // Всегда сбрасываем на первую страницу
             perPage: products.meta.per_page,
@@ -234,19 +246,16 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
         return futureDate.toLocaleDateString();
     };
 
-    console.log(getMainCategories());
-    console.log('products', products);
-
-    const handleActionChange = (action: string) => {
+    const handleActionChange = (action: string, product: IProduct) => {
+       
         setSelectedAction(action);
-        console.log('SelectedAction', action);
-        
+               
         switch (action) {
             case 'product_status':
                 setShowStatusModal(true);
                 break;
-            case 'price correction':
-                // Открываем модалку для изменения цен
+            case 'price_correction':
+                setEditingProduct(product); // Сохраняем товар для редактирования
                 break;
             case 'prod_edition':
                 // Открываем модалку для редактирования свойств товара (наименования, описания)
@@ -264,11 +273,6 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
         
         // Сбрасываем селект после выбора
         setTimeout(() => setSelectedAction(''), 100);
-    };
-
-    const handleStatusChange = (orderId: number, newStatus: number) => {
-        // onStatusChange(orderId, newStatus);
-        setShowStatusModal(false);
     };
 
     return (
@@ -362,41 +366,49 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
             <div className="search-controls">
                 <span className='pagination-info'>Поиск </span>
                 <select 
-                value={searchType}
-                onChange={(e) => {
-                    setSearchType(e.target.value as 'article' | 'title');
-                    // Можно автоматически запускать поиск при смене типа
-                    if (searchTerm) handleSearch();
-                }}
-                className="search-type-select"
+                    value={searchType}
+                    onChange={(e) => {
+                        setSearchType(e.target.value as 'article' | 'id' | 'title');
+                        // setTimeout(() => document.querySelector('.search-input')?.focus(), 0);
+                        if (searchTerm) handleSearch();
+                    }}
+                    className="search-type-select"
                 >
-                <option value="article">По артикулу</option>
-                <option value="title">По названию</option>
+                    <option value="article">По артикулу</option>
+                    <option value="id">По ID</option>
+                    <option value="title">По названию</option>
                 </select>
                 
                 <input
+                    ref={searchInputRef}
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                     placeholder={searchType === 'article' 
                         ? 'Например: 24051' 
+                        : searchType === 'id'
+                        ? 'Например: 12345'
                         : 'Например: клюшка unihoc 36mm'}
                     className="search-input"
                 />
                 
                 <button 
-                onClick={handleSearch}
-                disabled={!searchTerm.trim()}
-                className="search-button"
+                    onClick={handleSearch}
+                    disabled={!searchTerm.trim()}
+                    className="search-button"
                 >
-                Найти
+                    Найти
                 </button>
                 
                 {/* Индикация активного поиска: */}
                 {searchTerm && (
                     <div className="active-search-info">
-                        Поиск {searchType === 'article' ? 'по артикулу' : 'по названию'}:&nbsp; 
+                        Поиск {searchType === 'article' 
+                            ? 'по артикулу' 
+                            : searchType === 'id' 
+                            ? 'по ID' 
+                            : 'по названию'}:&nbsp;
                         <strong>{searchTerm}</strong>
                     </div>
                 )}
@@ -406,7 +418,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                         onClick={() => {
                             setSearchTerm('');
                             setSearchType('article');
-                            router.get('/profile/products-table', {
+                            router.get('/admin/products-table', {
                                 page: 1,
                                 perPage: products.meta.per_page,
                                 sortBy,
@@ -460,27 +472,31 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                                 </td>  
                                 <td className="td-center">{product.in_stock}</td>
                                 <td className="td-right"> {formatPrice((product.price_regular ?? 0))}&nbsp;<sup>&#8381;</sup></td>
-                                <td  className="td-right">
-                                    {(product.price_special && product.date_end) ? 
-                                        (
-                                            <div className='d-flex flex-column'>
-                                                <p className="color-red margin-bottom8px">{formatPrice(product.price_special)}&nbsp;<sup>&#8381;</sup></p>
-                                                <p> действует до&nbsp;{getDisplayDate(product.date_end)}</p>
-                                            </div>
-                                        ) : ( 
-                                                product.price_special ? (
-                                                <div className="color-red">{formatPrice(product.price_special)}&nbsp;<sup>&#8381;</sup></div>
-                                        ) : (
-                                            <div>-</div>
-                                        )
+                                <td className="td-right">
+                                    {product.price_special ? (
+                                        <div className='d-flex flex-column'>
+                                            <p className="color-red margin-bottom8px">
+                                                {formatPrice(product.price_special)}&nbsp;<sup>&#8381;</sup>
+                                            </p>
+                                            {(product.special_price_date_start || product.special_price_date_end) && (
+                                                <p>
+                                                    действует&nbsp;
+                                                    {product.special_price_date_start && `с ${getDisplayDate(product.special_price_date_start)}`}
+                                                    {product.special_price_date_start && product.special_price_date_end && ' '}
+                                                    {product.special_price_date_end && `до ${getDisplayDate(product.special_price_date_end)}`}
+                                                </p>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div>-</div>
                                     )}
                                 </td>
                                 <td  className="td-right">
-                                    {(product.price_preorder && product.date_end) ? 
+                                    {(product.price_preorder && product.preorder_price_date_end) ? 
                                         (
                                             <div className='d-flex flex-column'>
                                                 <p  className="color-green margin-bottom8px">{formatPrice(product.price_preorder)}&nbsp;<sup>&#8381;</sup></p>
-                                                <p> действует до&nbsp;{getDisplayDate(product.date_end)}</p>
+                                                <p> действует до&nbsp;{getDisplayDate(product.preorder_price_date_end)}</p>
                                             </div>
                                         ) : ( 
                                                 product.price_preorder ? (
@@ -495,12 +511,12 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                                 <td  className="td-left" onClick={(e) => e.stopPropagation()}>
                                     <select 
                                         value={selectedAction}
-                                        onChange={(e) => handleActionChange(e.target.value)}
+                                        onChange={(e) => handleActionChange(e.target.value, product)} // ← передаем product
                                         className="admin-action-select"
                                         >
                                         <option value="">+</option>
                                         <option value="product_status">Изменить статус</option>
-                                        <option value="price correction">Редактировать цены</option>
+                                        <option value="price_correction">Редактировать цены</option>
                                         <option value="prod_edition">Редактировать карточку</option>
                                         <option value="img_correction">Добавить/удалить изображение</option>
                                         <option value="video_correction">Добавить/удалить видео</option>
@@ -515,6 +531,14 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                                             onClose={() => setShowStatusModal(false)}
                                         />
                                     )}*/}
+                                     {/* Модальное окно редактирования цен товара */}
+                                    {editingProduct && editingProduct.id === product.id && (
+                                        <ProductPricesEditor
+                                            product={editingProduct}
+                                            onPricesChange={onPricesChange}
+                                            onClose={() => setEditingProduct(null)}
+                                        />
+                                    )}
                                 </td>
                             </tr>
                             )
