@@ -81,7 +81,8 @@ jobs:
 
             # Выполняем сборку и настройку на VPS
             cd /var/www/fastuser/data/www/zonefloorball.ru &&
-            sudo -u fastuser npm install &&
+            # sudo -u fastuser npm install &&
+            sudo -u fastuser npm ci &&  # 👈 Быстрее и надежнее! чем sudo -u fastuser npm install - так говорят... попробуем
             sudo -u fastuser npm run build &&
             sudo -u fastuser composer install --optimize-autoloader --no-dev &&
             sudo -u fastuser php artisan migrate --force &&
