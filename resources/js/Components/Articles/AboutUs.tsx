@@ -64,7 +64,7 @@ const AboutUs = () => {
                     <div className="footer-about__timeline-content text-align-left">
                         <h3 className="margin-bottom8px">Международное сотрудничество Renew Group Sweden AB</h3>
                         <p>Официальный дистрибьютор в России и странах СНГ</p>
-                        <p>Торговые марки UNIHOC и ZONEFLOORBALL.</p>
+                        <p>торговых марок UNIHOC и ZONEFLOORBALL.</p>
                     </div>
                 </div>
 

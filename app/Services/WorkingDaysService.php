@@ -45,4 +45,21 @@
         private static function isHoliday(Carbon $date): bool {
             return in_array($date->format('d-m'), self::$holidays);
         }
+
+        // НОВЫЙ метод для ВЫЧИТАНИЯ рабочих дней
+        public static function subtractWorkingDays(Carbon $date, int $days): Carbon {
+            $count = 0;
+            while ($count < $days) {
+                $date = $date->subDay();  // subDay() вместо addDay()
+                if ($date->isWeekday() && !self::isHoliday($date)) {
+                    $count++;
+                }
+            }
+            return $date;
+        }
+
+        // НОВЫЙ метод для даты отсечки
+        public static function getCutoffDate(int $daysBack = 3): Carbon {
+            return self::subtractWorkingDays(now(), $daysBack);
+        }
     }

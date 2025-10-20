@@ -32,7 +32,7 @@ class CheckExpiredReservations extends Command
      */
     public function handle() {
         $this->info('Начало проверки просроченных резервов...');
-        $cutoffDate = WorkingDaysService::getExpirationDate(-3);
+        $cutoffDate = WorkingDaysService::getCutoffDate(3);
         $this->line('Дата отсечки: '.$cutoffDate);
 
         // Добавляем chunk для обработки больших объемов (на будущее - надеюсь оно скоро! :) )
@@ -55,9 +55,6 @@ class CheckExpiredReservations extends Command
                     $processedCount++;
                 }
         });
-
-        // $this->info('Обработано заказов: '.$expiredOrders->count());
-        // \Log::info('Expired reservations processed', ['count' => $expiredOrders->count()]);
 
         $this->info('Обработано заказов: '.$processedCount);
         \Log::info('Expired reservations processed', ['count' => $processedCount]);
