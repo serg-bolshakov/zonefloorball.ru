@@ -28,34 +28,49 @@ const AboutUs = () => {
 
         <>
             <div className="about-header">
-                <h1>Более 30 лет на рынке флорбола</h1>
-                <p className="lead-text">С 1993 года развиваем флорбол в России</p>
+                <h1>Пионеры российского флорбола</h1>
+                <p className="lead-text">С 1993 года создаём историю в России</p>
             </div>
 
             <div className="footer-about__timeline-section">
                 <div className="footer-about__timeline-item">
                     <div className="footer-about__timeline-year">1993</div>
                     <div className="footer-about__timeline-content text-align-left">
-                        <h3 className="margin-bottom8px">Начало пути</h3>
-                        <p>Основана первая в стране федерация флорбола</p>
-                        <p>Привезли первую партию флорбольных клюшек в Россию</p>
+                        <h3 className="margin-bottom8px">Основание российского флорбола</h3>
+                        <p>Создана первая в стране федерация флорбола</p>
+                        <p>Завезли первую партию профессионального инвентаря в Россию</p>
                     </div>
                 </div>
 
                 <div className="footer-about__timeline-item">
-                    <div className="footer-about__timeline-year">1994&nbsp;-&nbsp;2001</div>
+                    <div className="footer-about__timeline-year">
+                        <div>1994</div>
+                        <div>2001</div>
+                    </div>
                     <div className="footer-about__timeline-content text-align-left">
-                        <h3 className="margin-bottom8px">Легендарная "Вика" (тренер Большаков&nbsp;А.Н.)</h3>
-                        <p>Производили клюшки и мячи под маркой "Вика" для женской команды из Нижнего Новгорода, 
-                        побеждавшей на мировых форумах в Швеции и Чехии</p>
+                        <h3 className="margin-bottom8px">Международные победы</h3>
+                        <p>Команда "Вика" под нашим руководством тренера Большакова&nbsp;А.Н. завоевывает мировое признание</p>
+                        <p>Разрабатываем и производим экипировку для чемпионов</p>
+                    </div>
+                </div>
+
+                <div className="footer-about__timeline-item">
+                    <div className="footer-about__timeline-year">
+                        <div>1993</div>
+                        <div>2022</div>
+                    </div>
+                    <div className="footer-about__timeline-content text-align-left">
+                        <h3 className="margin-bottom8px">Международное сотрудничество Renew Group Sweden AB</h3>
+                        <p>Торговые марки UNIHOC и ZONEFLOORBALL.</p>
+                        <p>Официальный дистрибьютор в России и странах СНГ</p>
                     </div>
                 </div>
 
                 <div className="footer-about__timeline-item">
                     <div className="footer-about__timeline-year">2025</div>
                     <div className="footer-about__timeline-content text-align-left">
-                        <h3>Новая эра - АЛЕТЕРС&nbsp;<sup className="tm-tooltip" data-tooltip="Зарегистрированная торговая марка">&reg;</sup></h3>
-                        <p>Первый российский флорбольный бренд, создающий профессиональную экипировку</p>
+                        <h3>АЛЕТЕРС&nbsp;<sup className="tm-tooltip" data-tooltip="Зарегистрированная торговая марка">&reg;</sup> — российский прорыв</h3>
+                        <p>Запускаем первый отечественный бренд профессиональной флорбольной экипировки мирового уровня</p>
                     </div>
                 </div>
             </div>
