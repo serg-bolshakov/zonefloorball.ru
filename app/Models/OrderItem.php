@@ -37,4 +37,22 @@ class OrderItem extends Model
     public function product() {
         return $this->belongsTo(Product::class);    // Каждая позиция ссылается на один товар
     }
+
+    /* Получить данные по остаткам на продукт ЧЕРЕЗ продукт */
+        /*public function productReport() {
+            return $this->hasOneThrough(
+                ProductReport::class,
+                Product::class,
+                'id', // Ключ в промежуточной таблице (products)
+                'product_id', // Ключ в конечной таблице (product_reports)
+                'product_id', // Локальный ключ в order_items
+                'id' // Ключ в промежуточной таблице (products)
+            );
+        }*/
+
+    // ИЛИ более простой вариант - через продукт:
+    public function productReport() {
+        return $this->hasOne(ProductReport::class, 'product_id', 'product_id');
+    }
+
 }

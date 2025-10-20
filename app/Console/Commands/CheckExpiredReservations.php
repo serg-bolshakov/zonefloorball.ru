@@ -1,5 +1,5 @@
 <?php
-
+// app/Console/Commands/CheckExpiredReservation.php
 namespace App\Console\Commands;
 
 use Illuminate\Support\Facades\DB;
@@ -30,35 +30,68 @@ class CheckExpiredReservations extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
-    {
+    public function handle() {
         $this->info('Начало проверки просроченных резервов...');
-        $this->line('Дата отсечки: '.WorkingDaysService::getExpirationDate(-3));
+        $cutoffDate = WorkingDaysService::getExpirationDate(-3);
+        $this->line('Дата отсечки: '.$cutoffDate);
 
-        $expiredOrders = Order::where('status_id', OrderStatus::RESERVED->value)
+        // Добавляем chunk для обработки больших объемов (на будущее - надеюсь оно скоро! :) )
+        $processedCount = 0;
+
+        /* $expiredOrders = Order::where('status_id', OrderStatus::RESERVED->value)
             ->where('created_at', '<=', WorkingDaysService::getExpirationDate(-3))
             ->with(['items.productReport'])
             ->get();
 
         foreach ($expiredOrders as $order) {
             $this->processExpiredOrder($order);
-        }
+        }*/
 
-        $this->info('Обработано заказов: '.$expiredOrders->count());
-        \Log::info('Expired reservations processed', ['count' => $expiredOrders->count()]);
+        Order::where('status_id', OrderStatus::RESERVED->value)
+            ->where('created_at', '<=', $cutoffDate)
+            ->chunkById(100, function ($orders) use (&$processedCount) {
+                foreach ($orders as $order) {
+                    $this->processExpiredOrder($order);
+                    $processedCount++;
+                }
+        });
+
+        // $this->info('Обработано заказов: '.$expiredOrders->count());
+        // \Log::info('Expired reservations processed', ['count' => $expiredOrders->count()]);
+
+        $this->info('Обработано заказов: '.$processedCount);
+        \Log::info('Expired reservations processed', ['count' => $processedCount]);
+
+        return Command::SUCCESS;
     }
 
-    private function processExpiredOrder(Order $order): void
-    {
+    private function processExpiredOrder(Order $order): void {
         DB::transaction(function () use ($order) {
 
-            // а) Обновляем и логируем статус заказа (Фиксируем в истории)
+            // а) Обновляем payment_details
+                $order->addPaymentDetails([
+                    'reason' => 'cancelled',
+                    'cancelled_at' => now()->toDateTimeString(),
+                    'cancellation_reason' => 'Покупатель не оплатил заказ в течение установленного периода.'
+                ]);
+            
+            // б) Обновляем payment_status
+                $order->update([
+                    'payment_status' => 'cancelled'
+                ]);
+            
+            // в) Устанавливаем срок действия доступа (например, +30 дней для просмотра истории)
+                $order->update([
+                    'access_expires_at' => now()->addDays(30)
+                ]);
+
+            // г) Обновляем и логируем статус заказа (Фиксируем в истории)
                 $order->changeStatus(
                     newStatus: OrderStatus::NULLIFY,
                     comment: 'Покупатель не оплатил заказ в течение установленного периода.'
                 );
             
-            // б) Освобождаем резерв товаров (возвращаем в продажу) и Логируем резерв
+            // д) Освобождаем резерв товаров (возвращаем в продажу) и Логируем резерв
                 // пробуем на атомарном уровне: DB::raw - атомарные операции на уровне БД (избегаем race condition)
                     /* foreach ($order->items as $item) {
                         $item->productReport->update([
