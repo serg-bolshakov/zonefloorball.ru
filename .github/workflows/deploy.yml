@@ -47,6 +47,10 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H $SSH_HOST >> ~/.ssh/known_hosts
 
+          # Добавляем настройки для предотвращения таймаута
+          echo "ServerAliveInterval 60" >> ~/.ssh/config
+          echo "ServerAliveCountMax 10" >> ~/.ssh/config
+
           # Создаём временную директорию на VPS
           TEMP_DIR=$(ssh -p $SSH_PORT $SSH_USERNAME@$SSH_HOST "mktemp -d")
 
