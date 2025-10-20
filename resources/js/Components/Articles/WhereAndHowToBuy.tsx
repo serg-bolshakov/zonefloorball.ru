@@ -69,13 +69,32 @@ const WhereAndHowToBuy = () => {
                 <h3 className="fs14px accent-text">🏠 Для жителей Нижнего Новгорода</h3>
                 <ul>
                     <li>Доставка почтой или курьером по городу</li>
-                    <li>Самовывоз со склада</li>
+                    <li className=" margin-top24px">Самовывоз со склада:</li>
                 </ul>
                 <div className="pickup-info">
-                    <strong>Склад:</strong> база малого и среднего бизнеса (р-н Нагорного дворца спорта)
-                    <br/><strong>Время работы:</strong> воскресенье, 13:00-14:00
+                    <p><strong>Адрес:</strong> ул. Бекетова, 3А</p>
+                    <p><strong>Район:</strong> Нагорный дворец спорта</p>
+                    <p><strong>Территория:</strong> "База малого и среднего бизнеса"</p>
+                    <p><strong>Время:</strong> воскресенье, 13:00-14:00</p>
                 </div>
+                <div className="instruction">
+                    <strong>Другое время? Где на территории?</strong>
+                    <ul>
+                        <li>Напишите администратору в соцсетях</li>
+                    </ul>
+                    <div className="contacts-social">
+                        <a href="mailto:unihoczonerussia@gmail.com"><img src="/storage/icons/gmail-logo-colored.jpg" alt="gmail-logo" title="Отправить письмо по электронной почте" /></a>
+                        <a href="https://vk.com/unihoczonerussia" target="_blank" rel="noopener noreferrer"><img src="/storage/icons/vk-logo-colored.png" alt="vk-logo" title="Написать ВКонтакте" /></a>
+                        <a href="whatsapp://send?phone=79534156010"><img src="/storage/icons/whatsapp-logo-colored.png" alt="whatsApp-logo" title="Написать в Whatsapp" /></a>
+                        <a href="https://t.me/unihoczonerussia/"
+                            ><img src="/storage/icons/telegram-logo-colored.png" alt="telegram-logo" title="Написать в Telegram" />
+                        </a>
+                    </div>
+                    <p>Мы вместе выберем удобное время и подробно расскажем как нас найти на территории базы!</p>
+                </div>
+                
             </div>
+
         </>
     );
 }
