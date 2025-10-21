@@ -57,8 +57,11 @@ class CheckExpiredReservations extends Command
         });
 
         $this->info('Обработано заказов: '.$processedCount);
-        \Log::info('Expired reservations processed', ['count' => $processedCount]);
-
+        \Log::info('Expired reservations processed', [
+            'count' => $processedCount,
+            'cutoff_date' => $cutoffDate->format('Y-m-d H:i:s') // 👈 И в лог
+        ]);
+        
         return Command::SUCCESS;
     }
 
