@@ -1268,7 +1268,7 @@ class OrderController extends Controller {
         // 9. Отправляем заказ по email... сразу
         try {
             \Log::debug('OrderController processReserve emailing order:', [ 'order' => $order]);
-             $recipients = [$order->email];
+            $recipients = [$order->email];
     
             // Добавляем email организации для юрлиц
             if ($order->order_client_type_id == 2) {
@@ -1283,7 +1283,10 @@ class OrderController extends Controller {
             // Mail::to($order->email)->bcc(config('mail.admin_email'))->send($orderMail);
             // ПРАВИЛЬНЫЙ вариант - все получатели в to, админ в bcc
             Mail::to($recipients)
-                ->bcc(config('mail.admin_email'))
+                ->bcc([
+                    config('mail.admin_email'),
+                    config('mail.boss_email')
+                ])
                 ->send($orderMail);
 
             // 10. Только после успеха обновляем статус
