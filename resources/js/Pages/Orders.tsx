@@ -185,7 +185,7 @@ const Orders: React.FC<IOrdersProps> = ({
         return `?${params.toString()}`;
     };
 
-    // console.log(orders.data.length);
+    console.log('Orders', orders);
 
     return (
         <MainLayout>
@@ -276,8 +276,9 @@ const Orders: React.FC<IOrdersProps> = ({
 
                                 {orders.data.map((order, index) => {
                                     const isExpired = order.access_expires_at && new Date(order.access_expires_at) < new Date();
-                                    const isCancelled = order.payment_status === 'cancelled';
+                                    const isCancelled = order.payment.status.code === 'cancelled';
                                     const isDisabled = isExpired || isCancelled;
+                                    console.log('isDisabled', isDisabled);
                                     
                                     return (
                                         <tr key={order.id}>
@@ -290,13 +291,14 @@ const Orders: React.FC<IOrdersProps> = ({
                                                     <button 
                                                         className="header-logo__img disabled"
                                                         disabled
-                                                        title={isCancelled ? 'Заказ отменен' : 'Срок просмотра истек'}
+                                                        title={isCancelled ? 'Заказ не был оплачен. Отменён' : 'Срок просмотра истек'}
                                                     >
-                                                        <img
+                                                        {/* <img
                                                             src='/storage/icons/search.png' // можно сделать серую версию
                                                             alt='check-order-disabled' 
                                                             title={isCancelled ? 'Заказ отменен' : 'Срок просмотра истек'}
-                                                        />
+                                                        /> */}
+                                                        🔒
                                                     </button>
                                                 ) : (
                                                     <Link 

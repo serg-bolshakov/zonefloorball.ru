@@ -1155,7 +1155,7 @@ class OrderController extends Controller {
             $orders = $query->paginate($perPage, ['*'], 'page', $page);
 
             $title = $user->client_type_id == '1' ? 'Мои заказы' : 'Наши заказы';
-            // dd($orders);
+            // dd(new OrderCollection($orders));
             return Inertia::render('Orders', [
                 'title' => $title,
                 'robots' => 'NOINDEX,NOFOLLOW',

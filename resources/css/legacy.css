@@ -316,9 +316,17 @@ header a:hover {
 }
 
 .header-logo__img.disabled {
-    opacity: 0.5;
+    opacity: 0.6;
     cursor: not-allowed;
-    filter: grayscale(100%);
+    font-size: 1.2em; /* Чуть увеличим эмодзи */
+    background: none;
+    border: none;
+    padding: 4px 8px;
+}
+
+.header-logo__img.disabled:hover {
+    opacity: 0.8;
+    transform: none; /* Убираем любые hover-эффекты */
 }
 
 .container-main {

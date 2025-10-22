@@ -28,6 +28,7 @@ class OrderResource extends JsonResource
             'hash' => $this->access_hash,
             'status' => OrderStatus::tryFrom((int)$this->status_id)?->title() ?? 'Статус не определён',     // tryFrom с null-оператором - Безопасное преобразование статуса без исключений.
             'cost' => (int)$this->total_product_amount + (int)$this->order_delivery_cost,
+            'access_expires_at' => $this->access_expires_at,
             'delivery' => [
                 'type'              => $this->transport->name,
                 'address'           => $this->order_delivery_address,
