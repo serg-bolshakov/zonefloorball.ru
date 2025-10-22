@@ -18,7 +18,7 @@ class CheckExpiredReservations extends Command
      *
      * @var string
      */
-    protected $signature = 'app:check-expired-reservations';
+    protected $signature = 'reservations:check-expired';
 
     /**
      * The console command description.

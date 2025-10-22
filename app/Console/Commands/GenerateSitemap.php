@@ -49,16 +49,39 @@ class GenerateSitemap extends Command
                 ->setPriority(0.9)
                 ->setLastModificationDate($category[0]->updated_at ?? now())); 
 
-                foreach($category as $key=>$value) {                                
+                // упрощаем sitemap: оставляем ТОЛЬКО основные категории: код ниже комментируем...
+                /**
+                 * Проблемы с query-параметрами в sitemap, как мне кажется:
+                 * Временность: Модели/фильтры меняются, товары распродаются
+                 * Дубли контента: Одна страница с разными параметрами
+                 * Каннибализация: Поисковики путаются какая версия главная
+                 * Динамичность: Фильтры меняются чаще чем индексация
+                 */
+
+                /* foreach($category as $key=>$value) {                                
                     if(isset($value->prop_url_semantic) && ($key != 0)) { 
-                        $sitemap->add(Url::create("/products/catalog?{$category[0]->url_semantic}={$value->prop_title }\&{$value->prop_title}={$value->prop_url_semantic}")
-                        ->setPriority(0.9)
-                        ->setLastModificationDate($value->updated_at ?? now()));
+                        
+                        $queryParams = [
+                            $category[0]->url_semantic => $value->prop_title,
+                            $value->prop_title => $value->prop_url_semantic
+                        ];
+
+                        $url = "/products/catalog?" . http_build_query($queryParams);
+                        $sitemap->add(Url::create($url)
+                            ->setPriority(0.9)
+                            ->setLastModificationDate($value->updated_at ?? now()));
                     
                     } elseif(!empty($value->model) && $key != 0) {
-                        $sitemap->add(Url::create("/products/catalog?{$value->url_semantic}=model\&model={$value->model}")
-                        ->setPriority(0.9)
-                        ->setLastModificationDate($value->updated_at ?? now()));
+                                                
+                        // Правильное формирование URL с кодированием
+                        $url = "/products/catalog?" . http_build_query([        // Что делает http_build_query(): ✅ Автоматически кодирует пробелы в %20, ✅ Правильно обрабатывает спецсимволы, ✅ Формирует валидный query string, ✅ Заменяет & на &amp; для XML
+                            $value->url_semantic => 'model',
+                            'model' => $value->model
+                        ]);
+                        
+                        $sitemap->add(Url::create($url)
+                            ->setPriority(0.9)
+                            ->setLastModificationDate($value->updated_at ?? now()));
 
                     } elseif(!empty($value->url_semantic) && $key != 0) {
                         $sitemap->add(Url::create("/products/{$category[0]->url_semantic}?category%5B%5D={$value->url_semantic}")
@@ -74,7 +97,7 @@ class GenerateSitemap extends Command
                             }
                         }
                     }
-                }
+                }*/
             }
         }
         
