@@ -79,7 +79,7 @@ export const generateTrackingComment = (
   trackNumber: string, 
   driverInfo?: { name: string; carNumber: string; phone: string }
 ): string => {
-  let comment = `Номер для отслеживания: <a href="https://www.pochta.ru/tracking?barcode=${trackNumber}" target="_blank">${trackNumber}</a>`;
+  let comment = `Номер для отслеживания доставки на сайте Почты России: <a href="https://www.pochta.ru/tracking?barcode=${trackNumber}" target="_blank">${trackNumber}</a>`;
   
   if (driverInfo) {
     comment += ` (Для доставки заказа Вам назначен водитель: ${driverInfo.name}, номер машины ${driverInfo.carNumber}, телефон: ${driverInfo.phone})`;
