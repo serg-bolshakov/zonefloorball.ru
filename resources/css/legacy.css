@@ -315,6 +315,12 @@ header a:hover {
     height: 35px;
 }
 
+.header-logo__img.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(100%);
+}
+
 .container-main {
     margin: 0 0 1.5rem 0;
 }

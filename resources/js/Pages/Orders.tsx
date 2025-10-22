@@ -94,6 +94,8 @@ export interface IOrder {
     cost: number;
     delivery: IOrderDelivery;
     payment: IOrderPayment;
+    access_expires_at: string | null;
+    payment_status: string;
 }
 
 const Orders: React.FC<IOrdersProps> = ({
@@ -257,7 +259,7 @@ const Orders: React.FC<IOrdersProps> = ({
                                 </tr>
                             </thead>
                             <tbody>
-                                {orders.data.map((order, index) => (
+                                {/* {orders.data.map((order, index) => (
                                     <tr key={order.id}>
                                         <td className="td-center">{order.number}</td>  
                                         <td className="td-center">{dateRu(order.order_date)}</td>  
@@ -270,7 +272,48 @@ const Orders: React.FC<IOrdersProps> = ({
                                             /></Link>
                                         </td>
                                     </tr>
-                                ))}
+                                ))} */}
+
+                                {orders.data.map((order, index) => {
+                                    const isExpired = order.access_expires_at && new Date(order.access_expires_at) < new Date();
+                                    const isCancelled = order.payment_status === 'cancelled';
+                                    const isDisabled = isExpired || isCancelled;
+                                    
+                                    return (
+                                        <tr key={order.id}>
+                                            <td className="td-center">{order.number}</td>  
+                                            <td className="td-center">{dateRu(order.order_date)}</td>  
+                                            <td className="td-center">{formatPrice(order.cost)}</td>
+                                            <td className="td-center">{order.status}</td>
+                                            <td className="td-center">
+                                                {isDisabled ? (
+                                                    <button 
+                                                        className="header-logo__img disabled"
+                                                        disabled
+                                                        title={isCancelled ? 'Заказ отменен' : 'Срок просмотра истек'}
+                                                    >
+                                                        <img
+                                                            src='/storage/icons/search.png' // можно сделать серую версию
+                                                            alt='check-order-disabled' 
+                                                            title={isCancelled ? 'Заказ отменен' : 'Срок просмотра истек'}
+                                                        />
+                                                    </button>
+                                                ) : (
+                                                    <Link 
+                                                        className='header-logo__img' 
+                                                        href={`/profile/track/order/${order.hash}`}
+                                                    >
+                                                        <img
+                                                            src='/storage/icons/search.png' 
+                                                            alt='check-order' 
+                                                            title='Посмотреть заказ' 
+                                                        />
+                                                    </Link>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
