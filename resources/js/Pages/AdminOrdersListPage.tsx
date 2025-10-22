@@ -6,6 +6,10 @@ import { AdminLayout } from '@/Layouts/AdminLayout';
 import { Helmet } from 'react-helmet';
 import { OrdersTable } from '@/Components/Admin/Sections/Orders/OrdersTable/OrdersTable';
 import { IOrdersResponse, IOrder, EnumOrderStatus, OrderStatusLabels } from '@/Types/orders';
+import { toast } from 'react-toastify';
+import { toStringOrNull } from '@/Utils/toStringOrNull';
+import { toNumberOrNull } from '@/Utils/toNumberOrNull';
+import axios from "axios";
 
 /** на входе
  *  return Inertia::render('AdminOrdersListPage', [
@@ -137,6 +141,90 @@ const AdminStockUpdateManualPage: React.FC<AdminStockUpdateManualPageProps> = ({
         });
     };
 
+    const handleTrackNumberUpdate = async (orderId: number, trackNumber: string, comment: string) => {
+        
+        // 1. Валидация входных данных
+        if (!orderId || !trackNumber?.trim()) {
+            console.error('❌ Невалидные данные:', { orderId, trackNumber });
+            toast.error('Трек-номер не может быть пустым');
+            return;
+        }
+
+        const cleanTrackNumber = trackNumber.trim();
+
+        
+        // 2. Находим заказ с проверкой
+        const currentOrder = orders.data.find(o => o.id === orderId);
+        if (!currentOrder) { 
+            console.error('❌ Заказ не найден в списке', orderId);
+            toast.error('Ошибка: заказ не найден');
+            return;
+        }
+
+        console.log('🔍 Данные для обновления трека:', {
+            orderId,
+            orderNumber: currentOrder.order_number,
+            trackNumber: cleanTrackNumber,
+            commentLength: comment.length
+        });
+
+        // 3. Сохраняем исходные данные для отката
+        const originalTrackNumber = currentOrder.order_track_num;
+
+        // 4. Оптимистичное обновление UI
+        setEditableOrders(prev => 
+            prev.map(order => 
+                order.id === orderId 
+                    ? { ...order, order_track_num: cleanTrackNumber, }
+                    : order
+            )
+        );
+
+        // 5. Отправляем на сервер
+        try {
+            const response = await axios.post(`/admin/orders/${orderId}/update-order-track`, {
+                orderId,
+                track_number: cleanTrackNumber,
+                comment: comment
+            });
+
+            // Проверяем HTTP статус
+            if (response.status >= 200 && response.status < 300) {
+                toast.success('Трек-номер успешно добавлен');
+            } else {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+        } catch (error) {
+            console.error('❌ Request error:', error);
+
+            // 6. Откат оптимистичного обновления
+            setEditableOrders(prev => 
+                prev.map(order => 
+                    order.id === orderId 
+                        ? { ...order, order_track_num: originalTrackNumber }
+                        : order
+                )
+            );
+
+            
+            let errorMessage = '❌ Ошибка при обновлении трек-номера заказа';
+            
+            if (axios.isAxiosError(error)) {
+                const status = error.response?.status;
+                
+                if (status === 422) errorMessage = '❌ Ошибка валидации данных';
+                else if (status === 404) errorMessage = '❌ Товар не найден';
+                else if (status && status >= 500) errorMessage = '🚨 Серверная ошибка';
+                else if (status && status >= 400) errorMessage = '❌ Ошибка в данных';
+                else errorMessage = '❌ Ошибка сети';
+            }
+            
+            toast.error(errorMessage);
+        }
+        
+    }
+
     return (
         <AdminLayout>
             <Helmet>
@@ -155,6 +243,7 @@ const AdminStockUpdateManualPage: React.FC<AdminStockUpdateManualPageProps> = ({
                     // orders={orders}
                     filters={filters}
                     onStatusChange={handleStatusChange}
+                    onTrackNumberUpdate={handleTrackNumberUpdate}
                     onRowClick={handleRowClick}
                 />
             </div>                

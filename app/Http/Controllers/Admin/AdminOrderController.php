@@ -100,6 +100,7 @@ class AdminOrderController extends Controller
     }
     
     public function updateStatus(Order $order, Request $request) {
+        
         \Log::debug('AdminOrderController updateStatus full request:', [
             'route_parameters' => $request->route()->parameters(),
             'order_id_from_route' => $request->route('order'),
@@ -118,16 +119,6 @@ class AdminOrderController extends Controller
             $oldStatus = $order->status_id; // Берём исходное значение из БД   
             $newStatus = OrderStatus::fromValue($request->status);
             
-            // $order->changeStatus(
-            //     $currentStatus,
-            //     $newStatus, 
-            //     $request->comment ?: $newStatus->getDefaultComment()
-            // );
-            
-            // if ($request->track_num) {
-            //     $order->update(['order_track_num' => $request->track_num]);
-            // }
-
             DB::transaction(function () use ($order, $newStatus, $oldStatus, $request) {
                 // Обновляем статус
                 $order->update(['status_id' => $newStatus->value]);
@@ -136,7 +127,7 @@ class AdminOrderController extends Controller
                 $order->statusHistory()->create([
                     'old_status' => $oldStatus,
                     'new_status' => $newStatus->value,
-                    'comment' => $request->comment ?: $newStatus->getDefaultComment(),
+                    'comment' => $request->comment ?? '',
                     'created_at' => now(),
                 ]);
             });
@@ -145,6 +136,60 @@ class AdminOrderController extends Controller
             
         } catch (\InvalidArgumentException $e) {
             return redirect()->back()->with('error', 'Неверный статус заказа');
+        }
+    }
+
+    public function updateTrackNumber(Request $request, Order $order) {
+        $validated = $request->validate([
+            'track_number' => 'required|string',
+            'comment' => 'required|string'      // фронтенд всегда генерирует комментарий
+        ]);
+        
+        
+        try {
+            // Сохраняем текущий статус ДО начала транзакции
+            $currentStatus = $order->status_id; // Берём исходное значение из БД 
+            
+            DB::transaction(function () use ($order, $currentStatus, $validated) {
+                
+                // Обновляем трек-номер
+                $order->update(['order_track_num' => $validated['track_number']]);
+                
+                // Логируем изменение (статус не обновляем!, изменяем только комментарий, который увидит покупатель)
+                // Добавляем комментарий с трек-номером
+                $order->statusHistory()->create([
+                    'old_status' => $currentStatus,
+                    'new_status' => $currentStatus, // статус не меняем!
+                    'comment' => $validated['comment'],
+                    'created_at' => now(),
+                ]);
+            });
+            
+            // Для AJAX запросов возвращаем JSON
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Трек-номер успешно обновлен',
+                    'order' => $order->fresh() // возвращаем обновленные данные
+                ]);
+            }
+            
+            return redirect()->back()->with('success', 'Трек-номер успешно обновлен');
+            
+        } catch (\Exception $e) {                               // ловим все исключения
+            \Log::error('Ошибка обновления трек-номера', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ошибка при обновлении трек-номера'
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'Ошибка при обновлении трек-номера');
         }
     }
 }

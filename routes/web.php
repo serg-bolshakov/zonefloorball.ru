@@ -216,9 +216,11 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
 
     // Используем POST для обновления одного значения (patch работает некорректно)
     Route::post('/orders/{order}/status', [AdminOrderController::class, 'updateStatus'])->name('admin.orders.status.update');
+    Route::post('/orders/{order}/update-order-track', [AdminOrderController::class, 'updateTrackNumber'])->name('admin.orders.tracknum.update');
     
     Route::post('/products/{product}/update-prices', [AdminProductPriceController::class, 'updatePrices']);
     Route::post('/products/{product}/update-status', [AdminProductsController::class, 'updateStatus']);
+    
 
     // Другие админ-роуты...
 });

@@ -5,34 +5,50 @@ import { OrderStatusChanger } from '../OrderStatusChanger/OrderStatusChanger';
 import { IOrder, EnumOrderStatus, OrderStatusLabels } from "@/Types/orders";
 import { EnumPaymentStatuses, PaymentStatusLabels } from "@/Types/payments";
 import { getStatusColor } from "@/Utils/getStatusColor";
+import { ITransport } from "@/Types/delivery";
+import { generateStatusComment } from '@/Utils/orderComments';
+import { TrackNumberModal } from './TrackNumberModal';
 
 interface OrdersTableRowProps {
-    order: IOrder;
+    order: IOrder & {
+        transport?: ITransport; // Теперь транспорт доступен
+    };
     onStatusChange: (orderId: number, newStatus: EnumOrderStatus, comment: string) => void;
+    onTrackNumberUpdate: (orderId: number, trackNumber: string, comment: string) => void;
     onRowClick: (orderId: number) => void;
 }
 
 export const OrdersTableRow: React.FC<OrdersTableRowProps> = ({ 
     order, 
-    onStatusChange, 
+    onStatusChange,
+    onTrackNumberUpdate, 
     onRowClick 
 }) => {
 
     const [selectedAction, setSelectedAction] = useState<string>('');
     const [showStatusModal, setShowStatusModal] = useState(false);
+    const [showTrackModal, setShowTrackModal] = useState(false);
+
+    console.log('OrdersTableRow order', order);
 
     const handleActionChange = (action: string) => {
         setSelectedAction(action);
         
         switch (action) {
             case 'order_status':
+                // Для отладки - посмотрим что приходит
+                console.log('📦 Order transport ID:', order.order_transport_id);
                 setShowStatusModal(true);
                 break;
             case 'payment_status':
                 // Открываем модалку для оплаты
                 break;
             case 'track_num':
-                // Открываем модалку для трек-номера
+                setShowTrackModal(true);
+                break;
+                
+            case 'order_details':
+                window.open(`/order/track/${order.access_hash}`, '_blank');
                 break;
         }
         
@@ -41,10 +57,23 @@ export const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
     };
 
     const handleStatusChange = (orderId: number, newStatus: EnumOrderStatus, comment?: string) => {
-        onStatusChange(orderId, newStatus, comment || '');
+        // Автогенерация комментария если не указан вручную
+        const finalComment = comment?.trim() 
+        ? comment 
+        : generateStatusComment(newStatus, order);
+
+        console.log('💬 Final comment:', finalComment);
+        
+        if (finalComment) {
+            onStatusChange(orderId, newStatus, finalComment);
+        }
         setShowStatusModal(false);
     };
 
+    const handleTrackNumberSave = (orderId: number, trackNumber: string, comment: string) => {
+        onTrackNumberUpdate(orderId, trackNumber, comment);
+        setShowTrackModal(false);
+    };
 
     return (
         <tr 
@@ -69,16 +98,17 @@ export const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
                 </span>
             </td>
             <td className="td-center">{order.order_track_num || '—'}</td>
-            <td  className="td-center" onClick={(e) => e.stopPropagation()}>
+            <td className="td-center" onClick={(e) => e.stopPropagation()}>
                 <select 
                     value={selectedAction}
                     onChange={(e) => handleActionChange(e.target.value)}
                     className="admin-action-select"
                     >
                     <option value="">+</option>
-                    <option value="order_status">Изменить статус</option>
-                    <option value="payment_status">Провести оплату</option>
-                    <option value="track_num">Добавить трек</option>
+                    <option className="td-left" value="order_details">👁️ Посмотреть заказ</option>
+                    <option className="td-left" value="order_status">🔄 Изменить статус</option>
+                    <option className="td-left" value="payment_status">💳 Провести оплату</option>
+                    <option className="td-left" value="track_num">📦 Добавить трек</option>
                 </select>
                 {/* Модальное окно изменения статуса */}
                 {showStatusModal && (
@@ -88,6 +118,15 @@ export const OrdersTableRow: React.FC<OrdersTableRowProps> = ({
                         onStatusChange={handleStatusChange}
                         onClose={() => setShowStatusModal(false)}
                     />
+                )}
+
+                {/* Модальное окно трек-номера */}
+                {showTrackModal && (
+                <TrackNumberModal
+                    order={order}
+                    onSave={handleTrackNumberSave}
+                    onClose={() => setShowTrackModal(false)}
+                />
                 )}
             </td>
         </tr>

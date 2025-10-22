@@ -15,7 +15,7 @@ export const ProductPricesEditor: React.FC<ProductPricesEditorProps> = ({
     onPricesChange,
     onClose
 }) => {
-    console.log('product in PricesEditor', product);
+    // console.log('product in PricesEditor', product);
     const [showModal, setShowModal] = useState(true); // модалка сразу открыта
     const [hasChanges, setHasChanges] = useState<boolean>(false);
     const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});

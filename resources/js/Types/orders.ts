@@ -1,5 +1,6 @@
 // resources/js/Types/orders.ts
 import { IIndividualUser, IOrgUser } from "./types";
+import { ITransport } from "./delivery";
 
 
 export type TOrderAction = 'pay' | 'reserve' | 'preorder';
@@ -39,7 +40,8 @@ export interface IOrder {
     order_number: string; 
     order_recipient_names: string;
     order_recipient_tel: string; 
-    order_transport_id: number; 
+    order_transport_id: number;
+    transport?: ITransport; // Добавляем связанные данные о доставке 
     payment_details: string; 
     payment_method: string; 
     payment_status: string; 

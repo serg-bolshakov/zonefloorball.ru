@@ -37,9 +37,15 @@ export interface ITransport {
   id: number;
   code: 'pickup' | 'local' | 'post';
   name: string;
-  base_price: number;
-  price_calculation: 'fixed' | 'distance' | 'weight' | 'external';
   description?: string;
+  price_calculation: 'fixed' | 'distance' | 'weight' | 'external';
+  base_price: number;
+  price_per_km?: number;
+  price_per_kg?: number;
+  override_price?: number;
+  is_active: boolean;
+  external_link?: string;
+
   metadata?: {
     work_hours?: string;
     restrictions?: string;

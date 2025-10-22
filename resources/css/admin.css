@@ -312,6 +312,7 @@
 
 /* Admin Select and Textarea */
 .admin-modal-content select,
+.admin-modal-content input,
 .admin-modal-content textarea {
   width: 100%;
   padding: 10px;

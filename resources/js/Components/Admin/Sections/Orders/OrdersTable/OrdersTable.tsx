@@ -11,6 +11,7 @@ interface OrdersTableProps {
     orders: IOrdersResponse;
     filters: IOrdersFiltersSet;
     onStatusChange: (orderId: number, newStatus: EnumOrderStatus, comment: string) => void;
+    onTrackNumberUpdate: (orderId: number, trackNumber: string, comment: string) => void;
     onRowClick: (orderId: number) => void;
 }
 
@@ -18,6 +19,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
     orders, 
     filters,
     onStatusChange,
+    onTrackNumberUpdate,
     onRowClick,
 }) => {
     
@@ -159,8 +161,8 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                 {/* Селект количества строк */}
                 <div className="pagination">
                     <select 
-                    value={orders.per_page} 
-                    // onChange={handlePerPageChange}
+                        value={orders.per_page} 
+                        onChange={handlePerPageChange}
                     >
                     {[10, 25, 50, 100, 250, 500].map(size => (
                         <option key={size} value={size}>Смотрим по {size} строк</option>
@@ -385,6 +387,7 @@ export const OrdersTable: React.FC<OrdersTableProps> = ({
                                         key={order.id}
                                         order={order}
                                         onStatusChange={onStatusChange} // ✅ передаем пропсы
+                                        onTrackNumberUpdate={onTrackNumberUpdate}
                                         onRowClick={onRowClick}         // ✅ передаем пропсы
                                     />
                                 ))}

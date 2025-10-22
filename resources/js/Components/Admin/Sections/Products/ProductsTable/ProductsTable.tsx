@@ -78,7 +78,7 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
             searchInputRef.current.focus();
         }
     }, [searchType]);
-    
+
     // Синхронизация при изменении URL (если пользователь нажимает "Назад")
     useEffect(() => {
         setSearchTerm(initialSearch);
@@ -111,8 +111,8 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
         });
     };
 
-    console.log('categoriesMenuArr', categoriesMenuArr);
-    console.log('products.meta.per_page', products.meta.per_page);
+    // console.log('categoriesMenuArr', categoriesMenuArr);
+    // console.log('products.meta.per_page', products.meta.per_page);
 
     // Функция для получения плоского списка основных категорий
     const getMainCategories = () => {
@@ -515,12 +515,13 @@ export const ProductsTable: React.FC<ProductsTableProps> = ({
                                         className="admin-action-select"
                                         >
                                         <option value="">+</option>
-                                        <option value="product_status">Изменить статус</option>
-                                        <option value="price_correction">Редактировать цены</option>
-                                        <option value="prod_edition">Редактировать карточку</option>
-                                        <option value="img_correction">Добавить/удалить изображение</option>
-                                        <option value="video_correction">Добавить/удалить видео</option>
-                                        <option value="prod_creation_copy">Копировать</option>
+                                        <option className="td-left" value="product_card">👁️ Просмотр карточки</option>
+                                        <option className="td-left" value="product_status">Изменить статус</option>
+                                        <option className="td-left" value="price_correction">✏️ Редактирование цен</option>
+                                        <option className="td-left" value="prod_edition">Редактировать карточку</option>
+                                        <option className="td-left" value="img_correction">🖼️ Изображения - управление фотографиями</option>
+                                        <option className="td-left" value="video_correction">▶️ Видео - добавление/удаление</option>
+                                        <option className="td-left" value="prod_creation_copy">♻️ Копировать - создать новый товар</option>
                                     </select>
                                     {/* Модальное окно изменения статуса */}
                                     {/* {showStatusModal && (
