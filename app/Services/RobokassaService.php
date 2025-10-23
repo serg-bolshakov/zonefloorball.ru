@@ -4,7 +4,7 @@
 
     class RobokassaService {
 
-        public function generatePaymentLink(float $amount, int $orderId, string $description, array $items = []) {
+        /* public function generatePaymentLink(float $amount, int $orderId, string $description, array $items = []) {
             if ($amount <= 0) {
                 throw new \Exception("Сумма оплаты должна быть больше 0");
             }
@@ -58,8 +58,65 @@
             // \Log::debug('Receipt in URL', ['threetimesdecoded' => $threetimesDecoded]);
             
             return "https://auth.robokassa.ru/Merchant/Index.aspx?" . http_build_query($params);
-        }
+        }*/
        
+        public function generatePaymentLink(float $amount, int $orderId, string $description, array $items = []) {
+            if ($amount <= 0) {
+                throw new \Exception("Сумма оплаты должна быть больше 0");
+            }
+            
+            if (empty($items)) {
+                throw new \Exception("Нет товаров для оплаты");
+            }
+
+            $receiptJson = $this->formatReceipt($items);
+            
+            \Log::debug('Receipt JSON before encoding', [
+                'receipt_json' => $receiptJson,
+                'receipt_length' => strlen($receiptJson)
+            ]);
+
+            // ✅ Только ОДНО кодирование для Receipt
+            $receiptEncoded = urlencode($receiptJson);
+
+            $signatureString = implode(':', [
+                config('services.robokassa.merchant_login'),
+                $amount,
+                $orderId,
+                $receiptEncoded,
+                config('services.robokassa.password1')
+            ]);
+
+            $params = [
+                'MerchantLogin'     => config('services.robokassa.merchant_login'),
+                'OutSum'            => $amount,
+                'InvId'             => $orderId,
+                'Description'       => $description,
+                'IsTest'            => config('services.robokassa.test_mode') ? 1 : 0,
+                'Culture'           => 'ru',
+                'Encoding'          => 'utf-8',
+                'Receipt'           => $receiptEncoded,  // ← ОДНО кодирование!
+                'SignatureValue'    => md5($signatureString)
+            ];
+            
+            // http_build_query САМ сделает нужное кодирование
+            $link = "https://auth.robokassa.ru/Merchant/Index.aspx?" . http_build_query($params);
+            
+            \Log::debug('Generated Robokassa Link', [
+                'url_length' => strlen($link),
+                'signature_string' => $signatureString,
+                'params_before_encode' => $params
+            ]);
+
+            \Log::debug('Payment URL length after single encoding', [
+                'length' => strlen($link),
+                'order_id' => $orderId,
+                'items_count' => count($items)
+            ]);
+            
+            return $link;
+        }    
+
         protected function formatReceipt(array $items): string {
             $receipt = [
                 'sno' => 'usn_income', // Наша система налогообложения

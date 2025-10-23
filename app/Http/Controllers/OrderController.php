@@ -261,11 +261,18 @@ class OrderController extends Controller {
                                 default => $item['price']
                             };
 
-                            $items[] = [
+                            /* $items[] = [
                                 'name'     => $item['name'],
                                 'quantity' => (int)$item['quantity'],
                                 'price'    => (float)$productFinalPrice,
                                 'tax'      => 'none' // Ставка НДС (без НДС)
+                            ];*/
+
+                            $items[] = [
+                                'name'     => $this->shortenProductName($item['name']), // ← Добавляем функцию сокращения длины наименования
+                                'quantity' => (int)$item['quantity'],
+                                'price'    => (float)$productFinalPrice,
+                                'tax'      => 'none'
                             ];
 
                             $expectedDeliveryDate = null;
@@ -449,7 +456,7 @@ class OrderController extends Controller {
                                     'name'     => 'Доставка',
                                     'quantity' => 1,
                                     'price'    => (float)$order->order_delivery_cost,
-                                    'tax'      => 'vat0' // ставка НДС для доставки
+                                    'tax'      => 'none' // ставка НДС для доставки
                                 ];
                             }
 
@@ -459,13 +466,21 @@ class OrderController extends Controller {
                                 $safeOrderNumber = $this->hyphenedOrderNumber($order->order_number);
 
                             // 2. Используем в Description
-                                $description = "Оплата заказа {$safeOrderNumber}";    
+                                // $description = "Оплата заказа {$safeOrderNumber}";
+                                $description = "Заказ {$safeOrderNumber}";  // сокращаем как можем длину ссылки на заказ    
 
                                 \Log::debug('Generating Robokassa link safeOrderNumber', [
                                     'safeOrderNumber' => $safeOrderNumber,
                                     'description' => $description,
                                 ]);    
                             $robokassaService = new RobokassaService();
+                            
+                            \Log::debug('Items before Robokassa', [
+                                'items_count' => count($items),
+                                'items' => $items,  // ← посмотрим, какие названия реально передаются
+                                'total_items_length' => array_sum(array_map(fn($item) => mb_strlen($item['name']), $items))
+                            ]);
+                            
                             $paymentUrl = $robokassaService->generatePaymentLink(
                                 (float)$order->total_product_amount + (float)$order->order_delivery_cost,
                                 $order->id, // Лучше использовать числовой ID для Robokassa
@@ -479,6 +494,18 @@ class OrderController extends Controller {
                                 'items_count' => count($items),
                                 'paymentUrl' => $paymentUrl,
                             ]);
+
+                            \Log::debug('Payment URL length', [
+                                'length' => strlen($paymentUrl),
+                                'order_id' => $order->id
+                            ]);
+
+                            if (strlen($paymentUrl) > 2000) {
+                                \Log::warning('URL still too long after optimization', [
+                                    'length' => strlen($paymentUrl),
+                                    'order_id' => $order->id
+                                ]);
+                            }
                                                     
                             // Обновляем запись payment_url в таблице orders
                                 $order->addPaymentDetails([
@@ -1377,5 +1404,66 @@ class OrderController extends Controller {
             $stockField => $productReport->{$stockField} - $quantity,
             $reservedField => $productReport->{$reservedField} + $quantity,
         ]);
+    }
+
+    private function shortenProductName(string $name, int $maxLength = 128): string {
+    
+        \Log::debug('shortenProductName CALLED', [  
+            'original_name' => $name,
+            'input_length' => mb_strlen($name)
+        ]);
+        
+        // Словарь сокращений
+        $replacements = [
+            'Флорбольная' => 'Флорб.',
+            'Флорбольный' => 'Флорб.',
+            'флорбольная' => 'флорб.',
+            'флорбольный' => 'флорб.',
+            'для флорбола' => 'флорб.',
+            // 'клюшка' => 'кл.',
+            // 'мяч' => 'м.',
+            'мяч флорбольный' => 'мяч флорб.', 
+            'Левая' => 'Л',
+            'Правая' => 'П',
+            'черный' => 'черн.',
+            'белый' => 'бел.',
+            'красный' => 'красн.',
+            'синий' => 'син.',
+            'желтый' => 'желт.',
+            'неоновый' => 'неон.',
+            'светло-жёлтый' => 'св.-жёлт.',
+            'цвета зелёной травы' => 'зел. травы',
+        ];
+        
+        $shortName = str_replace(
+            array_keys($replacements),
+            array_values($replacements),
+            $name
+        );
+        
+        // Ищем артикул в формате (Арт. XXXXX)
+        preg_match('/\(Арт\.\s*([^)]+)\)/', $shortName, $matches);
+        $article = $matches[1] ?? null;
+        
+        if ($article) {
+            // Убираем артикул из основного названия
+            $cleanName = trim(preg_replace('/\s*\(Арт\.\s*[^)]+\)\s*$/', '', $shortName));
+            
+            $result = "({$article}) " . $cleanName;
+        } else {
+            $result = $shortName;
+        }
+        
+        if (mb_strlen($result) > $maxLength) {
+            $result = mb_substr($result, 0, $maxLength - 3) . '...';
+        }
+
+        \Log::debug('shortenProductName RESULT', [  
+            'shortened_name' => $result,
+            'output_length' => mb_strlen($result),
+            'saved_chars' => mb_strlen($name) - mb_strlen($result)
+        ]);
+        
+        return $result;
     }
 }
