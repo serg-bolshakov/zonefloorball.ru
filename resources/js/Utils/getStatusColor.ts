@@ -15,7 +15,7 @@ export const getStatusColor = (status: string) => {
         return '#9C27B0'; // Фиолетовый
     }
     if (statusLower.includes('готов')) {
-        return '#f8fc08ff'; // Жёлтый
+        return '#a20000ff'; // Вишнёвый
     }
 
     if (statusLower.includes('возврат') || statusLower.includes('аннулирован')) return '#fb1b17ff'; 
