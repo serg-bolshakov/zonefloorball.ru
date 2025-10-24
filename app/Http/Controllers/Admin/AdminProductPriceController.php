@@ -129,7 +129,7 @@ class AdminProductPriceController extends Controller {
 
         switch ($operation) {
             case 'create_new':
-                Price::create([
+                $price = Price::create([
                     'product_id' => $product->id,
                     'price_type_id' => $priceType,
                     'price_value' => $newPrice['price_value'],
