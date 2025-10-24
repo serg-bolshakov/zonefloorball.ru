@@ -127,7 +127,7 @@ class CheckExpiredReservations extends Command
                             ]);
 
                         } catch (\Exception $e) {
-                            Log::error("processExpiredOrder Ошибка снятия товара с резерва", [
+                            \Log::error("processExpiredOrder Ошибка снятия товара с резерва", [
                                 'order_id' => $order->id,  // Логируем ID заказа
                                 'product_id' => $item['product_id'],
                                 'error' => $e->getMessage()
