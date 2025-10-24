@@ -93,7 +93,7 @@ use Illuminate\Support\Facades\Auth;
     return $response;
 })->name('logout');*/
 
-Route::match(['get', 'post'], '/logout', function (Request $request) {
+/* Route::match(['get', 'post'], '/logout', function (Request $request) {
     \Log::debug('=== SAFE COOKIE CLEANUP ===');
     
     // Логируем ВСЕ куки которые видит сервер
@@ -143,6 +143,12 @@ Route::match(['get', 'post'], '/logout', function (Request $request) {
     \Log::debug('Safe cookie cleanup completed');
     
     return $response;
+})->name('logout');
+*/
+
+Route::match(['get', 'post'], '/logout', function () {
+    Auth::logout();
+    return redirect('/');
 })->name('logout');
 
 /**
