@@ -146,9 +146,45 @@ use Illuminate\Support\Facades\Auth;
 })->name('logout');
 */
 
-Route::match(['get', 'post'], '/logout', function () {
+/* Route::match(['get', 'post'], '/logout', function () {
     Auth::logout();
     return redirect('/');
+})->name('logout');*/
+
+Route::match(['get', 'post'], '/logout', function (Request $request) {
+    \Log::debug('=== SIMPLIFIED COOKIE CLEANUP ===');
+    
+    $user = Auth::user();
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    // Только критические куки
+    $cookiesToClear = [
+        'XSRF-TOKEN', 
+        'login_redirect',
+        'zonefloorballru_session',
+    ];
+    
+    // Добавляем remember_web с хешем
+    $allCookies = array_keys($request->cookies->all());
+    foreach ($allCookies as $cookieName) {
+        if (str_starts_with($cookieName, 'remember_web_')) {
+            $cookiesToClear[] = $cookieName;
+        }
+    }
+
+    \Log::debug('Clearing cookies count:', ['count' => count($cookiesToClear)]);
+    
+    // Только ОДИН способ очистки
+    $response = redirect('/');
+    foreach ($cookiesToClear as $cookieName) {
+        $response->headers->clearCookie($cookieName);
+    }
+
+    \Log::debug('Simplified cleanup completed');
+    
+    return $response;
 })->name('logout');
 
 /**
