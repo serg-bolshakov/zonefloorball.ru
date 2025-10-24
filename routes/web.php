@@ -25,6 +25,11 @@ use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminProductsController;
 use App\Http\Controllers\Admin\AdminProductPriceController;
 
+// пробуем настроить логаут 24.10.2025
+use Laravel\Fortify\Features;
+use Laravel\Fortify\Http\Controllers\AuthenticatedSessionController;
+use Laravel\Fortify\Fortify;
+
 use Inertia\Inertia;
 use Illuminate\Http\Request;                                        // подключим класс Request
 use Illuminate\Support\Facades\DB;                                  // подключаем фасад
@@ -49,9 +54,95 @@ use Illuminate\Support\Facades\Auth;
 */
 
 // Переопределяем logout для поддержки GET (из-за ошибки: the get method is not supported for route logout)
-Route::match(['get', 'post'], '/logout', function () {
+/*Route::match(['get', 'post'], '/logout', function (Request $request) {
+    \Log::debug('Custom logout route called');
+
+    // 1. Получаем пользователя ДО его выхода
+    $user = Auth::user();
+
+    // 2. Выполняем logout - стандартный logout Fortify
     Auth::logout();
-    return redirect('/');
+
+    // 3. Инвалидируем сессию ПЕРВЫМ делом
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    // 4. Создаем response
+    $response = redirect('/');
+
+    // 5. ПРИНУДИТЕЛЬНО очищаем куки через headers
+    $cookiesToClear = [
+        'laravel_session',
+        'XSRF-TOKEN', 
+        'remember_web',
+        'login_redirect',
+        'zonefloorballru_session',
+    ];
+    
+    foreach ($cookiesToClear as $cookieName) {
+        // Оба способа для надежности
+        Cookie::queue(Cookie::forget($cookieName));
+        $response->headers->clearCookie($cookieName);
+    }
+
+    \Log::debug('Force logout completed', [
+        'previous_user' => $user->id ?? null,
+        'cleaned_cookies' => $cookiesToClear
+    ]);
+
+    return $response;
+})->name('logout');*/
+
+Route::match(['get', 'post'], '/logout', function (Request $request) {
+    \Log::debug('=== SAFE COOKIE CLEANUP ===');
+    
+    // Логируем ВСЕ куки которые видит сервер
+    \Log::debug('All cookies from request:', array_keys($request->cookies->all()));
+    
+    $user = Auth::user();
+    Auth::logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
+
+    // Только наши известные куки
+    $cookiesToClear = [
+        'laravel_session',
+        'XSRF-TOKEN', 
+        'remember_web',
+        'login_redirect',
+        'zonefloorballru_session',
+    ];
+    
+    // Добавляем remember_web с хешем (если используется)
+    $allCookies = array_keys($request->cookies->all());
+    foreach ($allCookies as $cookieName) {
+        if (str_starts_with($cookieName, 'remember_web_')) {
+            $cookiesToClear[] = $cookieName;
+        }
+    }
+
+    \Log::debug('Clearing specific cookies:', $cookiesToClear);
+
+    // Очищаем всеми способами для надежности
+    foreach ($cookiesToClear as $cookieName) {
+        // 1. Нативный PHP
+        setcookie($cookieName, '', time() - 3600, '/');
+        setcookie($cookieName, '', time() - 3600, '/', '', false, true);
+        
+        // 2. Laravel
+        Cookie::queue(Cookie::forget($cookieName));
+    }
+
+    $response = redirect('/');
+    
+    foreach ($cookiesToClear as $cookieName) {
+        // 3. Через response headers
+        $response->headers->clearCookie($cookieName, '/', '', false, true);
+    }
+
+    \Log::debug('Safe cookie cleanup completed');
+    
+    return $response;
 })->name('logout');
 
 /**

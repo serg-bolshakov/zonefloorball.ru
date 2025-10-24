@@ -159,4 +159,8 @@ return [
         ]),
     ],
 
+    'logout' => \App\Actions\Fortify\CustomLogoutAction::class,
+    'paths' => [
+        'logout' => 'logout',
+    ],
 ];
