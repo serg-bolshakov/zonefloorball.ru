@@ -36,7 +36,7 @@ enum OrderStatus: int {
             self::RECEIVED                  => 'Получен',
             self::COMPLETED                 => 'Завершён',
             self::RETURNED                  => 'Оформлен возврат',
-            self::NULLIFY                   => 'Аннулирован',
+            self::NULLIFY                   => 'Не оплачен в срок. Аннулирован',
             self::PREORDER                  => 'Ожидание поступления товара',
             default                         => 'Неизвестно'
         };
