@@ -33,6 +33,27 @@ axios.interceptors.response.use(
   }
 );
 
+// Слушаем принудительное обновление при logout
+const checkForceRefresh = () => {
+    const cookies = document.cookie.split(';');
+    const forceRefreshCookie = cookies.find(cookie => 
+        cookie.trim().startsWith('force_client_refresh=')
+    );
+    
+    if (forceRefreshCookie) {
+        console.log('Обнаружен logout в другой вкладке, обновляем страницу...');
+        // Удаляем куку и обновляемся
+        document.cookie = 'force_client_refresh=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+        window.location.reload();
+    }
+};
+
+// Проверяем при загрузке страницы
+checkForceRefresh();
+
+// И периодически проверяем (на всякий случай)
+setInterval(checkForceRefresh, 5000);
+
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting

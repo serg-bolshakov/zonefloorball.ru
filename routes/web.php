@@ -182,6 +182,11 @@ Route::match(['get', 'post'], '/logout', function (Request $request) {
         $response->headers->clearCookie($cookieName);   // clearCookie() в Laravel делает именно то, что мы хотели - он отправляет браузеру заголовок с установкой времени истечения куки в прошлое:
     }
 
+    // Триггерим событие для фронтенда
+    // $response->withCookie(cookie('session_updated', time(), 0));
+    $response->withCookie(cookie('force_client_refresh', 'logout', 0, '/', '', false, false));
+
+    \Log::debug('Logout completed', ['user_id' => $user->id ?? null]);
     \Log::debug('Simplified cleanup completed');
     
     return $response;
