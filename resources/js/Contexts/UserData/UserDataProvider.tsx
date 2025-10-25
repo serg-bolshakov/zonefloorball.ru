@@ -20,7 +20,7 @@ type SyncData = {
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
     
-    const { user, cart, preorder, favorites, orders } = useAppContext();
+    const { user, cart, preorder, favorites, orders, refreshUserData } = useAppContext();
     
     const [state, setState] = useState<UserDataState>({
         cart                    : {},   // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
@@ -768,9 +768,19 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         }
     }, [user]);
 
-    // Загрузка начальных данных: 
+    // Загрузка начальных данных: // Триггерим синхронизацию при изменении пользователя:
+    // Объединяем оба useEffect с зависимостями [user, syncData]
     useEffect(() => {
-        const loadData = async () => {
+        const tabId = Math.random().toString(36).slice(2, 11);
+
+        // 1. Триггерим синхронизацию для других вкладок
+        localStorage.setItem('auth_status_changed', JSON.stringify({
+            tabId,
+            timestamp: Date.now(),
+            userId: user?.id || null
+        }));
+
+        /* const loadData = async () => {
             try {
                 if (user) {
                     updateState({
@@ -804,10 +814,46 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
         if (user) {
             syncData(); // Вызов при изменении `user`
-        }
-  
-    }, [user, syncData]); // Зависимость от user - эффект сработает при его изменении
+        } */
 
+        // 2. Загрузка и синхронизация данных
+        const loadAndSyncData = async () => {
+            try {
+                if (user) {
+                    // Для авторизованного пользователя
+                    updateState({
+                        cart: cart,
+                        preorder: preorder,
+                        favorites: favorites,
+                        orders: orders,
+                        recentlyViewedProducts: state.recentlyViewedProducts,
+                        isLoading: false,
+                    });
+                    
+                    // Синхронизируем данные с сервером
+                    await syncData();
+                } else {
+                    // Для гостя - только локальные данные
+                    updateState({
+                        cart: getLocalStorageData('cart', {}),
+                        preorder: getLocalStorageData('preorder', {}),
+                        favorites: getLocalStorageData('favorites', []),
+                        orders: getLocalStorageData('orders', []),
+                        recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
+                        isLoading: false,
+                    });
+                }
+            } catch (error) {
+                const message = getErrorMessage(error);
+                updateState({
+                    error: message,
+                    isLoading: false
+                });
+            }
+        };
+
+        loadAndSyncData();
+    }, [user, syncData]); // Зависимость от user - эффект сработает при его изменении
 
     // !!! Синхонизация между вкладками пока работать не будет (реализуем авторизацию пользователя, когда он логинится)   !!! 
     // Синхронизация между вкладками: Пользователь открыл товар в двух вкладках... в одной вкладке добавил в избранное... во второй вкладке счётчик обновится автоматически...
@@ -840,10 +886,33 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     }, []);
 
     // Реализация механизма (синхронизации между вкладками) для авторизованных пользователей и не авторизованных
-    // Комбинируем события localStorage + фокус вкладки через комбинацию события localStorage + фокус вкладки (при возврате на вкладку)
-    // localStorage для гостей / Проверка при фокусе вкладки для авторизованных
-        
-    
+    // Синхронизация статуса авторизации между вкладками
+    // Синхронизация статуса авторизации между вкладками
+    useEffect(() => {
+        let lastUserId = user?.id; // Запоминаем текущего пользователя
+
+        const handleStorageChange = (event: StorageEvent) => {
+            if (event.key !== 'auth_status_changed') return;
+            
+            try {
+                const data = JSON.parse(event.newValue || '{}');
+                
+                // Синхронизируем только если пользователь действительно изменился
+                if (data.userId !== lastUserId) {
+                    console.log('Пользователь изменился, синхронизируем...');
+                    refreshUserData?.().then(() => {
+                        lastUserId = data.userId; // Обновляем после синхронизации
+                    });
+                }
+            } catch (error) {
+                console.error('Ошибка синхронизации:', error);
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, [refreshUserData, user?.id]);
+
     // memo помогает нам избегать повторного рендеринга компонента, если его пропсы остаются неизменными.
     // https://code.mu/ru/javascript/framework/react/book/supreme/hooks/api-memo/ 
     // Предотвращает ненужные ререндеры дочерних компонентов, кэширует объект контекста при неизменных зависимостях...

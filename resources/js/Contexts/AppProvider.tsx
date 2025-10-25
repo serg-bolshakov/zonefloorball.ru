@@ -140,7 +140,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
                     setOrders(response.data.orders);
                 })
                 .catch(error => {
-                    // console.error('Ошибка при загрузке данных в AppProvider.tsx: ', error);
+                    console.error('Ошибка при загрузке данных в AppProvider.tsx: ', error);
                     // Добавляем уведомление об ошибке
                     toast.error('Произошла ошибка при загрузке данных. Пожалуйста, попробуйте позже.');
                 });
@@ -149,8 +149,27 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
         loadData();
         
     }, []);
-
-    // console.log('APPProvider: user', orders);
+    
+    // Функция для принудительного обновления данных пользователя - переносим логику в resources/js/contexts/UserData/UserDataProvider.tsx    # Логика провайдера
+    const refreshUserData = async () => {
+        try {
+            const response = await axios.get('/api/initial-data');
+            setUser(response.data.user);
+            setCategoriesMenuArr(response.data.categoriesMenuArr);
+            setAuthBlockContentFinal(response.data.authBlockContentFinal);
+            setCategoriesInfo(response.data.categoriesInfo);
+            setCart(response.data.cart);
+            setPreorder(response.data.preorder);
+            setFavorites(response.data.favorites);
+            setOrders(response.data.orders);
+            
+            console.log('Данные пользователя синхронизированы между вкладками');
+        } catch (error) {
+            console.error('Ошибка при синхронизации данных:', error);
+            // При ошибке синхронизации - полная перезагрузка
+            window.location.reload();
+        }
+    };
 
     const contextValue: IAppContextType = {
         user, setUser,
@@ -159,6 +178,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
         categoriesInfo, setCategoriesInfo,
         cart, preorder, favorites, cartTotal, preorderTotal, favoritesTotal, orders, ordersTotal,
         setCart, setPreorder, setFavorites, setCartTotal, setPreorderTotal, setFavoritesTotal, setOrders, setOrdersTotal,
+        refreshUserData, // ← Добавляем функцию в контекст - переносим логику в resources/js/contexts/UserData/UserDataProvider.tsx    # Логика провайдера
     }
 
     return (

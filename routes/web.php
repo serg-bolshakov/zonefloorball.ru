@@ -179,7 +179,7 @@ Route::match(['get', 'post'], '/logout', function (Request $request) {
     // Только ОДИН способ очистки
     $response = redirect('/');
     foreach ($cookiesToClear as $cookieName) {
-        $response->headers->clearCookie($cookieName);
+        $response->headers->clearCookie($cookieName);   // clearCookie() в Laravel делает именно то, что мы хотели - он отправляет браузеру заголовок с установкой времени истечения куки в прошлое:
     }
 
     \Log::debug('Simplified cleanup completed');

@@ -6,7 +6,7 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 use App\Services\ErrorNotifierService;
-
+use Illuminate\Session\TokenMismatchException;
 
 class Handler extends ExceptionHandler
 {
@@ -34,5 +34,28 @@ class Handler extends ExceptionHandler
                 ]);
             }
         });
+    }
+
+    /**
+     * Render an exception into an HTTP response.
+     */
+    public function render($request, Throwable $exception)
+    {
+        // Обрабатываем ошибку устаревшей CSRF-сессии
+        if ($exception instanceof TokenMismatchException) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Ваша сессия истекла. Пожалуйста, обновите страницу.',
+                    'refresh_required' => true
+                ], 419);
+            }
+            
+            // Для обычных запросов - редирект с сообщением
+            return back()->withInput()->withErrors([
+                'session' => 'Сессия устарела. Пожалуйста, повторите действие.'
+            ]);
+        }
+
+        return parent::render($request, $exception);
     }
 }

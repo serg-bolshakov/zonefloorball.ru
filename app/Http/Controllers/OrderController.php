@@ -96,9 +96,25 @@ class OrderController extends Controller {
 
         // Объявим переменную ДО транзакции, чтобы её не потерять в блоке try - catch
         $order = $redirect = null;
+
+        // 1. Идентифицируем пользователя ДО транзакции
+        $user = $this->resolveUser($request);
+        \Log::debug('OrderController user resolved:', ['user_id' => $user->id]);
+        
+        // 2. Валидация тоже ДО транзакции
+        $validated = $request->validate([
+            'action'        => ['required', 'string', Rule::in(OrderAction::forRequest($request))],
+            'paymentMethod' => ['required', 'string', Rule::in(['online', 'bank_transfer', 'cash'])],
+        ]);
+
+        $action = OrderAction::tryFrom($validated['action']) 
+            ?? throw new \InvalidArgumentException('Invalid action: ' . $validated['action']);
+        
+        $isPreorder = $action === OrderAction::PREORDER;
+
         
         try {
-                DB::transaction(function () use ($request, &$order, &$redirect) {       // Передаём $order в транзакцию по ссылке
+                /* DB::transaction(function () use ($request, &$order, &$redirect) {       // Передаём $order в транзакцию по ссылке
 
                 $isPreorder = false;
 
@@ -111,7 +127,10 @@ class OrderController extends Controller {
                     ?? throw new \InvalidArgumentException('Invalid action: ' . $validated['action']);
                 // Вариант 2 (если нужен дефолтный PREORDER): $action = OrderAction::forRequest($request); // Без исключений!
 
-                $isPreorder = $action === OrderAction::PREORDER;
+                $isPreorder = $action === OrderAction::PREORDER;*/
+
+                DB::transaction(function () use ($request, $user, $isPreorder, &$order, &$redirect) {
+
                 $statusId = match($isPreorder) {
                     true  => OrderStatus::PREORDER->value,
                     false => OrderStatus::CREATED->value
@@ -1343,7 +1362,7 @@ class OrderController extends Controller {
         }
     }
 
-// Авторизованному пользователю, выбравшему "Предзаказ" (пока отложенная оплата ): 
+    // Авторизованному пользователю, выбравшему "Предзаказ" (пока отложенная оплата ): 
     public function processPreOrder($order, $orderMail) {
         // Явная проверка на false
         if ($order->is_client_informed !== false) {

@@ -20,6 +20,19 @@ if (csrfToken) {
     window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 }
 
+// Глобальный интерсептор для обработки 419 ошибок (устаревшая сессия)
+axios.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.response?.status === 419) {
+      console.log('Сессия устарела, автоматически обновляем страницу...');
+      window.location.reload();
+      return Promise.reject(error); // Прерываем цепочку, но не вызываем новые ошибки
+    }
+    return Promise.reject(error);
+  }
+);
+
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting

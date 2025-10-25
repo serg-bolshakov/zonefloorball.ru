@@ -10,6 +10,7 @@ import { isLegalUser, isIndividualUser } from "@/Types/types";
 const Header: React.FC = () => {
     const { user, categoriesMenuArr, authBlockContentFinal, setAuthBlockContentFinal } = useAppContext();
     const { orders, favorites, cartTotal, ordersTotal, preorderTotal } = useUserDataContext();
+   
     // Считаем количества
     // const ordersCount = orders.length;
     const ordersCount = ordersTotal;

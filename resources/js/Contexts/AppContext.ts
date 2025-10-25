@@ -36,6 +36,7 @@ export interface IAppContextType {
     setFavoritesTotal: (favoritesTotal: number | 0) => void;
     setOrders        : (orders: number[] | []) => void;
     setOrdersTotal   : (ordersTotal: number | 0) => void;
+    refreshUserData: () => Promise<void>;
 }
 
 const AppContext = createContext<IAppContextType | null>(null);
