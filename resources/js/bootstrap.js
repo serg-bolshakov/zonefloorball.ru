@@ -20,6 +20,7 @@ if (csrfToken) {
     window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 }
 
+/*
 // Глобальный интерсептор для обработки 419 ошибок (устаревшая сессия)
 axios.interceptors.response.use(
   response => response,
@@ -67,7 +68,7 @@ const handleVisibilityChange = () => {
 document.addEventListener('visibilitychange', handleVisibilityChange);
 
 // Также при фокусе окна (дополнительная защита)
-window.addEventListener('focus', checkForceRefresh);
+window.addEventListener('focus', checkForceRefresh); */
 
 /**
  * Echo exposes an expressive API for subscribing to channels and listening

@@ -146,12 +146,12 @@ use Illuminate\Support\Facades\Auth;
 })->name('logout');
 */
 
-/* Route::match(['get', 'post'], '/logout', function () {
+Route::match(['get', 'post'], '/logout', function () {
     Auth::logout();
     return redirect('/');
-})->name('logout');*/
+})->name('logout');
 
-Route::match(['get', 'post'], '/logout', function (Request $request) {
+/* Route::match(['get', 'post'], '/logout', function (Request $request) {
     \Log::debug('=== SIMPLIFIED COOKIE CLEANUP ===');
     
     $user = Auth::user();
@@ -190,7 +190,7 @@ Route::match(['get', 'post'], '/logout', function (Request $request) {
     \Log::debug('Simplified cleanup completed');
     
     return $response;
-})->name('logout');
+})->name('logout');/*
 
 /**
  * API-роуты (routes/api.php) используют api middleware group, где нет сессии
