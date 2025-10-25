@@ -100,18 +100,33 @@ class OrderController extends Controller {
         // 1. Идентифицируем пользователя ДО транзакции
         $user = $this->resolveUser($request);
         \Log::debug('OrderController user resolved:', ['user_id' => $user->id]);
+
+        // Проверяем, были ли обновления документов
+        $currentPrivacyPolicy = LegalDocument::getCurrentVersion('privacy_policy');
+        $currentOffer = LegalDocument::getCurrentVersion('offer');
+        
+        $needReconfirm = (
+            $user->privacy_policy_version !== $currentPrivacyPolicy->version ||
+            $user->offer_version !== $currentOffer->version
+        );
+
+        if ($needReconfirm) {
+            // Показываем страницу переподтверждения - нет!!! надо подумать!!! просто убрать чекбокс!? чтобы пользователь подтвердил согласие!!!
+            // return redirect()->route('legal.reconfirm'); 
+            \Log::debug('OrderController $needReconfirm:', [ '$needReconfirm' => $needReconfirm,  ]);
+        }
         
         // 2. Валидация тоже ДО транзакции
         $validated = $request->validate([
             'action'        => ['required', 'string', Rule::in(OrderAction::forRequest($request))],
             'paymentMethod' => ['required', 'string', Rule::in(['online', 'bank_transfer', 'cash'])],
         ]);
+        \Log::debug('OrderController@create $validated:', [ '$validated' => $validated]);
 
         $action = OrderAction::tryFrom($validated['action']) 
             ?? throw new \InvalidArgumentException('Invalid action: ' . $validated['action']);
         
         $isPreorder = $action === OrderAction::PREORDER;
-
         
         try {
                 /* DB::transaction(function () use ($request, &$order, &$redirect) {       // Передаём $order в транзакцию по ссылке
@@ -129,33 +144,12 @@ class OrderController extends Controller {
 
                 $isPreorder = $action === OrderAction::PREORDER;*/
 
-                DB::transaction(function () use ($request, $user, $isPreorder, &$order, &$redirect) {
+                DB::transaction(function () use ($request, $user, $isPreorder, $validated, &$order, &$redirect) {
 
                 $statusId = match($isPreorder) {
                     true  => OrderStatus::PREORDER->value,
                     false => OrderStatus::CREATED->value
                 };
-                
-                \Log::debug('OrderController@create $validated:', [ '$validated' => $validated]);
-
-                // 1. Создаём/получаем пользователя
-                    $user = $this->resolveUser($request);
-                    \Log::debug('OrderController user:', [ 'user_id' => $user->id,  ]);
-
-                    // Проверяем, были ли обновления документов
-                    $currentPrivacyPolicy = LegalDocument::getCurrentVersion('privacy_policy');
-                    $currentOffer = LegalDocument::getCurrentVersion('offer');
-                    
-                    $needReconfirm = (
-                        $user->privacy_policy_version !== $currentPrivacyPolicy->version ||
-                        $user->offer_version !== $currentOffer->version
-                    );
-
-                    if ($needReconfirm) {
-                        // Показываем страницу переподтверждения - нет!!! надо подумать!!! просто убрать чекбокс!? чтобы пользователь подтвердил согласие!!!
-                        // return redirect()->route('legal.reconfirm'); 
-                        \Log::debug('OrderController $needReconfirm:', [ '$needReconfirm' => $needReconfirm,  ]);
-                    }
 
                 // 2. Генерируем номер заказа
                     $clientType = $user->client_type_id ?? 1; // По умолчанию физлицо
