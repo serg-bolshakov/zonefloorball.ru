@@ -54,6 +54,21 @@ checkForceRefresh();
 // И периодически проверяем (на всякий случай)
 setInterval(checkForceRefresh, 5000);
 
+// Проверка при фокусе на вкладку
+const handleVisibilityChange = () => {
+    if (!document.hidden) {
+        // Вкладка стала активной - проверяем актуальность сессии
+        console.log('Вкладка активирована, проверяем сессию...');
+        checkForceRefresh();
+    }
+};
+
+// Слушаем изменения видимости
+document.addEventListener('visibilitychange', handleVisibilityChange);
+
+// Также при фокусе окна (дополнительная защита)
+window.addEventListener('focus', checkForceRefresh);
+
 /**
  * Echo exposes an expressive API for subscribing to channels and listening
  * for events that are broadcast by Laravel. Echo and event broadcasting
