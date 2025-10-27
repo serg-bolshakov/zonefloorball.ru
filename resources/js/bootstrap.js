@@ -20,7 +20,6 @@ if (csrfToken) {
     window.axios.defaults.headers.common['X-CSRF-TOKEN'] = csrfToken;
 }
 
-/*
 // Глобальный интерсептор для обработки 419 ошибок (устаревшая сессия)
 axios.interceptors.response.use(
   response => response,
@@ -34,7 +33,7 @@ axios.interceptors.response.use(
   }
 );
 
-// Слушаем принудительное обновление при logout
+/*// Слушаем принудительное обновление при logout
 const checkForceRefresh = () => {
     const cookies = document.cookie.split(';');
     const forceRefreshCookie = cookies.find(cookie => 
