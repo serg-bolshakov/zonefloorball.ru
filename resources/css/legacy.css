@@ -173,6 +173,7 @@ strong {
 .margin-left24px    { margin-left: 24px;   }
 .margin-left40px    { margin-left: 40px;   }
 .margin-right42px   { margin-right: 24px;  }
+.margin-right-auto  { margin-right: auto;  }
 
 .padding-left8px    { padding-left: 8px;   }
 .padding-left16px   { padding-left: 16px;  }
@@ -640,6 +641,7 @@ footer a:active {
 .footer-block {
     display: block;
     margin-top: 12px;
+    font-size: 14px;
 }
 
 .contacts-social {
@@ -6967,7 +6969,26 @@ thead th:hover::after {
 
 .test-result {
     background: #d4edda;
-    padding: 12px;
+    padding: 8px;
     border-radius: 6px;
     font-weight: bold;
+}
+
+.article-group {
+    margin: 4px 40px 8px 0;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 2px solid #007bff;
+}
+
+.group-title {
+    font-weight: bold;
+    margin-bottom: 12px;
+    color: #2c3e50;
+}
+
+.article-group .modal-link {
+    margin-left: 12px;
+    margin-bottom: 0;
 }
