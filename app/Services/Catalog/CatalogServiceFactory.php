@@ -1,5 +1,5 @@
 <?php
-//  app/Services/Catalog/CatalogServiceFactory.php - Фабрика для выбора сервиса - выбирает нужный сервисный класс в зависимости от раздела каталога.
+// app/Services/Catalog/CatalogServiceFactory.php - Фабрика для выбора сервиса - выбирает нужный сервисный класс в зависимости от раздела каталога.
 
 namespace App\Services\Catalog;
 
@@ -24,6 +24,8 @@ class CatalogServiceFactory
                 return new EyewearsFilterCatalogService($query);    // каталог очков
             case 'goalie':
                 return new GoalieFilterCatalogService($query);      // каталог вратарской экипировки
+            case 'accessories':
+                return new AccessoryFilterCatalogService($query);   // каталог аксессуаров
             default:
                 return new GeneralCatalogService($query);           // общий каталог товаров
         }
