@@ -54,6 +54,19 @@ export const generateStatusComment = (
           return  expectedDate ? `Заказ отправлен. В пути. Ожидаемая дата доставки – ${expectedDate}.` : 'Заказ отправлен. В пути';
       }
 
+    case EnumOrderStatus.DELIVERED:
+
+      switch (transport?.code) {
+        case 'post':
+            return  'Ожидает адресата в месте вручения. Готов к выдаче/получению';
+        
+        case 'local':
+            return  'Ожидает разгрузки/Получения';
+        
+        default:
+          return  'Заказ доставлен';
+      }
+
     default:
       return '';
   }

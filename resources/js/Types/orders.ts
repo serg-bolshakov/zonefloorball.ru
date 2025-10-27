@@ -109,7 +109,7 @@ export const OrderStatusLabels: Record<EnumOrderStatus, string> = {
     [EnumOrderStatus.RECEIVED]: 'Получен',
     [EnumOrderStatus.COMPLETED]: 'Завершён',
     [EnumOrderStatus.RETURNED]: 'Возврат',
-    [EnumOrderStatus.NULLIFY]: 'Аннулирован',
+    [EnumOrderStatus.NULLIFY]: 'Не оплачен. Аннулирован',
     [EnumOrderStatus.PREORDER]: 'Предзаказ'
 };
 
