@@ -4708,6 +4708,7 @@ a.changing-form__submit-btn:hover {
     height: 100%;
     overflow: auto;
     background-color: rgba(0, 0, 0, 0.5);
+    
 }
 
 .modal-react h1 {
@@ -4755,9 +4756,9 @@ a.changing-form__submit-btn:hover {
     left: 50%; /* Центрируем по горизонтали */
     transform: translate(-50%, -50%); /* Смещаем назад на половину ширины и высоты */
     background-color: #fefefe;
-    padding: 50px;
+    padding: 30px 20px;
     border: 1px solid #888;
-    width: 80%;
+    width: 90%;
     max-width: 460px;
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
@@ -4766,6 +4767,7 @@ a.changing-form__submit-btn:hover {
     overflow-y: auto;
     max-height: 50vh; /*Ограничиваем высоту */
     /* animation: fadeIn 1.5s ease-in-out; */
+    margin: 0 8px;
 }
 
 
@@ -6748,4 +6750,54 @@ thead th:hover::after {
     margin-top: 8px;
     font-size: 0.9em;
     color: #0369a1;
+}
+
+.simple-start-card {
+    background: #e8f4ff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border-left: 4px solid #007bff;
+}
+
+.simple-steps {
+    margin: 16px 0;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+    padding: 8px;
+    background: white;
+    border-radius: 6px;
+}
+
+.step-number {
+    background: #007bff;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.legal-note {
+    background: #fff3cd;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 12px 0;
+}
+
+.cta-text {
+    text-align: center;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed #007bff;
 }

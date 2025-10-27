@@ -28,6 +28,36 @@ const WhereAndHowToBuy = () => {
     return (
         <>
             <h1 className="fs18">Где и как купить:</h1>
+
+            {/* 👇 НОВЫЙ БЛОК - ПРОСТОЙ СТАРТ */}
+            <div className="simple-start-card">
+                <h3>🎯 Всё просто:</h3>
+                <div className="simple-steps">
+                    <div className="step">
+                        <span className="step-number">1</span>
+                        <span>Оформляете заказ на сайте</span>
+                    </div>
+                    <div className="step">
+                        <span className="step-number">2</span>
+                        <span>Выбираете способ доставки</span>
+                    </div>
+                    <div className="step">
+                        <span className="step-number">3</span>
+                        <span>Оплачиваете онлайн (электронный кассовый чек)</span>
+                    </div>
+                    <div className="step">
+                        <span className="step-number">4</span>
+                        <span>Отслеживаете статус заказа</span>
+                    </div>
+                </div>
+                <p className="legal-note">
+                    <strong>Для юр. лиц:</strong> получаете счёт на предоплату
+                </p>
+                <p className="cta-text">
+                    <strong>Всё очень просто! Но есть и особые варианты:</strong>
+                </p>
+            </div>
+            {/* 👆 КОНЕЦ НОВОГО БЛОКА */}
             
             <div className="purchase-option">
                 <h3 className="fs14px accent-text">🎯 Лучшая цена "на заказ"</h3>
