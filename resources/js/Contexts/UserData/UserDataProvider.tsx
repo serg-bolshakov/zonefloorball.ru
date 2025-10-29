@@ -24,7 +24,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     // const { user, cart, preorder, favorites, orders } = useAppContext();
 
     // Создаем уникальный ID для вкладки при загрузке
-    const currentTabId = useRef(Math.random().toString(36).slice(2, 11)).current;
+    const currentTabId = useRef(`tab_${Math.random().toString(36).slice(2, 11)}`).current;
 
     /*// Используем useRef для сохранения значений между рендерами
     const syncState = useRef({
@@ -844,17 +844,19 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
         debugStorage();*/
 
+        console.log('🔄 Основной useEffect: user изменился', user?.id);
+
         // Защита от множественных одновременных синхронизаций
-        let isSyncing = false;
+        // let isSyncing = false;
         
         // const tabId = Math.random().toString(36).slice(2, 11);
 
         // 1. Триггерим синхронизацию для других вкладок
         localStorage.setItem('auth_status_changed', JSON.stringify({
-            tabId: currentTabId, // ← используем ref, а не генерим каждый раз
+            // tabId: currentTabId, // ← используем ref, а не генерим каждый раз
             timestamp: Date.now(),
             userId: user?.id || null,
-            userData: user // ← передаём самого пользователя
+            // userData: user // ← передаём самого пользователя
         }));
 
         /* const loadData = async () => {
@@ -893,15 +895,15 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             syncData(); // Вызов при изменении `user`
         } */
 
-        // 2. Загрузка и синхронизация данных
+        // 2. Загрузка и синхронизация данных - Загружаем данные для ТЕКУЩЕЙ вкладки
         const loadAndSyncData = async () => {
             
-            if (isSyncing) {
+            /*if (isSyncing) {
                 console.log('⏳ Sync already in progress, skipping...');
                 return;
             }
     
-            isSyncing = true;
+            isSyncing = true;*/
 
             try {
                 if (user) {
@@ -936,13 +938,12 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     error: message,
                     isLoading: false
                 });
-            } finally {
-                    isSyncing = false;
-                }
-            };
+            } 
+        };
 
         loadAndSyncData();
-    }, [user, syncData]); // Зависимость от user - эффект сработает при его изменении
+    //}, [user, syncData]); // Зависимость от user - эффект сработает при его изменении
+    }, [user]); // Зависимость от user - эффект сработает при его изменении
 
     // Синхронизация между вкладками: Пользователь открыл товар в двух вкладках... в одной вкладке добавил в избранное... во второй вкладке счётчик обновится автоматически...
     useEffect(() => {
@@ -1034,11 +1035,23 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             try {
                 const data = JSON.parse(event.newValue || '{}');
 
-                // ВАЖНО: игнорируем события от самой себя!
-                if (data.tabId === currentTabId) {
+                // ВАЖНО: игнорируем события от самой себя! Пока комментируем...
+                /*if (data.tabId === currentTabId) {
                     console.log('🚫 Ignoring own event');
                     return;
-                }
+                }*/
+
+                // Игнорируем события с userData: null когда у нас уже есть пользователь
+                /*if (!data.userData && user) {
+                    console.log('🚫 Ignoring logout event when already logged in');
+                    return;
+                }*/
+
+                // Игнорируем события с тем же userId
+                /*if (data.userId === user?.id) {
+                    console.log('🚫 Ignoring event with same user id');
+                    return;
+                }*/
                 
                 // Очищаем предыдущий таймаут
                 if (syncState.timeout) {
@@ -1056,7 +1069,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     } finally {
                         syncState.syncInProgress = false;
                     }
-                }, 300);
+                }, 500);
             } catch (error) {
                 console.error('Ошибка синхронизации:', error);
             }
@@ -1069,10 +1082,10 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 clearTimeout(syncState.timeout);
             }
         };
-    }, [refreshUserData, user?.id]); // Обновляем lastUserId при изменении user
+    }, [refreshUserData]); // Обновляем lastUserId при изменении user
 
-    // И добавьте монитор для событий storage:
-    useEffect(() => {
+    // И добавьте монитор для событий storage: - для отладки
+    /* useEffect(() => {
         const handleStorageChange = (e: StorageEvent) => {
             console.log('🔄 Storage Event: монитор для событий storage', {
                 key: e.key,
@@ -1085,7 +1098,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, []);
+    }, []);*/
 
     // memo помогает нам избегать повторного рендеринга компонента, если его пропсы остаются неизменными.
     // https://code.mu/ru/javascript/framework/react/book/supreme/hooks/api-memo/ 
