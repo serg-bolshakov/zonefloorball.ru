@@ -697,7 +697,11 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         // console.log('newFavorites SyncData manualData', manualData);
         if (user) {
             // console.log('Syncing data for user:', user.id);
-
+            console.group('🔍 syncData Debug');
+            console.log('User:', user);
+            console.log('URL:', window.location.href);
+            console.log('Time:', new Date().toISOString());
+    
             // Логика синхронизации...
             try {
                 // Если данные переданы вручную — используем их, иначе берём из localStorage
@@ -707,7 +711,10 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     preorder: getLocalStorageData('preorder', []),
                     recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
                 };
-                // console.log('Syncing data for user:', data);
+                
+                console.log('Syncing data for user:', data);
+                console.log('Sending sync request...');
+                
                 const controller = new AbortController();
                 const response = await axios.post('/user/sync', data, {     // Route::match(['GET', 'POST'], '/user/sync', [AuthSyncController::class, 'syncLocalData']); - Синхронизация данных при авторизации
                     signal: controller.signal,
@@ -717,7 +724,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     }
                 });
 
-                // console.log('Syncing data responce:', response);
+                console.log('Sync response:', response.status, response.data);
 
                 // Сохраняем БД-версию в контекст
                 setState(prev => ({
@@ -745,6 +752,25 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 
                 return { success: true };
             } catch (error) {
+                // Приводим error к типу any или используем type guard
+                const err = error as any;
+                
+                console.error('❌ Sync error:', {
+                    status: err.response?.status,
+                    message: err.message,
+                    url: '/user/sync'
+                });
+
+                // Специальная обработка 503
+                if (err.response?.status === 503) {
+                    console.warn('⚠️ Server unavailable (503), using local data');
+                    // Используем локальные данные и пробуем снова позже
+                    setTimeout(() => {
+                        console.log('🔄 Retrying sync after 503...');
+                        syncData(manualData);
+                    }, 5000);
+                }
+
                 if (!axios.isCancel(error)) {
                     
                     // Восстанавливаем данные из localStorage при ошибке
