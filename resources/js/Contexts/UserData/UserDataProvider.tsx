@@ -774,7 +774,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     // Объединяем оба useEffect с зависимостями [user, syncData]
     useEffect(() => {
         // Эксперимент для диагностики:
-        console.log('Origin:', window.location.origin);
+        // Закомментируем диагностику - проблема найдена! Что сейчас: server_name zonefloorball.ru www.zonefloorball.ru;  # Проблема: работают параллельно!!! слушает оба домена, но не делает редирект с одного на другой! возникает проблема с состоянием данных локального хранилища - для каждого своё - localStorage будет разным!, что в корне неверно…
+        /* console.log('Origin:', window.location.origin);
         console.log('Actual localStorage cart:', localStorage.getItem('cart'));
         console.log('Tab URL:', window.location.href);
 
@@ -794,7 +795,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             });
         };
 
-        debugStorage();
+        debugStorage();*/
 
         const tabId = Math.random().toString(36).slice(2, 11);
 
