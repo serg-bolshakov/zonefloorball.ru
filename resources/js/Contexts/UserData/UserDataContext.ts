@@ -1,12 +1,15 @@
 // resources/js/Сontexts/UserData/UserDataContext.ts
 
 import { createContext } from 'react';
+import { TUser } from '@/Types/types';
 
 export type TCart = Record<number, number>;                     // { [productId]: quantity }  — это один объект вида { 84: 1, 89: 2 }
 export type TPreorder = Record<number, number>;                 // { [productId]: quantity }  — это один объект вида { 84: 1, 89: 2 }
 export type TRecentlyViewedProducts = Record<number, number>;   // { [productId]: timestamp } — это один объект вида { 84: 123456789, 89: 123456790 }
 
+
 export interface UserDataState {
+    // user                  : TUser | null; // ← Добавляем пользователя в стейт
     cart                  : TCart;
     preorder              : TPreorder;
     favorites             : number[];
@@ -65,10 +68,6 @@ export interface UserDataContextType extends UserDataState {
     clearPreorder: () => Promise<void>;
 
     addOrder: (orderId: number) => Promise<void>;
-
-    // Статус загрузки
-    isLoading: boolean;
-    error: string | null;
 
     // Недавно просмотренные товары
     addRecentlyViewedProd: ( productId: number ) => Promise<{  

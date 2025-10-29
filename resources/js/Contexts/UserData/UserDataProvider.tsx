@@ -1,5 +1,5 @@
 // resources/js/contexts/UserData/UserDataProvider.tsx    # Логика провайдера
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import useAppContext from '@/Hooks/useAppContext';
 import axios from 'axios';
 import { UserDataState } from './UserDataContext';
@@ -20,10 +20,27 @@ type SyncData = {
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
     
-    //const { user, cart, preorder, favorites, orders, refreshUserData } = useAppContext();
-    const { user, cart, preorder, favorites, orders } = useAppContext();
+    const { user, cart, preorder, favorites, orders, refreshUserData } = useAppContext();
+    // const { user, cart, preorder, favorites, orders } = useAppContext();
+
+    // Создаем уникальный ID для вкладки при загрузке
+    const currentTabId = useRef(Math.random().toString(36).slice(2, 11)).current;
+
+    /*// Используем useRef для сохранения значений между рендерами
+    const syncState = useRef({
+        lastUserId: user?.id,
+        syncInProgress: false,
+        timeout: null as NodeJS.Timeout | null
+    }).current;*/
+
+    const syncState = useMemo(() => ({
+        lastUserId: user?.id,
+        syncInProgress: false,
+        timeout: null as NodeJS.Timeout | null
+    }), []); // пустой массив зависимостей - инициализируется один раз
     
     const [state, setState] = useState<UserDataState>({
+        // user                    : null,
         cart                    : {},   // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
         preorder                : {},
         favorites               : [],
@@ -58,8 +75,10 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     };*/
     
     const updateState = (partialState: Partial<UserDataState>) => {
+        console.log('🔄 updateState called with:', partialState);
         setState(prev => {
             const newState = {...prev, ...partialState};    
+            console.log('📝 New state:', newState);
             return {
                 ...newState,
                 // Автоматически пересчитываем totals при изменении массивов
@@ -730,6 +749,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 // Сохраняем БД-версию в контекст
                 setState(prev => ({
                     ...prev,
+                    // user: response.data.user || prev.user,
                     favorites: response.data.favorites || prev.favorites,
                     cart: response.data.cart || prev.cart,
                     preorder: response.data.preorder || prev.preorder,
@@ -797,7 +817,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         }
     }, [user]);
 
-    // Загрузка начальных данных: // Триггерим синхронизацию при изменении пользователя:
+    // Загрузка начальных данных + Триггерим синхронизацию при изменении пользователя:
     // Объединяем оба useEffect с зависимостями [user, syncData]
     useEffect(() => {
         // Эксперимент для диагностики:
@@ -824,13 +844,17 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
         debugStorage();*/
 
-        const tabId = Math.random().toString(36).slice(2, 11);
+        // Защита от множественных одновременных синхронизаций
+        let isSyncing = false;
+        
+        // const tabId = Math.random().toString(36).slice(2, 11);
 
         // 1. Триггерим синхронизацию для других вкладок
         localStorage.setItem('auth_status_changed', JSON.stringify({
-            tabId,
+            tabId: currentTabId, // ← используем ref, а не генерим каждый раз
             timestamp: Date.now(),
-            userId: user?.id || null
+            userId: user?.id || null,
+            userData: user // ← передаём самого пользователя
         }));
 
         /* const loadData = async () => {
@@ -871,10 +895,19 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
         // 2. Загрузка и синхронизация данных
         const loadAndSyncData = async () => {
+            
+            if (isSyncing) {
+                console.log('⏳ Sync already in progress, skipping...');
+                return;
+            }
+    
+            isSyncing = true;
+
             try {
                 if (user) {
                     // Для авторизованного пользователя
                     updateState({
+                        // user: user,
                         cart: cart,
                         preorder: preorder,
                         favorites: favorites,
@@ -888,6 +921,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 } else {
                     // Для гостя - только локальные данные
                     updateState({
+                        // user: null,
                         cart: getLocalStorageData('cart', {}),
                         preorder: getLocalStorageData('preorder', {}),
                         favorites: getLocalStorageData('favorites', []),
@@ -902,14 +936,25 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     error: message,
                     isLoading: false
                 });
-            }
-        };
+            } finally {
+                    isSyncing = false;
+                }
+            };
 
         loadAndSyncData();
     }, [user, syncData]); // Зависимость от user - эффект сработает при его изменении
 
     // Синхронизация между вкладками: Пользователь открыл товар в двух вкладках... в одной вкладке добавил в избранное... во второй вкладке счётчик обновится автоматически...
     useEffect(() => {
+        let syncInProgress = false;
+        let syncTimeout: NodeJS.Timeout;
+
+        // Защита от одновременной синхронизации
+        if (syncInProgress) {
+            console.log('⏳ Sync already in progress, skipping...');
+            return;
+        }
+
         const handleStorage = (e: StorageEvent) => {
             // e.key === 'favorites' - проверяем, что изменилось нужное нам поле
             if (e.key === 'favorites') {
@@ -931,6 +976,33 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 // e.newValue - новое значение (или null, если данные удалены)
                 updateState({ preorder: JSON.parse(e.newValue || '{}') });
             }
+
+            /* if (e.key === 'auth_status_changed') {
+                let lastUserId = user?.id; // Запоминаем текущего пользователя
+                
+                try {
+                    const data = JSON.parse(e.newValue || '{}');
+                    console.log('🔄 auth_status_changed event:', data);
+                    
+                    // ⚠️ ВАЖНО: игнорируем события от самой себя!
+                    if (data.tabId === currentTabId) {
+                        console.log('🚫 Ignoring own event');
+                        return;
+                    }
+                    
+                    clearTimeout(syncTimeout);
+                    syncTimeout = setTimeout(() => {
+                        if (data.userId !== lastUserId) {
+                            console.log('🔄 User changed from other tab, syncing...');
+                            refreshUserData?.().then(() => {
+                                lastUserId = data.userId;
+                            });
+                        }
+                    }, 300);
+                } catch (error) {
+                    console.error('Error parsing auth_status_changed:', error);
+                }
+            }*/
         };
 
         window.addEventListener('storage', handleStorage);
@@ -939,11 +1011,17 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
     // Реализация механизма (синхронизации между вкладками) для авторизованных пользователей и не авторизованных
     // Синхронизация статуса авторизации между вкладками
-    /* useEffect(() => {
-        let lastUserId = user?.id; // Запоминаем текущего пользователя
+    useEffect(() => {
 
         const handleStorageChange = (event: StorageEvent) => {
+
             if (event.key !== 'auth_status_changed') return;
+    
+            // Защита от параллельного выполнения
+            if (syncState.syncInProgress) {
+                console.log('⏳ Sync already in progress, skipping...');
+                return;
+            }
 
             console.log('🔄 Storage Event: Синхронизация статуса авторизации между вкладками', {
                 key: event.key,
@@ -955,22 +1033,43 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             
             try {
                 const data = JSON.parse(event.newValue || '{}');
-                
-                // Синхронизируем только если пользователь действительно изменился
-                if (data.userId !== lastUserId) {
-                    console.log('Пользователь изменился, синхронизируем...');
-                    refreshUserData?.().then(() => {
-                        lastUserId = data.userId; // Обновляем после синхронизации
-                    });
+
+                // ВАЖНО: игнорируем события от самой себя!
+                if (data.tabId === currentTabId) {
+                    console.log('🚫 Ignoring own event');
+                    return;
                 }
+                
+                // Очищаем предыдущий таймаут
+                if (syncState.timeout) {
+                    clearTimeout(syncState.timeout);
+                }
+
+                syncState.timeout = setTimeout(async () => {
+                    syncState.syncInProgress = true;
+                    try {
+                        if (data.userId !== syncState.lastUserId) {
+                            console.log('🔄 User changed from other tab, syncing...');
+                            await refreshUserData?.();
+                            syncState.lastUserId = data.userId;
+                        }
+                    } finally {
+                        syncState.syncInProgress = false;
+                    }
+                }, 300);
             } catch (error) {
                 console.error('Ошибка синхронизации:', error);
             }
         };
 
         window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-    }, [refreshUserData, user?.id]);*/
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            if (syncState.timeout) {
+                clearTimeout(syncState.timeout);
+            }
+        };
+    }, [refreshUserData, user?.id]); // Обновляем lastUserId при изменении user
 
     // И добавьте монитор для событий storage:
     useEffect(() => {
@@ -1005,9 +1104,10 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         clearCart,
         clearPreorder,
         addOrder,
-        // refreshUserData
+        refreshUserData
         // Будущие методы добавятся здесь
     }), [
+        // state.user,
         state.cart,
         state.preorder,
         state.favorites,
@@ -1031,7 +1131,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         clearCart,
         clearPreorder,
         addOrder,
-        // refreshUserData
+        refreshUserData
     ]);
 
     return (
