@@ -42,7 +42,7 @@ export const generateStatusComment = (
 
       switch (transport?.code) {
         case 'post':
-            return  expectedDate ? `Заказ отправлен. В пути. Ожидаемая дата доставки – ${expectedDate}.` : 'Заказ отправлен. В пути. Ожидаемая дата доставки...';
+            return  expectedDate ? `Заказ отправлен. В пути. Ожидаемая дата доставки – ${expectedDate}.` : 'Заказ отправлен. В пути. Почта обещает доставить заказ...';
         
         case 'local':
             return  expectedDate ? `Заказ передан в курьерскую службу. Ожидаемая дата доставки – ${expectedDate}.` : 'Заказ передан в курьерскую службу.';

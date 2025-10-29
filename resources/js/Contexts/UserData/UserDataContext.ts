@@ -1,11 +1,10 @@
-// resources/js/Сontexts/UserData/Context.ts
+// resources/js/Сontexts/UserData/UserDataContext.ts
 
 import { createContext } from 'react';
 
-export type TCart = Record<number, number>; // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
-export type TPreorder = Record<number, number>; // { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }
-export type TRecentlyViewedProducts = Record<number, number>; // { [productId]: timestamp } — это один объект вида { 84: 123456789, 89: 123456790 }
-
+export type TCart = Record<number, number>;                     // { [productId]: quantity }  — это один объект вида { 84: 1, 89: 2 }
+export type TPreorder = Record<number, number>;                 // { [productId]: quantity }  — это один объект вида { 84: 1, 89: 2 }
+export type TRecentlyViewedProducts = Record<number, number>;   // { [productId]: timestamp } — это один объект вида { 84: 123456789, 89: 123456790 }
 
 export interface UserDataState {
     cart                  : TCart;

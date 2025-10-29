@@ -36,8 +36,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         error                   : null
     });
 
-    // console.log('UserDataProvider: user', user);
-
+    console.log('UserDataProvider: user', user);
+   
     const calculateCartTotal = (cart: TCart) => 
         Object.values(cart).reduce((sum, qty) => sum + qty, 0);
 
@@ -76,20 +76,22 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
      *  Проблемы: Лишняя нагрузка на API / Мелькание интерфейса
      */
     // Решение без lodash: Самодельный debounce:
-    let saveTimeout: NodeJS.Timeout;
-    const saveCart = (cart: TCart) => {
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-            localStorage.setItem('cart', JSON.stringify(cart));
-        }, 500); // Задержка 500 мс
-    };
+        let cartTimeout: NodeJS.Timeout;
+        let preorderTimeout: NodeJS.Timeout;
 
-    const savePreorder = (preorder: TCart) => {
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(() => {
-            localStorage.setItem('preorder', JSON.stringify(preorder));
-        }, 500); // Задержка 500 мс
-    };
+        const saveCart = (cart: TCart) => {
+            clearTimeout(cartTimeout);
+            cartTimeout = setTimeout(() => {
+                localStorage.setItem('cart', JSON.stringify(cart));
+            }, 500);    // Задержка 500 мс
+        };
+
+        const savePreorder = (preorder: TCart) => {
+            clearTimeout(preorderTimeout);
+            preorderTimeout = setTimeout(() => {
+                localStorage.setItem('preorder', JSON.stringify(preorder));
+            }, 500);
+        };
 
     // Универсальные принципы для всех методов (addToCart и др.)
     // Шаблон получения состояния:
@@ -214,7 +216,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 error: message 
             };
         }
-    }, [user, state.favorites]);  
+    }, [user, state.favorites, updateState]);  
 
     const addToCart = useCallback(async (productId: number, quantity: number = 1) => {
         try {
@@ -283,7 +285,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 error: message 
             };
         }
-    }, [user, state.cart]); 
+    }, [user, state.cart, updateState]); 
 
     const removeFromCart = useCallback(async (productId: number): Promise<{ cartTotal: number; error?: string; }> => {
         try {
@@ -331,7 +333,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 error: message 
             };
         }
-    }, [user, state.cart]);  
+    }, [user, state.cart, updateState]);  
 
     const updateCart = useCallback(async (productId: number, quantity: number): Promise<{ cartTotal: number; error?: string; }> => {
         try {
@@ -350,8 +352,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
             newCart[productId] = quantity; // Изменяем количество
 
             if (user) {
-                console.log('productId', productId);
-                console.log('quantity', newCart[productId]);
+                // console.log('productId', productId);
+                // console.log('quantity', newCart[productId]);
                 await axios.post('/cart/items', { 
                     product_id: productId,
                     quantity: newCart[productId]
@@ -383,7 +385,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 error: message 
             };
         }
-    }, [user, state.cart]);
+    }, [user, state.cart, updateState]);
  
     const clearCart = useCallback(async(): Promise<void> => {
         try {
@@ -411,7 +413,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 isLoading: false
             });
         }
-    }, [user]);
+    }, [user, updateState]);
 
     const addToPreorder = useCallback(async (productId: number, quantity: number = 1, expectedDate: string  | null) => {
         try {
@@ -481,7 +483,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 error: message 
             };
         }
-    }, [user, state.preorder]); 
+    }, [user, state.preorder, updateState]); 
 
     const removeFromPreorder = useCallback(async (productId: number): Promise<{ preorderTotal: number; error?: string; }> => {
         try {
@@ -529,7 +531,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 error: message 
             };
         }
-    }, [user, state.preorder]);  
+    }, [user, state.preorder, updateState]);  
 
     const updatePreorder = useCallback(async (productId: number, quantity: number, expectedDate: string | null): Promise<{ preorderTotal: number; error?: string; }> => {
         try {
@@ -582,7 +584,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 error: message 
             };
         }
-    }, [user, state.preorder]);
+    }, [user, state.preorder, updateState]);
  
     const clearPreorder = useCallback(async(): Promise<void> => {
         try {
@@ -610,7 +612,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 isLoading: false
             });
         }
-    }, [user]);
+    }, [user, updateState]);
 
     const getLocalStorageData = (key: string, defaultValue: any) => {
       try {
@@ -771,6 +773,29 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     // Загрузка начальных данных: // Триггерим синхронизацию при изменении пользователя:
     // Объединяем оба useEffect с зависимостями [user, syncData]
     useEffect(() => {
+        // Эксперимент для диагностики:
+        console.log('Origin:', window.location.origin);
+        console.log('Actual localStorage cart:', localStorage.getItem('cart'));
+        console.log('Tab URL:', window.location.href);
+
+        const debugStorage = () => {
+            const actualCart = localStorage.getItem('cart');
+            const actualFavorites = localStorage.getItem('favorites');
+            console.log('🔍 Storage Debug:', {
+                tab: window.location.href,
+                origin: window.location.origin,
+                cart: actualCart,
+                cartLength: actualCart ? JSON.parse(actualCart).length : 0,
+                favorites: actualFavorites,
+                favoritesLength: actualFavorites ? JSON.parse(actualFavorites).length : 0,
+                allKeys: Object.keys(localStorage),
+                user: user?.id || 'guest',
+                timestamp: new Date().toISOString()
+            });
+        };
+
+        debugStorage();
+
         const tabId = Math.random().toString(36).slice(2, 11);
 
         // 1. Триггерим синхронизацию для других вкладок
@@ -855,7 +880,6 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         loadAndSyncData();
     }, [user, syncData]); // Зависимость от user - эффект сработает при его изменении
 
-    // !!! Синхонизация между вкладками пока работать не будет (реализуем авторизацию пользователя, когда он логинится)   !!! 
     // Синхронизация между вкладками: Пользователь открыл товар в двух вкладках... в одной вкладке добавил в избранное... во второй вкладке счётчик обновится автоматически...
     useEffect(() => {
         const handleStorage = (e: StorageEvent) => {
@@ -887,12 +911,19 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
     // Реализация механизма (синхронизации между вкладками) для авторизованных пользователей и не авторизованных
     // Синхронизация статуса авторизации между вкладками
-    // Синхронизация статуса авторизации между вкладками
     useEffect(() => {
         let lastUserId = user?.id; // Запоминаем текущего пользователя
 
         const handleStorageChange = (event: StorageEvent) => {
             if (event.key !== 'auth_status_changed') return;
+
+            console.log('🔄 Storage Event: Синхронизация статуса авторизации между вкладками', {
+                key: event.key,
+                oldValue: event.oldValue,
+                newValue: event.newValue,
+                url: event.url,
+                timestamp: new Date().toISOString()
+            });
             
             try {
                 const data = JSON.parse(event.newValue || '{}');
@@ -913,6 +944,22 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         return () => window.removeEventListener('storage', handleStorageChange);
     }, [refreshUserData, user?.id]);
 
+    // И добавьте монитор для событий storage:
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            console.log('🔄 Storage Event: монитор для событий storage', {
+                key: e.key,
+                oldValue: e.oldValue,
+                newValue: e.newValue,
+                url: e.url,
+                timestamp: new Date().toISOString()
+            });
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
     // memo помогает нам избегать повторного рендеринга компонента, если его пропсы остаются неизменными.
     // https://code.mu/ru/javascript/framework/react/book/supreme/hooks/api-memo/ 
     // Предотвращает ненужные ререндеры дочерних компонентов, кэширует объект контекста при неизменных зависимостях...
@@ -929,7 +976,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         addRecentlyViewedProd,
         clearCart,
         clearPreorder,
-        addOrder
+        addOrder,
+        refreshUserData
         // Будущие методы добавятся здесь
     }), [
         state.cart,
@@ -954,7 +1002,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         addRecentlyViewedProd,
         clearCart,
         clearPreorder,
-        addOrder
+        addOrder,
+        refreshUserData
     ]);
 
     return (
