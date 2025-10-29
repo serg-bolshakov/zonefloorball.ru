@@ -20,7 +20,8 @@ type SyncData = {
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
     
-    const { user, cart, preorder, favorites, orders, refreshUserData } = useAppContext();
+    //const { user, cart, preorder, favorites, orders, refreshUserData } = useAppContext();
+    const { user, cart, preorder, favorites, orders } = useAppContext();
     
     const [state, setState] = useState<UserDataState>({
         cart                    : {},   // Пустой объект вместо массива { [productId]: quantity } — это один объект вида { 84: 1, 89: 2 }  
@@ -938,7 +939,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
     // Реализация механизма (синхронизации между вкладками) для авторизованных пользователей и не авторизованных
     // Синхронизация статуса авторизации между вкладками
-    useEffect(() => {
+    /* useEffect(() => {
         let lastUserId = user?.id; // Запоминаем текущего пользователя
 
         const handleStorageChange = (event: StorageEvent) => {
@@ -969,7 +970,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
         window.addEventListener('storage', handleStorageChange);
         return () => window.removeEventListener('storage', handleStorageChange);
-    }, [refreshUserData, user?.id]);
+    }, [refreshUserData, user?.id]);*/
 
     // И добавьте монитор для событий storage:
     useEffect(() => {
@@ -1004,7 +1005,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         clearCart,
         clearPreorder,
         addOrder,
-        refreshUserData
+        // refreshUserData
         // Будущие методы добавятся здесь
     }), [
         state.cart,
@@ -1030,7 +1031,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         clearCart,
         clearPreorder,
         addOrder,
-        refreshUserData
+        // refreshUserData
     ]);
 
     return (
