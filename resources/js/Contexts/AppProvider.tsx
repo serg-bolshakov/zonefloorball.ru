@@ -154,7 +154,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
     const refreshUserData = async () => {
         try {
             const response = await axios.get('/api/initial-data');
-            console.log('resp вызов!', response.data?.user || null);
+            // console.log('resp вызов!', response.data?.user || null);
             setUser(response.data?.user || null);                                   // user становится null при логауте
             // setCategoriesMenuArr(response.data.categoriesMenuArr);
             setAuthBlockContentFinal(response.data.authBlockContentFinal);
@@ -164,7 +164,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
             // setFavorites(response.data.favorites);
             // setOrders(response.data.orders);
             
-            console.log('Данные пользователя синхронизированы между вкладками');
+            // console.log('Данные пользователя синхронизированы между вкладками');
         } catch (error) {
             console.error('Ошибка при синхронизации данных:', error);
             // При ошибке синхронизации - полная перезагрузка

@@ -25,7 +25,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
     // Создаем уникальный ID для вкладки при загрузке
     const currentTabId = useRef(`tab_${Math.random().toString(36).slice(2, 11)}`).current;
-    console.log('currentTabId', currentTabId);
+    // console.log('currentTabId', currentTabId);
 
     /*// Используем useRef для сохранения значений между рендерами
     const syncState = useRef({
@@ -55,7 +55,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         error                   : null
     });
 
-    console.log('UserDataProvider: user', user);
+    // console.log('UserDataProvider: user', user);
    
     const calculateCartTotal = (cart: TCart) => 
         Object.values(cart).reduce((sum, qty) => sum + qty, 0);
@@ -76,10 +76,10 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     };*/
     
     const updateState = (partialState: Partial<UserDataState>) => {
-        console.log('🔄 updateState called with:', partialState);
+        // console.log('🔄 updateState called with:', partialState);
         setState(prev => {
             const newState = {...prev, ...partialState};    
-            console.log('📝 New state:', newState);
+            // console.log('📝 New state:', newState);
             return {
                 ...newState,
                 // Автоматически пересчитываем totals при изменении массивов
@@ -718,7 +718,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         // console.log('newFavorites SyncData manualData', manualData);
         if (user) {
             // console.log('Syncing data for user:', user.id);
-            console.group('🔍 syncData Debug');
+            // console.group('🔍 syncData Debug');
             // console.log('User:', user);
             // console.log('URL:', window.location.href);
             // console.log('Time:', new Date().toISOString());
@@ -745,7 +745,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     }
                 });
 
-                console.log('Sync response:', response.status, response.data);
+                // console.log('Sync response:', response.status, response.data);
 
                 // Сохраняем БД-версию в контекст
                 setState(prev => ({
@@ -1080,7 +1080,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     try {
                         // if (data.userId !== syncState.lastUserId) {  - не работает для одной вкладки! последней, когда: data.userId null; syncState.lastUserId null и data.userId !== syncState.lastUserId false
                         if (data.userId !== syncState.lastUserId || (data.userId === null && syncState.lastUserId === null)) {
-                            console.log('🔄 User changed from other tab, syncing...');
+                            // console.log('🔄 User changed from other tab, syncing...');
                             await refreshUserData?.();
                             syncState.lastUserId = data.userId;
                         }
