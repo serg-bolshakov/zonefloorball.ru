@@ -8,7 +8,7 @@ trait CategoryTrait {
     
     #  "grips"
     public function getCategoryUrlSemantic() {
-        $routeUri = $_SERVER['REQUEST_URI'];
+        $routeUri = $_SERVER['REQUEST_URI'] ?? request()->getRequestUri() ?? '';
         $routeUri = explode('?', $routeUri);
         $routeUri = $routeUri[0];
         // dd(basename($routeUri));
@@ -17,7 +17,7 @@ trait CategoryTrait {
 
     #  "/products/catalog/grips"
     public function getRouteUri() {
-        $routeUri = $_SERVER['REQUEST_URI'];
+        $routeUri = $_SERVER['REQUEST_URI'] ?? request()->getRequestUri() ?? '';
         $routeUri = explode('?', $routeUri);
         $routeUri = $routeUri[0];
 
@@ -26,7 +26,7 @@ trait CategoryTrait {
 
     #  "?brand%5B%5D=unihoc"
     public function getRequestStr() {
-        $requestStr = $_SERVER['REQUEST_URI'];
+        $requestStr = $_SERVER['REQUEST_URI'] ?? request()->getRequestUri() ?? '';
         $requestStr = explode('?', $requestStr);
         $requestStr = $requestStr[1];
 
