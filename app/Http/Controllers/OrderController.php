@@ -921,8 +921,10 @@ class OrderController extends Controller {
     }
    
     private function restoreAuthFromOrder(Order $order, ClientRank $clientRank): bool {
+        return false; // Просто возвращаем false
+        
         // Если уже авторизован - ничего не делаем
-        if (Auth::check()) {
+        /* if (Auth::check()) {
             return true;
         }
 
@@ -989,7 +991,7 @@ class OrderController extends Controller {
                 'error' => $e->getMessage()
             ]);
             return false;
-        }
+        }*/
     }
 
     private function handleSuccessRedirect(Order $order, ClientRank $clientRank, bool $authRestored) {
