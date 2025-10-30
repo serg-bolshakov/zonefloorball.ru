@@ -20,11 +20,12 @@ type SyncData = {
 
 export const UserDataProvider = ({ children }: { children: React.ReactNode }) => {
     
-    const { user, cart, preorder, favorites, orders, refreshUserData } = useAppContext();
+    const { user, cart, preorder, favorites, orders, refreshUserData, setUser } = useAppContext();
     // const { user, cart, preorder, favorites, orders } = useAppContext();
 
     // Создаем уникальный ID для вкладки при загрузке
     const currentTabId = useRef(`tab_${Math.random().toString(36).slice(2, 11)}`).current;
+    console.log('currentTabId', currentTabId);
 
     /*// Используем useRef для сохранения значений между рендерами
     const syncState = useRef({
@@ -718,9 +719,9 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         if (user) {
             // console.log('Syncing data for user:', user.id);
             console.group('🔍 syncData Debug');
-            console.log('User:', user);
-            console.log('URL:', window.location.href);
-            console.log('Time:', new Date().toISOString());
+            // console.log('User:', user);
+            // console.log('URL:', window.location.href);
+            // console.log('Time:', new Date().toISOString());
     
             // Логика синхронизации...
             try {
@@ -732,8 +733,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     recentlyViewedProducts: getLocalStorageData('recently_viewed', {}),
                 };
                 
-                console.log('Syncing data for user:', data);
-                console.log('Sending sync request...');
+                // console.log('Syncing data for user:', data);
+                // console.log('Sending sync request...');
                 
                 const controller = new AbortController();
                 const response = await axios.post('/user/sync', data, {     // Route::match(['GET', 'POST'], '/user/sync', [AuthSyncController::class, 'syncLocalData']); - Синхронизация данных при авторизации
@@ -844,8 +845,8 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
         debugStorage();*/
 
-        console.log('🔄 Основной useEffect: user изменился', user?.id);
-
+        // console.log('🔄 Основной useEffect: user изменился', user?.id);
+        
         // Защита от множественных одновременных синхронизаций
         // let isSyncing = false;
         
@@ -853,7 +854,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
         // 1. Триггерим синхронизацию для других вкладок
         localStorage.setItem('auth_status_changed', JSON.stringify({
-            // tabId: currentTabId, // ← используем ref, а не генерим каждый раз
+            tabId: currentTabId, // ← используем ref, а не генерим каждый раз ← добавляем идентификатор вкладки
             timestamp: Date.now(),
             userId: user?.id || null,
             // userData: user // ← передаём самого пользователя
@@ -952,7 +953,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
         // Защита от одновременной синхронизации
         if (syncInProgress) {
-            console.log('⏳ Sync already in progress, skipping...');
+            // console.log('⏳ Sync already in progress, skipping...');
             return;
         }
 
@@ -1020,26 +1021,30 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
     
             // Защита от параллельного выполнения
             if (syncState.syncInProgress) {
-                console.log('⏳ Sync already in progress, skipping...');
+                // console.log('⏳ Sync already in progress, skipping...');
                 return;
             }
 
-            console.log('🔄 Storage Event: Синхронизация статуса авторизации между вкладками', {
+            /*console.log('🔄 Storage Event: Синхронизация статуса авторизации между вкладками', {
                 key: event.key,
                 oldValue: event.oldValue,
                 newValue: event.newValue,
+                oldUser: event.oldValue?['userId'] : null,
+                newUser: event.newValue?['userId'] : null,
                 url: event.url,
-                timestamp: new Date().toISOString()
-            });
+                timestamp: new Date().toISOString(),
+                Origin: window.location.origin,
+                TabURL: window.location.href
+            });*/
             
             try {
                 const data = JSON.parse(event.newValue || '{}');
 
-                // ВАЖНО: игнорируем события от самой себя! Пока комментируем...
-                /*if (data.tabId === currentTabId) {
-                    console.log('🚫 Ignoring own event');
+                // игнорируем события от самой себя! ни разу не срабатывает...
+                if (data.tabId === currentTabId) {
+                    // console.log('🚫 Ignoring own event');
                     return;
-                }*/
+                }
 
                 // Игнорируем события с userData: null когда у нас уже есть пользователь
                 /*if (!data.userData && user) {
@@ -1047,11 +1052,20 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     return;
                 }*/
 
-                // Игнорируем события с тем же userId
-                /*if (data.userId === user?.id) {
-                    console.log('🚫 Ignoring event with same user id');
+                // И обратная для симметрии:
+                /*if (data.userId && !user) {
+                    console.log('🚫 Ignoring login event when already guest');
                     return;
                 }*/
+
+                // console.log('data.userId', data.userId);
+                // console.log('user?.id', user?.id);
+                // console.log('data.userId === user?.id', data.userId === user?.id);    
+                // Игнорируем события с тем же userId
+                if (data.userId === user?.id) {
+                    console.log('🚫 Ignoring event with same user id');
+                    return;
+                }
                 
                 // Очищаем предыдущий таймаут
                 if (syncState.timeout) {
@@ -1060,8 +1074,12 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
 
                 syncState.timeout = setTimeout(async () => {
                     syncState.syncInProgress = true;
+                    // console.log('data.userId 2', data.userId);
+                    // console.log('syncState.lastUserId', syncState.lastUserId);
+                    // console.log('data.userId !== syncState.lastUserId', data.userId !== syncState.lastUserId);    
                     try {
-                        if (data.userId !== syncState.lastUserId) {
+                        // if (data.userId !== syncState.lastUserId) {  - не работает для одной вкладки! последней, когда: data.userId null; syncState.lastUserId null и data.userId !== syncState.lastUserId false
+                        if (data.userId !== syncState.lastUserId || (data.userId === null && syncState.lastUserId === null)) {
                             console.log('🔄 User changed from other tab, syncing...');
                             await refreshUserData?.();
                             syncState.lastUserId = data.userId;
@@ -1069,7 +1087,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     } finally {
                         syncState.syncInProgress = false;
                     }
-                }, 500);
+                }, 250);
             } catch (error) {
                 console.error('Ошибка синхронизации:', error);
             }
@@ -1117,7 +1135,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         clearCart,
         clearPreorder,
         addOrder,
-        refreshUserData
+        // refreshUserData
         // Будущие методы добавятся здесь
     }), [
         // state.user,
@@ -1144,7 +1162,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
         clearCart,
         clearPreorder,
         addOrder,
-        refreshUserData
+        // refreshUserData
     ]);
 
     return (

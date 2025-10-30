@@ -130,7 +130,7 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
             axios.get('/api/initial-data')
                 .then(response => {
                     // console.log(response.data.cart_changes.new_arrivals);
-                    setUser(response.data.user);
+                    setUser(response.data?.user || null);                       // user становится null при логауте
                     setCategoriesMenuArr(response.data.categoriesMenuArr);
                     setAuthBlockContentFinal(response.data.authBlockContentFinal);
                     setCategoriesInfo(response.data.categoriesInfo);
@@ -154,14 +154,15 @@ export const AppProvider: React.FC<IAppProviderProps> = ({ children }) => {
     const refreshUserData = async () => {
         try {
             const response = await axios.get('/api/initial-data');
-            setUser(response.data.user);
-            setCategoriesMenuArr(response.data.categoriesMenuArr);
+            console.log('resp вызов!', response.data?.user || null);
+            setUser(response.data?.user || null);                                   // user становится null при логауте
+            // setCategoriesMenuArr(response.data.categoriesMenuArr);
             setAuthBlockContentFinal(response.data.authBlockContentFinal);
-            setCategoriesInfo(response.data.categoriesInfo);
-            setCart(response.data.cart);
-            setPreorder(response.data.preorder);
-            setFavorites(response.data.favorites);
-            setOrders(response.data.orders);
+            // setCategoriesInfo(response.data.categoriesInfo);
+            // setCart(response.data.cart);
+            // setPreorder(response.data.preorder);
+            // setFavorites(response.data.favorites);
+            // setOrders(response.data.orders);
             
             console.log('Данные пользователя синхронизированы между вкладками');
         } catch (error) {
