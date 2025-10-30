@@ -950,7 +950,6 @@ class OrderController extends Controller {
 
         return false; // Просто возвращаем false - тестируем шаг за шагом
         
-        /*
         if (!$authToken) {
             \Log::debug('No payment auth cookie found for order', ['order_id' => $order->id]);
             \Log::debug('Method finished !$authToken', ['memory' => memory_get_usage()]);
@@ -1002,7 +1001,7 @@ class OrderController extends Controller {
             ]);
             \Log::debug('Method finished error', ['memory' => memory_get_usage()]);
             return false;
-        }*/
+        }
     }
 
     private function handleSuccessRedirect(Order $order, ClientRank $clientRank, bool $authRestored) {
