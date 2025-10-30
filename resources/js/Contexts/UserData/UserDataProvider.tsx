@@ -1063,7 +1063,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                 // console.log('data.userId === user?.id', data.userId === user?.id);    
                 // Игнорируем события с тем же userId
                 if (data.userId === user?.id) {
-                    console.log('🚫 Ignoring event with same user id');
+                    // console.log('🚫 Ignoring event with same user id');
                     return;
                 }
                 
