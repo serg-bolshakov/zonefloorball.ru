@@ -2,6 +2,8 @@
 // app/Http/Controllers/OrderController.php
 namespace App\Http\Controllers;
 
+use Symfony\Component\HttpFoundation\Cookie;
+
 # используем FormRequest для создания классов валидации входных API-запросов: 
 use App\Http\Requests\StoreOrderRequest;
 
@@ -560,7 +562,7 @@ class OrderController extends Controller {
                 true,  // HTTPS only
                 true,  // HTTP only
                 false,
-                'lax'
+                'none' // sameSite ← временно! 30.10.2025
             );
 
             \Log::debug('Payment auth cookie set', [
