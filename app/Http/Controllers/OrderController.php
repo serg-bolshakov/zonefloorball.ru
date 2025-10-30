@@ -948,7 +948,7 @@ class OrderController extends Controller {
             'client_rank' => $order->order_client_rank_id
         ]);
 
-        return false; // Просто возвращаем false - тестируем шаг за шагом
+        // return false; // Просто возвращаем false - тестируем шаг за шагом
         
         if (!$authToken) {
             \Log::debug('No payment auth cookie found for order', ['order_id' => $order->id]);
