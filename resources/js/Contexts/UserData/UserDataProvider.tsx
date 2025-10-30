@@ -1087,7 +1087,7 @@ export const UserDataProvider = ({ children }: { children: React.ReactNode }) =>
                     } finally {
                         syncState.syncInProgress = false;
                     }
-                }, 250);
+                }, 500);
             } catch (error) {
                 console.error('Ошибка синхронизации:', error);
             }
