@@ -42,6 +42,7 @@ use App\Enums\OrderStatus;                  // создали класс-пер�
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\OrderAction;
+use App\Enums\ClientRank;
 
 /* Если вы не хотите использовать метод validate запроса, то вы можете создать экземпляр валидатора вручную, 
    используя фасад Validator. Метод make фасада генерирует новый экземпляр валидатора: 
@@ -129,22 +130,8 @@ class OrderController extends Controller {
         $isPreorder = $action === OrderAction::PREORDER;
         
         try {
-                /* DB::transaction(function () use ($request, &$order, &$redirect) {       // Передаём $order в транзакцию по ссылке
 
-                $isPreorder = false;
-
-                $validated = $request->validate([
-                    'action'        => ['required', 'string', Rule::in(OrderAction::forRequest($request))],
-                    'paymentMethod' => ['required', 'string', Rule::in(['online', 'bank_transfer', 'cash'])],
-                ]);
-
-                $action = OrderAction::tryFrom($validated['action'])                                        // tryFrom() (стандартный метод enum), Строгая конвертация строки в enum с проверкой, Вернёт null при невалидном значении
-                    ?? throw new \InvalidArgumentException('Invalid action: ' . $validated['action']);
-                // Вариант 2 (если нужен дефолтный PREORDER): $action = OrderAction::forRequest($request); // Без исключений!
-
-                $isPreorder = $action === OrderAction::PREORDER;*/
-
-                DB::transaction(function () use ($request, $user, $isPreorder, $validated, &$order, &$redirect) {
+                DB::transaction(function () use ($request, $user, $isPreorder, $validated, &$order, &$redirect) {       // Передаём $order в транзакцию по ссылке
 
                 $statusId = match($isPreorder) {
                     true  => OrderStatus::PREORDER->value,
@@ -562,13 +549,32 @@ class OrderController extends Controller {
                 return $order; // Возвращаем только объект
             });
 
+            // Генерируем токен и устанавливаем куку (для авторизации после успешной оплаты заказа через Робокассу)
+            $authToken = $this->generatePaymentAuthToken($order);
+            $cookie = cookie(
+                'payment_auth', 
+                $authToken, 
+                180, // 3 часа
+                '/',
+                '.zonefloorball.ru',
+                true,  // HTTPS only
+                true,  // HTTP only
+                false,
+                'lax'
+            );
+
+            \Log::debug('Payment auth cookie set', [
+                'order_id' => $order->id,
+                'access_hash' => $order->access_hash
+            ]);
+
+            // Возвращаем JSON с кукой
             return response()->json([
                 'status'    => 'success',
                 'orderId'   => $order->id,
-                // 'clearCart' => true,            // Флаг для фронта - надо подумать... здесь может быть и предзаказ... пока ничего не передаём...
-                'redirect'  => $redirect,       // Фронт сам решит куда редиректить (либо null, либо ссылка на оплату)
+                'redirect'  => $redirect,
                 'message'   => $order->is_preorder ? 'Предварительный заказ оформлен' : 'Заказ успешно создан'
-            ]);
+            ])->withCookie($cookie);
         
         } catch (\Throwable $e) {     // \Throwable — это базовый интерфейс в PHP, который реализуют: Все исключения (\Exception) и Ошибки (\Error, например TypeError)
             // Обработка ошибок с доступом к $order
@@ -716,7 +722,7 @@ class OrderController extends Controller {
             'headers' => $request->headers->all()
         ]);
 
-        // 1. Формируем строку для подписи
+        // 1. Формируем строку для подписи. Валидация подписи...
             $signatureString = implode(':', [
                 $outSum,
                 $orderId,
@@ -738,28 +744,28 @@ class OrderController extends Controller {
         
         // 3. Если подпись верна — обрабатываем заказ
             $order = Order::findOrFail($orderId);
+            $clientRank = ClientRank::fromValue($order->order_client_rank_id);
 
-            \Log::debug('Auth check before', [
+            \Log::debug('showSuccess Auth check before', [
                 'user' => Auth::check(),
                 'order_client_id' => $order->order_client_id,
+                'order_client_rank' => $clientRank->title(),
+                'order_client_rank_id' => $order->order_client_rank_id,
                 'auth_id' => auth()->id(),
-                'is_verified' => auth()->check() ? auth()->user()->hasVerifiedEmail() : 'guest',
-                'cookies' => request()->cookies->all(),
                 'session_id' => session()->getId()
             ]);
 
-        // 4. Для авторизованных: проверяем владельца 
-            /* if ($order->order_client_rank_id !== '8') {
-                Auth::loginUsingId($order->order_client_id);
-                \Log::debug('Auth check passed', [
-                    'order_client_id' => $order->order_client_id,
-                    'auth_id' => auth()->id(),
-                    'is_verified' => auth()->user()->hasVerifiedEmail(),
-                ]);
-                return redirect()->route('privateorder.track', $order->access_hash);
-            } */
+        // 4. ВОССТАНАВЛИВАЕМ АВТОРИЗАЦИЮ НА ОСНОВЕ РАНГА КЛИЕНТА при условии, что в куках есть действительный токен, гарантирующий, что авторизацию делаем для покупателя, а не просто того, кто оплатил заказ по ссылке...
+            $authRestored = $this->restoreAuthFromOrder($order, $clientRank);
 
-            if (Auth::check()) {
+            \Log::debug('showSuccess Auth check after restoration', [
+                'user' => Auth::check(),
+                'user_id' => Auth::id(),
+                'order_client_id' => $order->order_client_id,
+                'auth_restored' => $authRestored
+            ]);
+
+            /* if (Auth::check()) {
                 if ($order->order_client_id == auth()->id()) {
                    \Log::debug('Owner confirmed', ['access_hash' => $order->access_hash]);
                    return redirect()->route('privateorder.track', $order->access_hash);
@@ -775,7 +781,10 @@ class OrderController extends Controller {
             }
             
         // 5. Для гостей: редирект на страницу заказа с хешем
-            return redirect()->route('order.track', $order->access_hash);
+            return redirect()->route('order.track', $order->access_hash);*/
+        
+        // ОБРАБОТКА в зависимости от того, авторизован пользователь или нет: 
+            return $this->handleSuccessRedirect($order, $clientRank, $authRestored);    
     }
 
     public function showFailed(Request $request) {
@@ -860,6 +869,142 @@ class OrderController extends Controller {
         // Можно перенаправить на страницу заказа с более детальной информацией
             /* return redirect()->route('orders.show', $orderId)
                 ->with('error', 'Оплата не была завершена. Вы можете повторить попытку оплаты.'); */
+    }
+
+    private function generatePaymentAuthToken(Order $order): string {
+        $data = [
+            'order_id' => $order->id,
+            'access_hash' => $order->access_hash,
+            'user_id' => $order->order_client_id,
+            'expires' => now()->addHours(3)->timestamp
+        ];
+        
+        $payload = base64_encode(json_encode($data));
+        $signature = hash_hmac('sha256', $payload, config('app.key'));
+        
+        return $payload . '.' . $signature;
+    }
+
+    private function validatePaymentAuthToken(string $token, Order $order): bool {
+        $parts = explode('.', $token);
+        if (count($parts) !== 2) {
+            return false;
+        }
+        
+        list($payload, $signature) = $parts;
+        
+        // Проверяем подпись
+        $expectedSignature = hash_hmac('sha256', $payload, config('app.key'));
+        if (!hash_equals($expectedSignature, $signature)) {
+            return false;
+        }
+        
+        // Декодируем payload
+        $data = json_decode(base64_decode($payload), true);
+        if (!$data) {
+            return false;
+        }
+        
+        // Проверяем срок действия
+        if ($data['expires'] < now()->timestamp) {
+            return false;
+        }
+        
+        // Проверяем соответствие заказу
+        if ($data['order_id'] !== $order->id || 
+            $data['access_hash'] !== $order->access_hash ||
+            $data['user_id'] !== $order->order_client_id) {
+            return false;
+        }
+        
+        return true;
+    }
+   
+    private function restoreAuthFromOrder(Order $order, ClientRank $clientRank): bool {
+        // Если уже авторизован - ничего не делаем
+        if (Auth::check()) {
+            return true;
+        }
+
+        // Для гостевых заказов не восстанавливаем авторизацию
+        if ($clientRank === ClientRank::UNREGISTERED) {
+            \Log::debug('Guest order - no auth restoration needed');
+            return false;
+        }
+
+        // Получаем токен из куки
+        $authToken = request()->cookie('payment_auth');
+
+        \Log::debug('restoreAuthFromOrder Payment auth flow', [
+            'order_id' => $order->id,
+            'cookie_set' => !empty($authToken),
+            'user_id' => $order->order_client_id,
+            'client_rank' => $order->order_client_rank_id
+        ]);
+        
+        if (!$authToken) {
+            \Log::debug('No payment auth cookie found for order', ['order_id' => $order->id]);
+            return false;
+        }
+
+        // Проверяем токен
+        $isValid = $this->validatePaymentAuthToken($authToken, $order);
+
+        if (!$isValid) {
+            \Log::debug('Invalid payment auth token for order', ['order_id' => $order->id]);
+            // Очищаем невалидную куку
+            Cookie::queue(Cookie::forget('payment_auth'));
+            return false;
+        }
+
+        $user = User::find($order->order_client_id);
+    
+        if (!$user) {
+            return false;
+        }
+
+        // Авторизуем пользователя
+        try {
+            Auth::login($user);
+            \Log::info('User auto-logged from order data', [
+                'user_id' => $user->id,
+                'user_rank' => $clientRank->title(),
+                'order_id' => $order->id
+            ]);
+
+            // Очищаем куку после успешного использования
+            Cookie::queue(Cookie::forget('payment_auth'));
+            
+            \Log::info('User authenticated via payment auth token', [
+                'user_id' => $user->id,
+                'order_id' => $order->id
+            ]);
+            
+            return true;
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to auto-login user from order', [
+                'user_id' => $user->id,
+                'order_id' => $order->id,
+                'error' => $e->getMessage()
+            ]);
+            return false;
+        }
+    }
+
+    private function handleSuccessRedirect(Order $order, ClientRank $clientRank, bool $authRestored) {
+        // Простая логика: гости → публичная, остальные → приватная (если авторизовались)
+        if ($clientRank === ClientRank::UNREGISTERED) {
+            return redirect()->route('order.track', $order->access_hash);
+        }
+
+        if ($authRestored) {
+            return redirect()->route('privateorder.track', $order->access_hash)
+                ->with('success', 'Оплата прошла успешно!');
+        }
+
+        return redirect()->route('order.track', $order->access_hash)
+            ->with('warning', 'Оплата прошла успешно! Войдите в систему для доступа к личному кабинету.');
     }
         
     private function resolveUser($request): ?User {
