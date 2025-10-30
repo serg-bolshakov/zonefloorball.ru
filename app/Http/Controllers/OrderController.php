@@ -921,31 +921,39 @@ class OrderController extends Controller {
     }
    
     private function restoreAuthFromOrder(Order $order, ClientRank $clientRank): bool {
-        return false; // Просто возвращаем false
+
+        // После деплоя была ошибка 500, не хватало памяти, где-то зацикливание... начинаем искать
+        \Log::debug('Method started', ['memory' => memory_get_usage()]);
         
         // Если уже авторизован - ничего не делаем
-        /* if (Auth::check()) {
+        if (Auth::check()) {
+            \Log::debug('Method finished Auth::check()', ['memory' => memory_get_usage()]);
             return true;
         }
 
         // Для гостевых заказов не восстанавливаем авторизацию
         if ($clientRank === ClientRank::UNREGISTERED) {
             \Log::debug('Guest order - no auth restoration needed');
+            \Log::debug('Method finished ClientRank::UNREGISTERED', ['memory' => memory_get_usage()]);
             return false;
         }
 
         // Получаем токен из куки
         $authToken = request()->cookie('payment_auth');
-
+        \Log::debug('Method finished Получаем $authToken', ['memory' => memory_get_usage()]);
         \Log::debug('restoreAuthFromOrder Payment auth flow', [
             'order_id' => $order->id,
             'cookie_set' => !empty($authToken),
             'user_id' => $order->order_client_id,
             'client_rank' => $order->order_client_rank_id
         ]);
+
+        return false; // Просто возвращаем false - тестируем шаг за шагом
         
+        /*
         if (!$authToken) {
             \Log::debug('No payment auth cookie found for order', ['order_id' => $order->id]);
+            \Log::debug('Method finished !$authToken', ['memory' => memory_get_usage()]);
             return false;
         }
 
@@ -956,12 +964,14 @@ class OrderController extends Controller {
             \Log::debug('Invalid payment auth token for order', ['order_id' => $order->id]);
             // Очищаем невалидную куку
             Cookie::queue(Cookie::forget('payment_auth'));
+            \Log::debug('Method finished toket !$isValid', ['memory' => memory_get_usage()]);
             return false;
         }
 
         $user = User::find($order->order_client_id);
     
         if (!$user) {
+            \Log::debug('Method finished !$user', ['memory' => memory_get_usage()]);
             return false;
         }
 
@@ -981,7 +991,7 @@ class OrderController extends Controller {
                 'user_id' => $user->id,
                 'order_id' => $order->id
             ]);
-            
+            \Log::debug('Method finished authed success', ['memory' => memory_get_usage()]);
             return true;
 
         } catch (\Exception $e) {
@@ -990,6 +1000,7 @@ class OrderController extends Controller {
                 'order_id' => $order->id,
                 'error' => $e->getMessage()
             ]);
+            \Log::debug('Method finished error', ['memory' => memory_get_usage()]);
             return false;
         }*/
     }
