@@ -2,8 +2,6 @@
 // app/Http/Controllers/OrderController.php
 namespace App\Http\Controllers;
 
-use Symfony\Component\HttpFoundation\Cookie;
-
 # используем FormRequest для создания классов валидации входных API-запросов: 
 use App\Http\Requests\StoreOrderRequest;
 
@@ -964,7 +962,7 @@ class OrderController extends Controller {
         if (!$isValid) {
             \Log::debug('Invalid payment auth token for order', ['order_id' => $order->id]);
             // Очищаем невалидную куку
-            Cookie::queue(Cookie::forget('payment_auth'));
+            cookie()->queue(cookie()->forget('payment_auth'));
             \Log::debug('Method finished toket !$isValid', ['memory' => memory_get_usage()]);
             return false;
         }
@@ -986,7 +984,7 @@ class OrderController extends Controller {
             ]);
 
             // Очищаем куку после успешного использования
-            Cookie::queue(Cookie::forget('payment_auth'));
+            cookie()->queue(cookie()->forget('payment_auth'));
             
             \Log::info('User authenticated via payment auth token', [
                 'user_id' => $user->id,
