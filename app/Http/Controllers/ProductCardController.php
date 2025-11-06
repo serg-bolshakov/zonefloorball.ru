@@ -23,7 +23,7 @@ class ProductCardController extends Controller
         'productMainImage', 'productCardImgOrients', 'actualPrice', 'regularPrice', 'productShowCaseImage', 
         'properties', 'productReport', 'productUnit', 'productPromoImages', 'videos'])->where('prod_url_semantic', $prodUrlSemantic)->first();
         
-        \Log::debug('ProductCardController:', [ 'product' => $product->category_id]);
+        // \Log::debug('ProductCardController:', [ 'product' => $product->category_id]);
 
         // dd($product);
 
