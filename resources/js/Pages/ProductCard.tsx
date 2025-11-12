@@ -68,6 +68,12 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
     .filter(item => Boolean(item) && item !== "NoName")
     .join(' ') || 'Изображение товара';
 
+    console.log('Brand 3 data:', {
+        brand: prodInfo.brand,
+        images: prodInfo.productMainImage,
+        allData: prodInfo
+    });
+
 
     try {
         
