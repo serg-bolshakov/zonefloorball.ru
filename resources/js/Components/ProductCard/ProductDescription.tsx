@@ -10,7 +10,7 @@ const ProductDescription: React.FC<IProductDescription> = ({ prodInfo }) => {
 
     return (
         <section className="cardProduct-props">  
- {/* НОВЫЙ БЛОК: Одобрение федерации - ТОЛЬКО ДЛЯ BRAND_ID = 3 */}
+            {/* НОВЫЙ БЛОК: Одобрение федерации - ТОЛЬКО ДЛЯ BRAND_ID = 3 */}
             {prodInfo.brand_id === 3 && (
                 <div className="cardProduct-approval">
                     <div className="cardProduct-approvalContent">
@@ -22,7 +22,7 @@ const ProductDescription: React.FC<IProductDescription> = ({ prodInfo }) => {
                         />
                         <div className="cardProduct-approvalText">
                             <p className=''>Продукция АЛЕТЕРС одобрена Национальной федерацией флорбола России для использования в соревнованиях всех уровней.</p>
-                            <p className="text-align-right"><a href="https://xn--m1agla.xn--p1ai/wp-content/uploads/2025/11/PRIKAZ.pdf" target="_blank" rel="noopener noreferrer">Текст приказа (на сайте федерации в новой складке).</a>.</p>
+                            <p className="text-align-right"><a href="https://xn--m1agla.xn--p1ai/wp-content/uploads/2025/11/PRIKAZ.pdf" target="_blank" rel="noopener noreferrer">Текст приказа (на сайте федерации в новой вкладке).</a>.</p>
                         </div>
                     </div>
                 </div>
