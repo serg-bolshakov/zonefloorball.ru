@@ -61,19 +61,15 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
     // console.log('propVariants', propVariants);
     // console.log('prodInfo.category_id', prodInfo.category_id);
 
-    const imagePath = `/storage/${prodInfo.productMainImage.img_link}`;
-    const webpPath = imagePath.replace(/\.(jpg|png)$/, '.webp');
-
     const altText = [prodInfo.category?.category, prodInfo.brand?.brand_view, prodInfo.model, prodInfo.marka]
     .filter(item => Boolean(item) && item !== "NoName")
     .join(' ') || 'Изображение товара';
 
-    console.log('Brand 3 data:', {
-        brand: prodInfo.brand,
-        images: prodInfo.productMainImage,
-        allData: prodInfo
-    });
-
+    // console.log('Brand 3 data:', {
+    //     brand: prodInfo.brand,
+    //     images: prodInfo.productMainImage,
+    //     allData: prodInfo
+    // });
 
     try {
         
@@ -100,95 +96,71 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
 
                     <section className="cardProduct-line__block">
                         <section>
-                            {/* { prodInfo.productMainImage.img_link && (                         
-                                <LazyLoadImage
-                                    className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
-                                    onClick={() => setIsModalOpen(true)}
-                                    src={`/storage/${ prodInfo.productMainImage.img_link }`} 
-                                    alt={[prodInfo.category.category, prodInfo.brand.brand_view, prodInfo.model, prodInfo.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} 
-                                    title="Кликни на изображение, чтобы посмотреть его на всём экране."
-                                />
-                            )} */}
-                            
-                            {/* {prodInfo.productMainImage.img_link && (
-                                <picture>
-                                    <source 
-                                        srcSet={`/storage/${prodInfo.productMainImage.img_link.replace(/\.(jpg|png)$/, '.webp')}`} 
-                                        type="image/webp" 
-                                    />
-                                    <source 
-                                        srcSet={`/storage/${prodInfo.productMainImage.img_link}`} 
-                                        type={prodInfo.productMainImage.img_link.endsWith('.png') ? 'image/png' : 'image/jpeg'} 
-                                    <img
-                                        src={`/storage/${prodInfo.productMainImage.img_link}`}
-                                        className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
-                                        onClick={() => setIsModalOpen(true)}
-                                        alt={[prodInfo.category.category, prodInfo.brand.brand_view, prodInfo.model, prodInfo.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} 
-                                        title="Кликни на изображение, чтобы посмотреть его на всём экране."
-                                    />
-                                </picture>
-                            )} */}
-
-                            {prodInfo.productMainImage?.img_link && (
-                                <picture>
-                                    {/* Проверяем существование WebP версии */}
-                                    {prodInfo.productMainImage.img_link.replace(/\.(jpg|png)$/, '.webp') !== prodInfo.productMainImage.img_link && (
+                            {prodInfo.productMainImage?.img_link ? (
+                                <>
+                                    {/* Основное изображение */}
+                                    <picture>
+                                        {prodInfo.productMainImage.img_link.replace(/\.(jpg|png)$/, '.webp') !== prodInfo.productMainImage.img_link && (
+                                            <source 
+                                                srcSet={`/storage/${prodInfo.productMainImage.img_link.replace(/\.(jpg|png)$/, '.webp')}`} 
+                                                type="image/webp" 
+                                            />
+                                        )}
                                         <source 
-                                            srcSet={`/storage/${prodInfo.productMainImage.img_link.replace(/\.(jpg|png)$/, '.webp')}`} 
-                                            type="image/webp" 
+                                            srcSet={`/storage/${prodInfo.productMainImage.img_link}`} 
+                                            type={prodInfo.productMainImage.img_link.endsWith('.png') ? 'image/png' : 'image/jpeg'} 
                                         />
-                                    )}
-                                    <source 
-                                        srcSet={`/storage/${prodInfo.productMainImage.img_link}`} 
-                                        type={prodInfo.productMainImage.img_link.endsWith('.png') ? 'image/png' : 'image/jpeg'} 
-                                    />
-                                    {/* Финальный фолбэк */}
-                                    <img
-                                        src={`/storage/${prodInfo.productMainImage.img_link}`}
-                                        className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
-                                        onClick={() => setIsModalOpen(true)}
-                                        alt={altText}
-                                        title="Кликни на изображение, чтобы посмотреть его на всём экране."
-                                    />
-                                </picture>
-                            )}
+                                        <img
+                                            src={`/storage/${prodInfo.productMainImage.img_link}`}
+                                            className={`cardProduct__mainImg--${prodInfo.productCardImgOrients?.img_orient || 'default'}`} 
+                                            onClick={() => setIsModalOpen(true)}
+                                            alt={altText}
+                                            title="Кликни на изображение, чтобы посмотреть его на всём экране."
+                                        />
+                                    </picture>
 
-                            <AnimatePresence>
-                            {isModalOpen && (
-                                <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                transition={{ duration: 0.9 }}
-                                className="prodcard-img_block"
-                                onClick={closeModal}
-                                >
-                            <>
-                                <div className="prodcard-img_block" onClick={closeModal}>
-                                    <div 
-                                        className="modal-img" 
-                                        onClick={(e) => e.stopPropagation()} // Предотвращаем закрытие при клике на контент
-                                    >
-                                        <span 
-                                            className="modal-close" 
-                                            onClick={closeModal}
-                                            role="button"
-                                            aria-label="Закрыть модальное окно"
-                                            tabIndex={0}
-                                        >
-                                            &times;
-                                        </span>
-                                        <img 
-                                            loading="lazy" 
-                                            src={`/storage/${ prodInfo.productMainImage.img_link }`} 
-                                            alt="Увеличенное изображение товара" 
-                                        />
-                                    </div>
+                                    {/* Модальное окно */}
+                                    <AnimatePresence>
+                                        {isModalOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                exit={{ opacity: 0 }}
+                                                transition={{ duration: 0.9 }}
+                                                className="prodcard-img_block"
+                                                onClick={closeModal}
+                                            >
+                                                <div className="prodcard-img_block" onClick={closeModal}>
+                                                    <div 
+                                                        className="modal-img" 
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <span 
+                                                            className="modal-close" 
+                                                            onClick={closeModal}
+                                                            role="button"
+                                                            aria-label="Закрыть модальное окно"
+                                                            tabIndex={0}
+                                                        >
+                                                            &times;
+                                                        </span>
+                                                        <img 
+                                                            loading="lazy" 
+                                                            src={`/storage/${prodInfo.productMainImage.img_link}`} 
+                                                            alt="Увеличенное изображение товара" 
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </>
+                            ) : (
+                                // Placeholder когда нет изображения
+                                <div className="image-placeholder">
+                                    Нет изображения
                                 </div>
-                            </>
-                            </motion.div>
                             )}
-                            </AnimatePresence>
                         </section>
 
                         <section className="cardProduct-props">
