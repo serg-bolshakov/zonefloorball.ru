@@ -100,14 +100,34 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                                 />
                             )} */}
                             
-                            {prodInfo.productMainImage.img_link && (
+                            {/* {prodInfo.productMainImage.img_link && (
                                 <picture>
-                                    {/* Добавляем проверку MIME-типа */}
                                     <source 
                                         srcSet={`/storage/${prodInfo.productMainImage.img_link.replace(/\.(jpg|png)$/, '.webp')}`} 
                                         type="image/webp" 
                                     />
-                                    {/* Явно указываем MIME-тип для оригинала */}
+                                    <source 
+                                        srcSet={`/storage/${prodInfo.productMainImage.img_link}`} 
+                                        type={prodInfo.productMainImage.img_link.endsWith('.png') ? 'image/png' : 'image/jpeg'} 
+                                    <img
+                                        src={`/storage/${prodInfo.productMainImage.img_link}`}
+                                        className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
+                                        onClick={() => setIsModalOpen(true)}
+                                        alt={[prodInfo.category.category, prodInfo.brand.brand_view, prodInfo.model, prodInfo.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} 
+                                        title="Кликни на изображение, чтобы посмотреть его на всём экране."
+                                    />
+                                </picture>
+                            )} */}
+
+                            {prodInfo.productMainImage?.img_link && (
+                                <picture>
+                                    {/* Проверяем существование WebP версии */}
+                                    {prodInfo.productMainImage.img_link.replace(/\.(jpg|png)$/, '.webp') !== prodInfo.productMainImage.img_link && (
+                                        <source 
+                                            srcSet={`/storage/${prodInfo.productMainImage.img_link.replace(/\.(jpg|png)$/, '.webp')}`} 
+                                            type="image/webp" 
+                                        />
+                                    )}
                                     <source 
                                         srcSet={`/storage/${prodInfo.productMainImage.img_link}`} 
                                         type={prodInfo.productMainImage.img_link.endsWith('.png') ? 'image/png' : 'image/jpeg'} 
@@ -121,7 +141,7 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                                         title="Кликни на изображение, чтобы посмотреть его на всём экране."
                                     />
                                 </picture>
-                                )}
+                            )}
 
                             <AnimatePresence>
                             {isModalOpen && (
