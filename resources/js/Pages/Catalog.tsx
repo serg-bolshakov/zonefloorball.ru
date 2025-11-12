@@ -78,7 +78,6 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
     categoryId,
 }) => {
 
-    // console.log('prods', products);
     // Инициализируем состояние из пропсов (которые приходят из URL через Inertia)
     const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [searchType, setSearchType] = useState<'article' | 'title'>(initialSearchType);
@@ -502,7 +501,27 @@ const Catalog: React.FC<ICatalogProps> = ({title, robots, description, keywords,
                             
                             <div className="filters-content">
                                 <div className="category-description">
-                                    <p dangerouslySetInnerHTML={{ __html: catDescription }} />
+                                    {/* Блок одобрения для категории 3 */}
+                                    {categoryId === 1 ? (
+                                        <div className='catalog-approval'>
+                                            <div className="catalog-approvalContent">
+                                                <div className="catalog-approvalText">
+                                                    <p>Клюшки АЛЕТЕРС <a href="https://xn--m1agla.xn--p1ai/wp-content/uploads/2025/11/PRIKAZ.pdf" target="_blank" rel="noopener noreferrer">
+                                                            одобрены
+                                                        </a> Национальной федерацией флорбола России для использования в соревнованиях всех уровней.</p>
+                                                    
+                                                </div>
+                                                <img 
+                                                    src="/storage/icons/nffr-logo.webp" 
+                                                    alt="Логотип Национальной федерации флорбола России"
+                                                    title="Логотип Национальной федерации флорбола России" 
+                                                    className="catalog-approvalLogo" 
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <p dangerouslySetInnerHTML={{ __html: catDescription }} />
+                                    )}
                                 </div>
                                 {getAsideComponent()}
                             </div>
