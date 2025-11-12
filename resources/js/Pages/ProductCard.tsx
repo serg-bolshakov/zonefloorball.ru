@@ -64,6 +64,10 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
     const imagePath = `/storage/${prodInfo.productMainImage.img_link}`;
     const webpPath = imagePath.replace(/\.(jpg|png)$/, '.webp');
 
+    const altText = [prodInfo.category?.category, prodInfo.brand?.brand_view, prodInfo.model, prodInfo.marka]
+    .filter(item => Boolean(item) && item !== "NoName")
+    .join(' ') || 'Изображение товара';
+
 
     try {
         
@@ -137,7 +141,7 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                                         src={`/storage/${prodInfo.productMainImage.img_link}`}
                                         className={`cardProduct__mainImg--${ prodInfo.productCardImgOrients.img_orient }`} 
                                         onClick={() => setIsModalOpen(true)}
-                                        alt={[prodInfo.category.category, prodInfo.brand.brand_view, prodInfo.model, prodInfo.marka].filter(item => Boolean(item) && item !== "NoName").join(' ')} 
+                                        alt={altText}
                                         title="Кликни на изображение, чтобы посмотреть его на всём экране."
                                     />
                                 </picture>
