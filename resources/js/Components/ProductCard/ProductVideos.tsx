@@ -132,7 +132,7 @@ const ProductVideos: React.FC<ProductVideoProps> = ({ videos }) => {
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                 >
-                                    <div className="video-thumbnail  margin-bottom8px">
+                                    <div className="video-thumbnail margin-bottom8px">
                                         <video
                                             controls
                                             poster={`/storage/${video.poster}`}

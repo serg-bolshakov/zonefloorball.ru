@@ -392,8 +392,38 @@ export interface IProductReportFromDB {
     expected_receipt_date?: string | null;
     on_preorder?: number;
     preordered?: number;
+    
+    // Новые поля для статистики отзывов
+    total_reviews?: number;
+    approved_reviews?: number;
+    average_rating?: number;
+    rating_5?: number;
+    rating_4?: number;
+    rating_3?: number;
+    rating_2?: number;
+    rating_1?: number;
+    reviews_with_media?: number;
+    verified_reviews?: number;
+    last_review_date?: string | null;
+
     created_at?: string | null;
     updated_at?: string | null;
+}
+
+// Дополнительный интерфейс для удобства работы с отзывами
+export interface IProductReviewsStats {
+    average_rating: number;
+    total_reviews: number;
+    rating_distribution: {
+        5: number;
+        4: number;
+        3: number;
+        2: number;
+        1: number;
+    };
+    reviews_with_media: number;
+    verified_reviews: number;
+    last_review_date?: string | null;
 }
 
 export interface IProductUnitFromDB {

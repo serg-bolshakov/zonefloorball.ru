@@ -21,8 +21,9 @@ import useAppContext from '@/Hooks/useAppContext';
 import { useUserDataContext } from '@/Hooks/useUserDataContext';
 import { PRODUCT_STATUSES } from '@/Constants/productStatuses';
 import ProductVideos from '@/Components/ProductCard/ProductVideos';
+import ProductReviewsSection from '@/Components/ProductCard/ProductReviewsSection';
 
-const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants}) => {
+const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants, reviews, can_review, user_pending_review}) => {
     const { user } = useAppContext();
     const { addRecentlyViewedProd } = useUserDataContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -210,12 +211,19 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                     <section className="cardProduct-descDetails__block">                    
                         <ProductDescription prodInfo={prodInfo} />
                         <ProductDetails     prodInfo={prodInfo} />
-                        <ProductVideos videos={prodInfo.videos} />    
+                        <ProductVideos videos={prodInfo.videos} />
                     </section>
 
                     {prodInfo?.productPromoImages && (
                         <ProductGallery promoImgs={prodInfo.productPromoImages} category={prodInfo.category.category} model={prodInfo.model} marka={prodInfo.marka} />
                     )}
+                    <ProductReviewsSection
+                        productId={prodInfo.id}
+                        productReport={prodInfo.productReport} // Передаём весь productReport
+                        recentReviews={reviews.recent_reviews}
+                        canReview={can_review}
+                        userPendingReview={user_pending_review}
+                    />    
                     
                 </main>
                     </motion.div>

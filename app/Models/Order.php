@@ -212,8 +212,32 @@ class Order extends Model {
     }
 
     // Доступ к текущему статусу (для удобства)
-    public function getStatusAttribute() {
+    public function getStatusAttribute(): ?OrderStatus
+    {
         return OrderStatus::tryFrom($this->status_id);
+    }
+
+    /**
+     * Scope для заказов с определенным статусом
+     */
+    public function scopeWithStatus($query, OrderStatus $status) {
+        return $query->where('status_id', $status->value);
+    }
+
+    /**
+     * Scope для заказов, которые можно оценить (полученные)
+     */
+    public function scopeCanBeReviewed($query) {
+        return $query->where('status_id', OrderStatus::RECEIVED->value);
+    }
+
+    /**
+     * Scope для заказов пользователя с определенным товаром
+     */
+    public function scopeWithProduct($query, $productId) {
+        return $query->whereHas('items', function($q) use ($productId) {
+            $q->where('product_id', $productId);
+        });
     }
 
     // не работает в случае обновления статуса из AdminOrderController - не получает нужную нам модель ({"this":{"App\\Models\\Order":[]}} - в логах)
