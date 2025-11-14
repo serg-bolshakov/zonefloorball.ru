@@ -9,47 +9,109 @@ class ProductReport extends Model
 {
     use HasFactory;
     
-        protected $fillable = [
-            'product_id', 
-            'in_stock',
-            'on_sale',
-            'reserved',
-            'coming_soon',
-            'expected_receipt_date',
-            'on_preorder',
-            'preordered'
+    protected $fillable = [
+        'product_id', 
+        'in_stock',
+        'on_sale',
+        'reserved',
+        'coming_soon',
+        'expected_receipt_date',
+        'on_preorder',
+        'preordered',
+        // Новые поля для отзывов
+        'total_reviews',
+        'approved_reviews',
+        'average_rating',
+        'rating_5',
+        'rating_4', 
+        'rating_3',
+        'rating_2',
+        'rating_1',
+        'reviews_with_media',
+        'verified_reviews',
+        'last_review_date',
+    ];
+
+    protected $casts = [
+        'expected_receipt_date' => 'date:Y-m-d',
+        'in_stock' => 'integer',
+        'on_sale' => 'integer',
+        'reserved' => 'integer',
+        'on_preorder' => 'integer',
+        'preordered' => 'integer',
+        // Кастинг новых полей
+        'total_reviews' => 'integer',
+        'approved_reviews' => 'integer',
+        'average_rating' => 'decimal:2',
+        'rating_5' => 'integer',
+        'rating_4' => 'integer',
+        'rating_3' => 'integer',
+        'rating_2' => 'integer',
+        'rating_1' => 'integer',
+        'reviews_with_media' => 'integer',
+        'verified_reviews' => 'integer',
+        'last_review_date' => 'datetime',
+    ];
+
+    public function product() {
+        return $this->belongsTo(Product::class);    // Каждая позиция ссылается на один товар
+    }
+
+    // Scope-методы для удобства
+    public function scopeAvailable($query) {
+        return $query->where('on_sale', '>', 0);
+    }
+
+    /* Пример использования: Получение доступных товаров
+        $availableProducts = ProductReport::with('product')
+            ->available()
+            ->get();
+    */
+
+    public function scopeReserved($query) {
+        return $query->where('reserved', '>', 0);
+    }
+
+    // Валидация в set-методах
+    public function setOnSaleAttribute($value) {
+        $this->attributes['on_sale'] = max(0, (int)$value);
+    }
+
+    // Методы для работы с рейтингами
+    public function getRatingDistribution(): array
+    {
+        return [
+            5 => $this->rating_5,
+            4 => $this->rating_4,
+            3 => $this->rating_3,
+            2 => $this->rating_2,
+            1 => $this->rating_1,
         ];
+    }
 
-        protected $casts = [
-            'expected_receipt_date' => 'date:Y-m-d',
-            'in_stock' => 'integer',
-            'on_sale' => 'integer',
-            'reserved' => 'integer',
-            'on_preorder' => 'integer',
-            'preordered' => 'integer'
-        ];
+    public function getRatingPercentage(int $rating): float
+    {
+        $total = $this->approved_reviews;
+        if ($total === 0) return 0;
 
-        public function product() {
-            return $this->belongsTo(Product::class);    // Каждая позиция ссылается на один товар
-        }
+        $ratingCount = $this->{"rating_{$rating}"} ?? 0;
+        return round(($ratingCount / $total) * 100, 2);
+    }
 
-        // Scope-методы для удобства
-        public function scopeAvailable($query) {
-            return $query->where('on_sale', '>', 0);
-        }
+    public function hasReviews(): bool
+    {
+        return $this->approved_reviews > 0;
+    }
 
-        /* Пример использования: Получение доступных товаров
-            $availableProducts = ProductReport::with('product')
-                ->available()
-                ->get();
-        */
+    public function getReviewsWithMediaPercentage(): float
+    {
+        if ($this->approved_reviews === 0) return 0;
+        return round(($this->reviews_with_media / $this->approved_reviews) * 100, 2);
+    }
 
-        public function scopeReserved($query) {
-            return $query->where('reserved', '>', 0);
-        }
-
-        // Валидация в set-методах
-        public function setOnSaleAttribute($value) {
-            $this->attributes['on_sale'] = max(0, (int)$value);
-        }
+    public function getVerifiedReviewsPercentage(): float
+    {
+        if ($this->approved_reviews === 0) return 0;
+        return round(($this->verified_reviews / $this->approved_reviews) * 100, 2);
+    }
 }
