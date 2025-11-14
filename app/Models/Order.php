@@ -226,9 +226,13 @@ class Order extends Model {
 
     /**
      * Scope для заказов, которые можно оценить (полученные)
+     * Когда мы объявляем метод в модели с префиксом scope, Laravel автоматически делает его доступным через dynamic method без префикса scope: Order::canBeReviewed()->get();
      */
     public function scopeCanBeReviewed($query) {
-        return $query->where('status_id', OrderStatus::RECEIVED->value);
+        return $query->whereIn('status_id', [
+            OrderStatus::RECEIVED->value,   // Товары получены покупателем
+            OrderStatus::COMPLETED->value,  // Заказ завершён
+        ]);
     }
 
     /**

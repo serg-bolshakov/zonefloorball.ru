@@ -202,14 +202,14 @@ class ProductCardController extends Controller
             */
 
             // со scopes...
-            $eligibleOrders = Order::where('user_id', $userId)
+            $eligibleOrders = Order::where('order_client_id', $userId)
                 ->withProduct($product->id)
-                ->canBeReviewed()   // status_id = OrderStatus::RECEIVED
-                ->get();            // В Laravel метод ->get() всегда возвращает коллекцию (Illuminate\Database\Eloquent\Collection), даже если нет результатов. Пустая коллекция - не null.
+                ->canBeReviewed()           // ← ПРАВИЛЬНО! Без "scope" status_id IN (RECEIVED, COMPLETED)
+                ->get();                    // В Laravel метод ->get() всегда возвращает коллекцию (Illuminate\Database\Eloquent\Collection), даже если нет результатов. Пустая коллекция - не null.
 
             \Log::debug('Review eligibility - step by step', [
                 'product_id' => $product->id,
-                'user_id' => $userId,
+                'order_client_id' => $userId,
                 'eligible_orders' => $eligibleOrders->count(),
                 'eligible_order_ids' => $eligibleOrders->pluck('id'),
             ]);
@@ -260,7 +260,7 @@ class ProductCardController extends Controller
             // Проверяем отзыв на модерации
             $userPendingReview = Review::where('user_id', $userId)
                 ->where('product_id', $product->id)
-                ->scopePending()    // ->where('status', 'pending')
+                ->pending()    // ->where('status', 'pending')
                 ->first();          // first() может вернуть null - это нормально
 
             if ($userPendingReview) {
