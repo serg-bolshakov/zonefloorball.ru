@@ -24,6 +24,8 @@ use App\Http\Controllers\Admin\AdminStockController;
 use App\Http\Controllers\Admin\AdminOrderController;
 use App\Http\Controllers\Admin\AdminProductsController;
 use App\Http\Controllers\Admin\AdminProductPriceController;
+use App\Http\Controllers\Admin\AdminDocumentController;
+use App\Http\Controllers\CallbackController;
 
 // пробуем настроить логаут 24.10.2025
 use Laravel\Fortify\Features;
@@ -359,6 +361,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
     Route::post('/products/{product}/update-prices', [AdminProductPriceController::class, 'updatePrices']);
     Route::post('/products/{product}/update-status', [AdminProductsController::class, 'updateStatus']);
     
+    Route::get('/documents', [AdminDocumentController::class, 'index'])->name('admin.documents.index');
+    Route::get('/documents/create', [AdminDocumentController::class, 'create'])->name('admin.documents.create');
+    Route::post('/documents', [AdminDocumentController::class, 'store'])->name('admin.documents.store');
+    Route::get('/documents/{document}', [AdminDocumentController::class, 'show'])->name('admin.documents.show');
 
     // Другие админ-роуты...
 });
@@ -384,3 +390,40 @@ Route::get('/test-error', function() {
         return "Тестовое уведомление отправлено!";
     }
 });
+
+Route::get('/test-media-upload', function () {
+    // Создаем тестовый отзыв
+    $review = \App\Models\Review::first();
+    
+    if (!$review) {
+        return 'Сначала создайте тестовый отзыв';
+    }
+
+    return view('test-media-upload', compact('review'));
+});
+
+Route::post('/test-media-upload', function (\Illuminate\Http\Request $request) {
+    $review = \App\Models\Review::find($request->review_id);
+    
+    try {
+        $mediaService = app(\App\Services\MediaService::class);
+        $uploadedMedia = $mediaService->processReviewMedia(
+            $review, 
+            $request->file('media', [])
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Файлы успешно загружены',
+            'media' => $uploadedMedia,
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Ошибка: ' . $e->getMessage(),
+        ], 500);
+    }
+});
+
+// Роут для запроса обратного звонка:
+Route::post('/callback-request', [CallbackController::class, 'store'])->name('callback.store');

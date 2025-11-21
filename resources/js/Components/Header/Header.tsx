@@ -318,6 +318,25 @@ const Header: React.FC = () => {
                         </motion.div>
                     )} 
 
+                    <motion.div className="header-icon__block basket-logo__div" whileHover={{ scale: 0.95 }} whileTap={{ scale: 0.95 }}>
+                        <a 
+                            href="#support-block" 
+                            className="header-help-emoji" 
+                            title="Помощь с заказом"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                document.getElementById('support-block')?.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
+                            }}
+                        >
+                            {/* 💬 */} 
+                             <span>🎧</span>
+                        </a>
+                    </motion.div>
+                    
+
                 </div>
 
             </header>

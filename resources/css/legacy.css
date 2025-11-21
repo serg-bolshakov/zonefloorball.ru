@@ -4,6 +4,7 @@
 body {
     font-family: 'Noto Sans', sans-serif; /* sans serif, от фр. sans — «без» и англ. serif — «засечка» - без засечек */
     height: 100vh;
+    scroll-behavior: smooth;
 }
 
 sup {
@@ -160,6 +161,26 @@ i { font-style: italic; }
 .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
 .px-4 { padding-left: 1rem; padding-right: 1rem; }
 
+/* Colors */
+.text-gray-900 { color: #1a202c; }
+.text-gray-700 { color: #4a5568; }
+.text-gray-600 { color: #718096; }
+.text-gray-500 { color: #a0aec0; }
+.text-gray-300 { color: #e2e8f0; }
+
+.text-blue-600 { color: #3182ce; }
+.text-blue-800 { color: #2c5282; }
+.text-blue-700 { color: #2b6cb0; }
+
+.text-yellow-400 { color: #f6e05e; }
+.text-yellow-600 { color: #d69e2e; }
+
+.text-green-600 { color: #38a169; }
+.text-green-700 { color: #2f855a; }
+
+.text-red-700 { color: #c53030; }
+.text-orange-600 { color: #dd6b20; }
+
 /* Utilities */
 .space-y-2 > * + * { margin-top: 0.5rem; }
 .space-y-4 > * + * { margin-top: 1rem; }
@@ -187,6 +208,7 @@ i { font-style: italic; }
 /* .gap-2 { gap: 0.5rem; } */
 .gap-4 { gap: 1rem; }
 .gap-6 { gap: 1.5rem; }
+.gap-8 { gap: 2rem; }
 
 .bg-black_90    { background-color: rgba(0, 0, 0, 0.9); }
 .b-1fb861-green { background: #1fb861; }
@@ -298,6 +320,7 @@ strong {
 @media(min-width: 1700px) {
     html {
         font-size: 20px;
+        scroll-behavior: smooth;
     }
 
     .wrapper {
@@ -321,6 +344,7 @@ strong {
 @media(max-width: 400px) {
     html {
         font-size: 12px;
+        scroll-behavior: smooth;
     }
 
     .logo-text {
@@ -746,11 +770,14 @@ footer a:active {
     display: flex;
     gap: 12px;
     margin: 12px 0;
-    justify-content: left;
+    justify-content:space-between;
+    align-items: center;
     flex-wrap: wrap;
 }
 
 .contacts-social a {
+    display: inline-block;
+    margin: 0 4px;
     transition: transform 0.2s ease;
 }
 
@@ -1292,6 +1319,7 @@ ul.breadcrumb li a:hover {
     margin-right: 4px;
     padding: 10px; */
   }
+
   .footer-block {
     padding: 16px;
     border-radius: 8px;
@@ -5672,7 +5700,7 @@ select:hover {
     
     th, td {
         padding: 12px;
-        text-align: left;
+        text-align: center;
         border-bottom: 1px solid #eee;
     }
     
@@ -5686,6 +5714,7 @@ select:hover {
     /* Фиксированный первый столбец */
     .sticky-column {
         position: sticky;
+        text-align: left;
         left: 0;
         background: white;
         z-index: 1;
@@ -7278,19 +7307,134 @@ thead th:hover::after {
     gap: 0.5rem;
     margin-bottom: 1rem;
     overflow-x: auto;
+    padding-bottom: 0.5rem;
 }
 
 .review-card__media-item {
     flex-shrink: 0;
+    position: relative;
 }
 
-.review-card__media-image,
-.review-card__media-video {
+.review-card__media-image {
     width: 5rem;
     height: 5rem;
     object-fit: cover;
     border-radius: 0.5rem;
     border: 1px solid #e2e8f0;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.review-card__media-image:hover {
+    transform: scale(1.05);
+}
+
+/* Видео контейнер */
+.review-card__video-wrapper {
+    position: relative;
+    width: 8rem; /* Больше для видео */
+    height: 5rem;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+    background: #000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.review-card__video-wrapper:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.review-card__media-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Кастомная кнопка play */
+.review-card__video-play-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgba(0, 0, 0, 0.7);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    opacity: 0.9;
+}
+
+.review-card__video-play-btn:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* Скрываем стандартные контроллы на маленьких видео */
+.review-card__media-video::-webkit-media-controls {
+    display: none !important;
+}
+
+.review-card__media-video {
+    /* Скрываем стандартные контроллы */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.media-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+.media-modal__content {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    animation: scaleIn 0.3s ease;
+}
+
+.media-modal__image,
+.media-modal__video {
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 0.5rem;
+}
+
+.media-modal__video {
+    width: auto;
+    height: auto;
+}
+
+.media-modal__close {
+    position: absolute;
+    top: -2.5rem;
+    right: 0;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .review-card__footer {
@@ -7403,7 +7547,7 @@ thead th:hover::after {
     padding: 0.5rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    border-radius: 0.5rem;
+    border-radius: 0.25rem;
     border: none;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -7485,6 +7629,21 @@ thead th:hover::after {
     }
 }
 
+.review-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+    overflow: hidden; /* ← Убираем скролл у оверлея */
+}
+
 .review-modal {
     background: white;
     border-radius: 12px;
@@ -7493,6 +7652,32 @@ thead th:hover::after {
     max-height: 90vh;
     overflow-y: auto;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    margin: 0; /* ← Убираем возможные отступы */
+    position: relative; /* ← Для правильного позиционирования */
+}
+
+/* Убираем скролл у body когда модалка открыта */
+body.modal-open {
+    overflow: hidden;
+}
+
+/* Исправляем скроллбар */
+.review-modal::-webkit-scrollbar {
+    width: 8px;
+}
+
+.review-modal::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 0 12px 12px 0;
+}
+
+.review-modal::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.review-modal::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 /* Заголовок */
@@ -7502,6 +7687,11 @@ thead th:hover::after {
     align-items: center;
     padding: 24px;
     border-bottom: 1px solid #e2e8f0;
+    position: sticky; /* ← Заголовок прилипает при скролле */
+    top: 0;
+    background: white;
+    z-index: 1;
+    border-radius: 12px 12px 0 0; /* ← Скругление верхних углов */
 }
 
 .modal-title {
@@ -7570,7 +7760,7 @@ thead th:hover::after {
 
 /* Форма */
 .review-form {
-    padding: 24px;
+    padding: 0 24px 24px 24px;
 }
 
 .review-form-group {
@@ -7602,7 +7792,7 @@ thead th:hover::after {
     padding: 4px;
 }
 
-.star-button.active {
+.star-button.active-star {
     color: #f6e05e;
 }
 
@@ -7619,7 +7809,7 @@ thead th:hover::after {
 
 /* Текстовые поля */
 .form-textarea {
-    width: 100%;
+    width: 95%;
     padding: 12px;
     border: 2px solid #e2e8f0;
     border-radius: 8px;
@@ -7804,12 +7994,17 @@ thead th:hover::after {
 
 /* Адаптивность */
 @media (max-width: 640px) {
-    .modal-overlay {
+    .review-modal-overlay {
         padding: 10px;
+        align-items: flex-start; /* ← Выравниваем по верху на мобильных */
     }
     
     .review-modal {
         max-height: 95vh;
+    }
+
+    .form-textarea {
+        width: 92%; 
     }
     
     .modal-header,
@@ -7835,4 +8030,430 @@ thead th:hover::after {
     .preview-grid {
         grid-template-columns: repeat(3, 1fr);
     }
+}
+
+/* Контейнер Drag & Drop */
+.drag-drop-container {
+    margin-bottom: 16px;
+}
+
+.drag-drop-zone {
+    border: 2px dashed #e2e8f0;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #fafbfc;
+}
+
+.drag-drop-zone:hover {
+    border-color: #3182ce;
+    background: #f0f7ff;
+}
+
+.drag-drop-zone--active {
+    border-color: #3182ce;
+    background: #ebf5ff;
+    transform: scale(1.02);
+}
+
+.drag-drop-zone--error {
+    border-color: #e53e3e;
+    background: #fed7d7;
+}
+
+.drag-drop-content {
+    pointer-events: none; /* Чтобы не мешать drag событиям */
+}
+
+.drag-drop-icon {
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    transition: transform 0.3s ease;
+}
+
+.drag-drop-zone--active .drag-drop-icon {
+    transform: scale(1.1);
+}
+
+.drag-drop-title {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #2d3748;
+    margin: 0 0 8px 0;
+}
+
+.drag-drop-subtitle {
+    color: #718096;
+    margin: 0 0 20px 0;
+    font-size: 0.95rem;
+}
+
+.drag-drop-hints {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.hint-item {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+    color: #718096;
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    gap: 6px;
+}
+
+/* Сообщение об ошибке */
+.drag-drop-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #fed7d7;
+    border: 1px solid #feb2b2;
+    border-radius: 8px;
+    margin-top: 12px;
+    animation: slideDown 0.3s ease;
+}
+
+.error-icon {
+    font-size: 1.2rem;
+}
+
+.error-text {
+    color: #c53030;
+    font-size: 0.9rem;
+    flex: 1;
+    white-space: pre-line;
+}
+
+.error-message {
+    color: #c53030;
+    font-weight: 500;
+}
+
+/* Анимации */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Преview файлов */
+.media-preview {
+    margin-top: 20px;
+}
+
+.preview-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #2d3748;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+.preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 2px solid #e2e8f0;
+    transition: all 0.3s ease;
+}
+
+.preview-item:hover {
+    border-color: #3182ce;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.preview-image {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.preview-video {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 8px;
+}
+
+.video-icon {
+    font-size: 2rem;
+    margin-bottom: 4px;
+}
+
+.video-name {
+    font-size: 0.75rem;
+    text-align: center;
+    word-break: break-all;
+    opacity: 0.9;
+}
+
+.remove-file {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.preview-item:hover .remove-file {
+    opacity: 1;
+}
+
+.remove-file:hover {
+    background: rgba(0, 0, 0, 0.9);
+    transform: scale(1.1);
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .drag-drop-zone {
+        padding: 30px 15px;
+    }
+    
+    .drag-drop-icon {
+        font-size: 2.5rem;
+    }
+    
+    .drag-drop-title {
+        font-size: 1.1rem;
+    }
+    
+    .drag-drop-hints {
+        gap: 4px;
+    }
+    
+    .hint-item {
+        font-size: 0.8rem;
+    }
+    
+    .preview-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .preview-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+.form-textarea--warning {
+    border-color: #fbb6ce !important;
+    background-color: #fff5f5;
+}
+
+.form-textarea--warning:focus {
+    border-color: #e53e3e !important;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1);
+}
+
+/* Счетчик символов с предупреждением */
+.char-counter--warning {
+    color: #e53e3e;
+    font-weight: 600;
+}
+
+/* Progress bar для комментария */
+.comment-progress {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+
+.comment-progress__fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+.comment-progress__fill--warning {
+    background: #e53e3e;
+}
+
+.comment-progress__fill--good {
+    background: #38a169;
+}
+
+.comment-progress__fill--excellent {
+    background: #3182ce;
+}
+
+.btn-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    /* но клики всё равно работают! */
+}
+
+
+.personal-help {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.personal-help h3 {
+    margin-bottom: 10px;
+    font-size: 1.3em;
+}
+
+.personal-help p {
+    margin-bottom: 15px;
+    opacity: 0.9;
+}
+
+.help-features {
+    margin-bottom: 20px;
+    text-align: left;
+    display: inline-block;
+}
+
+.help-features div {
+    margin-bottom: 8px;
+    font-size: 0.95em;
+}
+
+.callback-btn {
+    background: #ff6b6b;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 25px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.callback-btn:hover {
+    background: #ff5252;
+    transform: translateY(-2px);
+}
+
+.callback-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+.callback-form input,
+.callback-form select {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.95em;
+    box-sizing: border-box;
+}
+
+.callback-form-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.callback-form button[type="submit"] {
+    background: #4ecdc4;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex: 2;
+}
+
+.cancel-btn {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex: 1;
+}
+
+.header-help-emoji {
+    display: inline-block;
+    font-size: 1.5em;
+    text-decoration: none;
+    padding: 0 8px 8px 8px;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    background: transparent;
+}
+
+.header-help-emoji:hover {
+    background: #667eea;
+    transform: scale(1.1);
+    text-decoration: none;
+}
+
+.help-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Стили для якоря */
+#support-block {
+    scroll-margin-top: 120px; /* Отступ сверху при скролле */
+}
+
+.phone-input-wrapper {
+    position: relative;
+}
+
+.phone-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.phone-input.error {
+    border-color: #ff6b6b;
+}
+
+.phone-error {
+    color: #ff6b6b;
+    font-size: 0.8em;
+    margin-top: 4px;
 }
