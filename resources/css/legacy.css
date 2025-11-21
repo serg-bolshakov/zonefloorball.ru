@@ -8457,3 +8457,69 @@ body.modal-open {
     font-size: 0.8em;
     margin-top: 4px;
 }
+
+.telegram-channel {
+    margin-bottom: 8px;
+    padding: 0 12px;
+    background: linear-gradient(135deg, #0088cc, #00aced);
+    border-radius: 8px;
+    text-align: left;
+}
+
+.channel-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.channel-icon {
+    font-size: 1.2em;
+}
+
+.channel-text {
+    font-size: 0.95em;
+}
+
+.channel-link:hover {
+    color: white;
+    opacity: 0.9;
+}
+
+.telegram-promo {
+    width: 92.5%;
+    background: #f8f9fa;
+    /* border-left: 1px solid #0088cc; */
+    border-left: 2px solid #007bff;
+    border-radius: 10px;
+    padding: 8px;
+    /* margin: 15px 0; */
+    margin-bottom: 8px;
+}
+
+.telegram-promo-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.promo-icon {
+    font-size: 1.5em;
+}
+
+.promo-text {
+    flex: 1;
+}
+
+.promo-text a {
+    color: #0088cc;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.promo-text a:hover {
+    text-decoration: underline;
+}

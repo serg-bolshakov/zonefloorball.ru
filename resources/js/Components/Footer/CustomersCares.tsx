@@ -143,6 +143,14 @@ const CustomersCares: React.FC = () => {
                 )}
             </div>
 
+            {/* Новый блок для Telegram-канала */}
+            <div className="telegram-channel">
+                <a href="https://t.me/floorball_shop" target="_blank" rel="noopener noreferrer" className="channel-link">
+                    <span className="channel-icon">📢</span>
+                    <span className="channel-text">Новости и акции в Telegram - канале</span>
+                </a>
+            </div>
+
             <div className="footer-auth__div">
                 <p className="margin-top12px text-align-left margin-bottom12px">
                     Добро пожаловать!
