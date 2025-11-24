@@ -21,12 +21,23 @@ import useAppContext from '@/Hooks/useAppContext';
 import { useUserDataContext } from '@/Hooks/useUserDataContext';
 import { PRODUCT_STATUSES } from '@/Constants/productStatuses';
 import ProductVideos from '@/Components/ProductCard/ProductVideos';
-import ProductReviewsSection from '@/Components/ProductCard/ProductReviewsSection';
+import ProductReviewsSection, { IProductForReviews } from '@/Components/ProductCard/ProductReviewsSection';
 
 const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description, keywords, prodInfo, propVariants, reviews, can_review, user_pending_review}) => {
     const { user } = useAppContext();
     const { addRecentlyViewedProd } = useUserDataContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    console.log('prodInfo', prodInfo);
+    console.log('reviews', reviews);
+
+    // Создаем компактный объект для отзывов
+    const productForReviews = {
+        id: prodInfo.id,
+        title: prodInfo.title!,
+        productShowCaseImage: prodInfo.productShowCaseImage,
+        productReport: prodInfo.productReport,
+    } as IProductForReviews;
+    
     // работа с событиями: useEffect для управления подпиской на события (Обработчик удаляется при размонтировании компонента)
     // добавляем ESC-закрытие:
     useEffect(() => {
@@ -218,11 +229,11 @@ const ProductCard: React.FC<IProductCardResponse> = ({title, robots, description
                         <ProductGallery promoImgs={prodInfo.productPromoImages} category={prodInfo.category.category} model={prodInfo.model} marka={prodInfo.marka} />
                     )}
                     <ProductReviewsSection
-                        productId={prodInfo.id}
-                        productReport={prodInfo.productReport} // Передаём весь productReport
-                        recentReviews={reviews.recent_reviews}
+                        product={productForReviews}
+                        recentApprovedReviews={reviews.recent_approved_reviews}
                         canReview={can_review}
                         userPendingReview={user_pending_review}
+                        user={user}
                     />    
                     
                 </main>

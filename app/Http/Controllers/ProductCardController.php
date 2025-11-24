@@ -18,6 +18,7 @@ class ProductCardController extends Controller
 
         $responseData = $this->getResponseData($prodUrlSemantic);
         // dd($responseData);
+        // \Log::debug('ProductCardController: responseData', [ 'responseData' => $responseData]);
         return Inertia::render('ProductCard', $responseData);
     }
         
@@ -41,18 +42,19 @@ class ProductCardController extends Controller
         // Создаем экземпляр ProductResource и преобразуем продукт
         $productResource = new ProductResource($product);
         $prodInfo = $productResource->toArray(request());
-        \Log::debug('ProductCardController:', [ 'prodInfo' => $prodInfo]);
+        // \Log::debug('ProductCardController:', [ 'prodInfo' => $prodInfo]);
         
         $categoryId = $product->category_id;
         $similarProductsService = ProductCardServiceFactory::create($categoryId, $product);    // Выбираем сервис для выборки в карточку товара аналогичных товаров, разных размеров/цветов...
         $propVariants = $similarProductsService->getSimilarProps();                             // Получаем различные варианты исполнения просматриваемого товара (размеры/цвета/модели...)
-        \Log::debug('ProductCardController propVariants:', [ 'propVariants' => $propVariants]);
+        //\Log::debug('ProductCardController propVariants:', [ 'propVariants' => $propVariants]);
 
         // Получаем данные для отзывов
         $reviewsData = $this->getReviewsData($product);
         \Log::debug('Reviews data:', [
             'product_id' => $product->id,
-            'recent_reviews_count' => count($reviewsData['reviews']['recent_reviews']),
+            'recent_reviews_count' => count($reviewsData['reviews']['recent_approved_reviews']),
+            'recent_reviews' => $reviewsData['reviews']['recent_approved_reviews'],
             'can_review' => $reviewsData['can_review'],
             'user_pending_review' => $reviewsData['user_pending_review'],
             'product_report' => $product->productReport ? [
@@ -122,10 +124,9 @@ class ProductCardController extends Controller
     /**
      * Получает данные для секции отзывов
      */
-    protected function getReviewsData(Product $product): array
-    {
+    protected function getReviewsData(Product $product): array {
         // Получаем последние одобренные отзывы
-        $recentReviews = Review::with(['user', 'media' => function($query) {
+        $recentApprovedReviews = Review::with(['user', 'order', 'media' => function($query) {
                 $query->where('is_approved', true);
             }])
             ->where('product_id', $product->id)
@@ -145,7 +146,8 @@ class ProductCardController extends Controller
                     'disadvantages' => $review->disadvantages,
                     'comment' => $review->comment,
                     'created_at' => $review->created_at->toISOString(),
-                    'is_verified' => (bool)$review->is_verified,
+                    'purchase_date' => $review->order->created_at->toISOString(),   // ← ДАТА ПОКУПКИ
+                    'is_verified' => (bool)$review->is_verified,                    // подтверждённая покупка
                     'media' => $review->media->map(function($media) {
                         return [
                             'id' => $media->id,
@@ -155,6 +157,7 @@ class ProductCardController extends Controller
                         ];
                     })->toArray(),
                     'helpful_count' => $review->helpful_count,
+                    'status' => $review->status,
                 ];
             }
         );
@@ -207,19 +210,19 @@ class ProductCardController extends Controller
                 ->canBeReviewed()           // ← ПРАВИЛЬНО! Без "scope" status_id IN (RECEIVED, COMPLETED)
                 ->get();                    // В Laravel метод ->get() всегда возвращает коллекцию (Illuminate\Database\Eloquent\Collection), даже если нет результатов. Пустая коллекция - не null.
 
-            \Log::debug('Review eligibility - step by step', [
+            /* \Log::debug('Review eligibility - step by step', [
                 'product_id' => $product->id,
                 'order_client_id' => $userId,
                 'eligible_orders' => $eligibleOrders->count(),
                 'eligible_order_ids' => $eligibleOrders->pluck('id'),
-            ]);
+            ]);*/
 
-            \Log::debug('Eligible orders type:', [
+            /*\Log::debug('Eligible orders type:', [
                 'type' => gettype($eligibleOrders),
                 'class' => get_class($eligibleOrders),
                 'count' => $eligibleOrders->count(),
                 'is_empty' => $eligibleOrders->isEmpty(),
-            ]);
+            ]);*/
 
             // Этот код безопасен - foreach не выполнится для пустой коллекции
             foreach ($eligibleOrders as $order) {
@@ -229,38 +232,38 @@ class ProductCardController extends Controller
                     ->where('order_id', $order->id)
                     ->exists();
                 
-                \Log::debug('🔍 Checking order for existing review', [
+                /*\Log::debug('🔍 Checking order for existing review', [
                     'order_id' => $order->id,
                     'has_existing_review' => $hasExistingReview,
-                ]);
+                ]);*/
 
                 if (!$hasExistingReview) {
                     $canReview = true;
-                    \Log::debug('User can review - found eligible order without review', [
+                    /*\Log::debug('User can review - found eligible order without review', [
                         'order_id' => $order->id,
                         'product_id' => $product->id,
-                    ]);
+                    ]);*/
                     break;
                 }
             }
 
-            // Логируем если не нашли подходящий заказ для отзыва
+            // Логируем если не нашли подходящий заказ для отзыва на товар
             if (!$canReview) {
-                \Log::debug('User cannot review - all eligible orders already have reviews', [
+                /*\Log::debug('User cannot review - all eligible orders already have reviews', [
                     'user_id' => $userId,
                     'product_id' => $product->id,
-                ]);
+                ]);*/
             } else {
-                \Log::debug('User cannot review - no eligible orders found', [
+                /*\Log::debug('User cannot review - no eligible orders found', [
                     'user_id' => $userId,
                     'product_id' => $product->id,
-                ]);
+                ]);*/
             }
             
             // Проверяем отзыв на модерации
             $userPendingReview = Review::where('user_id', $userId)
                 ->where('product_id', $product->id)
-                ->pending()    // ->where('status', 'pending')
+                ->pending()         // ->where('status', 'pending')
                 ->first();          // first() может вернуть null - это нормально
 
             if ($userPendingReview) {
@@ -270,21 +273,21 @@ class ProductCardController extends Controller
                     'order_id' => $userPendingReview->order_id,
                 ];
 
-                \Log::debug('User has pending review', [
+                /*\Log::debug('User has pending review', [
                     'review_id' => $userPendingReview['id'],
                     'order_id' => $userPendingReview['order_id'],
-                ]);
+                ]);*/
             }
         }
 
-        \Log::debug('🎉 Final review eligibility', [
+        /*\Log::debug('🎉 Final review eligibility', [
             'can_review' => $canReview,
             'has_pending_review' => !is_null($userPendingReview),
-        ]);
+        ]);*/
 
         return [
             'reviews' => [
-                'recent_reviews' => $recentReviews,
+                'recent_approved_reviews' => $recentApprovedReviews,
             ],
             'can_review' => $canReview,
             'user_pending_review' => $userPendingReview,

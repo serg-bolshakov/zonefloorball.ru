@@ -20,7 +20,7 @@ enum OrderStatus: int {
     case NULLIFY                =14;    // Счёт/резерв не оплачен в течение 3-х дней: аннулирован, товары снимаются с резерва, счёт не подлежит оплате, делать недействительным
     case PREORDER               =15;    // Предзаказ
     
-    public function title(?string $latestDate = null): string {   // title() - для отображения статуса пользователю
+    public function title(?string $latestDate = null): string {   // title() - для отображения статуса заказа
         
         $base = match($this) {
             self::PENDING                   => 'Ожидание обработки',

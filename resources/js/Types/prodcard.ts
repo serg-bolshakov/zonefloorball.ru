@@ -1,7 +1,9 @@
 // resources/js/Types/prodcard.ts
 import { ICategoryItemFromDB, IBrandItemFromDB, ISizeItemFromDB, IProductItemFromDB,IProductUnitFromDB,
         IPropertyItemFromDB, IVideoItemFromDB, IImageItemFromDB, IImgOrientItemFromDB, IPriceItemFromDB, IProductReportFromDB, IProductReviewsStats
- } from "./types";
+} from "./types";
+
+import { IProductReview } from "./reviews";
 
 export interface IProductCardGeneralProps extends IProductItemFromDB {
     actualPrice: IPriceItemFromDB;
@@ -36,34 +38,13 @@ export interface IProductCardResponse {
     propVariants: IPropVariants;
     // Добавляем данные отзывов
     reviews: {
-        recent_reviews: IProductReview[];
+        recent_approved_reviews: IProductReview[];
     };
     can_review: boolean;
     user_pending_review?: {
         id: number;
         status: 'pending';
     };
-}
-
-export interface IProductReview {
-    id: number;
-    user: {
-        id: number;
-        name: string;
-    };
-    rating: number;
-    advantages?: string;
-    disadvantages?: string;
-    comment: string;
-    created_at: string;
-    is_verified: boolean;
-    media: Array<{
-        id: number;
-        file_path: string;
-        type: 'image' | 'video';
-        thumbnail_url?: string;
-    }>;
-    helpful_count: number;
 }
 
 export interface IPropVariants {

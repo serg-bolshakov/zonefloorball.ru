@@ -1,4 +1,6 @@
 <?php
+// app/Http/Controllers/RecentlyViewedController.php
+
 namespace App\Http\Controllers;
 use Illuminate\Http\Request; 
 use Illuminate\Support\Facades\Auth;
@@ -67,7 +69,7 @@ class RecentlyViewedController extends Controller {
                 'regex:/^[\d,]+$/', // Только цифры и запятые
             ],
         ]);
-        \Log::debug('validated:', ['headers' => $validated['ids'], 'headers' => $request->headers->all(), '$userId' => $userId]);
+        // \Log::debug('validated:', ['headers' => $validated['ids'], 'headers' => $request->headers->all(), '$userId' => $userId]);
 
         // Разбиваем строку на массив только после валидации
         $productIds = explode(',', $validated['ids']);

@@ -297,10 +297,10 @@ class ProfileController extends Controller
         $validator = Validator::make($request->all(), $rules, $messages);
 
         if ($validator->fails()) {
-            \Log::debug('Validation failed', [
+            /*\Log::debug('Validation failed', [
                 'errors' => $validator->errors()->toArray(),
                 'input' => $request->all()
-            ]);
+            ]);*/
             
             return response()->json([
                 'success' => false,

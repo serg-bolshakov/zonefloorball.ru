@@ -18,6 +18,7 @@ use App\Models\OrdersCount;
 use App\Models\ProductReport;
 use App\Models\ProductReservation;
 use App\Models\User;
+use App\Models\Review;
 use App\Models\LegalDocument;
 
 use Illuminate\Http\Request;
@@ -122,7 +123,7 @@ class OrderController extends Controller {
             'action'        => ['required', 'string', Rule::in(OrderAction::forRequest($request))],
             'paymentMethod' => ['required', 'string', Rule::in(['online', 'bank_transfer', 'cash'])],
         ]);
-        \Log::debug('OrderController@create $validated:', [ '$validated' => $validated]);
+        // \Log::debug('OrderController@create $validated:', [ '$validated' => $validated]);
 
         $action = OrderAction::tryFrom($validated['action']) 
             ?? throw new \InvalidArgumentException('Invalid action: ' . $validated['action']);
@@ -1125,8 +1126,13 @@ class OrderController extends Controller {
             'order_client_id' => $order->order_client_id,
             'auth_id' => auth()->id(),
             'is_verified' => auth()->check() ? auth()->user()->hasVerifiedEmail() : 'guest',
-            'cookies' => request()->cookies->all(),
-            'session_id' => session()->getId()
+            // 'cookies' => request()->cookies->all(),
+            // 'session_id' => session()->getId()
+        ]);
+
+        // ДОБАВЛЯЕМ EAGER LOADING ДЛЯ ИЗОБРАЖЕНИЙ
+        $order->load([
+            'items.product.productShowCaseImage' // ← ВОТ ЭТА СТРОКА
         ]);
 
         $paymentDetails = $order->payment_details 
@@ -1138,16 +1144,24 @@ class OrderController extends Controller {
                 return Inertia::render('OrderExpired');
             }
 
-            \Log::debug('status_id:', [ 'history' => OrderStatus::tryFrom((int)$order->status_id)?->title()]);
-            \Log::debug('Loaded statusHistory:', [
+            // \Log::debug('status_id:', [ 'history' => OrderStatus::tryFrom((int)$order->status_id)?->title()]);
+            /* \Log::debug('Loaded statusHistory:', [
                 'type' => get_class($order->statusHistory),
                 'first_item' => $order->statusHistory->first()?->toArray()
-            ]);
+            ]);*/
 
-            \Log::debug('Client type check', [
+            /* \Log::debug('Client type check', [
                 'client_type_id' => $order->order_client_type_id,
                 'invoice_url_generated' => $order->order_client_type_id == '2'
-            ]);
+            ]); */
+
+            // Перед map получаем все отзывы пользователя для этого заказа
+            $userReviews = $order->order_client_id 
+                ? Review::where('user_id', $order->order_client_id)
+                    ->where('order_id', $order->id)
+                    ->pluck('product_id')
+                    ->toArray()
+                : [];
 
             return Inertia::render('OrderTracking', [
                     'title' => 'Отслеживание заказа',
@@ -1155,14 +1169,15 @@ class OrderController extends Controller {
                     'description' => '',
                     'keywords' => '',         
                     'order' => [
-                        // 'id' => $order->id,
+                        'id' => $order->id,
                         'number' => $order->order_number,
                         'date' => $order->order_date->format('d.m.Y H:i'),
                         'status' => [
                             'id' => $order->status_id,
                             'name' => OrderStatus::tryFrom((int)$order->status_id)?->title() ?? 'Не указан',    // Используем enum
+                            'code' => OrderStatus::from($order->status_id)->name,                               // 'RECEIVED'
                             'history' => $order->statusHistory?->map(function(OrderStatusHistory $item) {       // Оператор null-safe (?.) Автоматически обрабатывает случай, когда statusHistory равен null.
-                                \Log::debug('History item raw:', ['history' => $item->new_status->title()]);    
+                                // \Log::debug('History item raw:', ['history' => $item->new_status->title()]);    
                                 return [
                                     'date'      => Carbon::parse($item->created_at)->format('d.m.Y H:i'),            // Преобразуем строку в Carbon
                                     'status'    => $item->new_status?->title() ?? 'Неизвестный статус',            
@@ -1170,17 +1185,21 @@ class OrderController extends Controller {
                                 ];
                             })->toArray() ?? [] // Возвращаем пустой массив если history null
                         ],
-                        'items' => $order->items->map(function($item) {
-                            // dd($item);
+                        'items' => $order->items->map(function($item) use ($userReviews) {
+                            // ТЕПЕРЬ productShowCaseImage ДОСТУПЕН
                             return [
                                 'product' => [
                                     'id' => $item->product_id,
                                     'name' => $item->product->title,
-                                    'article' => $item->product->article
+                                    'article' => $item->product->article,
+                                    'productShowCaseImage' => $item->product->productShowCaseImage ? [ // ← ДОБАВЛЯЕМ
+                                        'img_link' => $item->product->productShowCaseImage->img_link
+                                    ] : null
                                 ],
                                 'quantity' => $item->quantity,
                                 'price' => $item->price,
-                                'discount' => $item->regular_price - $item->price
+                                'discount' => $item->regular_price - $item->price,
+                                'has_review' => in_array($item->product_id, $userReviews) // ← ОДИН ЗАПРОС вместо N
                             ];
                         }),
                         'delivery' => [
@@ -1229,6 +1248,11 @@ class OrderController extends Controller {
 
         \Log::debug('TrackPrivateOrder started', ['order_id' => $order->id, 'order_client_id' => $order->order_client_id, 'user_id' => auth()->id()]);
 
+        // ДОБАВЛЯЕМ EAGER LOADING ДЛЯ ИЗОБРАЖЕНИЙ
+        $order->load([
+            'items.product.productShowCaseImage' // ← ВОТ ЭТА СТРОКА
+        ]);
+
         // 1. Строгая проверка владельца
         if ($order->order_client_id !== auth()->id()) {
             \Log::warning('Order access denied', [
@@ -1255,18 +1279,27 @@ class OrderController extends Controller {
                 'first_item' => $order->statusHistory->first()?->toArray()
             ]);
 
+            // Перед map получаем все отзывы пользователя для этого заказа
+            $userReviews = auth()->check() 
+                ? Review::where('user_id', auth()->id())
+                    ->where('order_id', $order->id)
+                    ->pluck('product_id')
+                    ->toArray()
+                : [];
+
             return Inertia::render('OrderTracking', [
                     'title' => 'Отслеживание заказа',
                     'robots' => 'NOINDEX,NOFOLLOW',
                     'description' => '',
                     'keywords' => '',         
                     'order' => [
-                        // 'id' => $order->id,
+                        'id' => $order->id,
                         'number' => $order->order_number,
                         'date' => $order->order_date->format('d.m.Y H:i'),
                         'status' => [
                             'id' => $order->status_id,
                             'name' => OrderStatus::tryFrom((int)$order->status_id)?->title() ?? 'Не указан',    // Используем enum
+                            'code' => OrderStatus::from($order->status_id)->name,                               // 'RECEIVED'
                             'history' => $order->statusHistory?->map(function(OrderStatusHistory $item) use ($order) {       // Оператор null-safe (?.) Автоматически обрабатывает случай, когда statusHistory равен null.
                                 \Log::debug('History item raw status:', [
                                     'new_status' => $item->new_status,
@@ -1284,17 +1317,21 @@ class OrderController extends Controller {
                                 ];
                             })->toArray() ?? [] // Возвращаем пустой массив если history null
                         ],
-                        'items' => $order->items->map(function($item) {
+                        'items' => $order->items->map(function($item) use ($userReviews) {
                             // dd($item);
                             return [
                                 'product' => [
                                     'id' => $item->product_id,
                                     'name' => $item->product->title,
-                                    'article' => $item->product->article
+                                    'article' => $item->product->article,
+                                    'productShowCaseImage' => $item->product->productShowCaseImage ? [ // ← ДОБАВЛЯЕМ
+                                        'img_link' => $item->product->productShowCaseImage->img_link
+                                    ] : null
                                 ],
                                 'quantity' => $item->quantity,
                                 'price' => $item->price,
-                                'discount' => $item->regular_price - $item->price
+                                'discount' => $item->regular_price - $item->price,
+                                'has_review' => in_array($item->product_id, $userReviews) // ← ОДИН ЗАПРОС вместо N
                             ];
                         }),
                         'delivery' => [

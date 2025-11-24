@@ -54,10 +54,10 @@ class PreorderController extends Controller
         $validated = $request->validate(['products'  => ['sometimes', 'array']]);
         $productQuantities = $validated['products']; // {84: 1, 89: 2}
         
-        \Log::debug('PreorderController begin', [
+        /*\Log::debug('PreorderController begin', [
             '$validated' => $validated,
             'productQuantities' => $productQuantities,
-        ]);
+        ]);*/
 
         $products = Product::with(['actualPrice', 'regularPrice', 'preorderPrice', 'productReport', 'productShowCaseImage'])
             ->where('product_status_id', '=', 1)
@@ -75,7 +75,7 @@ class PreorderController extends Controller
                 'products' => new ProductCollection($products),
                 'preorderTotal' => array_sum($validated['products'])
             ];
-            \Log::debug('PreorderController: response', ['response' => $response]);
+            // \Log::debug('PreorderController: response', ['response' => $response]);
             return response()->json($response);
         } catch (\Exception $e) {
             return response()->json([
@@ -87,13 +87,13 @@ class PreorderController extends Controller
 
     // Добавление / обновление товара в предзаказ(е)
     public function update(Request $request) {
-        \Log::debug('PreorderController: update', ['request' => $request->all()]);
+        // \Log::debug('PreorderController: update', ['request' => $request->all()]);
         $validated = $request->validate([
             'product_id'                    => 'required|integer|exists:products,id',
             'quantity'                      => 'required|integer|min:1',
             'expected_delivery_date'        => 'nullable|date|after:today'
         ]);
-        \Log::debug('PreorderController: update validated', ['validated' => $validated]);
+        // \Log::debug('PreorderController: update validated', ['validated' => $validated]);
 
         // Преобразуем строку в правильный формат
         $deliveryDate = $validated['expected_delivery_date'] 

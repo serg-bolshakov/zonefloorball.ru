@@ -414,6 +414,7 @@ export interface IProductReportFromDB {
 export interface IProductReviewsStats {
     average_rating: number;
     total_reviews: number;
+    approved_reviews: number;
     rating_distribution: {
         5: number;
         4: number;

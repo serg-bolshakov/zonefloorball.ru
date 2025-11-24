@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/RegisteredUserController.php
 
 namespace App\Http\Controllers;
 
@@ -27,7 +28,7 @@ class RegisteredUserController extends Controller {
      */
     public function store(Request $request) {
         // dd($request);
-        \Log::debug('RegisteredUserController:', [ 'requesr' => $request->all(),  ]);
+        // \Log::debug('RegisteredUserController:', [ 'requesr' => $request->all(),  ]);
         // Валидация данных
         $rules = $request->has('org') 
             ? RegistrationRules::legalRules() 
@@ -89,7 +90,8 @@ class RegisteredUserController extends Controller {
             'offer_version'              => $this->getOfferVersion()?->version ?? '1.0.0',
             'initial_legal_agreement_ip' => $data['initial_legal_agreement_ip'],
         ]);
-    // Вызов события Registered
+        
+        // Вызов события Registered
         event(new Registered($user));
         return $user;
     }

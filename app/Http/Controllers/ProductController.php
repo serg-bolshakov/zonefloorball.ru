@@ -29,9 +29,9 @@ class ProductController extends Controller
     }
     
     public function index(Request $request) {
-        \Log::debug('ProductController@index input', [ 'request' => $request->all()]);
+        // \Log::debug('ProductController@index input', [ 'request' => $request->all()]);
         $responseData = $this->getResponseData($request);
-        \Log::debug('ProductController@index responseData', [ 'responseData' => $responseData]);
+        // \Log::debug('ProductController@index responseData', [ 'responseData' => $responseData]);
         return Inertia::render('Catalog', $responseData);
     }
 
@@ -47,9 +47,7 @@ class ProductController extends Controller
     }
 
     public function checkSimilar(Request $request) {
-        \Log::debug('Similar products search before', [
-            'params' => $request->all(),
-        ]);
+        // \Log::debug('Similar products search before', [ 'params' => $request->all(), ]);
 
         $validated = $request->validate([
             'article'       => 'required|string',
@@ -61,16 +59,16 @@ class ProductController extends Controller
         ]);
 
         // 1. Сначала проверяем существование товара с таким артикулом
-        \Log::debug('Similar products search article', [
+        /*\Log::debug('Similar products search article', [
             'article' => $request->article,
-        ]);
+        ]);*/
 
         $article = preg_replace('/\D/', '', $request->article); // Оставляем только цифры
         $existingProduct = Product::where('article', $article)->first();
         
-        \Log::debug('Similar products search existingProduct', [
+        /*\Log::debug('Similar products search existingProduct', [
             'existingProduct' => $existingProduct,
-        ]);
+        ]);*/
 
         if ($existingProduct) {
             return response()->json([
@@ -98,9 +96,9 @@ class ProductController extends Controller
             })
             ->first();
 
-        \Log::debug('Similar products search result', [
+        /*\Log::debug('Similar products search result', [
             'similarProduct' => $similarProduct
-        ]);
+        ]);*/
 
         return response()->json([
             'exists' => (bool)$similarProduct,
@@ -115,17 +113,17 @@ class ProductController extends Controller
     protected function getResponseData(Request $request) {
         // Получаем данные из URL
         $categoryId = $this->urlParser->getCategoryId();
-        \Log::debug('getResponseData categoryId', [
+        /*\Log::debug('getResponseData categoryId', [
             'categoryId' => $categoryId
-        ]);
+        ]);*/
        
         $filters    = $this->urlParser->getFilters();
         $filtersArr = $this->urlParser->getFilters();
 
-        \Log::debug('getResponseData filters', [
+        /*\Log::debug('getResponseData filters', [
             'filters' => $filters,
             'filtersArr' => $filtersArr,
-        ]);
+        ]);*/
 
         // Получаем информацию о категории
         $categoryUrlSemantic = $this->getCategoryUrlSemantic();
@@ -263,6 +261,4 @@ class ProductController extends Controller
             ->select('products.*', 'actual_prices.price_value as actual_price', 'regular_prices.price_value as regular_price')
             ->distinct();
     }
-
-
 }
