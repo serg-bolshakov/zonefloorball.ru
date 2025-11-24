@@ -13,7 +13,7 @@ class ReviewResponse extends Model
 
     protected $fillable = [
         'review_id',
-        'admin_id',
+        'author_id',
         'response',
         'is_visible',
     ];
@@ -22,13 +22,11 @@ class ReviewResponse extends Model
         'is_visible' => 'boolean',
     ];
 
-    public function review(): BelongsTo
-    {
+    public function review(): BelongsTo {
         return $this->belongsTo(Review::class);
     }
 
-    public function admin(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'admin_id');
+    public function admin(): BelongsTo {
+        return $this->belongsTo(User::class, 'author_id');
     }
 }

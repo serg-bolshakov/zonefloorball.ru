@@ -4,81 +4,253 @@ import { Link, usePage } from '@inertiajs/react';
 import { IProductReportFromDB } from '@/Types/types';
 import { getReviewsStatsFromReport } from '@/Utils/getReviewsStatsFromReport';
 import { getRatingPercentage } from '@/Utils/getRatingPercentage';
+import ReviewModal, { ReviewFormData } from '@/Components/Reviews/ReviewModal';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import { IProductReview, IReviewUser, IReviewMedia, TSelectedMedia } from '@/Types/reviews';
+import { pluralizeReviews, pluralize } from '@/Utils/pluralize';
+import { formatServerDate } from '@/Utils/dateFormatter';
 
-// Типы данных
-interface ReviewUser {
+export interface IProductForReviews {
     id: number;
-    name: string;
-    avatar?: string;
-}
-
-interface ReviewMedia {
-    id: number;
-    file_path: string;
-    type: 'image' | 'video';
-    thumbnail_url?: string;
-}
-
-interface ProductReview {
-    id: number;
-    user: ReviewUser;
-    rating: number;
-    advantages?: string;
-    disadvantages?: string;
-    comment: string;
-    created_at: string;
-    is_verified: boolean;
-    media: ReviewMedia[];
-    helpful_count: number;
-    is_helpful?: boolean;
+    title: string;
+    productShowCaseImage?: {
+        img_link: string;
+    };
+    productReport: IProductReportFromDB;
 }
 
 interface ProductReviewsSectionProps {
-    productId: number;
-    productReport: IProductReportFromDB; // Принимаем весь productReport
-    recentReviews: ProductReview[];
+    product: IProductForReviews;
+    recentApprovedReviews: IProductReview[];
     canReview: boolean; // Может ли текущий пользователь оставить отзыв
     userPendingReview?: { // Если у пользователя есть отзыв на модерации
         id: number;
         status: 'pending';
     };
+    user: any; // Добавляем user как пропс
 }
 
 const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
-    productId,
-    productReport,
-    recentReviews,
+    product,
+    recentApprovedReviews,
     canReview,
-    userPendingReview
+    userPendingReview,
+    user
 }) => {
-    const { user } = usePage().props as any;
     const [showAllReviews, setShowAllReviews] = useState(false);
     const [isSectionExpanded, setIsSectionExpanded] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isVoteSubmitting, setIsVoteSubmitting] = useState<number | null>(null);
+    
+    // Чтобы votedReviews сохранялось между перезагрузками страницы? простой вариант - хранить в состоянии компонента: const [votedReviews, setVotedReviews] = useState<Set<number>>(new Set());
+    const [votedReviews, setVotedReviews] = useState<Set<number>>(() => {
+        // Можно позже добавить восстановление из localStorage
+        return new Set();
+    });
+    
+    // ✅ ПОДНИМАЕМ СОСТОЯНИЕ ОТЗЫВОВ
+    const [reviews, setReviews] = useState<IProductReview[]>(recentApprovedReviews);
+    console.log('rev', reviews);
+
+    // Деструктурируем для удобства
+    const { id: productId, productReport, title, productShowCaseImage } = product;
 
     // Получаем статистику из productReport
     const reviewsStats = getReviewsStatsFromReport(productReport);
+    // console.log('reviewsStats', reviewsStats);
     const { average_rating, total_reviews, rating_distribution } = reviewsStats;
+
+    // Преобразуем average_rating в число на всякий случай
+    const avgRating = typeof average_rating === 'string' 
+        ? parseFloat(average_rating) 
+        : average_rating;
 
     // Проверяем, есть ли вообще данные для показа
     const hasReviews = total_reviews > 0;
-    const hasRecentReviews = recentReviews.length > 0;
+    
+    // Обновляем статистику на основе актуальных отзывов
+    const hasRecentApprovedReviews = reviews.length > 0;
     const canUserReview = user && canReview && !userPendingReview;
 
     // Если нет отзывов и пользователь не может оставить отзыв - скрываем секцию полностью
-    // if (!hasReviews && !canUserReview) {
-    //     return null;
-    // }
+    if (!hasRecentApprovedReviews && !canUserReview) {
+        return null;
+    }
 
     // Функция для открытия модалки с отзывом
     const openReviewModal = () => {
-        // Здесь будет логика открытия модалки с формой
+        setIsModalOpen(true);
         console.log('Open review modal for product:', productId);
     };
 
+    const closeReviewModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleSubmitReview = async (reviewData: ReviewFormData) => {
+        setIsSubmitting(true);
+
+        try {
+            console.log('Submitting review:', reviewData);
+            // 1. Создаем отзыв
+            const reviewResponse = await axios.post('/api/reviews', {
+                product_id: product.id,
+                rating: reviewData.rating,
+                advantages: reviewData.advantages,
+                disadvantages: reviewData.disadvantages, 
+                comment: reviewData.comment,
+            });
+
+            if (!reviewResponse.data.success) {
+                toast.error(reviewResponse.data.message || 'Ошибка при создании отзыва');
+                throw new Error(reviewResponse.data.message || 'Ошибка при создании отзыва');
+            }
+
+            const reviewId = reviewResponse.data?.review?.id;
+
+            if (!reviewId) {
+                throw new Error('Не удалось получить ID созданного отзыва');
+            }
+
+            // 2. Загружаем медиа если есть
+            if (reviewData.media.length > 0) {
+                const formData = new FormData();
+                reviewData.media.forEach(file => {
+                    formData.append('media[]', file);
+                });
+
+                // Используем прямой axios для FormData
+                const mediaResponse = await axios.post(
+                    `/api/reviews/${reviewId}/media`,
+                    formData,
+                    {
+                        // Все заголовки и токен в resources/js/bootstrap.js
+                        //headers: {
+                            // Для FormData НЕ указываем Content-Type!
+                            // 'X-Requested-With': 'XMLHttpRequest',    // resources/js/bootstrap.js
+                        //},
+                    }
+                );
+
+                if (!mediaResponse.data.success) {
+                    toast.error(mediaResponse.data.message || 'Ошибка при загрузке медиафайлов');
+                    throw new Error(mediaResponse.data.message || 'Ошибка при загрузке медиафайлов');
+                }
+            }
+            
+            // УСПЕХ!Закрываем модальное окно:
+            closeReviewModal();
+        
+            // Показываем сообщение об успехе
+            toast.success('Отзыв успешно отправлен на модерацию! Спасибо!');
+
+            // TODO: Обновить список отзывов или показать уведомление
+            // Можно добавить callback для обновления родительского компонента
+            // onReviewCreated?.();                                       
+                
+        } catch (error: any) {
+            // Обрабатываем все ошибки в одном месте
+            console.error('Error submitting review:', error);
+
+            if (error.type === 'api') {
+            switch (error.status) {
+                case 413:
+                    toast.error('Размер файлов слишком большой');
+                    break;
+                case 422:
+                    // Ошибки валидации Laravel
+                    const validationErrors = error.data?.errors;
+                    if (validationErrors) {
+                        const errorMessages = Object.values(validationErrors).flat();
+                        alert(`Ошибки валидации:\n${errorMessages.join('\n')}`);
+                    } else {
+                        toast.error('Недопустимый формат файлов');
+                    }
+                    break;
+                case 403:
+                    toast.error('Недостаточно прав для выполнения этого действия');
+                    break;
+                case 500:
+                    toast.error('Ошибка сервера при загрузке медиаконтента');
+                    break;
+                default:
+                    toast.error(error.data?.message || 'Ошибка сервера');
+            }
+            } else {
+                toast.error(error.message || 'Ошибка сети');
+            }
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     // Функция для оценки "помогло/не помогло"
-    const handleHelpfulClick = (reviewId: number, isHelpful: boolean) => {
-        // Логика отправки оценки
-        console.log(`Review ${reviewId} marked as ${isHelpful ? 'helpful' : 'not helpful'}`);
+    const handleHelpfulClick = async (reviewId: number, isHelpful: boolean) => {
+        if (votedReviews.has(reviewId)) {
+            toast.info('Вы уже оценили этот отзыв');
+            return;
+        }
+        
+        if (isVoteSubmitting === reviewId) return; // Защита от двойного нажатия
+        setIsVoteSubmitting(reviewId);
+
+        // ✅ ОПТИМИСТИЧНОЕ ОБНОВЛЕНИЕ - сразу показываем изменение
+        const previousCount = recentApprovedReviews.find(r => r.id === reviewId)?.helpful_count || 0;
+        updateReviewHelpfulCount(reviewId, previousCount + 1);
+
+        try {
+            const { data } = await axios.post<{
+                success: boolean;
+                message: string;
+                helpful_count?: number;
+            // }>('/api/reviews/mark-as-helpful', {
+            }>(`/api/reviews/${reviewId}/helpful`, {    // URL теперь другой - роутинг поменяли
+                reviewId,
+                isHelpful,
+            });
+
+            if (!data.success) {
+                throw new Error(data.message || 'Ошибка при оценке отзыва');
+            }
+        
+            // Показываем сообщение об успехе
+            toast.success('Спасибо за вашу оценку!');
+
+            setVotedReviews(prev => new Set(prev).add(reviewId)); // ✅ Запоминаем голос
+
+            // ✅ Синхронизируем с серверным значением (на случай расхождений)
+            if (data.helpful_count !== undefined) {
+                updateReviewHelpfulCount(reviewId, data.helpful_count);
+            }
+
+        } catch (error: any) {
+            console.error('Error marking review as helpful:', error);
+
+            // ✅ ОТКАТ ПРИ ОШИБКЕ - возвращаем предыдущее значение
+            updateReviewHelpfulCount(reviewId, previousCount);
+            
+            // Более безопасное извлечение сообщения об ошибке
+            const errorMessage = error.response?.data?.message 
+                || error.message 
+                || 'Произошла ошибка при оценке отзыва';
+                
+            toast.error(errorMessage);
+        } finally {
+            setIsVoteSubmitting(null); // Снимаем блокировку в любом случае
+        }
+    };
+
+    // Вспомогательная функция для обновления UI
+    const updateReviewHelpfulCount = (reviewId: number, newCount: number) => {
+        setReviews(prevReviews => 
+            prevReviews.map(review => 
+                review.id === reviewId 
+                    ? { ...review, helpful_count: newCount }
+                    : review
+            )
+        );
     };
 
     const toggleSection = () => {
@@ -100,14 +272,14 @@ const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
                     <>
                         <div className="d-flex aline-items-center">
                             <span className="text-xl font-bold text-yellow-600 mr-2">
-                                {average_rating.toFixed(1)}
+                                {!isNaN(avgRating) ? avgRating.toFixed(1) : '0.0'}
                             </span>
                             <div className="d-flex">
                                 {[...Array(5)].map((_, i) => (
                                     <span
                                         key={i}
                                         className={`fs14 ${
-                                            i < Math.floor(average_rating)
+                                            i < Math.floor(avgRating || 0)
                                                 ? 'text-yellow-400'
                                                 : 'text-gray-300'
                                         }`}
@@ -119,7 +291,8 @@ const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
                         </div>
                         <span className="text-gray-400">•</span>
                         <span className="text-blue-600 fs12">
-                            {total_reviews} отзывов
+                            {/* {total_reviews} отзывов */}
+                            {pluralize(total_reviews, ['отзыв', 'отзыва', 'отзывов'])}
                         </span>
                     </>
                 )}
@@ -130,6 +303,7 @@ const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
+                            console.log('!!!!!');
                             openReviewModal();
                         }}
                         className="reviews-btn reviews-btn-primary fs12"
@@ -152,108 +326,118 @@ const ProductReviewsSection: React.FC<ProductReviewsSectionProps> = ({
         </div>
     );
 
-    // Если секция свернута, показываем только компактный заголовок
-    if (!isSectionExpanded) {
-        return (
-            <section className="product-reviews-section">
-                <CompactHeader />
-            </section>
-        );
-    }
-
-    // Полная развернутая версия
     return (
-        <section className="product-reviews-section">
-            <CompactHeader />
-            
-            <div className="reviews-expanded-content" style={{ paddingTop: '16px' }}>
-                {/* Блок статистики - показываем только если есть отзывы */}
-                {hasReviews && (
-                    <div className="reviews-stats mb-6">
-                        {/* Распределение рейтингов */}
-                        <div className="rating-distribution">
-                            {[5, 4, 3, 2, 1].map((rating) => {
-                                const count = rating_distribution[rating as keyof typeof rating_distribution];
-                                const percentage = getRatingPercentage(rating, productReport);
+        <>
+            {/* Секция отзывов */}
+            <section className="product-reviews-section">
+                {/* Компактный заголовок - всегда виден */}
+                <CompactHeader />
+                
+                {/* Расширенный контент - только когда expanded */}
+                {isSectionExpanded && (
+                    <div className="reviews-expanded-content" style={{ paddingTop: '16px' }}>
+                        {/* Блок статистики - показываем только если есть отзывы */}
+                        {hasReviews && (
+                            <div className="reviews-stats mb-6">
+                                {/* Распределение рейтингов */}
+                                <div className="rating-distribution">
+                                    {[5, 4, 3, 2, 1].map((rating) => {
+                                        const count = rating_distribution[rating as keyof typeof rating_distribution];
+                                        const percentage = getRatingPercentage(rating, productReport);
+                                        
+                                        return (
+                                            <div key={rating} className="rating-distribution__item">
+                                                <span className="fs12 text-gray-600 w-20px text-align-center">{rating}</span>
+                                                <span className="text-yellow-400">★</span>
+                                                <div className="rating-distribution__bar">
+                                                    <div 
+                                                        className="rating-distribution__fill" 
+                                                        style={{ width: `${percentage}%` }}
+                                                    />
+                                                </div>
+                                                <span className="rating-distribution__count">
+                                                    {count}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
                                 
-                                return (
-                                    <div key={rating} className="rating-distribution__item">
-                                        <span className="fs12 text-gray-600 w-20px text-align-center">{rating}</span>
-                                        <span className="text-yellow-400">★</span>
-                                        <div className="rating-distribution__bar">
-                                            <div 
-                                                className="rating-distribution__fill" 
-                                                style={{ width: `${percentage}%` }}
-                                            />
+                                {/* Дополнительная статистика */}
+                                <div className="fs12 text-gray-600 space-y-2">
+                                    <div>✅ {reviews.length} {pluralizeReviews(reviews.length)}</div>
+                                    <div>📷 {reviewsStats.reviews_with_media} с фото/видео</div>
+                                    {/* <div>💬 {reviews.length} недавних отзывов</div> */}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Список отзывов или пустое состояние */}
+                        <div className="space-y-6">
+                            {!hasRecentApprovedReviews && !hasReviews ? (
+                                <div className="reviews-empty-state">
+                                    <div className="reviews-empty-state__icon">💬</div>
+                                    <p className="text-lg mb-2">Пока нет отзывов</p>
+                                    <p className="fs12">Будьте первым, кто оставит отзыв об этом товаре!</p>
+                                    {canUserReview && (
+                                        <button
+                                            onClick={openReviewModal}
+                                            className="reviews-btn reviews-btn-primary mt-4"
+                                        >
+                                            Написать первый отзыв
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <>
+                                    {reviews.slice(0, showAllReviews ? reviews.length : 3).map((review) => (
+                                        <ReviewCard 
+                                            key={review.id}
+                                            review={review}
+                                            onHelpfulClick={handleHelpfulClick}
+                                            isVoteSubmitting={isVoteSubmitting}
+                                        />
+                                    ))}
+                                    
+                                    {/* Кнопка "Показать все" */}
+                                    {reviews.length > 3 && !showAllReviews && (
+                                        <div className="text-align-center mt-6">
+                                            <button
+                                                onClick={() => setShowAllReviews(true)}
+                                                className="text-blue-600 hover-text-blue-800 font-medium"
+                                            >
+                                                Показать все {reviews.length} отзывов
+                                            </button>
                                         </div>
-                                        <span className="rating-distribution__count">
-                                            {count}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        
-                        {/* Дополнительная статистика */}
-                        <div className="fs12 text-gray-600 space-y-2">
-                            <div>✅ {reviewsStats.verified_reviews} проверенных отзывов</div>
-                            <div>📷 {reviewsStats.reviews_with_media} с фото/видео</div>
-                            <div>💬 {recentReviews.length} недавних отзывов</div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
+            </section>
 
-                {/* Список отзывов или пустое состояние */}
-                <div className="space-y-6">
-                    {!hasRecentReviews && !hasReviews ? (
-                        <div className="reviews-empty-state">
-                            <div className="reviews-empty-state__icon">💬</div>
-                            <p className="text-lg mb-2">Пока нет отзывов</p>
-                            <p className="fs12">Будьте первым, кто оставит отзыв об этом товаре!</p>
-                            {canUserReview && (
-                                <button
-                                    onClick={openReviewModal}
-                                    className="reviews-btn reviews-btn-primary mt-4"
-                                >
-                                    Написать первый отзыв
-                                </button>
-                            )}
-                        </div>
-                    ) : (
-                        <>
-                            {recentReviews.slice(0, showAllReviews ? recentReviews.length : 3).map((review) => (
-                                <ReviewCard 
-                                    key={review.id}
-                                    review={review}
-                                    onHelpfulClick={handleHelpfulClick}
-                                />
-                            ))}
-                            
-                            {/* Кнопка "Показать все" */}
-                            {recentReviews.length > 3 && !showAllReviews && (
-                                <div className="text-align-center mt-6">
-                                    <button
-                                        onClick={() => setShowAllReviews(true)}
-                                        className="text-blue-600 hover-text-blue-800 font-medium"
-                                    >
-                                        Показать все {recentReviews.length} отзывов
-                                    </button>
-                                </div>
-                            )}
-                        </>
-                    )}
-                </div>
-            </div>
-        </section>
+            {/* Добавляем модалку - всегда доступна! */}
+            <ReviewModal
+                isOpen={isModalOpen}
+                onClose={closeReviewModal}
+                onSubmit={handleSubmitReview}
+                product={product}
+                isSubmitting={isSubmitting}
+            />
+        </>
     );
 };
 
+
 // Компонент карточки отзыва
 const ReviewCard: React.FC<{
-    review: ProductReview;
+    review: IProductReview;
     onHelpfulClick: (reviewId: number, isHelpful: boolean) => void;
-}> = ({ review, onHelpfulClick }) => {
+    isVoteSubmitting: number | null;
+}> = ({ review, onHelpfulClick, isVoteSubmitting }) => {
     const [showFullComment, setShowFullComment] = useState(false);
+    const [selectedMedia, setSelectedMedia] = useState<TSelectedMedia>(null);
     const commentPreview = review.comment.length > 150 
         ? review.comment.substring(0, 150) + '...' 
         : review.comment;
@@ -267,7 +451,8 @@ const ReviewCard: React.FC<{
                         {review.user.name.charAt(0).toUpperCase()}
                     </div>
                     <div className="review-card__info">
-                        <div className="font-medium">{review.user.name}</div>
+                        <div className="fs12px margin-bottom4px text-gray-700">Дата покупки: {formatServerDate(review.purchase_date)} </div>
+                        <div className="font-medium  margin-bottom4px">{review.user.name}</div>
                         <div className="review-card__meta">
                             <div className="review-card__rating">
                                 {[...Array(5)].map((_, i) => (
@@ -325,22 +510,73 @@ const ReviewCard: React.FC<{
             {review.media.length > 0 && (
                 <div className="review-card__media">
                     {review.media.map((media) => (
-                        <div key={media.id} className="review-card__media-item">
+                        <div key={media.id} className={`review-card__media-item ${media.type === 'video' ? 'review-card__media-item--video' : ''}`}>
                             {media.type === 'image' ? (
                                 <img 
-                                    src={`/storage/${media.file_path}`}
+                                    src={`/storage/reviews/${media.file_path}`}
                                     alt="Фото отзыва"
                                     className="review-card__media-image"
+                                    onClick={() => setSelectedMedia(media)}
+                                    loading="lazy"
                                 />
                             ) : (
-                                <video 
-                                    src={`/storage/${media.file_path}`}
-                                    className="review-card__media-video"
-                                    poster={media.thumbnail_url}
-                                />
+                                <div 
+                                    className="review-card__video-wrapper"
+                                    onClick={() => setSelectedMedia(media)}
+                                    tabIndex={0}
+                                    role="button"
+                                    aria-label={`Посмотреть видео отзыва ${review.user.name}`}
+                                >
+                                    <video 
+                                        controls
+                                        // poster={media.thumbnail_url}
+                                        className="review-card__media-video"   
+                                        preload="metadata"
+                                    >
+                                        <source 
+                                            src={`/storage/reviews/${media.file_path}`}
+                                            type="video/mp4" 
+                                        />
+                                        Ваш браузер не поддерживает встроенные видео
+                                    </video>
+                                    <div className="review-card__video-play-btn">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="white">
+                                            <path d="M8 5v14l11-7z"/>
+                                        </svg>
+                                    </div>
+                                </div>
                             )}
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Модальное окно для просмотра */}
+            {selectedMedia && (
+                <div className="media-modal" onClick={() => setSelectedMedia(null)}>
+                    <div className="media-modal__content" onClick={(e) => e.stopPropagation()}>
+                        {selectedMedia.type === 'image' ? (
+                            <img 
+                                src={`/storage/reviews/${selectedMedia.file_path}`}
+                                alt="Фото отзыва"
+                                className="media-modal__image"
+                            />
+                        ) : (
+                            <video 
+                                controls
+                                autoPlay
+                                className="media-modal__video"
+                            >
+                                <source src={`/storage/reviews/${selectedMedia.file_path}`} type="video/mp4" />
+                            </video>
+                        )}
+                        <button 
+                            className="media-modal__close"
+                            onClick={() => setSelectedMedia(null)}
+                        >
+                            ×
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -348,14 +584,17 @@ const ReviewCard: React.FC<{
             <div className="review-card__footer">
                 <button
                     onClick={() => onHelpfulClick(review.id, !review.is_helpful)}
+                    disabled={isVoteSubmitting === review.id}
                     className={`review-card__helpful-btn ${
                         review.is_helpful 
                             ? 'review-card__helpful-btn--active' 
                             : ''
                     }`}
                 >
-                    <span>👍</span>
-                    <span>Помогло ({review.helpful_count})</span>
+                    <span>
+                        {isVoteSubmitting === review.id ? '...' : `👍 Спасибо за отзыв (${review.helpful_count})`}
+                    </span>
+                    
                 </button>
                 
                 {review.is_verified && (
@@ -364,7 +603,7 @@ const ReviewCard: React.FC<{
                     </span>
                 )}
             </div>
-        </div>
+        </div>  
     );
 };
 

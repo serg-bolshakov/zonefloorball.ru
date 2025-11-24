@@ -236,6 +236,25 @@ class Order extends Model {
     }
 
     /**
+     * Получить список статусов, при которых можно оставить отзыв
+     */
+    public static function getReviewableStatuses(): array
+    {
+        return [
+            OrderStatus::RECEIVED->value,
+            OrderStatus::COMPLETED->value,
+        ];
+    }
+
+    /**
+     * Проверить, можно ли оставить отзыв для этого заказа
+     */
+    public function isReviewable(): bool
+    {
+        return in_array($this->status_id, self::getReviewableStatuses());
+    }
+
+    /**
      * Scope для заказов пользователя с определенным товаром
      */
     public function scopeWithProduct($query, $productId) {

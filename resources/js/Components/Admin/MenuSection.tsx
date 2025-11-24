@@ -13,7 +13,7 @@ const MenuSection: React.FC<{ title: string; items: Array<{ label: string; path:
             <div className="menu-header">{title}</div>
             <div className="menu-items">
             {items.map(item => (
-                <Link key={item.path} href={item.path} className={`menu-item ${isActive('/admin/dashboard') ? 'active' : ''}`}>{item.label}</Link>
+                <Link key={item.path} href={item.path} className={`menu-item ${isActive('/admin/dashboard') ? 'admin-active' : ''}`}>{item.label}</Link>
             ))}
             </div>
         </div>

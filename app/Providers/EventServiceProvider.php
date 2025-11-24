@@ -20,6 +20,7 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
             RedirectAfterRegistration::class,           // 09.01.2025 регистрируем слушатель RedirectAfterRegistration в EventServiceProvider (здесь)  для события Registered:
+            SendNewUserNotification::class,             // 20.11.2025 для события Registered
         ],
     ];
 

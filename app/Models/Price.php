@@ -1,4 +1,5 @@
 <?php
+// app/Models/Price.php
 
 namespace App\Models;
 
@@ -14,6 +15,7 @@ class Price extends Model
     const TYPE_REGULAR  = 2;
     const TYPE_SPECIAL  = 3;
     const TYPE_PREORDER = 4;
+    const TYPE_COST     = 5;        // расчётная себестоимость
 
     protected $fillable = [
         'product_id',
@@ -43,7 +45,7 @@ class Price extends Model
      */
     public function priceType(): BelongsTo
     {
-        return $this->belongsTo(PriceType::class);
+        return $this->belongsTo(PriceType::class, 'price_type_id');
     }
 
     /**
@@ -84,6 +86,12 @@ class Price extends Model
         }
         
         return true;
+    }
+
+    // Дополняем методами для себестоимости
+    public function isCostPrice(): bool
+    {
+        return $this->priceType && $this->priceType->price_type === 'price_cost';
     }
 }
 

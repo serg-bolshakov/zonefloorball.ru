@@ -25,7 +25,6 @@ class Review extends Model
         'is_verified',
         'moderator_comment',
         'helpful_count',
-        'not_helpful_count',
         'ip_address',
         'user_agent',
     ];
@@ -34,7 +33,6 @@ class Review extends Model
         'rating' => 'integer',
         'is_verified' => 'boolean',
         'helpful_count' => 'integer',
-        'not_helpful_count' => 'integer',
         'created_at' => 'datetime',
     ];
 
@@ -49,13 +47,11 @@ class Review extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function order(): BelongsTo
-    {
+    public function order(): BelongsTo {
         return $this->belongsTo(Order::class);
     }
 
-    public function media(): HasMany
-    {
+    public function media(): HasMany {
         return $this->hasMany(ReviewMedia::class);
     }
 
@@ -70,18 +66,19 @@ class Review extends Model
     }
 
     // Scope'ы
-    public function scopeApproved($query)
-    {
+    public function scopeApproved($query) {
+        \Log::debug('🔍 Scope approved вызван', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings(),
+        ]);
         return $query->where('status', 'approved');
     }
 
-    public function scopePending($query)
-    {
+    public function scopePending($query) {
         return $query->where('status', 'pending');
     }
 
-    public function scopeWithMedia($query)
-    {
+    public function scopeWithMedia($query) {
         return $query->whereHas('media', function ($q) {
             $q->where('is_approved', true);
         });
@@ -108,35 +105,40 @@ class Review extends Model
         return $this->status === 'pending';
     }
 
-    public function hasMedia(): bool
-    {
+    public function hasMedia(): bool {
         return $this->media()->where('is_approved', true)->exists();
     }
 
-    public function getHelpfulPercentage(): float
-    {
-        $total = $this->helpful_count + $this->not_helpful_count;
-        return $total > 0 ? ($this->helpful_count / $total) * 100 : 0;
+    // подход без not_helpful_count - пока нигде не используем... просто оставляем на будущее...
+    public function getHelpfulScore(): float {
+        // Понижаем вес старых отзывов
+        $ageInDays = $this->created_at->diffInDays(now());
+        $timeFactor = max(0.1, 1 - ($ageInDays / 365)); // Старые отзывы теряют до 90% веса
+        
+        return $this->helpful_count * $timeFactor;
     }
 
     // События
-    protected static function booted()
-    {
-        static::created(function ($review) {
-            // Обновляем рейтинг товара при создании отзыва
-            $review->product->updateRatingStats();
-        });
-
-        static::updated(function ($review) {
-            // Обновляем рейтинг товара при изменении отзыва
-            if ($review->isDirty('rating') || $review->isDirty('status')) {
+    // УДАЛЯЕМ события booted() - они дублируют логику
+    /*
+        protected static function booted()
+        {
+            static::created(function ($review) {
+                // Обновляем рейтинг товара при создании отзыва
                 $review->product->updateRatingStats();
-            }
-        });
+            });
 
-        static::deleted(function ($review) {
-            // Обновляем рейтинг товара при удалении отзыва
-            $review->product->updateRatingStats();
-        });
-    }
+            static::updated(function ($review) {
+                // Обновляем рейтинг товара при изменении отзыва
+                if ($review->isDirty('rating') || $review->isDirty('status')) {
+                    $review->product->updateRatingStats();
+                }
+            });
+
+            static::deleted(function ($review) {
+                // Обновляем рейтинг товара при удалении отзыва
+                $review->product->updateRatingStats();
+            });
+        }
+    */
 }

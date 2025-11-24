@@ -82,32 +82,32 @@ class OrderInvoice extends Mailable
 
     public function buildPdfAndSave($relativePath)
     {
-        \Log::info('Starting PDF generation...');
+        // \Log::info('Starting PDF generation...');
 
         // Подготавливаем данные
         $data = $this->prepareData();
-        \Log::info('Data prepared:', $data);
+        // \Log::info('Data prepared:', $data);
 
         // Рендерим шаблон
-        \Log::info('Rendering template...');
+        // \Log::info('Rendering template...');
         $content = view('emails.orders.invoice', $data)->render();
-        \Log::info('Template rendered.');
+        // \Log::info('Template rendered.');
 
         // Генерация PDF
-        \Log::info('Loading HTML into PDF...');
+        // \Log::info('Loading HTML into PDF...');
         $pdf = Pdf::loadHTML($content);
         $pdf->setOption('defaultFont', 'DejaVu Sans'); // Указываем шрифт
         $pdf->setOption('isHtml5ParserEnabled', true); // Включаем поддержку HTML5
         $pdf->setOption('isRemoteEnabled', true); // Разрешаем загрузку внешних ресурсов (например, изображений)
-        \Log::info('PDF loaded.');
+        // \Log::info('PDF loaded.');
 
         // Полный путь для сохранения файла на сервере
         $fullPath = public_path($relativePath);
         
         // Сохраняем PDF
-        \Log::info('Saving PDF...');
+        // \Log::info('Saving PDF...');
         $pdf->save($fullPath);
-        \Log::info('PDF saved.');
+        // \Log::info('PDF saved.');
 
         return;
     }
@@ -282,13 +282,13 @@ class OrderInvoice extends Mailable
             'totalOrderAmount'          => $totalOrderAmount                    ,
             'isSellerPayVATNote'        => $isSellerPayVATNote                  ,
             'totalAmountInRegularPricesFormattedNote' => $totalAmountInRegularPricesFormattedNote,
-            'pathToImage' => 'storage/images/logo.png', // Путь к логотипу
+            'pathToImage'               => 'storage/images/logo.png'            ,                       // Путь к логотипу
             'orderAmountinRussian'      => $orderAmountinRussian                ,
             'pdfUrl'                    => $pdfUrl,
             'invoiceUrl'                => $invoiceUrl,
             'trackUrl'                  => $trackUrl
         ];
-        \Log::info('Data for template:', $data);
+        // \Log::info('Data for template:', $data);
 
         return $data;
     }

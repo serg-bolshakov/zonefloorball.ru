@@ -56,6 +56,22 @@ return [
             'throw' => false,
         ],
 
+        'reviews' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/reviews'),
+            'url' => env('APP_URL').'/storage/reviews',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
+        'temp' => [
+            'driver' => 'local',
+            'root' => storage_path('app/public/temp'),
+            'url' => env('APP_URL').'/storage/temp',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+
     ],
 
     /*

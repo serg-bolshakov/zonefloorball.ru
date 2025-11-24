@@ -20,7 +20,6 @@ class ProductReport extends Model
         'preordered',
         // Новые поля для отзывов
         'total_reviews',
-        'approved_reviews',
         'average_rating',
         'rating_5',
         'rating_4', 
@@ -28,7 +27,6 @@ class ProductReport extends Model
         'rating_2',
         'rating_1',
         'reviews_with_media',
-        'verified_reviews',
         'last_review_date',
     ];
 
@@ -41,7 +39,6 @@ class ProductReport extends Model
         'preordered' => 'integer',
         // Кастинг новых полей
         'total_reviews' => 'integer',
-        'approved_reviews' => 'integer',
         'average_rating' => 'decimal:2',
         'rating_5' => 'integer',
         'rating_4' => 'integer',
@@ -49,7 +46,6 @@ class ProductReport extends Model
         'rating_2' => 'integer',
         'rating_1' => 'integer',
         'reviews_with_media' => 'integer',
-        'verified_reviews' => 'integer',
         'last_review_date' => 'datetime',
     ];
 
@@ -91,7 +87,7 @@ class ProductReport extends Model
 
     public function getRatingPercentage(int $rating): float
     {
-        $total = $this->approved_reviews;
+        $total = $this->total_reviews;
         if ($total === 0) return 0;
 
         $ratingCount = $this->{"rating_{$rating}"} ?? 0;
@@ -100,18 +96,12 @@ class ProductReport extends Model
 
     public function hasReviews(): bool
     {
-        return $this->approved_reviews > 0;
+        return $this->total_reviews > 0;
     }
 
     public function getReviewsWithMediaPercentage(): float
     {
-        if ($this->approved_reviews === 0) return 0;
-        return round(($this->reviews_with_media / $this->approved_reviews) * 100, 2);
-    }
-
-    public function getVerifiedReviewsPercentage(): float
-    {
-        if ($this->approved_reviews === 0) return 0;
-        return round(($this->verified_reviews / $this->approved_reviews) * 100, 2);
+        if ($this->total_reviews === 0) return 0;
+        return round(($this->reviews_with_media / $this->total_reviews) * 100, 2);
     }
 }

@@ -38,7 +38,7 @@ const Sidebar = () => {
         />
 
         <MenuSection title="Документы" items={[
-            { label: 'Заказы'       , path: '/admin/orders' },
+            { label: 'Все документы'       , path: '/admin/documents' },
             { label: 'Оприходования', path: '/admin/inventory' }
         ]} />
 

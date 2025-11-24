@@ -25,6 +25,7 @@ class CreateNewUser implements CreatesNewUsers
     public function create(array $input): User {
         
         // используем самописный контроллер для регистрации, сюда не попадаем!!!
+        // app/Http/Controllers/RegisteredUserController.php
         
         // отключаем стандартные маршруты Fortify config/fortify.php и найдите раздел features
         // Route::get('/register', [RegisteredUserController::class, 'create'])->name('register');

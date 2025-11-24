@@ -8,7 +8,7 @@ class ProductCardServiceFactory
 {
     public static function create(?string $categoryId, $prodInfo): BaseProductCardService
     {
-        \Log::debug('ProductCardServiceFactory:', [ 'categoryId' => $categoryId, 'prodInfo' => $prodInfo]);
+        // \Log::debug('ProductCardServiceFactory:', [ 'categoryId' => $categoryId, 'prodInfo' => $prodInfo]);
 
         // Категории, которые используют универсальный сервис размеров
         $sizeCategories = [
@@ -21,7 +21,7 @@ class ProductCardServiceFactory
             '17' => 'baules_size',     // размер сумок
         ];
         
-        \Log::debug('ProductCardServiceFactory:', [ 'isset' => isset($sizeCategories[$categoryId])]);
+        // \Log::debug('ProductCardServiceFactory:', [ 'isset' => isset($sizeCategories[$categoryId])]);
         
         if (isset($sizeCategories[$categoryId])) {
             return new UniversalSizeProductCardService(

@@ -40,6 +40,7 @@ const MainLayout: React.FC<IMainLayoutsProps> = ({ children }) => {
                 pauseOnFocusLoss
                 draggable
                 pauseOnHover
+                style={{ zIndex: 99999 }} // ← Явно указываем
             />
         </>
     );
