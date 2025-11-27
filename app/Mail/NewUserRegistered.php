@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
-use App\Models\Review;
+use App\Models\User;
 
 /**
  * Email уведомление о новом зарегистрированном пользователе приложения

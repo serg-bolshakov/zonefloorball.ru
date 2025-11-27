@@ -7,8 +7,7 @@ use App\Mail\NewUserRegistered;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Mail;
 
-class SendNewUserNotification
-{
+class SendNewUserNotification {
     public function handle(Registered $event) {
         
         $recipients = array_filter([

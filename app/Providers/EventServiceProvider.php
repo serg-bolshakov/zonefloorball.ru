@@ -2,8 +2,10 @@
 // app/Providers/EventServiceProvider.php
 namespace App\Providers;
 
-use App\Listeners\RedirectAfterRegistration;        // 09.01.2025 регистрируем слушатель RedirectAfterRegistration в EventServiceProvider (здесь)  для события Registered:
 use Illuminate\Auth\Events\Registered;
+
+use App\Listeners\RedirectAfterRegistration;        // 09.01.2025 регистрируем слушатель RedirectAfterRegistration в EventServiceProvider (здесь)  для события Registered:
+use App\Listeners\SendNewUserNotification;          // 27.11.2025
 
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
