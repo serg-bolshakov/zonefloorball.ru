@@ -318,8 +318,8 @@ const Header: React.FC = () => {
                         </motion.div>
                     )} 
 
-                    <motion.div className="header-icon__block basket-logo__div" whileHover={{ scale: 0.95 }} whileTap={{ scale: 0.95 }}>
-                        <a 
+                    <motion.div className="header-icon__block fs12 margin-top2px" whileHover={{ scale: 0.95 }} whileTap={{ scale: 0.95 }}>
+                        <Link 
                             href="#support-block" 
                             className="header-help-emoji" 
                             title="Помощь с заказом"
@@ -331,11 +331,10 @@ const Header: React.FC = () => {
                                 });
                             }}
                         >
-                            {/* 💬 */} 
-                             <span>🎧</span>
-                        </a>
+                            <span className="header-emoji">🎧</span>
+                        </Link>
+                        <p><Link className="header-icon" href="#support-block">Помощь</Link></p>
                     </motion.div>
-                    
 
                 </div>
 
