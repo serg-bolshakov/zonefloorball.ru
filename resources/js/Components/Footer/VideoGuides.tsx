@@ -8,7 +8,7 @@ const VideoGuides: React.FC = () => {
     const videos = [
         { id: 'registration', title: '📝 Регистрация на сайте', duration: '2:57', url: '/storage/video/registration.mov' },
         { id: 'account', title: '👤 Личный кабинет', duration: 'скоро' },
-        { id: 'order', title: '🛒 Оформление заказа', duration: 'скоро' },
+        { id: 'order', title: '🛒 Оформление покупки', duration: 'скоро' },
         { id: 'preorder', title: '📋 Предварительный заказ', duration: 'скоро' },
         { id: 'legal', title: '🏢 Для юридических лиц', duration: 'скоро' }
     ];
