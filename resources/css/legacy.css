@@ -8537,3 +8537,87 @@ body.modal-open {
     align-items: center;
     justify-content: center;
 }
+
+.video-guides {
+    display: flex;
+    width: 95%;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.video-item {
+    padding: 8px 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 0;
+}
+
+.video-item:hover {
+    background: #e8f4ff;
+    transform: translateX(4px);
+}
+
+.video-item.coming-soon {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.video-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.video-title {
+    font-size: 0.9rem;
+}
+
+.video-duration {
+    font-size: 0.8rem;
+    color: #666;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 12px;
+}
+
+/* Модалка для видео */
+.video-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-modal-content {
+    position: relative;
+    background: black;
+    border-radius: 8px;
+}
+
+.video-close {
+    position: absolute;
+    top: -40px;
+    right: 0;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 30px;
+    cursor: pointer;
+}
+
+.video-player {
+    width: 100%;
+    height: auto;
+    max-height: 85vh;
+    border-radius: 4px;
+    object-fit: contain; /* Вместо cover! */
+}
+

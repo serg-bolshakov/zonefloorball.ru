@@ -2,6 +2,7 @@
 
 import React from 'react';
 import RangeOfProducts from './RangeOfProducts';
+import VideoGuides from './VideoGuides';
 import Info from './Info';
 import Articles from './Articles';
 import CustomersCares from "./CustomersCares";
@@ -12,8 +13,8 @@ const Footer: React.FC = () => {
         <>
             <footer className="footer">
                 <div className="footer-block">
-                    <h2>АССОРТИМЕНТ</h2>
-                    <RangeOfProducts />
+                    <h2>ВИДЕОИНСТРУКЦИИ</h2>
+                    <VideoGuides />
                 </div>
                 <div className="footer-block">
                     <h2>ИНФОРМАЦИЯ</h2>
