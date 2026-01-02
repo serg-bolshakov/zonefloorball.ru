@@ -72,7 +72,7 @@ const WhereAndHowToBuy = () => {
                     <div className="contacts-social">
                         <a href="mailto:unihoczonerussia@gmail.com"><img src="/storage/icons/gmail-logo-colored.jpg" alt="gmail-logo" title="Отправить письмо по электронной почте" /></a>
                         <a href="https://vk.com/unihoczonerussia" target="_blank" rel="noopener noreferrer"><img src="/storage/icons/vk-logo-colored.png" alt="vk-logo" title="Написать ВКонтакте" /></a>
-                        <a href="whatsapp://send?phone=79534156010"><img src="/storage/icons/whatsapp-logo-colored.png" alt="whatsApp-logo" title="Написать в Whatsapp" /></a>
+                        {/* <a href="whatsapp://send?phone=79534156010"><img src="/storage/icons/whatsapp-logo-colored.png" alt="whatsApp-logo" title="Написать в Whatsapp" /></a> */}
                         <a href="https://t.me/unihoczonerussia/"
                             ><img src="/storage/icons/telegram-logo-colored.png" alt="telegram-logo" title="Написать в Telegram" />
                         </a>
@@ -102,7 +102,7 @@ const WhereAndHowToBuy = () => {
                     <li className="margin-top8px">Доступна покупка на складе по цене "на заказ":</li>
                 </ul>
                 <div className="pickup-info">
-                    <p><strong>Адрес:</strong> ул. Бекетова, 3А</p>
+                    <p><strong>Адрес:</strong> ул. Бекетова, 3А<br />(<i>в навигаторе рекомендуем "забивать" ул. Бектова, 3<strong>Б</strong></i>)</p>
                     <p><strong>Район:</strong> Нагорный дворец спорта</p>
                     <p><strong>Территория:</strong> "База малого и среднего бизнеса"</p>
                     <p><strong>Время:</strong> воскресенье, 13:00-14:00</p>
@@ -115,7 +115,7 @@ const WhereAndHowToBuy = () => {
                     <div className="contacts-social">
                         <a href="mailto:unihoczonerussia@gmail.com"><img src="/storage/icons/gmail-logo-colored.jpg" alt="gmail-logo" title="Отправить письмо по электронной почте" /></a>
                         <a href="https://vk.com/unihoczonerussia" target="_blank" rel="noopener noreferrer"><img src="/storage/icons/vk-logo-colored.png" alt="vk-logo" title="Написать ВКонтакте" /></a>
-                        <a href="whatsapp://send?phone=79534156010"><img src="/storage/icons/whatsapp-logo-colored.png" alt="whatsApp-logo" title="Написать в Whatsapp" /></a>
+                        {/* <a href="whatsapp://send?phone=79534156010"><img src="/storage/icons/whatsapp-logo-colored.png" alt="whatsApp-logo" title="Написать в Whatsapp" /></a> */}
                         <a href="https://t.me/unihoczonerussia/"
                             ><img src="/storage/icons/telegram-logo-colored.png" alt="telegram-logo" title="Написать в Telegram" />
                         </a>
