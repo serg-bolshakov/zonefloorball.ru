@@ -9587,7 +9587,7 @@ body.modal-open {
     justify-content: center;
     align-items: center;
     margin: 0 auto;
-    padding: 8%;
+    /* padding: 8%; */
 }
 
 /* Портретные видео */

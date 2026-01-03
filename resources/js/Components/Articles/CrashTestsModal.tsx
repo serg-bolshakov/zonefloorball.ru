@@ -164,11 +164,6 @@ const CrashTestsModal: React.FC<ICrashTestsModalProps> = ({ videos }) => {
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.1 }}
                             >
-                                <AdaptiveVideoPlayer 
-                                    video={video}
-                                    controls={true}
-                                    className="portrait-video-player"
-                                />
                                 <div className="video-info">
                                     <h4>{video.title}</h4>
                                     <p>{video.description}</p>
@@ -179,6 +174,42 @@ const CrashTestsModal: React.FC<ICrashTestsModalProps> = ({ videos }) => {
                                         </div>
                                     )}
                                 </div>
+
+                                <AdaptiveVideoPlayer 
+                                    video={video}
+                                    controls={true}
+                                    className="portrait-video-player"
+                                />
+
+                                {/* Ссылка на товар - НОВЫЙ БЛОК */}
+                                    {video.product_link && video.product_name && (
+                                        <div className="product-link-section">
+                                            <div className="product-link-header">
+                                                <span className="product-icon">🏒</span>
+                                                <span>Тестируемая модель:</span>
+                                            </div>
+                                            <a 
+                                                href={video.product_link}
+                                                className="product-link"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => {
+                                                    // Аналитика клика
+                                                    // if (window.gtag) {
+                                                    //     window.gtag('event', 'click_product_from_crashtest', {
+                                                    //         'product_id': video.product_id,
+                                                    //         'product_name': video.product_name,
+                                                    //         'video_title': video.title
+                                                    //     });
+                                                    // }
+                                                }}
+                                            >
+                                                {video.product_name}
+                                                <span className="link-arrow">→</span>
+                                            </a>
+                                        </div>
+                                    )}
+                                
                             </motion.div>
                         ))}
                     </div>
@@ -201,10 +232,7 @@ const CrashTestsModal: React.FC<ICrashTestsModalProps> = ({ videos }) => {
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
                                 >
-                                    <AdaptiveVideoPlayer 
-                                        video={video}
-                                        controls={true}
-                                    />
+                                    
                                     <div className="video-info-crash">
                                         <h4>{video.title}</h4>
                                         <p>{video.description}</p>
@@ -215,7 +243,12 @@ const CrashTestsModal: React.FC<ICrashTestsModalProps> = ({ videos }) => {
                                         )}
                                     </div>
 
-                                     {/* Ссылка на товар - НОВЫЙ БЛОК */}
+                                    <AdaptiveVideoPlayer 
+                                        video={video}
+                                        controls={true}
+                                    />
+
+                                    {/* Ссылка на товар - НОВЫЙ БЛОК */}
                                     {video.product_link && video.product_name && (
                                         <div className="product-link-section">
                                             <div className="product-link-header">
