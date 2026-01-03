@@ -20,6 +20,13 @@ interface VideoItem {
     orientation?: 'portrait' | 'landscape' | 'square'; 
     width?: number;
     height?: number;
+    // Заменяем одиночные поля на массив
+    product_links?: {
+        url: string;
+        name: string;
+        // Можно добавить роль в тесте, например: "более прочная", "легче"
+        label?: string;
+    }[];
 }
 
 interface ICrashTestsModalProps {
@@ -276,6 +283,34 @@ const CrashTestsModal: React.FC<ICrashTestsModalProps> = ({ videos }) => {
                                             </a>
                                         </div>
                                     )}
+                                    {/* Если в видео сравниваем две модели */}
+                                    {video.product_links && video.product_links.length > 0 && (
+                                    <div className="comparison-links-section">
+                                        <div className="comparison-header">
+                                            <span className="comparison-icon">⚔️</span>
+                                            <span>Участники теста:</span>
+                                        </div>
+                                        <div className="products-comparison-grid">
+                                            {video.product_links.map((product, idx) => (
+                                                <a 
+                                                    key={idx}
+                                                    href={product.url}
+                                                    className="comparison-product-link"
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <div className="comparison-product-content">
+                                                        <strong>{product.name}</strong>
+                                                        {product.label && (
+                                                            <span className="product-label">{product.label}</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="link-arrow">→</span>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                                 </motion.div>
                             </div>
                         ))}

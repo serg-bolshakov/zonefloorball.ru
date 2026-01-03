@@ -25,7 +25,19 @@ const CrashTests: React.FC = () => {
             duration: "76", // секунды
             poster: "/storage/video/posters/crash-test-air-concept-28-composite-monstr-26.webp",
             file_path: "/storage/video/crash-test-air-concept-28-composite-monstr-26.MOV",
-            comment: "Сравниваем композитные и карбоновые клюшки"
+            comment: "Сравниваем композитные и карбоновые клюшки",
+            product_links: [
+                {
+                    url: '/products/card/71721-klyushka-dlya-florbola-aleters-original-monstr-edition-26mm-black-100cm-left',
+                    name: 'MONSTR EDITION F26',
+                    label: 'Профессиональная карбоновая рукоятка'
+                },
+                {
+                    url: '/products/card/71701-klyushka-dlya-florbola-aleters-original-air-concept-28mm-black-100cm-left',
+                    name: 'AIR CONCEPT F28',
+                    label: 'Композитная рукоятка для контроля'
+                }
+            ]
         },
         {
             title: "Клюшкой об столб...",
@@ -35,7 +47,7 @@ const CrashTests: React.FC = () => {
             file_path: "/storage/video/25-08-31_MONSTR-24_crash-test-1.MOV",
             comment:  "Клюшка с рукояткой из премиального карбона",
             product_link: '/products/card/91722-klyushka-dlya-florbola-aleters-original-monstr-edition-24mm-black-100cm-right',
-            product_name: 'MONSTR EDITION 24',
+            product_name: 'MONSTR EDITION F24',
             product_id: '91722'
         }
 

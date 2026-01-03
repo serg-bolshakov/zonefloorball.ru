@@ -9936,3 +9936,347 @@ body.modal-open {
         font-size: 14px;
     }
 }
+
+/* Основной контейнер для блока сравнения */
+.comparison-links-section {
+    margin-top: 25px;
+    padding: 8px;
+    background: transparent;
+    border-radius: 12px;
+    position: relative;
+    overflow: visible;
+}
+
+.comparison-links-section::before {
+    content: 'VS';
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+    color: white;
+    font-size: 13px;
+    font-weight: 900;
+    padding: 4px 12px;
+    border-radius: 20px;
+    z-index: 2;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+    letter-spacing: 1px;
+}
+
+/* Заголовок сравнения */
+.comparison-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.comparison-icon {
+    font-size: 22px;
+    animation: pulse 2s infinite;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+.comparison-header span:last-child {
+    font-weight: 700;
+    color: #334155;
+    font-size: 16px;
+    letter-spacing: 0.3px;
+}
+
+/* Сетка для сравнения продуктов */
+.products-comparison-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    position: relative;
+}
+
+.products-comparison-grid::after {
+    content: 'ИЛИ';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    color: #94a3b8;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    z-index: 1;
+}
+
+/* Карточка продукта в сравнении */
+.comparison-product-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 20px;
+    background: white;
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+    min-height: 80px;
+}
+
+/* Левая карточка (первый продукт) */
+.products-comparison-grid a:first-child {
+    border-color: #3b82f6;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.products-comparison-grid a:first-child::before {
+    content: 'A';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #3b82f6;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* Правая карточка (второй продукт) */
+.products-comparison-grid a:last-child {
+    border-color: #10b981;
+    background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+}
+
+.products-comparison-grid a:last-child::before {
+    content: 'B';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: #10b981;
+    color: white;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+/* Эффекты при наведении */
+.comparison-product-link:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    border-width: 3px;
+}
+
+.products-comparison-grid a:first-child:hover {
+    border-color: #1d4ed8;
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.2);
+}
+
+.products-comparison-grid a:last-child:hover {
+    border-color: #059669;
+    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.2);
+}
+
+/* Содержимое карточки */
+.comparison-product-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding-right: 10px;
+}
+
+.comparison-product-content strong {
+    font-size: 16px;
+    color: #1e293b;
+    margin-bottom: 5px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.product-label {
+    font-size: 12px;
+    color: #64748b;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 3px 8px;
+    border-radius: 6px;
+    display: inline-block;
+    max-width: fit-content;
+    font-weight: 500;
+    border: 1px solid #e2e8f0;
+}
+
+/* Стрелка */
+.comparison-product-link .link-arrow {
+    color: #94a3b8;
+    font-size: 20px;
+    font-weight: 900;
+    transition: all 0.3s ease;
+    margin-left: 10px;
+    flex-shrink: 0;
+}
+
+.comparison-product-link:hover .link-arrow {
+    color: #3b82f6;
+    transform: translateX(5px) scale(1.2);
+}
+
+.products-comparison-grid a:last-child:hover .link-arrow {
+    color: #10b981;
+}
+
+/* Анимации */
+@keyframes pulse {
+    0%, 100% { 
+        transform: scale(1); 
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+    }
+    50% { 
+        transform: scale(1.1); 
+        filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    }
+}
+
+/* Эффект появления */
+.comparison-links-section {
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+    .products-comparison-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        position: relative; /* Важно для позиционирования ::after */
+        min-height: 120px;  /* Гарантируем место для "ИЛИ" */
+    }
+    
+    /* Перемещаем "ИЛИ" между карточками */
+    .products-comparison-grid::after {
+        content: 'ИЛИ';
+        position: absolute;
+        top: 50%; /* Центрируем по вертикали */
+        left: 50%;
+        transform: translate(-50%, -50%); /* Точное центрирование */
+        background: white;
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 10px;
+        border: 1px solid #e2e8f0;
+        z-index: 2; /* Поверх карточек */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+
+    /* Скрываем верхний "VS" на мобильных */
+    .comparison-links-section::before {
+        display: none;
+    }
+    
+    .comparison-links-section::before {
+        display: none;
+    }
+    
+    .comparison-product-link {
+        padding: 15px;
+        min-height: 70px;
+        position: relative;
+        z-index: 1; /* Убеждаемся, что карточки под надписью */
+    }
+    
+    .comparison-header {
+        padding: 10px;
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+
+    /* Переносим метки A/B справа */
+    .products-comparison-grid a::before {
+        left: auto !important; /* Отменяем left */
+        right: 8px; /* Размещаем справа */
+        top: 8px;
+    }
+    
+    /* Добавляем отступ справа в контенте, чтобы текст не наезжал на метку */
+    .comparison-product-content {
+        padding-right: 30px; /* Место для метки A/B */
+    }
+    
+    /* Меняем направление флекса в карточке, если нужно метку после текста */
+    .comparison-product-link {
+        /* Меняем порядок: сначала контент, потом стрелка */
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* Стрелку тоже можно подвинуть */
+    .comparison-product-link .link-arrow {
+        margin-left: 0;
+        margin-right: 25px; /* Освобождаем место под метку A/B */
+    }
+}
+
+/* Дополнительный эффект для выбора победителя */
+.winner-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 900;
+    transform: rotate(5deg);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+    z-index: 3;
+    animation: winnerPulse 1.5s infinite;
+}
+
+@keyframes winnerPulse {
+    0%, 100% { transform: rotate(5deg) scale(1); }
+    50% { transform: rotate(5deg) scale(1.05); }
+}
+
+/* Для будущего: добавить класс "winner" к победившей карточке */
+.comparison-product-link.winner {
+    border-width: 3px;
+    border-style: dashed;
+    animation: borderGlow 2s infinite;
+}
+
+@keyframes borderGlow {
+    0%, 100% { border-color: #f59e0b; }
+    50% { border-color: #fbbf24; }
+}

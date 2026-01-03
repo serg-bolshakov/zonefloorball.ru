@@ -14,6 +14,14 @@ interface AdaptiveVideoPlayerProps {
     className?: string;
 }
 
+// Форматирование времени
+const formatDuration = (seconds: string): string => {
+    const secs = parseInt(seconds);
+    const mins = Math.floor(secs / 60);
+    const remainingSecs = secs % 60;
+    return `${mins}:${remainingSecs.toString().padStart(2, '0')}`;
+};
+
 const AdaptiveVideoPlayer: React.FC<AdaptiveVideoPlayerProps> = ({
     video,
     autoPlay = false,
@@ -82,6 +90,10 @@ const AdaptiveVideoPlayer: React.FC<AdaptiveVideoPlayerProps> = ({
                     <source src={video.file_path} type="video/quicktime" />
                     Ваш браузер не поддерживает видео
                 </video>
+
+                {/* <span className="video-duration-badge">
+                    {formatDuration(video.duration)}
+                </span> */}
                 
                 {/* Индикатор ориентации (для дебага) */}
                 {process.env.NODE_ENV === 'development' && (
