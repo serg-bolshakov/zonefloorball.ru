@@ -2,6 +2,7 @@
 import React from 'react';
 import useModal from '../../Hooks/useModal';
 import CrashTestsModal from '../Articles/CrashTestsModal';
+import { Link } from '@inertiajs/react';
 
 const CrashTests: React.FC = () => {
     const { openModal } = useModal();
@@ -25,7 +26,19 @@ const CrashTests: React.FC = () => {
             poster: "/storage/video/posters/crash-test-air-concept-28-composite-monstr-26.webp",
             file_path: "/storage/video/crash-test-air-concept-28-composite-monstr-26.MOV",
             comment: "Сравниваем композитные и карбоновые клюшки"
+        },
+        {
+            title: "Клюшкой об столб...",
+            description: "Тест на излом в условиях улицы",
+            duration: "09", // секунды
+            poster: "/storage/video/posters/25-08-31_MONSTR-24_crash-test-1.webp",
+            file_path: "/storage/video/25-08-31_MONSTR-24_crash-test-1.MOV",
+            comment:  "Клюшка с рукояткой из премиального карбона",
+            product_link: '/products/card/91722-klyushka-dlya-florbola-aleters-original-monstr-edition-24mm-black-100cm-right',
+            product_name: 'MONSTR EDITION 24',
+            product_id: '91722'
         }
+
     ];
 
     return (

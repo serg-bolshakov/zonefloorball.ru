@@ -10,11 +10,14 @@ interface VideoItem {
     title: string;
     description: string;
     duration: string;
-    poster: string; // Путь к миниатюре
-    file_path: string; // Путь к видео файлу
+    poster: string;                 // Путь к миниатюре
+    file_path: string;              // Путь к видео файлу
     source_type?: 'local' | 'vk';
     comment?: string;
-    orientation?: 'portrait' | 'landscape' | 'square'; // ← новое поле
+    product_link?: string;          // Ссылка на товар
+    product_name?: string;          // Название модели (для текста)
+    product_id?: string;            // ID товара
+    orientation?: 'portrait' | 'landscape' | 'square'; 
     width?: number;
     height?: number;
 }
@@ -211,6 +214,35 @@ const CrashTestsModal: React.FC<ICrashTestsModalProps> = ({ videos }) => {
                                             </div>
                                         )}
                                     </div>
+
+                                     {/* Ссылка на товар - НОВЫЙ БЛОК */}
+                                    {video.product_link && video.product_name && (
+                                        <div className="product-link-section">
+                                            <div className="product-link-header">
+                                                <span className="product-icon">🏒</span>
+                                                <span>Тестируемая модель:</span>
+                                            </div>
+                                            <a 
+                                                href={video.product_link}
+                                                className="product-link"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                onClick={(e) => {
+                                                    // Аналитика клика
+                                                    // if (window.gtag) {
+                                                    //     window.gtag('event', 'click_product_from_crashtest', {
+                                                    //         'product_id': video.product_id,
+                                                    //         'product_name': video.product_name,
+                                                    //         'video_title': video.title
+                                                    //     });
+                                                    // }
+                                                }}
+                                            >
+                                                {video.product_name}
+                                                <span className="link-arrow">→</span>
+                                            </a>
+                                        </div>
+                                    )}
                                 </motion.div>
                             </div>
                         ))}

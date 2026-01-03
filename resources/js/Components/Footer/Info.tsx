@@ -80,7 +80,7 @@ const Info: React.FC = () => {
                     {/* <h4>ИНФОРМАЦИЯ</h4> */}
                     <p><Link href="/sitemap">• Карта сайта</Link></p>
                     <a href="/legal/privacy-policy" target="_blank">
-                        • Конфиденциальность
+                        • Персональные данные
                     </a>
                     <a href="/legal/offer" target="_blank">
                         • Публичная оферта
