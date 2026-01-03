@@ -80,13 +80,13 @@ const Info: React.FC = () => {
                     {/* <h4>ИНФОРМАЦИЯ</h4> */}
                     <p><Link href="/sitemap">• Карта сайта</Link></p>
                     <a href="/legal/privacy-policy" target="_blank">
-                        • Персональные данные
+                        • Конфиденциальность
                     </a>
                     <a href="/legal/offer" target="_blank">
                         • Публичная оферта
                     </a>
                     <p className="modal-link" onClick={() => openModal(<AboutUs />)}>
-                        • О компании
+                        • О нас
                     </p>
                 </div>
             </div>
