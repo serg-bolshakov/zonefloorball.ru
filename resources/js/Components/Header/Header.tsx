@@ -1,10 +1,11 @@
 // resources/js/Components/Header/Header.tsx
+
 import { Link } from '@inertiajs/react';
 import useAppContext from '../../Hooks/useAppContext';
 import { useUserDataContext } from '@/Hooks/useUserDataContext';
 import { motion } from 'framer-motion';
 import useSafeLocation from '@/Hooks/useSafeLocation';
-import { useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { isLegalUser, isIndividualUser } from "@/Types/types";
 
 const Header: React.FC = () => {
@@ -19,6 +20,39 @@ const Header: React.FC = () => {
     const preorderCount = preorderTotal;
     // console.log('preorderTotal', preorderTotal);
     const location = useSafeLocation();
+    
+    const [isPartnersDropdownOpen, setIsPartnersDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    // Функция для красивого форматирования телефона
+    const formatPhone = (phone: string) => {
+        // Убираем все нецифровые символы
+        const cleaned = phone.replace(/\D/g, '');
+        
+        // Форматируем в зависимости от длины
+        if (cleaned.length === 11) {
+            // Российский формат: +7 (XXX) XXX-XX-XX
+            return `+${cleaned[0]} (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7, 9)}-${cleaned.slice(9)}`;
+        } else if (cleaned.length === 12) {
+            // Международный формат с кодом страны
+            return `+${cleaned.slice(0, 2)} (${cleaned.slice(2, 5)}) ${cleaned.slice(5, 8)}-${cleaned.slice(8, 10)}-${cleaned.slice(10)}`;
+        }
+        
+        // Если не подходит под стандартные форматы, возвращаем как есть
+        return phone;
+    };
+
+    // Закрытие по клику вне меню
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsPartnersDropdownOpen(false);
+            }
+        };
+        
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     useEffect(() => {
         if (user && user.user_access_id == 1) {
@@ -56,17 +90,217 @@ const Header: React.FC = () => {
     return (
         <>
             <header>
-                <div className="header-top__line--welcome d-flex flex-sb flex-wrap">
-                    <div className="header-top__line--left">
-                        <p className="logo-text margin-bottom4px">Флорбол. Россия. Создано со знанием дела.</p>
-                        <span className="welcome__text">Добро пожаловать</span>&nbsp;
-                        <span className="welcome__invitation">
-                            в команду Алетерс<sup className="tm-tooltip" data-tooltip="Зарегистрированная торговая марка">&reg;</sup>
-                        </span>
+                {/* <div className="header-top__line--welcome d-flex flex-sb flex-wrap"> */}
+                <div className="header-top-grid">
+                    {/* Левая часть (текст + партнеры) */}
+                    {/* <div className="header-top__line--left d-flex flex-wrap"> */}
+                    <div className="header-top-left">
+                        <div className="header-welcome-block">
+                            <p className="logo-text margin-bottom4px">Флорбол. Россия. Создаём со знанием дела.</p>
+                            <span className="welcome__text">Добро пожаловать</span>&nbsp;
+                            <span className="welcome__invitation">
+                                в команду Алетерс<sup className="tm-tooltip" data-tooltip="Зарегистрированная торговая марка">&reg;</sup>
+                            </span>
+                        </div>
+                        {/* === НОВЫЙ БЛОК: Линия с партнерами === */}
+                        <div className="header-partners-line">
+                            {/* <div className="partners-select-wrapper">
+                                <div className="partners-label">
+                                    🤝
+                                    <span className="partners-label-text">Наши партнёры в регионах:</span>
+                                </div> */}
+                            <div className="partners-compact-wrapper">    
+                                {/* Кастомный dropdown вместо select */}
+                                <div 
+                                    className={`custom-partners-dropdown ${isPartnersDropdownOpen ? 'active-partners-dropdown' : ''}`}
+                                    ref={dropdownRef}
+                                >
+                                    <button 
+                                        className="dropdown-trigger" 
+                                        onClick={() => setIsPartnersDropdownOpen(!isPartnersDropdownOpen)}
+                                        aria-expanded={isPartnersDropdownOpen}
+                                        aria-haspopup="true"
+                                        title="Контакт партнера в вашем регионе"
+                                    >
+                                        <span className="dropdown-placeholder">🤝 Партнёры в регионах</span>
+                                        <img src="/storage/icons/expand-arrow.png" alt="▼" className="dropdown-arrow" />
+                                    </button>
+                                    
+                                    <div className="partners-menu">
+                                        {/* Пример данных - в реальности нужно вынести в контекст/пропсы */}
+                                        {[
+                                            {
+                                                id: 2,
+                                                city: 'Северодвинск',
+                                                region: 'Архангельская область',
+                                                country: 'Россия',
+                                                contactName: 'Анна Венчакова',
+                                                phone: '+7 (905) 293-52-35',
+                                                email: 'anna@floorball-shop.ru',
+                                                website: null,
+                                                telegram: null,
+                                                vk: 'https://vk.com/floorballshop_ao',
+                                                isActive: true
+                                            },
+                                            {
+                                                id: 1,
+                                                city: 'Нижний Новгород',
+                                                region: 'Нижегородская область',
+                                                country: 'Россия',
+                                                contactName: 'Сергей Большаков',
+                                                phone: '+7(953) 415 60 10',
+                                                email: 'serg.bolshakov@gmail.com',
+                                                website: null,
+                                                telegram: 'https://t.me/UnihocZoneRussia',
+                                                vk: 'https://vk.com/unihoczonerussia',
+                                                isActive: true
+                                            },
+                                            /* {
+                                                id: 1,
+                                                city: 'Москва',
+                                                region: 'Московская область',
+                                                country: 'Россия',
+                                                contactName: 'Иванов Иван',
+                                                phone: '+74951234567',
+                                                email: 'moscow@partner.ru',
+                                                website: 'https://moscow-florball.ru',
+                                                telegram: 'https://t.me/moscow_florball',
+                                                vk: 'https://vk.com/moscow_florball',
+                                                isActive: true
+                                            },
+                                            {
+                                                id: 2,
+                                                city: 'Новосибирск',
+                                                region: 'Новосибирская область',
+                                                country: 'Россия',
+                                                contactName: 'Петров Пётр',
+                                                phone: '+73832123456',
+                                                email: 'novosibirsk@partner.ru',
+                                                website: 'https://partner-novosib.ru',
+                                                telegram: 'https://t.me/novosib_florball',
+                                                vk: 'https://vk.com/novosib_florball',
+                                                isActive: true
+                                            },
+                                            {
+                                                id: 3,
+                                                city: 'Екатеринбург',
+                                                region: 'Свердловская область',
+                                                country: 'Россия',
+                                                contactName: 'Сидоров Алексей',
+                                                phone: '+73432123456',
+                                                email: 'ekb@partner.ru',
+                                                website: 'https://ekb-florball.ru',
+                                                telegram: null, // У некоторых может не быть
+                                                vk: 'https://vk.com/ekb_florball',
+                                                isActive: true
+                                            },
+                                            {
+                                                id: 4,
+                                                city: 'Алматы',
+                                                region: '',
+                                                country: 'Казахстан',
+                                                contactName: 'Каримов Али',
+                                                phone: '+77272567890',
+                                                email: 'almaty@partner.kz',
+                                                website: 'https://example.kz',
+                                                telegram: 'https://t.me/almaty_florball',
+                                                vk: null,
+                                                isActive: true
+                                            }*/
+                                        ].map(partner => (
+                                            <div key={partner.id} className="partner-item">
+                                                <div className="partner-header">
+                                                    <p className="partner-city margin-bottom8px">
+                                                        {partner.country !== 'Россия' && <span className="partner-country">{partner.country}, </span>}
+                                                        {partner.city}<br />
+                                                        {partner.region && <span className="partner-region"> ({partner.region})</span>}
+                                                    </p>
+                                                    <p className="partner-contact">{partner.contactName}</p>
+
+                                                    {/* БЫСТРЫЙ НАБОР ТЕЛЕФОНА - сразу видно и доступно */}
+                                                    {/* {partner.phone && (
+                                                        <div className="partner-quick-call">
+                                                            <a 
+                                                                href={`tel:${partner.phone}`} 
+                                                                className="quick-call-btn"
+                                                                onClick={(e) => {
+                                                                    // Отслеживание в аналитике, если нужно
+                                                                    console.log(`Быстрый звонок: ${partner.city} - ${partner.phone}`);
+                                                                }}
+                                                            >
+                                                                📞 Набрать номер
+                                                            </a>
+                                                            <span className="quick-call-phone">{formatPhone(partner.phone)}</span>
+                                                        </div>
+                                                    )} */}
+                                                    {partner.phone && (
+                                                    <div className="partner-quick-call">
+                                                        <span className="quick-call-label">📞 Позвонить:</span>
+                                                        <a 
+                                                            href={`tel:${partner.phone}`} 
+                                                            className="quick-call-phone-link"
+                                                            title={`Позвонить ${partner.contactName}`}
+                                                        >
+                                                            {formatPhone(partner.phone)}
+                                                        </a>
+                                                        <span className="quick-call-hint">(клик для звонка)</span>
+                                                    </div>
+                                                )}
+                                                </div>
+                                                
+                                                <div className="partner-contacts">
+                                                    {/* {partner.phone && (
+                                                        <a href={`tel:${partner.phone}`} className="contact-link" title={`Позвонить: ${partner.phone}`}>
+                                                            <img src="/storage/icons/telefon-logo.png" alt="телефон" />
+                                                        </a>
+                                                    )} */}
+                                                    
+                                                    {partner.email && (
+                                                        <a href={`mailto:${partner.email}`} className="contact-link" title="Написать email">
+                                                            <img src="/storage/icons/gmail-logo-colored.jpg" alt="email" />
+                                                        </a>
+                                                    )}
+                                                    
+                                                    {partner.website && (
+                                                        <a href={partner.website} target="_blank" rel="noopener noreferrer" className="contact-link" title="Перейти на сайт">
+                                                            {/* <img src="/storage/icons/website-logo.png" alt="сайт" /> */}
+                                                            🌐
+                                                        </a>
+                                                    )}
+                                                    
+                                                    {partner.telegram && (
+                                                        <a href={partner.telegram} target="_blank" rel="noopener noreferrer" className="contact-link" title="Написать в Telegram">
+                                                            <img src="/storage/icons/telegram-logo-colored.png" alt="telegram" />
+                                                        </a>
+                                                    )}
+                                                    
+                                                    {partner.vk && (
+                                                        <a href={partner.vk} target="_blank" rel="noopener noreferrer" className="contact-link" title="Написать ВКонтакте">
+                                                            <img src="/storage/icons/vk-logo-colored.png" alt="vk" />
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                {/* <span className="partners-hint">(Выберите город для связи с партнёром)</span> */}
+                            </div>
+                        </div>
                     </div>
-                    <div className="fs14 slogan">
+                    
+                    {/* <div className="fs14 slogan">
                         &mdash;&nbsp;Участие важно,&nbsp;<br />
                         но главное&nbsp;&mdash;&nbsp;это победа!
+                    </div> */}
+                    
+                    {/* Правая часть (слоган) */}
+                    <div className="header-top-right">
+                        <div className="fs14 slogan">
+                            &mdash;&nbsp;Участие важно,&nbsp;<br />
+                            но главное&nbsp;&mdash;&nbsp;это победа!
+                        </div>
                     </div>
                 </div>
             </header>
@@ -339,6 +573,9 @@ const Header: React.FC = () => {
                 </div>
 
             </header>
+
+
+
         </>
     );
 };

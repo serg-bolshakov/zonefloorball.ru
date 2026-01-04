@@ -342,6 +342,12 @@ strong {
     }
 }
 
+@media(min-width: 1280px) {
+    .logo-text {
+        font-size: 14px;
+    }
+}
+
 @media(max-width: 400px) {
     html {
         font-size: 12px;
@@ -490,6 +496,198 @@ main {
     cursor: help;
     /* Можно добавить тултип через title attribute */
 }
+
+/* === Основной контейнер на Grid === */
+.header-top-grid {
+    display: grid;
+    grid-template-columns: 1fr auto; /* Левая часть растягивается, правая - по содержимому */
+    gap: 1rem;
+    align-items: center;
+    min-width: 0; /* Важно для корректного обрезания длинного текста */
+    flex-wrap: wrap; /* Позволяет переноситься на мобильных */
+}
+
+/* Левая часть - текст и партнеры в ряд */
+.header-top-left {
+    display: flex;
+    flex-direction: row;
+    gap: 2.5rem; /* Отступ между текстом и блоком партнеров */
+    align-items: center;
+    min-width: 0; /* Для корректного обрезания текста */
+    flex-wrap: wrap;
+}
+
+.header-welcome-block {
+    line-height: 1.4;
+}
+
+/* Правая часть (слоган) */
+.header-top-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: left;
+    flex-shrink: 0;
+}
+
+/* ===== АДАПТИВНАЯ ВЕРСТКА ===== */
+
+/* Ноутбуки среднего размера */
+@media (max-width: 1400px) {
+    .header-top-left {
+        gap: 1rem; /* Уменьшаем отступ */
+    }
+    
+    .header-welcome-block {
+        min-width: 180px;
+    }
+    
+    .header-partners-line {
+        min-width: 180px;
+        max-width: 280px;
+    }
+}
+
+/* Планшеты горизонтально / маленькие ноутбуки */
+@media (max-width: 1024px) {
+    .header-top-grid {
+        grid-template-columns: 1fr; /* Переходим на одну колонку */
+        gap: 0;
+    }
+    
+    .header-top-left {
+        gap: 0.5rem;
+    }
+    
+    .header-top-right {
+        justify-content: flex-start; /* Слоган теперь слева */
+        text-align: left;
+    }
+    
+    .slogan {
+        white-space: normal; /* Разрешаем перенос текста */
+    }
+}
+
+/* Планшеты вертикально */
+@media (max-width: 900px) {
+    .header-top-left {
+        flex-wrap: wrap; /* Разрешаем перенос */
+        row-gap: 0.8rem;
+        column-gap: 1rem;
+    }
+    
+    .header-welcome-block {
+        min-width: 100%; /* Текст занимает всю ширину */
+    }
+    
+    .header-partners-line {
+        min-width: 100%; /* Dropdown тоже на всю ширину */
+        max-width: 100%;
+    }
+}
+
+/* Мобильные устройства */
+@media (max-width: 768px) {
+    .header-top-grid {
+        gap: 0.6rem;
+    }
+    
+    .header-top-left {
+        flex-direction: column; /* Переходим на колонку */
+        align-items: flex-start; /* Выравнивание по левому краю */
+        gap: 0.5rem;
+    }
+    
+    .header-welcome-block {
+        min-width: 100%;
+        font-size: 0.95rem;
+    }
+    
+    .welcome__text {
+        font-size: 1rem;
+    }
+    
+    .header-partners-line {
+        min-width: 100%;
+        max-width: 100%;
+        margin-top: 0.2rem;
+    }
+    
+    .dropdown-trigger {
+        padding: 0.45rem 2.2rem 0.45rem 0.9rem;
+        font-size: 0.9rem;
+    }
+    
+    .header-top-right {
+        margin-top: 0.2rem;
+    }
+    
+    .slogan {
+        font-size: 0.9rem;
+        line-height: 1.4;
+        white-space: normal;
+    }
+}
+
+/* Маленькие мобильные */
+@media (max-width: 480px) {
+    .header-top-left {
+        gap: 0.4rem;
+    }
+    
+    .logo-text {
+        font-size: 0.85rem;
+        margin-bottom: 0.2rem;
+    }
+    
+    .welcome__text {
+        font-size: 0.95rem;
+    }
+    
+    .welcome__invitation {
+        font-size: 0.95rem;
+    }
+    
+    .dropdown-trigger {
+        padding: 0.4rem 2rem 0.4rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    
+    .dropdown-placeholder {
+        font-size: 0.85rem;
+    }
+    
+    .slogan {
+        font-size: 0.85rem;
+        line-height: 1.3;
+    }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 360px) {
+    .header-top-left {
+        gap: 0.3rem;
+    }
+    
+    .header-welcome-block {
+        font-size: 0.85rem;
+    }
+    
+    .dropdown-trigger {
+        padding: 0.35rem 1.8rem 0.35rem 0.7rem;
+        font-size: 0.8rem;
+    }
+    
+    .slogan {
+        font-size: 0.8rem;
+    }
+    
+    .slogan br {
+        display: none; /* Убираем принудительный перенос */
+    }
+}
+
 
 .header-secondline__aside--left {
     display: flex;
@@ -4229,13 +4427,11 @@ a.registration-form__submit-btn, .order-btn {
 
 /* Каждый видео-блок */
 .video-item {
-    /* margin-bottom: 16px; */
     margin-top: 4px;
+    margin-bottom: 20px;
     scroll-margin-top: 16px; /* Для плавного скролла к элементу */
-
     /* Добавляем точки привязки для скролла */
     scroll-snap-align: start;
-
     border-bottom: 1px solid  #c1c1c1; /* Временная рамка для отладки */
 }
 
@@ -6372,10 +6568,6 @@ thead th:hover::after {
     margin-top: 8px;
     font-weight: 500;
     color: #007BFF;
-}
-
-.video-item {
-    margin-bottom: 20px;
 }
 
 .video-platform-indicator {
@@ -8652,27 +8844,16 @@ body.modal-open {
     cursor: not-allowed;
 }
 
-/* .video-info {
+.video-guide-info {
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 16px;
-    padding: 8px;
-} */
+}
 
 .video-title {
     /* font-size: 0.9rem; */
     font-size: 14px;
-}
-
-/* Есть дубликат (ниже) */
-.video-duration {
-    /* font-size: 0.8rem; */
-    /* font-size: 12px;
-    color: #666;
-    background: white;
-    padding: 2px 6px;
-    border-radius: 12px; */
 }
 
 /* Модалка для видео */
@@ -8844,6 +9025,17 @@ body.modal-open {
     font-weight: 500;
 }
 
+/* Новый специфичный класс для списка видео-гайдов-инструкций */
+.video-guide-duration {
+    width: 40px;
+    text-align: center;
+    background: rgba(0,0,0,0.4);
+    color: white;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
 .video-duration {
     position: absolute;
     bottom: 10px;
@@ -8856,10 +9048,10 @@ body.modal-open {
 }
 
 .video-info {
-    padding: 20px;
-    flex-grow: 1;
     display: flex;
     flex-direction: column;
+    padding: 20px;
+    flex-grow: 1;
 }
 
 .video-info h4 {
@@ -10279,4 +10471,507 @@ body.modal-open {
 @keyframes borderGlow {
     0%, 100% { border-color: #f59e0b; }
     50% { border-color: #fbbf24; }
+}
+
+/* === Линия партнеров === */
+.header-partners-line {
+    /* background: linear-gradient(135deg, #f8f9ff 0%, #eef1ff 100%);
+    border-top: 1px solid #d1d9ff;
+    border-bottom: 1px solid #d1d9ff;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+    display: flex;
+    justify-content: center;
+    align-items: center; */
+    /* padding: 0;
+    border-bottom: 1px solid #eaeaea;
+    background: white;
+    display: flex;
+    justify-content: flex-start; 
+    align-items: center;
+    min-height: 32px; */
+    flex: 1; /* Занимает оставшееся пространство */
+    min-width: 200px; /* Минимальная ширина dropdown */
+    max-width: 300px; /* Максимальная ширина */
+    padding: 6px 0 0 0;
+    font-size: 14px;
+}
+
+.partners-compact-wrapper {
+    width: auto;
+    max-width: 280px; /* Ограничиваем ширину на десктопе */
+}
+
+.partners-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.partners-label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    color: #2d3748;
+    white-space: nowrap;
+}
+
+.partners-icon {
+    width: 16px;
+    height: 16px;
+    opacity: 0.8;
+}
+
+/* Кастомное выпадающее меню */
+.custom-partners-dropdown {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    max-width: 500px;
+}
+
+.dropdown-trigger {
+    /* width: 100%;
+    padding: 0.6rem 2.5rem 0.6rem 0.75rem;
+    border: 1px solid #a3bffa;
+    border-radius: 8px;
+    background-color: white;
+    font-size: 0.9rem;
+    color: #4a5568;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(102, 126, 234, 0.1); */
+    padding: 0.3rem 2rem 0.3rem 0.6rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    font-size: 0.85rem;
+    color: #555;
+    cursor: pointer;
+    text-align: left;
+    position: relative;
+    transition: all 0.15s ease;
+    min-width: 220px;
+    margin-bottom: 8px;
+}
+
+.dropdown-trigger:hover {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.dropdown-placeholder {
+    /* color: #718096; */
+    color: #333;
+    font-size: 14px;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.dropdown-arrow {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 12px;
+    height: 12px;
+    transition: transform 0.2s ease;
+}
+
+.custom-partners-dropdown.active-partners-dropdown .dropdown-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+/* Выпадающее меню */
+.partners-menu {
+    /* position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.25rem;
+    background: white;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none; 
+    padding: 0.5rem 0; */
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.25rem;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-height: 70vh;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    padding: 0.75rem 0;
+    min-width: 320px; /* Ширина меню больше чем триггер */
+}
+
+.custom-partners-dropdown.active-partners-dropdown .partners-menu {
+    display: block;
+}
+
+/* Элемент партнера */
+.partner-item {
+    margin: 0.25rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    border: 1px solid #f1f1f1;
+    transition: background 0.2s ease;
+}
+
+.partner-item:hover {
+    /* background: #f7fafc; */
+    background: #f8faff;
+    text-decoration: none;
+    border: 1px solid red;
+}
+
+/* .partner-item:last-child {
+    border-bottom: none;
+} */
+
+.partner-header {
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+}
+
+.partner-city {
+    font-weight: 600;
+    color: #2d3748;
+    display: block;
+}
+
+.partner-country {
+    color: #667eea;
+    font-size: 0.8em;
+}
+
+.partner-region {
+    color: #718096;
+    font-size: 0.9em;
+}
+
+.partner-contact {
+    display: block;
+    color: #4a5568;
+    font-size: 0.85em;
+}
+
+/* Иконки контактов */
+.partner-contacts {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.contact-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    background: #f7fafc;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.contact-link:hover {
+    background: #667eea;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+.contact-link img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+}
+
+.partners-hint {
+    font-size: 0.75rem;
+    color: #718096;
+    font-style: italic;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* БЫСТРЫЙ НАБОР ТЕЛЕФОНА - выделенный блок */
+.partner-quick-call {
+    /* margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: #e8f4ff;
+    border-radius: 5px;
+    border-left: 3px solid #3498db;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem; */
+    margin-top: 0.5rem;
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.quick-call-label {
+    color: #555;
+    font-weight: 500;
+}
+
+.quick-call-phone-link {
+    color: #2c5282;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.2rem 0.5rem;
+    border-radius: 3px;
+    background: #f0f7ff;
+    transition: all 0.2s ease;
+}
+
+.quick-call-phone-link:hover {
+    background: #2c5282;
+    color: white;
+    text-decoration: none;
+}
+
+.quick-call-hint {
+    color: #718096;
+    font-size: 0.8rem;
+    font-style: italic;
+    margin-left: auto;
+}
+
+.quick-call-btn {
+    background: #3498db;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.quick-call-btn:hover {
+    background: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(52, 152, 219, 0.3);
+}
+
+.quick-call-phone {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #2c3e50;
+    font-family: 'Courier New', monospace;
+}
+
+/* Иконки контактов */
+.partner-contacts {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.contact-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    background: #f5f7fa;
+    transition: all 0.2s ease;
+    font-size: 1.2em;
+    text-decoration: none;
+    color: #555;
+}
+
+.contact-link:hover {
+    background: #3498db;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.contact-tooltip {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s;
+    z-index: 1001;
+}
+
+.contact-link:hover .contact-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* === МОБИЛЬНАЯ ВЕРСИЯ (самое важное!) === */
+@media (max-width: 768px) {
+    .header-partners-line {
+        padding: 0.4rem 0.75rem;
+        font-size: 0.8rem;
+    }
+    
+    .partners-select-wrapper {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+    
+    .partners-label {
+        justify-content: center;
+        padding: 0.25rem 0;
+    }
+    
+    .partners-label-text {
+        font-size: 0.9em;
+    }
+    
+    .custom-partners-dropdown {
+        min-width: 100%;
+        max-width: 100%;
+    }
+    
+    .dropdown-trigger {
+        padding: 0.7rem 2.5rem 0.7rem 0.75rem;
+        font-size: 0.85rem;
+    }
+    
+    .partners-menu {
+        position: relative;
+        top: 0;
+        bottom: 0;
+        left: auto;
+        right: auto;
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+        max-height: 60vh;
+        border-radius: 12px;
+        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .custom-partners-dropdown.active-partners-dropdown .partners-menu {
+        transform: translateY(0);
+    }
+    
+    .partners-hint {
+        text-align: center;
+        font-size: 0.7rem;
+        padding: 0.2rem 0;
+    }
+    
+    .partner-item {
+        padding: 0.6rem 0.75rem;
+    }
+
+    
+    /* Улучшаем доступность на тач-устройствах */
+    .contact-link:active-partners-dropdown {
+        transform: scale(0.95);
+    }
+
+    /* Улучшаем быстрый набор на мобиле */
+    .quick-call-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+        flex: 1;
+        justify-content: center;
+    }
+    
+    .quick-call-phone {
+        font-size: 0.9rem;
+        text-align: center;
+        width: 100%;
+        margin-top: 0.3rem;
+    }
+    
+    .partner-quick-call {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .contact-link {
+        width: 44px;
+        height: 44px;
+        font-size: 1.4em;
+    }
+    
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .partners-select-wrapper {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: stretch;
+    }
+    
+    .partners-label {
+        justify-content: center;
+    }
+    
+    .custom-partners-dropdown {
+        min-width: auto;
+    }
+    
+    .partners-hint {
+        text-align: center;
+    }
+}
+
+/* Для очень маленьких экранов */
+@media (max-width: 480px) {
+    .header-partners-line {
+        padding: 0.3rem 0.5rem;
+    }
+    
+    .partners-label-text {
+        font-size: 0.85em;
+    }
+    
+    .dropdown-placeholder {
+        font-size: 0.85em;
+    }
+    
+    .partner-contacts {
+        justify-content: center;
+    }
 }

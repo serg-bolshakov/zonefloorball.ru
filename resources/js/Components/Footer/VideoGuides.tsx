@@ -22,10 +22,10 @@ const VideoGuides: React.FC = () => {
                         className={`video-item ${video.duration === 'скоро' ? 'coming-soon' : ''}`}
                         onClick={() => video.duration !== 'скоро' && setShowVideo(video.id)}
                     >
-                        <div className="video-info">
+                        <div className="video-guide-info">
                             <span className="video-title">{video.title}</span>
-                            <span className="video-duration">{video.duration}</span>
-                        </div>
+                            <span className="video-guide-duration">{video.duration}</span>
+                        </div> 
                     </div>
                 ))}
             </div>
