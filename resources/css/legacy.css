@@ -911,7 +911,7 @@ nav ul>li>a, nav>ul>li, nav>dl>dt, nav>div>p {
 
 .footer {
     display: flex;
-    flex-wrap: wrap-reverse;
+    flex-wrap: wrap;
     justify-content: space-between;
     padding: 1%;
     border-top: 1px solid rgba(0, 0, 0, 0.2);
@@ -10645,10 +10645,11 @@ body.modal-open {
     line-height: 1.4;
 }
 
-.partner-city {
+.partner-region {
     font-weight: 600;
     color: #2d3748;
     display: block;
+    font-size: 16px;
 }
 
 .partner-country {
@@ -10656,7 +10657,7 @@ body.modal-open {
     font-size: 0.8em;
 }
 
-.partner-region {
+.partner-city {
     color: #718096;
     font-size: 0.9em;
 }
@@ -10664,7 +10665,8 @@ body.modal-open {
 .partner-contact {
     display: block;
     color: #4a5568;
-    font-size: 0.85em;
+    /* font-size: 0.85em; */
+    font-size: 14px;
 }
 
 /* Иконки контактов */

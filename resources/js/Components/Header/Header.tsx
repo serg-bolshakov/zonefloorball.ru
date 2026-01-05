@@ -131,8 +131,8 @@ const Header: React.FC = () => {
                                         {[
                                             {
                                                 id: 2,
-                                                city: 'Северодвинск',
                                                 region: 'Архангельская область',
+                                                city: 'г. Северодвинск',
                                                 country: 'Россия',
                                                 contactName: 'Анна Венчакова',
                                                 phone: '+7 (905) 293-52-35',
@@ -144,8 +144,8 @@ const Header: React.FC = () => {
                                             },
                                             {
                                                 id: 1,
-                                                city: 'Нижний Новгород',
                                                 region: 'Нижегородская область',
+                                                city: 'г. Нижний Новгород',
                                                 country: 'Россия',
                                                 contactName: 'Сергей Большаков',
                                                 phone: '+7(953) 415 60 10',
@@ -155,46 +155,7 @@ const Header: React.FC = () => {
                                                 vk: 'https://vk.com/unihoczonerussia',
                                                 isActive: true
                                             },
-                                            /* {
-                                                id: 1,
-                                                city: 'Москва',
-                                                region: 'Московская область',
-                                                country: 'Россия',
-                                                contactName: 'Иванов Иван',
-                                                phone: '+74951234567',
-                                                email: 'moscow@partner.ru',
-                                                website: 'https://moscow-florball.ru',
-                                                telegram: 'https://t.me/moscow_florball',
-                                                vk: 'https://vk.com/moscow_florball',
-                                                isActive: true
-                                            },
-                                            {
-                                                id: 2,
-                                                city: 'Новосибирск',
-                                                region: 'Новосибирская область',
-                                                country: 'Россия',
-                                                contactName: 'Петров Пётр',
-                                                phone: '+73832123456',
-                                                email: 'novosibirsk@partner.ru',
-                                                website: 'https://partner-novosib.ru',
-                                                telegram: 'https://t.me/novosib_florball',
-                                                vk: 'https://vk.com/novosib_florball',
-                                                isActive: true
-                                            },
-                                            {
-                                                id: 3,
-                                                city: 'Екатеринбург',
-                                                region: 'Свердловская область',
-                                                country: 'Россия',
-                                                contactName: 'Сидоров Алексей',
-                                                phone: '+73432123456',
-                                                email: 'ekb@partner.ru',
-                                                website: 'https://ekb-florball.ru',
-                                                telegram: null, // У некоторых может не быть
-                                                vk: 'https://vk.com/ekb_florball',
-                                                isActive: true
-                                            },
-                                            {
+                                            /*
                                                 id: 4,
                                                 city: 'Алматы',
                                                 region: '',
@@ -210,10 +171,10 @@ const Header: React.FC = () => {
                                         ].map(partner => (
                                             <div key={partner.id} className="partner-item">
                                                 <div className="partner-header">
-                                                    <p className="partner-city margin-bottom8px">
+                                                    <p className="partner-region margin-bottom8px">
                                                         {partner.country !== 'Россия' && <span className="partner-country">{partner.country}, </span>}
-                                                        {partner.city}<br />
-                                                        {partner.region && <span className="partner-region"> ({partner.region})</span>}
+                                                        {partner.region}<br />
+                                                        {partner.city && <span className="partner-city"> {partner.city}</span>}
                                                     </p>
                                                     <p className="partner-contact">{partner.contactName}</p>
 

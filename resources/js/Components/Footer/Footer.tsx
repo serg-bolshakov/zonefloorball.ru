@@ -13,17 +13,20 @@ const Footer: React.FC = () => {
         <>
             <footer className="footer">
                 <div className="footer-block">
-                    <h2>ВИДЕОИНСТРУКЦИИ</h2>
-                    <VideoGuides />
-                </div>
-                <div className="footer-block">
                     <h2>ИНФОРМАЦИЯ</h2>
                     <Info />
                 </div>
+                
                 <div className="footer-block">
                     <h2>СТАТЬИ И ЗАМЕТКИ</h2>
                     <Articles />
                 </div>
+                
+                <div className="footer-block">
+                    <h2>ВИДЕОИНСТРУКЦИИ</h2>
+                    <VideoGuides />
+                </div>
+                
                 <div className="footer-block">
                     <h2>ПОДДЕРЖКА ПОКУПАТЕЛЕЙ</h2>
                     <CustomersCares />
