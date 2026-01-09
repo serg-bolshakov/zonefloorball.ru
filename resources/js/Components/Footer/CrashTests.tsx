@@ -40,6 +40,25 @@ const CrashTests: React.FC = () => {
             ]
         },
         {
+            title: "Жёсткий ответ на жёсткую игру!",
+            description: "Тест на бетоне пройден.",
+            duration: "19", // секунды
+            poster: "/storage/video/posters/epic-hard-test-on-concrete-floor.webp",
+            file_path: "/storage/video/epic-hard-test-on-concrete-floor.mov",
+            comment: "Встречаем жёсткий Эпик Алетерс!",
+        },
+        {
+            title: "Пробуем сломать клюшку и/или крюк об стальной каркас стула...",
+            description: "Тест на излом в условиях удара по металлической трубе малого диаметра (одномоментная ударная сверхнагрузка на точку поверхности)",
+            duration: "34", // секунды
+            poster: "/storage/video/posters/crash-test-epic-hard-air-concept-28.webp",
+            file_path: "/storage/video/crash-test-epic-hard-air-concept-28.mp4",
+            comment:  "Приготовили инструмент для уборки обломков... но он не пригодился...",
+            product_link: '/products/card/71605-klyushka-dlya-florbola-aleters-epic-hard-air-concept-28mm-black-96cm-left',
+            product_name: 'Эпик Hard AIR CONCEPT 28',
+            product_id: '71705'
+        },
+        {
             title: "Клюшкой об столб...",
             description: "Тест на излом в условиях улицы",
             duration: "09", // секунды
