@@ -9,16 +9,6 @@ const CrashTests: React.FC = () => {
 
     // Данные о видео краш-тестов
     const crashTestVideos = [
-        // {
-        //     title: "Тест на излом: профессиональная серия",
-        //     description: "Экстремальные нагрузки на бетоне",
-        //     duration: "1:24"
-        // },
-        // {
-        //     title: "Сравнение с конкурентами",
-        //     description: "Испытания в одинаковых условиях",
-        //     duration: "2:15"
-        // },
         {
             title: "Нереальные условия игры",
             description: "Имитация жёстких ударов по клюшке",
@@ -48,12 +38,12 @@ const CrashTests: React.FC = () => {
             comment: "Встречаем жёсткий Эпик Алетерс!",
         },
         {
-            title: "Пробуем сломать клюшку и/или крюк об стальной каркас стула...",
-            description: "Тест на излом в условиях удара по металлической трубе малого диаметра (одномоментная ударная сверхнагрузка на точку поверхности)",
+            title: "Клюшка vs стальной каркас: выдержит ли удар об металл?",
+            description: "Тест на экстремальную точечную нагрузку: имитируем удар клюшки в месте соединения с крюком (самое уязвимое место) о металлическую стойку во время игры. Результат показывает высокую устойчивость материала к деформации (одномоментная ударная сверхнагрузка на точку поверхности)",
             duration: "34", // секунды
             poster: "/storage/video/posters/crash-test-epic-hard-air-concept-28.webp",
             file_path: "/storage/video/crash-test-epic-hard-air-concept-28.mp4",
-            comment:  "Приготовили инструмент для уборки обломков... но он не пригодился...",
+            comment:  "Мы не были настолько уверены, что клюшка выдержит, что приготовили инструмент для уборки. Клюшка и крюк выстояли! Наши ожидания не оправдались, и это — лучший результат.",
             product_link: '/products/card/71605-klyushka-dlya-florbola-aleters-epic-hard-air-concept-28mm-black-96cm-left',
             product_name: 'Эпик Hard AIR CONCEPT 28',
             product_id: '71705'
@@ -68,7 +58,19 @@ const CrashTests: React.FC = () => {
             product_link: '/products/card/91722-klyushka-dlya-florbola-aleters-original-monstr-edition-24mm-black-100cm-right',
             product_name: 'MONSTR EDITION F24',
             product_id: '91722'
-        }
+        },
+        {
+            title: "Честно о прочности клюшки: да, мы её сломали... и вот как мы это сделали...",
+            description: "Многие спрашивают, ломаются ли клюшки. Вместо долгих объяснений показываем: что будет, если бить клюшкой по стали с максимальной силой раз за разом. Смотрим, где реальный предел прочности.",
+            duration: "59", // секунды
+            tested_at: "2025-12-26", // Формат YYYY-MM-DD
+            poster: "/storage/video/posters/crash-test-air-light-27-black-breaking-point.webp",
+            file_path: "/storage/video/crash-test-air-light-27-black-breaking-point.mov",
+            comment: "Если вы не планируете использовать клюшку как кувалду по металлу несколько раз подряд — она прослужит вам очень долго. Этот тест — для нашего спокойствия и вашей уверенности.",
+            product_link: '/products/card/91633-klyushka-dlya-florbola-aleters-epic-hard-air-light-glossy-27mm-black-96cm-left',
+            product_name: 'Эпик Hard AIR LIGHT GLOSSY 27 black',
+            product_id: '91633'
+        },
 
     ];
 

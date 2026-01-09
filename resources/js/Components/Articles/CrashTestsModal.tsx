@@ -4,10 +4,12 @@ import { motion } from 'framer-motion';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/opacity.css';
 import AdaptiveVideoPlayer from '../AdaptiveVideoPlayer';
+import { dateRu } from '@/Utils/dateFormatter';
 
 interface VideoItem {
     id?: number;
     title: string;
+    tested_at?: string;
     description: string;
     duration: string;
     poster: string;                 // Путь к миниатюре
@@ -242,6 +244,23 @@ const CrashTestsModal: React.FC<ICrashTestsModalProps> = ({ videos }) => {
                                     
                                     <div className="video-info-crash">
                                         <h4>{video.title}</h4>
+                                        {video.tested_at && (
+                                            <div className="video-meta">
+                                                <span className="meta-item">
+                                                    <span className="meta-icon">📅</span>
+                                                    <span className="meta-label">Дата теста:</span>
+                                                    <span className="meta-value">
+                                                        {dateRu(video.tested_at)}
+                                                    </span>
+                                                </span>
+                                                
+                                                <span className="meta-item">
+                                                    <span className="meta-icon">⏱️</span>
+                                                    <span className="meta-label">Длительность:</span>
+                                                    <span className="meta-value">{video.duration}</span>
+                                                </span>
+                                            </div>    
+                                        )}
                                         <p>{video.description}</p>
                                         {video.comment && (
                                             <div className="video-comment-crash">

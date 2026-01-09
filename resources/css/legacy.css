@@ -10970,3 +10970,45 @@ body.modal-open {
         justify-content: center;
     }
 }
+
+.video-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 10px 0 15px;
+    font-size: 13px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+}
+
+.meta-icon {
+    font-size: 14px;
+    opacity: 0.8;
+}
+
+.meta-label {
+    font-weight: 500;
+    color: #64748b;
+}
+
+.meta-value {
+    font-weight: 600;
+    color: #334155;
+}
+
+/* На мобильных адаптируем */
+@media (max-width: 768px) {
+    .video-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .meta-item {
+        justify-content: flex-start;
+    }
+}
