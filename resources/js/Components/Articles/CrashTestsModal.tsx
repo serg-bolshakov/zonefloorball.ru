@@ -175,6 +175,25 @@ const CrashTestsModal: React.FC<ICrashTestsModalProps> = ({ videos }) => {
                             >
                                 <div className="video-info">
                                     <h4>{video.title}</h4>
+
+                                    {video.tested_at && (
+                                        <div className="video-meta">
+                                            <span className="meta-item">
+                                                <span className="meta-icon">📅</span>
+                                                <span className="meta-label">Дата теста:</span>
+                                                <span className="meta-value">
+                                                    {dateRu(video.tested_at)}
+                                                </span>
+                                            </span>
+                                            
+                                            <span className="meta-item">
+                                                <span className="meta-icon">⏱️</span>
+                                                <span className="meta-label">Длительность:</span>
+                                                <span className="meta-value">{video.duration}</span>
+                                            </span>
+                                        </div>    
+                                    )}  
+
                                     <p>{video.description}</p>
                                     {video.comment && (
                                         <div className="video-comment">

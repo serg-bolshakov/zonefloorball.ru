@@ -66,10 +66,31 @@ const CrashTests: React.FC = () => {
             tested_at: "2025-12-26", // Формат YYYY-MM-DD
             poster: "/storage/video/posters/crash-test-air-light-27-black-breaking-point.webp",
             file_path: "/storage/video/crash-test-air-light-27-black-breaking-point.mov",
-            comment: "Если вы не планируете использовать клюшку как кувалду по металлу несколько раз подряд — она прослужит вам очень долго. Этот тест — для нашего спокойствия и вашей уверенности.",
+            comment: "Если вы не планируете использовать клюшку как кувалду по металлу несколько раз подряд — она прослужит вам очень долго. Этот тест — для нашего спокойствия и вашей уверенности. **Реальный запас прочности многократно превышает нагрузки игры.**",
             product_link: '/products/card/91633-klyushka-dlya-florbola-aleters-epic-hard-air-light-glossy-27mm-black-96cm-left',
             product_name: 'Эпик Hard AIR LIGHT GLOSSY 27 black',
             product_id: '91633'
+        },
+        {
+            title: "Сравнение на прочность: есть ли абсолютный чемпион?",
+            description: "Мы сравнили две разные карбоновые структуры в одинаковых экстремальных условиях. Одна сломалась, другая — нет. Это не делает одну клюшку 'прочнее' в целом, а показывает, как по-разному материалы реагируют на специфический тип нагрузки. В игре такие нагрузки — редкость.",
+            duration: "93", // секунды
+            // tested_at: "2025-10-29", // Формат YYYY-MM-DD
+            poster: "/storage/video/posters/crash-test-monster24-vs-airlight23.webp",
+            file_path: "/storage/video/crash-test-monster24-vs-airlight23.mov",
+            comment: "Предсказать, какая клюшка окажется 'прочнее' в абстрактном смысле — невозможно, это зависит от типа и точки приложения удара. Но можно гарантировать, что запас прочности у обеих — на годы игры при соблюдении правил. Так играить и бить по клюшкам соперника — нельзя!",
+            product_links: [
+                {
+                    url: '/products/card/71731-klyushka-dlya-florbola-aleters-original-air-light-23mm-black-100cm-left',
+                    name: 'MONSTR EDITION F24 black',
+                    label: 'Профессиональная рукоятка из премиального карбона'
+                },
+                {
+                    url: '/products/card/71701-klyushka-dlya-florbola-aleters-original-air-concept-28mm-black-100cm-left',
+                    name: 'AIR LIGHT F23 black',
+                    label: 'Профессиональная рукоятка из облегчённого карбона повышенной прочности с графитовым модулем'
+                }
+            ]
         },
 
     ];
