@@ -10,12 +10,33 @@ const CrashTests: React.FC = () => {
     // Данные о видео краш-тестов
     const crashTestVideos = [
         {
+            title: "Боевое крещение: новая AIR LIGHT 27 MATTE против композита",
+            description: "Две школы прочности: премиальный карбон vs упругий композит. Имитация жёстких ударов по клюшке",
+            duration: "51 сек", // секунды
+            tested_at: "2025-12-26", // Формат YYYY-MM-DD
+            poster: "/storage/video/posters/crash-test-air-concept-28-composite-air-light-27-matte.webp",
+            file_path: "/storage/video/crash-test-air-concept-28-composite-air-light-27-matte.mp4",
+            comment: "Первые испытания нашей новейшей матовой карбоновой серии. Сравниваем, как передовая карбоновая технология противостоит жёстким ударам в сравнении с традиционным композитом.",
+            product_links: [
+                {
+                    url: '/products/card/91843-klyushka-dlya-florbola-aleters-epic-hard-air-light-matte-27mm-black-104cm-left',
+                    name: 'AIR LIGHT 27 MATTE black',
+                    label: 'Новейший матовый карбон'
+                },
+                {
+                    url: '/products/card/71701-klyushka-dlya-florbola-aleters-original-air-concept-28mm-black-100cm-left',
+                    name: 'AIR CONCEPT F28',
+                    label: 'Проверенный композит'
+                }
+            ]
+        },
+        {
             title: "Нереальные условия игры",
-            description: "Имитация жёстких ударов по клюшке",
+            description: "Противостояние двух философий: прочность карбона MONSTR против упругого контроля композитной AIR CONCEPT. Кто как ведёт себя под ударом?",
             duration: "76", // секунды
             poster: "/storage/video/posters/crash-test-air-concept-28-composite-monstr-26.webp",
             file_path: "/storage/video/crash-test-air-concept-28-composite-monstr-26.MOV",
-            comment: "Сравниваем композитные и карбоновые клюшки",
+            comment: "Разные задачи — разный материал. Сравниваем не «что лучше», а «как каждое свойство проявляется в экстриме».",
             product_links: [
                 {
                     url: '/products/card/71721-klyushka-dlya-florbola-aleters-original-monstr-edition-26mm-black-100cm-left',
@@ -30,12 +51,12 @@ const CrashTests: React.FC = () => {
             ]
         },
         {
-            title: "Жёсткий ответ на жёсткую игру!",
-            description: "Тест на бетоне пройден.",
+            title: "Испытание на бетоне: жёсткий ответ жёсткой игре",
+            description: "Что будет, если играть на бетонном полу? Мы проверили. Смотрим, как крюк серии Epic Hard выдерживает прямой контакт с асфальтом.",
             duration: "19", // секунды
             poster: "/storage/video/posters/epic-hard-test-on-concrete-floor.webp",
             file_path: "/storage/video/epic-hard-test-on-concrete-floor.mov",
-            comment: "Встречаем жёсткий Эпик Алетерс!",
+            comment: "Встречаем жёсткий Эпик Алетерс — даже бетон не стал для него проблемой.",
         },
         {
             title: "Клюшка vs стальной каркас: выдержит ли удар об металл?",
@@ -50,7 +71,7 @@ const CrashTests: React.FC = () => {
         },
         {
             title: "Клюшкой об столб...",
-            description: "Тест на излом в условиях улицы",
+            description: "Спонтанный тест: что будет, если со всей силы ударить клюшкой о металлический столб?",
             duration: "09", // секунды
             poster: "/storage/video/posters/25-08-31_MONSTR-24_crash-test-1.webp",
             file_path: "/storage/video/25-08-31_MONSTR-24_crash-test-1.MOV",
@@ -62,7 +83,7 @@ const CrashTests: React.FC = () => {
         {
             title: "Честно о прочности клюшки: да, мы её сломали... и вот как мы это сделали...",
             description: "Многие спрашивают, ломаются ли клюшки. Вместо долгих объяснений показываем: что будет, если бить клюшкой по стали с максимальной силой раз за разом. Смотрим, где реальный предел прочности.",
-            duration: "59", // секунды
+            duration: "59 сек", // секунды
             tested_at: "2025-12-26", // Формат YYYY-MM-DD
             poster: "/storage/video/posters/crash-test-air-light-27-black-breaking-point.webp",
             file_path: "/storage/video/crash-test-air-light-27-black-breaking-point.mov",
@@ -75,24 +96,22 @@ const CrashTests: React.FC = () => {
             title: "Сравнение на прочность: есть ли абсолютный чемпион?",
             description: "Мы сравнили две разные карбоновые структуры в одинаковых экстремальных условиях. Одна сломалась, другая — нет. Это не делает одну клюшку 'прочнее' в целом, а показывает, как по-разному материалы реагируют на специфический тип нагрузки. В игре такие нагрузки — редкость.",
             duration: "93", // секунды
-            // tested_at: "2025-10-29", // Формат YYYY-MM-DD
             poster: "/storage/video/posters/crash-test-monster24-vs-airlight23.webp",
             file_path: "/storage/video/crash-test-monster24-vs-airlight23.mov",
-            comment: "Предсказать, какая клюшка окажется 'прочнее' в абстрактном смысле — невозможно, это зависит от типа и точки приложения удара. Но можно гарантировать, что запас прочности у обеих — на годы игры при соблюдении правил. Так играить и бить по клюшкам соперника — нельзя!",
+            comment: "Предсказать, какая клюшка окажется 'прочнее' в абстрактном смысле — невозможно, это зависит от типа и точки приложения удара. Но можно гарантировать, что запас прочности у обеих — на годы игры при соблюдении правил. Так играть и бить по клюшкам соперника — нельзя!",
             product_links: [
                 {
-                    url: '/products/card/71731-klyushka-dlya-florbola-aleters-original-air-light-23mm-black-100cm-left',
+                    url: '/products/card/91721-klyushka-dlya-florbola-aleters-original-monstr-edition-24mm-black-100cm-left',
                     name: 'MONSTR EDITION F24 black',
                     label: 'Профессиональная рукоятка из премиального карбона'
                 },
                 {
-                    url: '/products/card/71701-klyushka-dlya-florbola-aleters-original-air-concept-28mm-black-100cm-left',
+                    url: '/products/card/71731-klyushka-dlya-florbola-aleters-original-air-light-23mm-black-100cm-left',
                     name: 'AIR LIGHT F23 black',
                     label: 'Профессиональная рукоятка из облегчённого карбона повышенной прочности с графитовым модулем'
                 }
             ]
         },
-
     ];
 
     return (
